@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ $1 == "nginx_start" ]; then
+    /usr/sbin/nginx -g "daemon off;"
+else
+    $*
+fi

@@ -1,0 +1,123 @@
+{%- extends "basic/layout.html" %}
+
+{# TEMPLATE VAR SETTINGS #}
+{%- set url_root = pathto('', 1) %}
+{%- if url_root == '#' %}{% set url_root = '' %}{% endif %}
+{%- if not embedded and docstitle %}
+  {%- set titlesuffix = " &mdash; "|safe + docstitle|e %}
+{%- else %}
+  {%- set titlesuffix = "" %}
+{%- endif %}
+
+{%- block doctype -%}<!DOCTYPE html>{%- endblock %}
+
+ {# OPENSEARCH #}
+  {% if not embedded %}
+    {% if use_opensearch %}
+      <link rel="search" type="application/opensearchdescription+xml" title="{% trans docstitle=docstitle|e %}Search within {{ docstitle }}{% endtrans %}" href="{{ pathto('_static/opensearch.xml', 1) }}"/>
+    {% endif %}
+
+  {% endif %}
+
+{%- block linktags -%}
+<link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+    {%- if hasdoc('search') %}
+        <link rel="search" title="{{ _('Search') }}" href="{{ pathto('search') }}"/>
+    {%- endif %}
+{%- endblock %}
+
+{%- block relbar1 %}
+{%- endblock %}
+
+{%- block relbar2 %}{%- endblock %}
+
+{%- block header %}
+
+	<div class="header-bg">
+	{%- block brand %}
+
+		<div id="brand" class="container-fluid">
+		<div class="container">
+			<div class="row">
+				<div class="col-xs-2">
+				<img src="_static/logo.png" />
+				</div>
+				<div class="col-xs-8">
+				<p>Scrapinghub Documentation</p>
+				</div>
+				<div class="col-xs-2">
+				<a class="login-button" href="https://dash.scrapinghub.com/">Sign In</a>
+				</div>
+			</div>
+		</div>
+		</div>
+
+	{%- endblock %}
+
+	<div id="header">
+		<div class="container">
+			<div class="row">
+				<div class="col-xs-12">
+        {% include "searchbox.html" %}
+
+		<ul>
+
+			{%- block rootrellink %}
+				<li><a href="{{ pathto(master_doc) }}">Home</a>&nbsp;&nbsp;{{ reldelim1 }}</li>
+			{%- endblock %}
+
+			{%- for parent in parents %}
+				<li><a href="{{ parent.link|e }}" {%- if loop.last %}{{ accesskey("U") }}{%- endif %}>{{ parent.title|e }}</a>&nbsp;&nbsp;{{ reldelim1 }}</li>
+	        {%- endfor %}
+
+			<li><strong>{{ title }}</strong></li>
+		</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{%- endblock %}
+
+{%- block content %}
+	<div class="section" id="content">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-3 sidebar-docs">
+				<h2>Quick Links</h2>
+				{% block sidebar1 %}{{ toctree(maxdepth=2, collapse=True, includehidden=True) }}{% endblock %}
+				</div>
+
+				<div class="col-lg-9 col-md-12 col-sm-12 main-content">
+				<div role="main" class="document">
+            	{% block body %}
+            		{{ body }}
+            	{% endblock %}
+          		</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+{%- endblock %}
+
+{%- block footer %}
+	<div id="footer">
+		<div class="container">
+		<div class="row">
+		<div class="col-xs-12">
+
+		<p class="top">
+			<a href="#header" title="Return to top">Return to top</a>
+		</p>
+		<p>
+			Copyright &copy; {{ copyright }}
+			{%- if last_updated %} &middot; Last updated {{ last_updated|e }}{%- endif %}
+		</p>
+
+		</div>
+		</div>
+		</div>
+		
+	</div><!-- /#footer -->
+{%- endblock %}
