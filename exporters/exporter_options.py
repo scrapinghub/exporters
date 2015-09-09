@@ -23,7 +23,7 @@ class ExporterOptions(object):
         self.writer_options = self.options['writer']
         self.exporter_options = self.options['exporter_options']
         self.persistence_options = self.options.get('persistence', DEFAULT_PERSISTENCE_CLASS)
-        self.formatter_options = self.options['exporter_options']['FORMATTER']
+        self.formatter_options = self.options['exporter_options']['formatter']
 
     def curate_options(self, options):
         if 'reader' not in options:

@@ -19,16 +19,16 @@ class Settings(object):
             if isinstance(module, six.string_types):
                 module = import_module(module)
             for key in dir(module):
-                if key.isupper():
+                if key and not key.startswith('__'):
                     self.set(key, getattr(module, key))
 
     def get(self, key, default_value=None):
-        if not key.isupper():
+        if not key or key.startswith('__'):
             return None
         return self.attributes.get(key, default_value)
 
     def set(self, key, value):
-        if key.isupper():
+        if key and not key.startswith('__'):
             self.attributes[key] = value
 
     def set_from_dict(self, attributes):
