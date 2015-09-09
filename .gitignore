@@ -1,0 +1,15 @@
+*.pyc
+/build
+/*.egg-info
+/dist
+dumpers/build
+dumpers/*.egg-info
+dumpers/dist
+.tox
+venv
+.idea
+.eggs
+htmlcov
+.coverage
+.vim.custom
+docs/_build
