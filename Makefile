@@ -20,7 +20,7 @@ compile:
 	python -m compileall ${SRC_DIRS}
 
 test: compile
-	nosetests -v tests --with-coverage --cover-package=bin,toolbox --cover-branches
+	nosetests -v tests --with-coverage --cover-package=exporters,bin --cover-branches
 
 
 clean-pyc:
