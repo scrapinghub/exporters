@@ -1,0 +1,73 @@
+{
+    "exporter_options":{
+        "LOG_LEVEL": "DEBUG",
+        "LOGGER_NAME": "export-pipeline",
+        "RESUME": false,
+        "JOB_ID": "",
+        "FORMATTER": {
+            "name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter",
+            "options": {
+
+            }
+        },
+        "NOTIFICATIONS":[
+            {
+                "name": "exporters.notifications.s3_mail_notifier.S3MailNotifier",
+                "options":
+                    {
+                        "team_mails": ["bernardo@scrapinghub.com"],
+                        "client_mails": ["contacto@bernardobotella.com"],
+                        "aws_login": "AKIAID6WTWATZMQUKHWQ",
+                        "aws_key": "KhTJzJGoqIK+F3CUZYsIdXeUAgGgjwGlIGqBS15i",
+                        "mail_from": "Scrapinghub data services <dataservices@scrapinghub.com>",
+                        "script_name": "test_dump",
+                        "dumper": "linkedind",
+                        "countries_str": "",
+                        "total": 100000,
+                        "dateprefix": "",
+                        "filebase": "/",
+                        "copy_key": "",
+                        "collection_name": "properties",
+                        "daily": false,
+                        "client_name": "ACME"
+
+                    }
+            }
+        ]
+    },
+    "reader": {
+        "name": "exporters.readers.random_reader.RandomReader",
+        "options": {
+            "number_of_items": 100,
+            "batch_size": 10
+        }
+    },
+    "filter": {
+        "name": "exporters.filters.key_value_regex_filter.KeyValueRegexFilter",
+        "options": {
+            "keys": [
+                {"name": "country_code", "value": "es"},
+                {"name": "state", "value": "val"}
+            ]
+        }
+    },
+    "transform": {
+        "name": "exporters.transform.no_transform.NoTransform",
+        "options": {
+
+        }
+    },
+    "writer":{
+        "name": "exporters.writers.console_writer.ConsoleWriter",
+        "options": {
+
+        },
+        "export_format": "csv"
+    },
+    "persistence": {
+        "name": "exporters.persistence.pickle_persistence.PicklePersistence",
+        "options": {
+          "file_path": "/tmp/"
+        }
+    }
+}
