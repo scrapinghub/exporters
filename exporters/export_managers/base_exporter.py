@@ -14,7 +14,7 @@ from exporters.writers.base_writer import ItemsLimitReached
 def normalize_keys(tree):
     if not isinstance(tree, dict):
         return tree
-    return {re.sub('(_|-)', '', k).lower(): normalize_keys(v) for k, v in tree.items()}
+    return {k.lower(): normalize_keys(v) for k, v in tree.items()}
 
 
 class BaseExporter(object):

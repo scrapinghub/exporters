@@ -25,7 +25,6 @@ class BaseWriterTest(unittest.TestCase):
             self.writer.write('', '')
 
 
-
 class ConsoleWriterTest(unittest.TestCase):
 
     def setUp(self):

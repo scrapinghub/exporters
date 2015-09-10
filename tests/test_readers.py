@@ -4,14 +4,15 @@ from exporters.readers.base_reader import BaseReader
 from exporters.readers.random_reader import RandomReader
 
 
+
 class BaseReaderTest(unittest.TestCase):
 
     def setUp(self):
-        exporteroptions =  {
-            'loglevel': 'DEBUG',
-            'loggername': 'export-pipeline'
+        exporter_options =  {
+            'log_level': 'DEBUG',
+            'logger_name': 'export-pipeline'
         }
-        settings = Settings(exporteroptions)
+        settings = Settings(exporter_options)
         self.reader = BaseReader({}, settings)
 
     def test_get_next_batch_not_implemented(self):
@@ -27,9 +28,9 @@ class RandomReaderTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporteroptions': {
-                'loglevel': 'DEBUG',
-                'loggername': 'export-pipeline'
+            'exporter_options': {
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
             },
             'reader': {
                 'name': 'exporters.readers.random_reader.RandomReader',
@@ -40,7 +41,7 @@ class RandomReaderTest(unittest.TestCase):
             },
 
         }
-        self.settings = Settings(self.options['exporteroptions'])
+        self.settings = Settings(self.options['exporter_options'])
         self.reader = RandomReader(self.options['reader'], self.settings)
 
     def test_get_next_batch(self):
