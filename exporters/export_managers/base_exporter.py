@@ -11,16 +11,9 @@ from exporters.notifications.receiver_groups import CLIENTS, TEAM
 from exporters.writers.base_writer import ItemsLimitReached
 
 
-def normalize_keys(tree):
-    if not isinstance(tree, dict):
-        return tree
-    return {k.lower(): normalize_keys(v) for k, v in tree.items()}
-
-
 class BaseExporter(object):
 
     def __init__(self, configuration):
-        configuration = normalize_keys(configuration)
         exporter_options = ExporterOptions(configuration)
         self.configuration = configuration
         self.settings = Settings(exporter_options.exporter_options)
