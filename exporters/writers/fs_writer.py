@@ -1,4 +1,5 @@
 import os
+import shutil
 import datetime
 import re
 from retrying import retry
@@ -37,5 +38,5 @@ class FSWriter(BaseWriter):
         target_path = os.path.join(self.prefix, os.path.sep.join(normalized))
         self._create_path_if_not_exist(target_path)
         number_of_files = len(os.listdir(target_path))
-        os.rename(dump_path, os.path.join(target_path, 'predump_{}.gz'.format(number_of_files)))
+        shutil.move(dump_path, os.path.join(target_path, 'predump_{}.gz'.format(number_of_files)))
         self.logger.debug('Flushed {}'.format(dump_path))
