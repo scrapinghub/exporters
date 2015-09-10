@@ -64,7 +64,7 @@ class BaseWriter(BasePipelineItem):
         for item in batch:
             self._write_item(item)
 
-    def _is_flush_needed(self, key):
+    def _is_save_needed(self, key):
         return self.grouping_info[key].get('predump_items', 0) >= self.max_tmp_items
 
     def _write_item(self, item):
@@ -79,7 +79,7 @@ class BaseWriter(BasePipelineItem):
             self.grouping_info[key]['predump_items'] = 0
             self.grouping_info[key]['group_file'] = []
 
-        self._write_and_flush(item, key)
+        self._write_and_save(item, key)
         self.items_count += 1
         if self.items_limit and self.items_limit == self.items_count:
             raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'.format(self.items_count))
@@ -92,18 +92,18 @@ class BaseWriter(BasePipelineItem):
             self.grouping_info[key]['group_file'].append(path)
         return path
 
-    def _write_and_flush(self, item, key):
+    def _write_and_save(self, item, key):
         path = self._get_group_path(key)
         with open(path, 'a') as f:
             f.write(item.formatted+'\n')
         self.grouping_info[key]['total_items'] += 1
         self.grouping_info[key]['predump_items'] += 1
-        if self._is_flush_needed(key):
-            self.logger.debug('Flush is needed.')
-            self._flush(key)
+        if self._is_save_needed(key):
+            self.logger.debug('Save is needed.')
+            self._save(key)
             self._reset_key(key)
 
-    def _flush(self, key):
+    def _save(self, key):
         path = self._get_group_path(key)
         with gzip.open(path+'.gz', 'wb') as predump_file:
             with open(path) as fl:
@@ -119,5 +119,5 @@ class BaseWriter(BasePipelineItem):
         Called to clean all possible tmp files created during the process.
         """
         for key in self.grouping_info.keys():
-            self._flush(key)
+            self._save(key)
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
