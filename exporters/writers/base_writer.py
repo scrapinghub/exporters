@@ -8,7 +8,7 @@ import tempfile
 
 TEMP_FILES_NAME = 'temp'
 
-ITEMS_PER_SAVE = 10000
+ITEMS_PER_BUFFER_WRITE = 10000
 
 
 class ItemsLimitReached(Exception):
@@ -44,12 +44,11 @@ class BaseWriter(BasePipelineItem):
         self.options['options'] = self.options.get('options', {})
         self.tmp_folder = tempfile.mkdtemp()
         self.check_options()
-        self.items_per_save = self.options.get('items_per_save', ITEMS_PER_SAVE)
+        self.items_per_buffer_write = self.options.get('items_per_buffer_write', ITEMS_PER_BUFFER_WRITE)
         self.items_limit = self.options.get('items_limit', 0)
         self.logger = WriterLogger(self.settings)
         self.items_count = 0
         self.grouping_info = {}
-
 
     def write(self, path, key):
         """
@@ -62,12 +61,12 @@ class BaseWriter(BasePipelineItem):
         It receives the batch and writes it.
         """
         for item in batch:
-            self._write_item(item)
+            self._send_item_to_buffer(item)
 
-    def _is_save_needed(self, key):
-        return self.grouping_info[key].get('predump_items', 0) >= self.items_per_save
+    def _should_write_buffer(self, key):
+        return self.grouping_info[key].get('predump_items', 0) >= self.items_per_buffer_write
 
-    def _write_item(self, item):
+    def _send_item_to_buffer(self, item):
         """
         It receives an item and writes it.
         """
@@ -79,7 +78,7 @@ class BaseWriter(BasePipelineItem):
             self.grouping_info[key]['predump_items'] = 0
             self.grouping_info[key]['group_file'] = []
 
-        self._write_and_save(item, key)
+        self._add_to_buffer(item, key)
         self.items_count += 1
         if self.items_limit and self.items_limit == self.items_count:
             raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'.format(self.items_count))
@@ -92,22 +91,21 @@ class BaseWriter(BasePipelineItem):
             self.grouping_info[key]['group_file'].append(path)
         return path
 
-    def _write_and_save(self, item, key):
+    def _add_to_buffer(self, item, key):
         path = self._get_group_path(key)
         with open(path, 'a') as f:
             f.write(item.formatted+'\n')
         self.grouping_info[key]['total_items'] += 1
         self.grouping_info[key]['predump_items'] += 1
-        if self._is_save_needed(key):
-            self.logger.debug('Save is needed.')
-            self._save(key)
+        if self._should_write_buffer(key):
+            self.logger.debug('Buffer write is needed.')
+            self._write_buffer(key)
             self._reset_key(key)
 
-    def _save(self, key):
+    def _write_buffer(self, key):
         path = self._get_group_path(key)
-        with gzip.open(path+'.gz', 'wb') as predump_file:
-            with open(path) as fl:
-                predump_file.write(fl.read())
+        with gzip.open(path+'.gz', 'wb') as predump_file, open(path) as fl:
+            predump_file.write(fl.read())
         self.write(path+'.gz', self.grouping_info[key]['membership'])
         self.grouping_info[key]['group_file'].append(os.path.join(self.tmp_folder, str(uuid.uuid4())))
 
@@ -119,5 +117,5 @@ class BaseWriter(BasePipelineItem):
         Called to clean all possible tmp files created during the process.
         """
         for key in self.grouping_info.keys():
-            self._save(key)
+            self._write_buffer(key)
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
