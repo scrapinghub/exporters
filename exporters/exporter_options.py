@@ -6,7 +6,10 @@ DEFAULT_GROUPER_CLASS = {'name': 'exporters.groupers.no_grouper.NoGrouper', 'opt
 DEFAULT_PERSISTENCE_CLASS = {'name': 'exporters.persistence.pickle_persistence.PicklePersistence',
                              'options': {'file_path': '/tmp/'}
                              }
-
+DEFAULT_STATS_MANAGER_CLASS = {
+    'name': 'exporters.stats_managers.basic_stats_manager.BasicStatsManager',
+    'options': {}
+}
 
 class ExporterOptions(object):
     def __init__(self, options):
@@ -24,6 +27,7 @@ class ExporterOptions(object):
         self.exporter_options = self.options['exporter_options']
         self.persistence_options = self.options.get('persistence', DEFAULT_PERSISTENCE_CLASS)
         self.formatter_options = self.options['exporter_options']['FORMATTER']
+        self.stats_options = self.options['exporter_options'].get('stats_manager', DEFAULT_STATS_MANAGER_CLASS)
 
     def curate_options(self, options):
         if 'reader' not in options:

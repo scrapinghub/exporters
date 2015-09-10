@@ -71,3 +71,9 @@ class PersistenceLogger(CategoryLogger):
 
     def _log(self, msg, level):
         self.logger.log(msg=' -- PERSISTENCE -- '+msg, level=level)
+
+
+class StatsManagerLogger(CategoryLogger):
+
+    def _log(self, msg, level):
+        self.logger.log(msg=' -- STATS MANAGER -- '+msg, level=level)

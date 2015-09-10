@@ -35,6 +35,10 @@ class ModuleLoader(object):
         from exporters.groupers.base_grouper import BaseGrouper
         return self._load_module(options, settings, BaseGrouper)
 
+    def load_stats_manager(self, options, settings):
+        from exporters.stats_managers.base_stats_manager import BaseStatsManager
+        return self._load_module(options, settings, BaseStatsManager)
+
     def _load_class(self, class_name, options, settings):
         class_path_list = class_name.split('.')
         mod = import_module('.'.join(class_path_list[0:-1]))
