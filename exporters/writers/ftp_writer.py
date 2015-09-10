@@ -99,4 +99,4 @@ class FTPWriter(BaseWriter):
         self._create_target_dir_if_needed(destination_path)
         self.ftp.storbinary('STOR %s' % (destination_path + '/predump_{}.gz'.format(uuid.uuid4())), open(dump_path))
         self.ftp.close()
-        self.logger.debug('Flushed {}'.format(dump_path))
+        self.logger.debug('Saved {}'.format(dump_path))
