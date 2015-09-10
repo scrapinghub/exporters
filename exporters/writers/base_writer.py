@@ -64,7 +64,7 @@ class BaseWriter(BasePipelineItem):
             self._send_item_to_buffer(item)
 
     def _should_write_buffer(self, key):
-        return self.grouping_info[key].get('predump_items', 0) >= self.items_per_buffer_write
+        return self.grouping_info[key].get('buffered_items', 0) >= self.items_per_buffer_write
 
     def _send_item_to_buffer(self, item):
         """
@@ -75,10 +75,13 @@ class BaseWriter(BasePipelineItem):
             self.grouping_info[key] = {}
             self.grouping_info[key]['membership'] = item.group_membership
             self.grouping_info[key]['total_items'] = 0
-            self.grouping_info[key]['predump_items'] = 0
+            self.grouping_info[key]['buffered_items'] = 0
             self.grouping_info[key]['group_file'] = []
 
         self._add_to_buffer(item, key)
+        if self._should_write_buffer(key):
+            self.logger.debug('Buffer write is needed.')
+            self._write_buffer(key)
         self.items_count += 1
         if self.items_limit and self.items_limit == self.items_count:
             raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'.format(self.items_count))
@@ -96,21 +99,27 @@ class BaseWriter(BasePipelineItem):
         with open(path, 'a') as f:
             f.write(item.formatted+'\n')
         self.grouping_info[key]['total_items'] += 1
-        self.grouping_info[key]['predump_items'] += 1
-        if self._should_write_buffer(key):
-            self.logger.debug('Buffer write is needed.')
-            self._write_buffer(key)
-            self._reset_key(key)
+        self.grouping_info[key]['buffered_items'] += 1
+
+    def _compress_file(self, path):
+        compressed_path = path+'.gz'
+        with gzip.open(compressed_path, 'wb') as predump_file, open(path) as fl:
+            shutil.copyfileobj(fl, predump_file)
+        return compressed_path
+
+    def _create_buffer_path_for_key(self, key):
+        new_buffer_path = os.path.join(self.tmp_folder, str(uuid.uuid4()))
+        self.grouping_info[key]['group_file'].append(new_buffer_path)
 
     def _write_buffer(self, key):
         path = self._get_group_path(key)
-        with gzip.open(path+'.gz', 'wb') as predump_file, open(path) as fl:
-            predump_file.write(fl.read())
-        self.write(path+'.gz', self.grouping_info[key]['membership'])
-        self.grouping_info[key]['group_file'].append(os.path.join(self.tmp_folder, str(uuid.uuid4())))
+        compressed_path = self._compress_file(path)
+        self.write(compressed_path, self.grouping_info[key]['membership'])
+        self._create_buffer_path_for_key(key)
+        self._reset_key(key)
 
     def _reset_key(self, key):
-        self.grouping_info[key]['predump_items'] = 0
+        self.grouping_info[key]['buffered_items'] = 0
 
     def close_writer(self):
         """
