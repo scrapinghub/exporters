@@ -49,16 +49,12 @@ class HubstorageReader(BaseReader):
 
     def get_next_batch(self):
         batch = self.scan_collection()
-        count = 0
-        for item in batch:
-            base_item = BaseRecord(item)
-            count += 1
-            self.last_position += 1
-            yield base_item
-            if count == self.batch_size:
-                break
-        # if count < self.batch_size:
-        if count < self.batch_size:
+        try:
+            for item in batch:
+                base_item = BaseRecord(item)
+                self.last_position += 1
+                yield base_item
+        except StopIteration:
             self.finished = True
         self.logger.debug('Done reading batch')
 
