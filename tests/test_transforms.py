@@ -11,7 +11,7 @@ from exporters.module_loader import ModuleLoader
 class BaseTransformTest(unittest.TestCase):
     def setUp(self):
         self.options = {
-            'exporteroptions': {
+            'exporter_options': {
                 'loglevel': 'DEBUG',
                 'loggername': 'export-pipeline'
             },
@@ -23,7 +23,7 @@ class BaseTransformTest(unittest.TestCase):
                 }
             },
         }
-        self.settings = Settings(self.options['exporteroptions'])
+        self.settings = Settings(self.options['exporter_options'])
         self.transform = BaseTransform(self.options, self.settings)
 
     def test_raise_exception(self):
@@ -34,7 +34,7 @@ class BaseTransformTest(unittest.TestCase):
 class NoTransformTest(unittest.TestCase):
     def setUp(self):
         self.options = {
-            'exporteroptions': {
+            'exporter_options': {
                 'loglevel': 'DEBUG',
                 'loggername': 'export-pipeline'
             },
@@ -46,7 +46,7 @@ class NoTransformTest(unittest.TestCase):
                 }
             },
         }
-        self.settings = Settings(self.options['exporteroptions'])
+        self.settings = Settings(self.options['exporter_options'])
         self.transform = NoTransform(self.options, self.settings)
 
     def test_transform_empty_batch(self):
@@ -62,14 +62,14 @@ class NoTransformTest(unittest.TestCase):
 class JqTransformTest(unittest.TestCase):
     def setUp(self):
         self.options = {
-            'exporteroptions': {
+            'exporter_options': {
                 'loglevel': 'DEBUG',
                 'loggername': 'export-pipeline'
             },
         }
 
         self.batch = [BaseRecord({'name': 'item1', 'country_code': 'es'}), BaseRecord({'name': 'item2', 'country_code': 'uk'})]
-        self.settings = Settings(self.options['exporteroptions'])
+        self.settings = Settings(self.options['exporter_options'])
 
     def test_transform_empty_batch(self):
         transform = JQTransform({'options': {'jq_filter': '.'}}, self.settings)
@@ -92,14 +92,14 @@ class JqTransformTest(unittest.TestCase):
 class PythonexpTransformTest(unittest.TestCase):
     def setUp(self):
         self.options = {
-            'exporteroptions': {
+            'exporter_options': {
                 'loglevel': 'DEBUG',
                 'loggername': 'export-pipeline'
             },
         }
 
         self.batch = [BaseRecord({'name': 'item1', 'country_code': 'es'}), BaseRecord({'name': 'item2', 'country_code': 'uk'})]
-        self.settings = Settings(self.options['exporteroptions'])
+        self.settings = Settings(self.options['exporter_options'])
         self.transform = PythonexpTransform({'options': {'python_expressions': [
             "item.update({'new_field': item.get('country_code')+'-'+item.get('name')})"]}},
                                             self.settings)
