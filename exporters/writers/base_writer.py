@@ -8,7 +8,7 @@ import tempfile
 
 TEMP_FILES_NAME = 'temp'
 
-MAX_TMP_ITEMS = 10000
+ITEMS_PER_SAVE = 10000
 
 
 class ItemsLimitReached(Exception):
@@ -44,7 +44,7 @@ class BaseWriter(BasePipelineItem):
         self.options['options'] = self.options.get('options', {})
         self.tmp_folder = tempfile.mkdtemp()
         self.check_options()
-        self.max_tmp_items = self.options.get('MAX_TMP_ITEMS', MAX_TMP_ITEMS)
+        self.items_per_save = self.options.get('items_per_save', ITEMS_PER_SAVE)
         self.items_limit = self.options.get('items_limit', 0)
         self.logger = WriterLogger(self.settings)
         self.items_count = 0
@@ -65,7 +65,7 @@ class BaseWriter(BasePipelineItem):
             self._write_item(item)
 
     def _is_save_needed(self, key):
-        return self.grouping_info[key].get('predump_items', 0) >= self.max_tmp_items
+        return self.grouping_info[key].get('predump_items', 0) >= self.items_per_save
 
     def _write_item(self, item):
         """
