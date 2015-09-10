@@ -11,7 +11,6 @@ PyYAML==3.11
 psycopg2==2.6.1
 -e git+git@github.com:scrapinghub/collection-scanner.git#egg=collection_scanner
 -e git+git@github.com:scrapinghub/kafka-scanner.git#egg=kafka_scanner
--e git+git@github.com:scrapinghub/scrapinghub-entrypoint-scrapy.git#egg=scrapinghub_entrypoint_scrapy
 
 hubstorage==0.16.1
 mysql-python==1.2.5
