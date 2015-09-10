@@ -46,13 +46,13 @@ class ModuleLoader(object):
         module_name = options['name']
         class_instance = self._load_class(module_name, options, settings)
         if not isinstance(class_instance, module_type):
-            raise TypeError('Module must inherit from ' + str(module_type.__class__))
+            raise TypeError('Module must inherit from ' + str(module_type))
         return class_instance
 
     def _load_persistence_module(self, options, settings, module_type):
         grouper_name = options.persistence_options['name']
         class_instance = self._load_class(grouper_name, options, settings)
         if not isinstance(class_instance, module_type):
-            raise TypeError('Module must inherit from ' + str(module_type.__class__))
+            raise TypeError('Module must inherit from ' + str(module_type))
         return class_instance
 
