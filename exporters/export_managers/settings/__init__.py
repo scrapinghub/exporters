@@ -1,36 +1,15 @@
-import six
-from importlib import import_module
-import default_settings
+from UserDict import UserDict
+from . import default_settings
 
-class Settings(object):
-    def __init__(self, options, module=None):
-        self.attributes = {}
-        self.add_module(default_settings)
-        if module:
-            self.add_module(module)
+
+class Settings(UserDict):
+    def __init__(self, options):
+        UserDict.__init__(self)
+        self.load_defaults()
         if options:
-            self.set_from_dict(options)
+            self.update(options)
 
-    def add_module(self, module):
-        if isinstance(module, Settings):
-            for name, value in module.attributes.items():
-                self.set(name, value)
-        else:
-            if isinstance(module, six.string_types):
-                module = import_module(module)
-            for key in dir(module):
-                if key and not key.startswith('__'):
-                    self.set(key, getattr(module, key))
-
-    def get(self, key, default_value=None):
-        if not key or key.startswith('__'):
-            return None
-        return self.attributes.get(key, default_value)
-
-    def set(self, key, value):
-        if key and not key.startswith('__'):
-            self.attributes[key] = value
-
-    def set_from_dict(self, attributes):
-        for name, value in attributes.items():
-            self.set(name, value)
+    def load_defaults(self):
+        for key in dir(default_settings):
+            if key and not key.startswith('_'):
+                self[key.lower()] = getattr(default_settings, key)

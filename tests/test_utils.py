@@ -25,19 +25,8 @@ class SettingsTest(unittest.TestCase):
         settings = Settings(self.options['exporter_options'])
         self.assertIsInstance(settings, Settings)
 
-    def test_module_settings(self):
-        settings = Settings(self.options['exporter_options'])
-        settings = Settings(self.options['exporter_options'], settings)
-        self.assertIsInstance(settings, Settings)
-
-    def test_module_name_settings(self):
-        settings = Settings(self.options['exporter_options'],
-                            'exporters.export_managers.settings.default_settings')
-        self.assertIsInstance(settings, Settings)
-
     def test_get_none(self):
-        settings = Settings(self.options['exporter_options'],
-                            'exporters.export_managers.settings.default_settings')
+        settings = Settings(self.options['exporter_options'])
         value = settings.get('some_value')
         self.assertTrue(value == None)
         self.assertIsInstance(settings, Settings)
