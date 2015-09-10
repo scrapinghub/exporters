@@ -16,27 +16,27 @@ class SettingsTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
+            'exporteroptions': {
                 'NUMBER_OF_RETRIES': 6,
             }
         }
 
     def test_single_settings(self):
-        settings = Settings(self.options['exporter_options'])
+        settings = Settings(self.options['exporteroptions'])
         self.assertIsInstance(settings, Settings)
 
     def test_module_settings(self):
-        settings = Settings(self.options['exporter_options'])
-        settings = Settings(self.options['exporter_options'], settings)
+        settings = Settings(self.options['exporteroptions'])
+        settings = Settings(self.options['exporteroptions'], settings)
         self.assertIsInstance(settings, Settings)
 
     def test_module_name_settings(self):
-        settings = Settings(self.options['exporter_options'],
+        settings = Settings(self.options['exporteroptions'],
                             'exporters.export_managers.settings.default_settings')
         self.assertIsInstance(settings, Settings)
 
     def test_get_none(self):
-        settings = Settings(self.options['exporter_options'],
+        settings = Settings(self.options['exporteroptions'],
                             'exporters.export_managers.settings.default_settings')
         value = settings.get('some_value')
         self.assertTrue(value == None)
@@ -46,11 +46,11 @@ class SettingsTest(unittest.TestCase):
 class BaseLoggerTest(unittest.TestCase):
     def setUp(self):
         self.options = {
-            'exporter_options': {
-                'NUMBER_OF_RETRIES': 6,
+            'exporteroptions': {
+                'loglevel': 'DEBUG',
             }
         }
-        self.settings = Settings(self.options['exporter_options'])
+        self.settings = Settings(self.options['exporteroptions'])
 
     def test_category_warning(self):
         logger = CategoryLogger(self.settings)
@@ -58,16 +58,16 @@ class BaseLoggerTest(unittest.TestCase):
 
     def test_category_critical(self):
         logger = CategoryLogger(self.settings)
-        logger.critical('Warning message')
+        logger.critical('Critial message')
 
 
 class BasePipelineItemTest(unittest.TestCase):
     def setUp(self):
         self.options = {
-            'exporter_options': {
+            'exporteroptions': {
             },
         }
-        self.settings = Settings(self.options['exporter_options'])
+        self.settings = Settings(self.options['exporteroptions'])
 
     def test_false_required(self):
         pipelineItem = BasePipelineItem({}, self.settings)
@@ -107,7 +107,7 @@ class ModuleLoaderTest(unittest.TestCase):
 
     def test_reader_valid_class(self):
         options = {
-            'exporter_options': {
+            'exporteroptions': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
             },
@@ -119,14 +119,14 @@ class ModuleLoaderTest(unittest.TestCase):
                 }
             },
         }
-        settings = Settings(options['exporter_options'])
+        settings = Settings(options['exporteroptions'])
         with self.assertRaises(Exception):
             self.module_loader.load_reader(options['reader'], settings)
 
 
     def test_writer_valid_class(self):
         options = {
-            'exporter_options': {
+            'exporteroptions': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
             },
@@ -138,14 +138,14 @@ class ModuleLoaderTest(unittest.TestCase):
                 }
             },
         }
-        settings = Settings(options['exporter_options'])
+        settings = Settings(options['exporteroptions'])
         with self.assertRaises(Exception):
             self.module_loader.load_writer(options['writer'], settings)
 
 
     def test_persistence_valid_class(self):
         options = {
-            'exporter_options': {
+            'exporteroptions': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
             },
@@ -157,13 +157,13 @@ class ModuleLoaderTest(unittest.TestCase):
                 }
             },
         }
-        settings = Settings(options['exporter_options'])
+        settings = Settings(options['exporteroptions'])
         with self.assertRaises(Exception):
             self.module_loader.load_persistence(options['persistence'], settings)
 
     def test_formatter_valid_class(self):
         options = {
-            'exporter_options': {
+            'exporteroptions': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline',
                 "EXPORTER": 'exporters.writers.console_writer.ConsoleWriter',
@@ -176,13 +176,13 @@ class ModuleLoaderTest(unittest.TestCase):
                 }
             },
         }
-        settings = Settings(options['exporter_options'])
+        settings = Settings(options['exporteroptions'])
         with self.assertRaises(Exception):
             self.module_loader.load_formatter(options['reader'], settings)
 
     def test_notifier_valid_class(self):
         options = {
-            'exporter_options': {
+            'exporteroptions': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
             },
@@ -194,13 +194,13 @@ class ModuleLoaderTest(unittest.TestCase):
                 }
             },
         }
-        settings = Settings(options['exporter_options'])
+        settings = Settings(options['exporteroptions'])
         with self.assertRaises(Exception):
             self.module_loader.load_notifier(options['notifier'], settings)
 
     def test_grouper_valid_class(self):
         options = {
-            'exporter_options': {
+            'exporteroptions': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
             },
@@ -212,13 +212,13 @@ class ModuleLoaderTest(unittest.TestCase):
                 }
             },
         }
-        settings = Settings(options['exporter_options'])
+        settings = Settings(options['exporteroptions'])
         with self.assertRaises(Exception):
             self.module_loader.load_grouper(options['grouper'], settings)
 
     def test_grouper_valid_class(self):
         options = {
-            'exporter_options': {
+            'exporteroptions': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
             },
@@ -230,13 +230,13 @@ class ModuleLoaderTest(unittest.TestCase):
                 }
             },
         }
-        settings = Settings(options['exporter_options'])
+        settings = Settings(options['exporteroptions'])
         with self.assertRaises(Exception):
             self.module_loader.load_grouper(options['grouper'], settings)
 
     def test_filter_valid_class(self):
         options = {
-            'exporter_options': {
+            'exporteroptions': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
             },
@@ -248,13 +248,13 @@ class ModuleLoaderTest(unittest.TestCase):
                 }
             },
         }
-        settings = Settings(options['exporter_options'])
+        settings = Settings(options['exporteroptions'])
         with self.assertRaises(Exception):
             self.module_loader.load_filter(options['filter'], settings)
 
     def test_transform_valid_class(self):
         options = {
-            'exporter_options': {
+            'exporteroptions': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
             },
@@ -266,13 +266,13 @@ class ModuleLoaderTest(unittest.TestCase):
                 }
             },
         }
-        settings = Settings(options['exporter_options'])
+        settings = Settings(options['exporteroptions'])
         with self.assertRaises(Exception):
             self.module_loader.load_transform(options['transform'], settings)
 
     def test_load_grouper(self):
         options = {
-            'exporter_options': {
+            'exporteroptions': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
             },
@@ -283,7 +283,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 }
             },
         }
-        settings = Settings(options['exporter_options'])
+        settings = Settings(options['exporteroptions'])
         self.assertIsInstance(self.module_loader.load_grouper(options['grouper'], settings), BaseGrouper)
 
 
@@ -304,7 +304,7 @@ class OptionsParserTest(unittest.TestCase):
         options = {'reader': '', 'filter': '', 'transform': '', 'writer': ''}
         with self.assertRaises(Exception):
             ExporterOptions(options)
-        options = {'reader': '', 'filter': '', 'transform': '', 'writer': '', 'persistence': '', 'exporter_options': {'FORMATTER': {}}}
+        options = {'reader': '', 'filter': '', 'transform': '', 'writer': '', 'persistence': '', 'exporteroptions': {'formatter': {}}}
         self.assertIsInstance(ExporterOptions(options), ExporterOptions)
 
 
@@ -335,22 +335,22 @@ class BaseByPassTest(unittest.TestCase):
 class S3ByPassTest(unittest.TestCase):
 
     def test_not_meet_requirements(self):
-        exporter_options = ExporterOptions({
+        exporteroptions = ExporterOptions({
             'reader': {'name': 'some other reader'},
             'writer': {'name': 'exporters.writers.s3_writer.S3Writer'},
-            'exporter_options': {'FORMATTER': {}},
+            'exporteroptions': {'formatter': {}},
             'persistence': {}
         })
-        bypass = S3Bypass(exporter_options)
+        bypass = S3Bypass(exporteroptions)
         with self.assertRaises(RequisitesNotMet):
             bypass.meets_conditions()
 
     def test_meet_requirements(self):
-        exporter_options = ExporterOptions({
+        exporteroptions = ExporterOptions({
             'reader': {'name': 'exporters.readers.s3_reader.S3Reader'},
             'writer': {'name': 'exporters.writers.s3_writer.S3Writer'},
-            'exporter_options': {'FORMATTER': {}},
+            'exporteroptions': {'formatter': {}},
             'persistence': {}
         })
-        bypass_script = S3Bypass(exporter_options)
+        bypass_script = S3Bypass(exporteroptions)
         bypass_script.meets_conditions()

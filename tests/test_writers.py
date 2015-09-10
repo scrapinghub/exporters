@@ -12,12 +12,12 @@ class BaseWriterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+            'exporteroptions': {
+                'loglevel': 'DEBUG',
+                'loggername': 'export-pipeline'
             },
         }
-        self.settings = Settings(self.options['exporter_options'])
+        self.settings = Settings(self.options['exporteroptions'])
         self.writer = BaseWriter({}, self.settings)
 
     def test_write_not_implemented(self):
@@ -30,12 +30,12 @@ class ConsoleWriterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+            'exporteroptions': {
+                'loglevel': 'DEBUG',
+                'loggername': 'export-pipeline'
             },
         }
-        self.settings = Settings(self.options['exporter_options'])
+        self.settings = Settings(self.options['exporteroptions'])
         self.writer = ConsoleWriter({}, self.settings)
 
     def test_write_console(self):
@@ -70,9 +70,9 @@ class S3WriterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+            'exporteroptions': {
+                'loglevel': 'DEBUG',
+                'loggername': 'export-pipeline'
             },
             'writer':{
                 'name': 'exporters.writers.s3_writer.S3Writer',
@@ -86,7 +86,7 @@ class S3WriterTest(unittest.TestCase):
                 }
             }
         }
-        self.settings = Settings(self.options['exporter_options'])
+        self.settings = Settings(self.options['exporteroptions'])
 
 
     def test_write_s3(self, conn_mock):

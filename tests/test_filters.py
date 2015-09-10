@@ -12,12 +12,12 @@ class BaseFilterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+            'exporteroptions': {
+                'loglevel': 'DEBUG',
+                'loggername': 'export-pipeline'
             }
         }
-        self.settings = Settings(self.options['exporter_options'])
+        self.settings = Settings(self.options['exporteroptions'])
         self.filter = BaseFilter(self.options, self.settings)
 
     def test_no_filter_configured_raise_notimplemented(self):
@@ -38,12 +38,12 @@ class NoFilterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+            'exporteroptions': {
+                'loglevel': 'DEBUG',
+                'loggername': 'export-pipeline'
             }
         }
-        self.settings = Settings(self.options['exporter_options'])
+        self.settings = Settings(self.options['exporteroptions'])
         self.filter = NoFilter(self.options, self.settings)
 
     def test_filter_empty_batch(self):
@@ -63,15 +63,15 @@ class KeyValueFilterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+            'exporteroptions': {
+                'loglevel': 'DEBUG',
+                'loggername': 'export-pipeline'
             }
         }
         self.keys = [
             {'name': 'country_code', 'value': 'es'}
             ]
-        self.settings = Settings(self.options['exporter_options'])
+        self.settings = Settings(self.options['exporteroptions'])
 
         items = [{'name': 'item1', 'country_code': 'es'}, {'name': 'item2', 'country_code': 'uk'}]
         self.batch = []
@@ -91,15 +91,15 @@ class KeyValueRegexFilterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+            'exporteroptions': {
+                'loglevel': 'DEBUG',
+                'loggername': 'export-pipeline'
             }
         }
         self.keys = [
             {'name': 'country_code', 'value': 'e'}
             ]
-        self.settings = Settings(self.options['exporter_options'])
+        self.settings = Settings(self.options['exporteroptions'])
 
         items = [{'name': 'item1', 'country_code': 'es'}, {'name': 'item2', 'country_code': 'uk'}]
         self.batch = []
@@ -119,15 +119,15 @@ class PythonexpFilterFilterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+            'exporteroptions': {
+                'loglevel': 'DEBUG',
+                'loggername': 'export-pipeline'
             }
         }
         self.keys = [
             {'name': 'country_code', 'value': 'e'}
             ]
-        self.settings = Settings(self.options['exporter_options'])
+        self.settings = Settings(self.options['exporteroptions'])
 
         items = [{'name': 'item1', 'country_code': 'es'}, {'name': 'item2', 'country_code': 'uk'}]
         self.batch = []
