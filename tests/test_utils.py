@@ -36,7 +36,7 @@ class BaseLoggerTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'loglevel': 'DEBUG',
+                'log_level': 'DEBUG',
             }
         }
         self.settings = Settings(self.options['exporter_options'])

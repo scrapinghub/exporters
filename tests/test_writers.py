@@ -13,8 +13,8 @@ class BaseWriterTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'loglevel': 'DEBUG',
-                'loggername': 'export-pipeline'
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
             },
         }
         self.settings = Settings(self.options['exporter_options'])
@@ -30,8 +30,8 @@ class ConsoleWriterTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'loglevel': 'DEBUG',
-                'loggername': 'export-pipeline'
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
             },
         }
         self.settings = Settings(self.options['exporter_options'])
@@ -70,8 +70,8 @@ class S3WriterTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'loglevel': 'DEBUG',
-                'loggername': 'export-pipeline'
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
             },
             'writer':{
                 'name': 'exporters.writers.s3_writer.S3Writer',
