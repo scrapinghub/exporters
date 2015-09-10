@@ -12,8 +12,8 @@ LEVEL_DICT = {
 
 class BaseLogger(object):
     def __init__(self, settings):
-        level = LEVEL_DICT[settings.get('LOG_LEVEL')]
-        self.logger = logging.getLogger(settings.get('LOGGER_NAME'))
+        level = LEVEL_DICT[settings.get('log_level')]
+        self.logger = logging.getLogger(settings.get('logger_name'))
         self.logger.setLevel(level)
 
 

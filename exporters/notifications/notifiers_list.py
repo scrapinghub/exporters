@@ -10,7 +10,7 @@ class NotifiersList(object):
         self.notifiers = self._populate_notifiers()
 
     def _populate_notifiers(self):
-        settings_notifiers = self.settings.get('NOTIFICATIONS', [])
+        settings_notifiers = self.settings.get('notifications', [])
         notifiers_list = []
         for notifier in settings_notifiers:
             notifier_object = self.module_loader.load_notifier(notifier, self.settings)
