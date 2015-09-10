@@ -4,14 +4,15 @@ from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
 from exporters.writers.console_writer import ConsoleWriter
 
+
 class BasicExportManagerTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline',
-                'FORMATTER': {
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline',
+                'formatter': {
                     'name': 'exporters.export_formatter.csv_export_formatter.CSVExportFormatter',
                     'options': {
                         'show_titles': True,

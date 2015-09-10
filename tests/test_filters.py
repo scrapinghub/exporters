@@ -13,8 +13,8 @@ class BaseFilterTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
             }
         }
         self.settings = Settings(self.options['exporter_options'])
@@ -39,8 +39,8 @@ class NoFilterTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
             }
         }
         self.settings = Settings(self.options['exporter_options'])
@@ -64,8 +64,8 @@ class KeyValueFilterTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
             }
         }
         self.keys = [
@@ -92,8 +92,8 @@ class KeyValueRegexFilterTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
             }
         }
         self.keys = [
@@ -120,8 +120,8 @@ class PythonexpFilterFilterTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
             }
         }
         self.keys = [

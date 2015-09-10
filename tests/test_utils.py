@@ -25,19 +25,8 @@ class SettingsTest(unittest.TestCase):
         settings = Settings(self.options['exporter_options'])
         self.assertIsInstance(settings, Settings)
 
-    def test_module_settings(self):
-        settings = Settings(self.options['exporter_options'])
-        settings = Settings(self.options['exporter_options'], settings)
-        self.assertIsInstance(settings, Settings)
-
-    def test_module_name_settings(self):
-        settings = Settings(self.options['exporter_options'],
-                            'exporters.export_managers.settings.default_settings')
-        self.assertIsInstance(settings, Settings)
-
     def test_get_none(self):
-        settings = Settings(self.options['exporter_options'],
-                            'exporters.export_managers.settings.default_settings')
+        settings = Settings(self.options['exporter_options'])
         value = settings.get('some_value')
         self.assertTrue(value == None)
         self.assertIsInstance(settings, Settings)
@@ -47,7 +36,7 @@ class BaseLoggerTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'NUMBER_OF_RETRIES': 6,
+                'log_level': 'DEBUG',
             }
         }
         self.settings = Settings(self.options['exporter_options'])
@@ -58,7 +47,7 @@ class BaseLoggerTest(unittest.TestCase):
 
     def test_category_critical(self):
         logger = CategoryLogger(self.settings)
-        logger.critical('Warning message')
+        logger.critical('Critial message')
 
 
 class BasePipelineItemTest(unittest.TestCase):
@@ -304,7 +293,7 @@ class OptionsParserTest(unittest.TestCase):
         options = {'reader': '', 'filter': '', 'transform': '', 'writer': ''}
         with self.assertRaises(Exception):
             ExporterOptions(options)
-        options = {'reader': '', 'filter': '', 'transform': '', 'writer': '', 'persistence': '', 'exporter_options': {'FORMATTER': {}}}
+        options = {'reader': '', 'filter': '', 'transform': '', 'writer': '', 'persistence': '', 'exporter_options': {'formatter': {}}}
         self.assertIsInstance(ExporterOptions(options), ExporterOptions)
 
 
@@ -338,7 +327,7 @@ class S3ByPassTest(unittest.TestCase):
         exporter_options = ExporterOptions({
             'reader': {'name': 'some other reader'},
             'writer': {'name': 'exporters.writers.s3_writer.S3Writer'},
-            'exporter_options': {'FORMATTER': {}},
+            'exporter_options': {'formatter': {}},
             'persistence': {}
         })
         bypass = S3Bypass(exporter_options)
@@ -349,7 +338,7 @@ class S3ByPassTest(unittest.TestCase):
         exporter_options = ExporterOptions({
             'reader': {'name': 'exporters.readers.s3_reader.S3Reader'},
             'writer': {'name': 'exporters.writers.s3_writer.S3Writer'},
-            'exporter_options': {'FORMATTER': {}},
+            'exporter_options': {'formatter': {}},
             'persistence': {}
         })
         bypass_script = S3Bypass(exporter_options)

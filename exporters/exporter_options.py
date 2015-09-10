@@ -10,6 +10,9 @@ DEFAULT_STATS_MANAGER_CLASS = {
     'name': 'exporters.stats_managers.basic_stats_manager.BasicStatsManager',
     'options': {}
 }
+DEFAULT_FORMATTER_CLASS = {"name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter",
+                           "options": {}}
+
 
 class ExporterOptions(object):
     def __init__(self, options):
@@ -26,7 +29,7 @@ class ExporterOptions(object):
         self.writer_options = self.options['writer']
         self.exporter_options = self.options['exporter_options']
         self.persistence_options = self.options.get('persistence', DEFAULT_PERSISTENCE_CLASS)
-        self.formatter_options = self.options['exporter_options']['FORMATTER']
+        self.formatter_options = self.options['exporter_options'].get('formatter', DEFAULT_FORMATTER_CLASS)
         self.stats_options = self.options['exporter_options'].get('stats_manager', DEFAULT_STATS_MANAGER_CLASS)
 
     def curate_options(self, options):
