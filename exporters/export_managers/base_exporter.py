@@ -1,5 +1,6 @@
 import datetime
 import traceback
+import re
 from exporters.export_managers.bypass import RequisitesNotMet
 from exporters.export_managers.settings import Settings
 from exporters.logger.base_logger import ExportManagerLogger
@@ -10,16 +11,16 @@ from exporters.notifications.receiver_groups import CLIENTS, TEAM
 from exporters.writers.base_writer import ItemsLimitReached
 
 
-def lower_keys(tree):
+def normalize_keys(tree):
     if not isinstance(tree, dict):
         return tree
-    return {k.lower(): lower_keys(v) for k, v in tree.items()}
+    return {re.sub('(_|-)', '', k).lower(): normalize_keys(v) for k, v in tree.items()}
 
 
 class BaseExporter(object):
 
     def __init__(self, configuration):
-        configuration = lower_keys(configuration)
+        configuration = normalize_keys(configuration)
         exporter_options = ExporterOptions(configuration)
         self.configuration = configuration
         self.settings = Settings(exporter_options.exporter_options)

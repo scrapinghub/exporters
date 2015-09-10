@@ -21,17 +21,17 @@ class ExporterOptions(object):
         self.transform_options = self.options.get('transform', DEFAULT_TRANSFORM_CLASS)
         self.grouper_options = self.options.get('grouper', DEFAULT_GROUPER_CLASS)
         self.writer_options = self.options['writer']
-        self.exporter_options = self.options['exporter_options']
+        self.exporter_options = self.options['exporteroptions']
         self.persistence_options = self.options.get('persistence', DEFAULT_PERSISTENCE_CLASS)
-        self.formatter_options = self.options['exporter_options']['formatter']
+        self.formatter_options = self.options['exporteroptions']['formatter']
 
     def curate_options(self, options):
         if 'reader' not in options:
             raise ValueError('Options must contain a reader definition')
         if 'writer' not in options:
             raise ValueError('Options must contain a writer definition')
-        if 'exporter_options' not in options:
-            raise ValueError('Options must contain a exporter_options definition')
+        if 'exporteroptions' not in options:
+            raise ValueError('Options must contain a exporteroptions definition')
 
     def __str__(self):
         return json.dumps(self.options)
