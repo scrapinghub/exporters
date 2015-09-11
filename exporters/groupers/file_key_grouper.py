@@ -10,8 +10,8 @@ class FileKeyGrouper(BaseGrouper):
         - keys (list)
             A list of keys to group by
     """
-    requirements = {
-        'keys': {'type': list, 'required': True}
+    parameters = {
+        'keys': {'type': list}
     }
 
     def __init__(self, options, settings):

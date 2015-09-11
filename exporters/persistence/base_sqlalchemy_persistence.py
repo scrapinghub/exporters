@@ -20,12 +20,12 @@ class Job(Base):
 
 
 class BaseAlchemyPersistence(BasePersistence):
-    requirements = {
-        'user': {'type': basestring, 'required': True},
-        'password': {'type': basestring, 'required': True},
-        'host': {'type': basestring, 'required': True},
-        'port': {'type': int, 'required': True},
-        'database': {'type': basestring, 'required': True}
+    parameters = {
+        'user': {'type': basestring},
+        'password': {'type': basestring},
+        'host': {'type': basestring},
+        'port': {'type': int},
+        'database': {'type': basestring}
     }
 
     def __init__(self, options, settings):

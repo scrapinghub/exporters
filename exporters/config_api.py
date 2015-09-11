@@ -51,14 +51,14 @@ class ConfigApi(object):
                 classes_names.append(obj.__module__ + '.' + obj.__name__)
         return classes_names
 
-    def get_module_requirements(self, module_name):
+    def get_module_parameters(self, module_name):
         try:
             class_path_list = module_name.split('.')
             mod = import_module('.'.join(class_path_list[0:-1]))
         except Exception as e:
             raise InvalidConfigError('There was a problem loading {} class. Exception: {}'.format(module_name, e))
-        requirements = getattr(mod, class_path_list[-1]).requirements
-        return requirements
+        parameters = getattr(mod, class_path_list[-1]).parameters
+        return parameters
 
     def check_valid_config(self, config):
         if self._find_missing_sections(config):
@@ -88,31 +88,31 @@ class ConfigApi(object):
                 'Wrong type for parameter {}. Found: {}. Expected {}'.format(parameter.name, type(
                     config_section['options'][parameter.name]), parameter.options['type']))
 
-    def _check_valid_requirements(self, config_section):
+    def _check_valid_parameters(self, config_section):
         if 'name' not in config_section or 'options' not in config_section:
             raise InvalidConfigError('Module has not name or options parameter')
         # We only check the required parameters
-        parameters = [Parameter(name=r_name, options=r_info) for r_name, r_info in self.get_module_requirements(config_section['name']).iteritems() if r_info.get('required')]
+        parameters = [Parameter(name=r_name, options=r_info) for r_name, r_info in self.get_module_parameters(config_section['name']).iteritems() if r_info.get('required')]
         for parameter in parameters:
             self._check_required_config_section(parameter, config_section)
 
     # We keep different checkers, to support different check methods
     def _check_valid_reader(self, config_section):
-        self._check_valid_requirements(config_section)
+        self._check_valid_parameters(config_section)
 
     def _check_valid_writer(self, config_section):
-        self._check_valid_requirements(config_section)
+        self._check_valid_parameters(config_section)
         if 'grouper' in config_section:
-            self._check_valid_requirements(config_section['grouper'])
+            self._check_valid_parameters(config_section['grouper'])
 
     def _check_valid_filter(self, config_section):
-        self._check_valid_requirements(config_section)
+        self._check_valid_parameters(config_section)
 
     def _check_valid_grouper(self, config_section):
-        self._check_valid_requirements(config_section)
+        self._check_valid_parameters(config_section)
 
     def _check_valid_transform(self, config_section):
-        self._check_valid_requirements(config_section)
+        self._check_valid_parameters(config_section)
 
     def _check_valid_persistence(self, config_section):
-        self._check_valid_requirements(config_section)
+        self._check_valid_parameters(config_section)

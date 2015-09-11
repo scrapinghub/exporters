@@ -24,11 +24,11 @@ class HubstorageReader(BaseReader):
     """
 
     # List of required options to set up the reader
-    requirements = {
-        'batch_size': {'type': int, 'required': False, 'default': 10000},
-        'apikey': {'type': basestring, 'required': True},
-        'project_id': {'type': basestring, 'required': True},
-        'collection_name': {'type': basestring, 'required': True}
+    parameters = {
+        'batch_size': {'type': int, 'default': 10000},
+        'apikey': {'type': basestring},
+        'project_id': {'type': basestring},
+        'collection_name': {'type': basestring}
     }
 
     def __init__(self, options, settings):

@@ -27,11 +27,11 @@ class KafkaScannerReader(BaseReader):
     """
 
      # List of required options to set up the reader
-    requirements = {
-        'batch_size': {'type': int, 'required': False, 'default': 10000},
-        'brokers': {'type': list, 'required': True},
-        'topic': {'type': basestring, 'required': True},
-        'group': {'type': basestring, 'required': True}
+    parameters = {
+        'batch_size': {'type': int, 'default': 10000},
+        'brokers': {'type': list},
+        'topic': {'type': basestring},
+        'group': {'type': basestring}
     }
 
     def __init__(self, options, settings):

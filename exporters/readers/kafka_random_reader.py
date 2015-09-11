@@ -34,12 +34,12 @@ class KafkaRandomReader(BaseReader):
             Reading group for kafka client.
     """
 
-    requirements = {
-        'record_count': {'type': int, 'required': True},
-        'batch_size': {'type': int, 'required': False, 'default': 10000},
-        'brokers': {'type': list, 'required': True},
-        'topic': {'type': basestring, 'required': True},
-        'group': {'type': basestring, 'required': True}
+    parameters = {
+        'record_count': {'type': int},
+        'batch_size': {'type': int, 'default': 10000},
+        'brokers': {'type': list},
+        'topic': {'type': basestring},
+        'group': {'type': basestring}
     }
 
     def __init__(self, options, settings):

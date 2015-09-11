@@ -60,18 +60,18 @@ class BasePipelineItemTest(unittest.TestCase):
 
     def test_false_required(self):
         pipelineItem = BasePipelineItem({}, self.settings)
-        pipelineItem.requirements = {'number_of_items': {'type': int, 'required': False, 'default': 10}}
+        pipelineItem.parameters = {'number_of_items': {'type': int, 'required': False, 'default': 10}}
         pipelineItem.check_options()
 
     def test_not_present(self):
         pipelineItem = BasePipelineItem({}, self.settings)
-        pipelineItem.requirements = {'number_of_items': {'type': int, 'required': True}}
+        pipelineItem.parameters = {'number_of_items': {'type': int, 'required': True}}
         with self.assertRaises(ValueError):
             pipelineItem.check_options()
 
     def test_wrong_type(self):
         pipelineItem = BasePipelineItem({'options': {'number_of_items': 'wrong_string'}}, self.settings)
-        pipelineItem.requirements = {'number_of_items': {'type': int, 'required': False, 'default': 10}}
+        pipelineItem.parameters = {'number_of_items': {'type': int, 'required': False, 'default': 10}}
         with self.assertRaises(ValueError):
             pipelineItem.check_options()
 
@@ -81,11 +81,11 @@ class ConfigApiTest(unittest.TestCase):
     def setUp(self):
         self.config_api = ConfigApi()
 
-    def test_get_requirements(self):
+    def test_get_parameters(self):
         for reader in self.config_api.readers:
-            requirements = self.config_api.get_module_requirements(reader)
-            print requirements
-            for requirement_name, requirement_info in requirements.iteritems():
+            parameters = self.config_api.get_module_parameters(reader)
+            print parameters
+            for requirement_name, requirement_info in parameters.iteritems():
                 self.assertIsInstance(requirement_info, dict)
                 self.assertIsInstance(requirement_name, basestring)
 
@@ -323,7 +323,7 @@ class BaseByPassTest(unittest.TestCase):
 
 class S3ByPassTest(unittest.TestCase):
 
-    def test_not_meet_requirements(self):
+    def test_not_meet_parameters(self):
         exporter_options = ExporterOptions({
             'reader': {'name': 'some other reader'},
             'writer': {'name': 'exporters.writers.s3_writer.S3Writer'},
@@ -334,7 +334,7 @@ class S3ByPassTest(unittest.TestCase):
         with self.assertRaises(RequisitesNotMet):
             bypass.meets_conditions()
 
-    def test_meet_requirements(self):
+    def test_meet_parameters(self):
         exporter_options = ExporterOptions({
             'reader': {'name': 'exporters.readers.s3_reader.S3Reader'},
             'writer': {'name': 'exporters.writers.s3_writer.S3Writer'},

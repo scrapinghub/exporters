@@ -8,7 +8,7 @@ class BaseNotifier(object):
     def __init__(self, options, settings):
         self.options = options
         self.settings = settings
-        self.requirements = getattr(self, 'requirements', {})
+        self.parameters = getattr(self, 'parameters', {})
         self.check_options()
 
     def notify_start_dump(self, receivers=None, info=None):
@@ -31,10 +31,10 @@ class BaseNotifier(object):
 
     def check_options(self):
         options = self.options['options']
-        for requirement_name, requirement_info in self.requirements.iteritems():
-            if not requirement_info['required']:
+        for parameter_name, parameter_info in self.parameters.iteritems():
+            if 'default' in parameter_info:
                 continue
-            if requirement_name not in options:
-                raise ValueError('Options object should have parameter: ' + requirement_name)
-            elif not isinstance(options[requirement_name], requirement_info['type']):
-                raise ValueError('Parameter ' + requirement_name + ' should be type: ' + str(requirement_info['type']))
+            if parameter_name not in options:
+                raise ValueError('Options object should have parameter: ' + parameter_name)
+            elif not isinstance(options[parameter_name], parameter_info['type']):
+                raise ValueError('Parameter ' + parameter_name + ' should be type: ' + str(parameter_info['type']))

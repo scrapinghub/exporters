@@ -12,8 +12,8 @@ class PythonexpFilter(BaseFilter):
             Python expression to filter by.
     """
     # List of required options
-    requirements = {
-        'python_expression': {'type': basestring, 'required': True}
+    parameters = {
+        'python_expression': {'type': basestring}
     }
 
     def __init__(self, options, settings):

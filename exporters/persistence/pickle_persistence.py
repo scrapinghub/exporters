@@ -15,7 +15,7 @@ class PicklePersistence(BasePersistence):
         - file_path (str)
             Path to store the pickle file
     """
-    requirements = {
+    parameters = {
         'file_path': {'type': basestring, 'required': False, 'default': '.'}
     }
 
