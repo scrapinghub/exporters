@@ -7,14 +7,14 @@ class BasePipelineItem(object):
         self.notifiers = NotifiersList(settings)
 
     def check_options(self):
-        for requirement_name, requirement_info in self.requirements.iteritems():
-            requirement_value = self.read_option(requirement_name)
-            if requirement_value and not isinstance(requirement_value, requirement_info['type']):
-                raise ValueError('Parameter ' + requirement_name + ' should be type: ' + str(requirement_info['type']))
-            if not requirement_info['required']:
+        for parameter_name, parameter_info in self.parameters.iteritems():
+            parameter_value = self.read_option(parameter_name)
+            if parameter_value and not isinstance(parameter_value, parameter_info['type']):
+                raise ValueError('Parameter ' + parameter_name + ' should be type: ' + str(parameter_info['type']))
+            if 'default' in parameter_info:
                 continue
-            if not requirement_value:
-                raise ValueError('Options object should have parameter: ' + requirement_name)
+            if not parameter_value:
+                raise ValueError('Options object should have parameter: ' + parameter_name)
 
     def read_option(self, option_name, default=None):
         if option_name in self.options:
@@ -24,11 +24,11 @@ class BasePipelineItem(object):
         return default
 
     def option_has_default(self, option_name):
-        for requirement_name, requirement_info in self.requirements.iteritems():
-            if option_name == requirement_name and 'default' in requirement_info:
+        for parameter_name, parameter_info in self.parameters.iteritems():
+            if option_name == parameter_name and 'default' in parameter_info:
                 return True
 
     def find_default(self, option_name):
-        for requirement_name, requirement_info in self.requirements.iteritems():
-            if option_name == requirement_name and 'default' in requirement_info:
-                return requirement_info['default']
+        for parameter_name, parameter_info in self.parameters.iteritems():
+            if option_name == parameter_name and 'default' in parameter_info:
+                return parameter_info['default']

@@ -26,12 +26,12 @@ class S3MailNotifier(BaseNotifier):
             Aws secret access key
     """
     def __init__(self, options, settings):
-        # List of required options
-        self.requirements = {
-            'team_mails': {'type': list, 'required': False, 'default': []},
-            'client_mails': {'type': list, 'required': False, 'default': []},
-            'aws_login': {'type': basestring, 'required': True},
-            'aws_key': {'type': basestring, 'required': True}
+        # List of options
+        self.parameters = {
+            'team_mails': {'type': list, 'default': []},
+            'client_mails': {'type': list, 'default': []},
+            'aws_login': {'type': basestring},
+            'aws_key': {'type': basestring}
         }
 
         super(S3MailNotifier, self).__init__(options, settings)

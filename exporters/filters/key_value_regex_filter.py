@@ -12,12 +12,12 @@ class KeyValueRegexFilter(BaseFilter):
             The filter will delete those items that do not contain a
             key "key" or, if they do, that key value does not match "regex".
     """
-    requirements = {
-        'keys': {'type': list, 'required': True}
+    parameters = {
+        'keys': {'type': list}
     }
 
     def __init__(self, options, settings):
-        # List of required options
+        # List of options
         super(KeyValueRegexFilter, self).__init__(options, settings)
         self.keys = self.read_option('keys')
         self.logger.info('KeyValueRegexFilter has been initiated. Keys: {}'.format(self.keys))

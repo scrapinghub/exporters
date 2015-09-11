@@ -5,7 +5,7 @@ class NoGrouper(BaseGrouper):
     """
     Default group module, used when no grouping strategies are needed.
     """
-    requirements = {
+    parameters = {
 
     }
 

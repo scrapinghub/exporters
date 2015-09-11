@@ -5,14 +5,14 @@ from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 
 class CSVExportFormatter(BaseExportFormatter):
 
-    requirements = {
-        'show_titles': {'type': bool, 'required': False, 'default': False},
-        'delimiter': {'type': basestring, 'required': False, 'default': ','},
-        'string_delimiter': {'type': basestring, 'required': False, 'default': '"'},
-        'line_end_character': {'type': basestring, 'required': False, 'default': '\n'},
-        'columns': {'type': list, 'required': False, 'default': []},
-        'titles': {'type': list, 'required': False, 'default': []},
-        'null_element': {'type': basestring, 'required': False, 'default': ''}
+    parameters = {
+        'show_titles': {'type': bool, 'default': False},
+        'delimiter': {'type': basestring, 'default': ','},
+        'string_delimiter': {'type': basestring, 'default': '"'},
+        'line_end_character': {'type': basestring, 'default': '\n'},
+        'columns': {'type': list, 'default': []},
+        'titles': {'type': list, 'default': []},
+        'null_element': {'type': basestring, 'default': ''}
     }
 
     def __init__(self, options, settings):

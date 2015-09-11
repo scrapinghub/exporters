@@ -25,11 +25,11 @@ class S3Writer(BaseWriter):
         - filebase (str)
             Base path to store the items in the bucket.
     """
-    requirements = {
-        'bucket': {'type': basestring, 'required': True},
-        'aws_access_key_id': {'type': basestring, 'required': True},
-        'aws_secret_access_key': {'type': basestring, 'required': True},
-        'filebase': {'type': basestring, 'required': True}
+    parameters = {
+        'bucket': {'type': basestring},
+        'aws_access_key_id': {'type': basestring},
+        'aws_secret_access_key': {'type': basestring},
+        'filebase': {'type': basestring}
     }
 
     def __init__(self, options, settings):

@@ -50,30 +50,30 @@ class ConfigApi(object):
                 classes_names.append(obj.__module__ + '.' + obj.__name__)
         return classes_names
 
-    def get_module_requirements(self, module_name):
+    def get_module_parameters(self, module_name):
         try:
             class_path_list = module_name.split('.')
             mod = import_module('.'.join(class_path_list[0:-1]))
         except Exception as e:
             raise InvalidConfigError('There was a problem loading {} class. Exception: {}'.format(module_name, e))
-        requirements = getattr(mod, class_path_list[-1]).requirements
-        return requirements
+        parameters = getattr(mod, class_path_list[-1]).parameters
+        return parameters
 
     def check_valid_config(self, config):
         if self._find_missing_sections(config):
             raise InvalidConfigError(
                 "Configuration is missing sections: %s" % ', '.join(self._find_missing_sections(config)))
-        self._check_valid_reader(config['reader'])
-        self._check_valid_writer(config['writer'])
+        self._check_valid_parameters(config['reader'])
+        self._check_valid_parameters(config['writer'])
         if 'filter' in config:
-            self._check_valid_filter(config['filter'])
+            self._check_valid_parameters(config['filter'])
         if 'filter_before' in config:
-            self._check_valid_filter(config['filter_before'])
+            self._check_valid_parameters(config['filter_before'])
         if 'filter_after' in config:
-            self._check_valid_filter(config.get('filter_after'))
+            self._check_valid_parameters(config.get('filter_after'))
         if 'transform' in config:
-            self._check_valid_transform(config['transform'])
-        self._check_valid_persistence(config['persistence'])
+            self._check_valid_parameters(config['transform'])
+        self._check_valid_parameters(config['persistence'])
         return True
 
     def _find_missing_sections(self, config):
@@ -87,29 +87,11 @@ class ConfigApi(object):
                 'Wrong type for parameter {}. Found: {}. Expected {}'.format(parameter.name, type(
                     config_section['options'][parameter.name]), parameter.options['type']))
 
-    def _check_valid_requirements(self, config_section):
+    def _check_valid_parameters(self, config_section):
         if 'name' not in config_section or 'options' not in config_section:
             raise InvalidConfigError('Module has not name or options parameter')
         # We only check the required parameters
-        parameters = [Parameter(name=r_name, options=r_info) for r_name, r_info in self.get_module_requirements(config_section['name']).iteritems() if r_info.get('required')]
+        parameters = [Parameter(name=r_name, options=r_info) for r_name, r_info in
+                      self.get_module_parameters(config_section['name']).iteritems() if not 'default' in r_info]
         for parameter in parameters:
             self._check_required_config_section(parameter, config_section)
-
-    # We keep different checkers, to support different check methods
-    def _check_valid_reader(self, config_section):
-        self._check_valid_requirements(config_section)
-
-    def _check_valid_writer(self, config_section):
-        self._check_valid_requirements(config_section)
-
-    def _check_valid_filter(self, config_section):
-        self._check_valid_requirements(config_section)
-
-    def _check_valid_grouper(self, config_section):
-        self._check_valid_requirements(config_section)
-
-    def _check_valid_transform(self, config_section):
-        self._check_valid_requirements(config_section)
-
-    def _check_valid_persistence(self, config_section):
-        self._check_valid_requirements(config_section)

@@ -19,8 +19,8 @@ class FSWriter(BaseWriter):
             Final path of items file.
     """
 
-    requirements = {
-        'filebase': {'type': basestring, 'required': False, 'default': '.'}
+    parameters = {
+        'filebase': {'type': basestring, 'default': '.'}
     }
 
     def __init__(self, options, settings):

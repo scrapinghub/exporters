@@ -11,7 +11,7 @@ class BaseFilter(BasePipelineItem):
     def __init__(self, options, settings):
         super(BaseFilter, self).__init__(options, settings)
         self.settings = settings
-        self.requirements = getattr(self, 'requirements', {})
+        self.parameters = getattr(self, 'parameters', {})
         self.check_options()
         self.logger = FilterLogger(self.settings)
         self.filtered_out = 0

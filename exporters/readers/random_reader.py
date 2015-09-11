@@ -21,9 +21,9 @@ class RandomReader(BaseReader):
             Number of items to be returned in each batch
     """
 
-    requirements = {
-        'number_of_items': {'type': int, 'required': False, 'default': 1000},
-        'batch_size': {'type': int, 'required': False, 'default': 100}
+    parameters = {
+        'number_of_items': {'type': int, 'default': 1000},
+        'batch_size': {'type': int, 'default': 100}
     }
 
     def __init__(self, options, settings):
