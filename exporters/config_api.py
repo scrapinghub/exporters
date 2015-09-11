@@ -63,17 +63,17 @@ class ConfigApi(object):
         if self._find_missing_sections(config):
             raise InvalidConfigError(
                 "Configuration is missing sections: %s" % ', '.join(self._find_missing_sections(config)))
-        self._check_valid_reader(config['reader'])
-        self._check_valid_writer(config['writer'])
+        self._check_valid_parameters(config['reader'])
+        self._check_valid_parameters(config['writer'])
         if 'filter' in config:
-            self._check_valid_filter(config['filter'])
+            self._check_valid_parameters(config['filter'])
         if 'filter_before' in config:
-            self._check_valid_filter(config['filter_before'])
+            self._check_valid_parameters(config['filter_before'])
         if 'filter_after' in config:
-            self._check_valid_filter(config.get('filter_after'))
+            self._check_valid_parameters(config.get('filter_after'))
         if 'transform' in config:
-            self._check_valid_transform(config['transform'])
-        self._check_valid_persistence(config['persistence'])
+            self._check_valid_parameters(config['transform'])
+        self._check_valid_parameters(config['persistence'])
         return True
 
     def _find_missing_sections(self, config):
@@ -95,24 +95,3 @@ class ConfigApi(object):
                       self.get_module_parameters(config_section['name']).iteritems() if not 'default' in r_info]
         for parameter in parameters:
             self._check_required_config_section(parameter, config_section)
-
-    # We keep different checkers, to support different check methods
-    def _check_valid_reader(self, config_section):
-        self._check_valid_parameters(config_section)
-
-    def _check_valid_writer(self, config_section):
-        self._check_valid_parameters(config_section)
-        if 'grouper' in config_section:
-            self._check_valid_parameters(config_section['grouper'])
-
-    def _check_valid_filter(self, config_section):
-        self._check_valid_parameters(config_section)
-
-    def _check_valid_grouper(self, config_section):
-        self._check_valid_parameters(config_section)
-
-    def _check_valid_transform(self, config_section):
-        self._check_valid_parameters(config_section)
-
-    def _check_valid_persistence(self, config_section):
-        self._check_valid_parameters(config_section)

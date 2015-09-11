@@ -25,15 +25,13 @@ class CSVExportFormatter(BaseExportFormatter):
         self.columns = self.read_option('columns')
         if self.show_titles:
             self.titles = self.read_option('titles')
-            if len(self.columns) != len(self.columns):
+            if len(self.columns) != len(self.titles):
                 raise ValueError('Columns and Titles have different sizes')
         self.null_element = self.read_option('null_element')
 
     def format(self, batch):
         if self.show_titles and not self.titles_already_shown:
             # Show titles
-            if not isinstance(self.delimiter, str):
-                raise ValueError('Delimiter should be a string')
             item = self.delimiter.join(self.titles) + self.line_end_character
             self.titles_already_shown = True
             yield item

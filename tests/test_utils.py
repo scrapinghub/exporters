@@ -4,7 +4,7 @@ from exporters.export_managers.settings import Settings
 from exporters.groupers.base_grouper import BaseGrouper
 from exporters.logger.base_logger import CategoryLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
-from exporters.config_api import ConfigApi
+from exporters.config_api import ConfigApi, InvalidConfigError
 from exporters.exceptions import InvalidExpression
 from exporters.module_loader import ModuleLoader
 from exporters.exporter_options import ExporterOptions
@@ -77,7 +77,6 @@ class BasePipelineItemTest(unittest.TestCase):
 
 
 class ConfigApiTest(unittest.TestCase):
-
     def setUp(self):
         self.config_api = ConfigApi()
 
@@ -88,6 +87,136 @@ class ConfigApiTest(unittest.TestCase):
             for requirement_name, requirement_info in parameters.iteritems():
                 self.assertIsInstance(requirement_info, dict)
                 self.assertIsInstance(requirement_name, basestring)
+
+    def test_get_modules_by_type(self):
+        self.assertIsInstance(self.config_api.writers, list)
+        self.assertIsInstance(self.config_api.readers, list)
+        self.assertIsInstance(self.config_api.persistence, list)
+        self.assertIsInstance(self.config_api.filters, list)
+        self.assertIsInstance(self.config_api.transforms, list)
+        self.assertIsInstance(self.config_api.groupers, list)
+
+    def test_get_wrong_module_name(self):
+        with self.assertRaises(InvalidConfigError):
+            self.config_api.get_module_parameters('not a valid module name')
+
+    def test_find_missing_sections(self):
+        with self.assertRaises(InvalidConfigError):
+            self.config_api.check_valid_config({})
+
+    def test_check_configuration(self):
+        config = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {}
+            },
+            'writer': {
+                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'options': {}
+            },
+            'filter': {
+                'name': 'exporters.filters.no_filter.NoFilter',
+                'options': {}
+            },
+            'filter_before': {
+                'name': 'exporters.filters.no_filter.NoFilter',
+                'options': {}
+            },
+            'filter_after': {
+                'name': 'exporters.filters.no_filter.NoFilter',
+                'options': {}
+            },
+            'transform': {
+                'name': 'exporters.transform.no_transform.NoTransform',
+                'options': {}
+            },
+            'exporter_options': {},
+            'persistence': {
+                'name': 'exporters.persistence.pickle_persistence.PicklePersistence',
+                'options': {
+                    'file_base': '/tmp'
+                }
+            },
+            'grouper': {
+                'name': 'exporters.grouper.no_grouper.NoGrouper',
+                'options': {
+
+                }
+            }
+        }
+        self.assertIs(self.config_api.check_valid_config(config), True)
+
+    def test_missing_parameters(self):
+        config = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {}
+            },
+            'writer': {
+                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'options': {}
+            },
+            'filter': {
+                'name': 'exporters.filters.no_filter.NoFilter',
+                'options': {}
+            },
+            'transform': {
+                'name': 'exporters.transform.jq_transform.JQTransform',
+                'options': {}
+            },
+            'exporter_options': {},
+            'persistence': {
+                'name': 'exporters.persistence.PicklePersistence',
+                'options': {
+                    'file_base': '/tmp'
+                }
+            }
+        }
+        with self.assertRaises(InvalidConfigError):
+            self.config_api.check_valid_config(config)
+
+    def test_wrong_type_parameters(self):
+        config = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {}
+            },
+            'writer': {
+                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'options': {}
+            },
+            'filter': {
+                'name': 'exporters.filters.no_filter.NoFilter',
+                'options': {}
+            },
+            'transform': {
+                'name': 'exporters.transform.jq_transform.JQTransform',
+                'options': {
+                    'jq_filter': 5
+                }
+            },
+            'exporter_options': {},
+            'persistence': {
+                'name': 'exporters.persistence.PicklePersistence',
+                'options': {
+                    'file_base': '/tmp'
+                }
+            }
+        }
+        with self.assertRaises(InvalidConfigError):
+            self.config_api.check_valid_config(config)
+
+    def test_missing_items_in_config_section(self):
+        with self.assertRaises(InvalidConfigError):
+            self.config_api._check_valid_parameters({})
+
+    def test_check_valid_grouper(self):
+        grouper = {
+            'name': 'exporters.groupers.no_grouper.NoGrouper',
+            'options': {}
+        }
+
+        self.assertIs(self.config_api._check_valid_parameters(grouper), None)
 
 
 class ModuleLoaderTest(unittest.TestCase):
@@ -112,7 +241,6 @@ class ModuleLoaderTest(unittest.TestCase):
         with self.assertRaises(Exception):
             self.module_loader.load_reader(options['reader'], settings)
 
-
     def test_writer_valid_class(self):
         options = {
             'exporter_options': {
@@ -130,7 +258,6 @@ class ModuleLoaderTest(unittest.TestCase):
         settings = Settings(options['exporter_options'])
         with self.assertRaises(Exception):
             self.module_loader.load_writer(options['writer'], settings)
-
 
     def test_persistence_valid_class(self):
         options = {
@@ -293,7 +420,8 @@ class OptionsParserTest(unittest.TestCase):
         options = {'reader': '', 'filter': '', 'transform': '', 'writer': ''}
         with self.assertRaises(Exception):
             ExporterOptions(options)
-        options = {'reader': '', 'filter': '', 'transform': '', 'writer': '', 'persistence': '', 'exporter_options': {'formatter': {}}}
+        options = {'reader': '', 'filter': '', 'transform': '', 'writer': '', 'persistence': '',
+                   'exporter_options': {'formatter': {}}}
         self.assertIsInstance(ExporterOptions(options), ExporterOptions)
 
 
