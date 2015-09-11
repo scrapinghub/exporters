@@ -4,7 +4,6 @@ import exporters.transform as transform_classes
 import exporters.groupers as groupers_classes
 import exporters.persistence as persistence_classes
 import exporters.filters as filter_classes
-
 from importlib import import_module
 from inspect import getmembers, isclass
 import collections
@@ -102,8 +101,6 @@ class ConfigApi(object):
 
     def _check_valid_writer(self, config_section):
         self._check_valid_requirements(config_section)
-        if 'grouper' in config_section:
-            self._check_valid_requirements(config_section['grouper'])
 
     def _check_valid_filter(self, config_section):
         self._check_valid_requirements(config_section)
