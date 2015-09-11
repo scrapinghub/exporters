@@ -4,7 +4,6 @@ import exporters.transform as transform_classes
 import exporters.groupers as groupers_classes
 import exporters.persistence as persistence_classes
 import exporters.filters as filter_classes
-
 from importlib import import_module
 from inspect import getmembers, isclass
 import collections
@@ -92,7 +91,8 @@ class ConfigApi(object):
         if 'name' not in config_section or 'options' not in config_section:
             raise InvalidConfigError('Module has not name or options parameter')
         # We only check the required parameters
-        parameters = [Parameter(name=r_name, options=r_info) for r_name, r_info in self.get_module_parameters(config_section['name']).iteritems() if r_info.get('required')]
+        parameters = [Parameter(name=r_name, options=r_info) for r_name, r_info in
+                      self.get_module_parameters(config_section['name']).iteritems() if not 'default' in r_info]
         for parameter in parameters:
             self._check_required_config_section(parameter, config_section)
 
