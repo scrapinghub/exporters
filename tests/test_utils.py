@@ -60,18 +60,18 @@ class BasePipelineItemTest(unittest.TestCase):
 
     def test_false_required(self):
         pipelineItem = BasePipelineItem({}, self.settings)
-        pipelineItem.parameters = {'number_of_items': {'type': int, 'required': False, 'default': 10}}
+        pipelineItem.parameters = {'number_of_items': {'type': int, 'default': 10}}
         pipelineItem.check_options()
 
     def test_not_present(self):
         pipelineItem = BasePipelineItem({}, self.settings)
-        pipelineItem.parameters = {'number_of_items': {'type': int, 'required': True}}
+        pipelineItem.parameters = {'number_of_items': {'type': int}}
         with self.assertRaises(ValueError):
             pipelineItem.check_options()
 
     def test_wrong_type(self):
         pipelineItem = BasePipelineItem({'options': {'number_of_items': 'wrong_string'}}, self.settings)
-        pipelineItem.parameters = {'number_of_items': {'type': int, 'required': False, 'default': 10}}
+        pipelineItem.parameters = {'number_of_items': {'type': int, 'default': 10}}
         with self.assertRaises(ValueError):
             pipelineItem.check_options()
 

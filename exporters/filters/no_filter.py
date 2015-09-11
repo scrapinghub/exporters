@@ -5,7 +5,7 @@ class NoFilter(BaseFilter):
     """
     It leaves the batch as is. This is provided for the cases where no filters are needed on the original items.
     """
-    # List of required options
+    # List of options
     parameters = {}
 
     def __init__(self, options, settings):

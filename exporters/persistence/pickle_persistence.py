@@ -16,7 +16,7 @@ class PicklePersistence(BasePersistence):
             Path to store the pickle file
     """
     parameters = {
-        'file_path': {'type': basestring, 'required': False, 'default': '.'}
+        'file_path': {'type': basestring, 'default': '.'}
     }
 
     uri_regex = "pickle:(([a-zA-Z\d-]|\/)+)"

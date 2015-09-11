@@ -40,7 +40,7 @@ class BaseWriter(BasePipelineItem):
         self.parameters = getattr(self, 'parameters', {})
         # If it's not there, we add it as a not mandatory requirement to publish it via config api
         if 'items_limit' not in self.parameters:
-            self.parameters['items_limit'] = {'type': int, 'required': False, 'default': 0}
+            self.parameters['items_limit'] = {'type': int, 'default': 0}
         self.options['options'] = self.options.get('options', {})
         self.tmp_folder = tempfile.mkdtemp()
         self.check_options()

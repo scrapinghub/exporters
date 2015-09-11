@@ -27,7 +27,7 @@ class WebhookNotifier(BaseNotifier):
 
     """
     def __init__(self, options, settings):
-        # List of required options
+        # List of options
         self.parameters = {
             'endpoints': {'type': list, 'default': []}
         }

@@ -12,7 +12,7 @@ class KeyValueFilter(BaseFilter):
             The filter will delete those items that do not contain a
             key "key" or, if they do, that key is not the same as "value".
     """
-    # List of required options
+    # List of options
     parameters = {
         'keys': {'type': list}
     }

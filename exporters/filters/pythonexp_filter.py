@@ -11,7 +11,7 @@ class PythonexpFilter(BaseFilter):
         - python_expression (str)
             Python expression to filter by.
     """
-    # List of required options
+    # List of options
     parameters = {
         'python_expression': {'type': basestring}
     }

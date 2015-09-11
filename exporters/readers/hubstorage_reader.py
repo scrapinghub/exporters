@@ -23,7 +23,7 @@ class HubstorageReader(BaseReader):
             Name of the collection.
     """
 
-    # List of required options to set up the reader
+    # List of options to set up the reader
     parameters = {
         'batch_size': {'type': int, 'default': 10000},
         'apikey': {'type': basestring},

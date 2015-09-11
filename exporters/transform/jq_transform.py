@@ -14,7 +14,7 @@ class JQTransform(BaseTransform):
         - jq_filter (str)
             Valid jq filter
     """
-    # List of required options to set up the batch
+    # List of options to set up the batch
     parameters = {
         'jq_filter': {'type': basestring}
     }

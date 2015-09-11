@@ -33,7 +33,7 @@ class S3Reader(BaseReader):
             Prefix of s3 keys to be read.
     """
 
-    # List of required options to set up the reader
+    # List of options to set up the reader
     parameters = {
         'batch_size': {'type': int, 'default': 10000},
         'bucket': {'type': basestring},

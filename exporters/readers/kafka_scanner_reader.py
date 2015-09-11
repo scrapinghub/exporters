@@ -26,7 +26,7 @@ class KafkaScannerReader(BaseReader):
             Reading group for kafka client.
     """
 
-     # List of required options to set up the reader
+     # List of options to set up the reader
     parameters = {
         'batch_size': {'type': int, 'default': 10000},
         'brokers': {'type': list},

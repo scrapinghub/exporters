@@ -11,7 +11,7 @@ class PythonexpTransform(BaseTransform):
         - python_expression (str)
             Valid python expression
     """
-    # List of required options to set up the transform module
+    # List of options to set up the transform module
     parameters = {
         'python_expressions': {'type': list}
     }
