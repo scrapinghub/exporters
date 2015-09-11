@@ -11,6 +11,7 @@ PyYAML==3.11
 psycopg2==2.6.1
 -e git+git@github.com:scrapinghub/collection-scanner.git#egg=collection_scanner
 -e git+git@github.com:scrapinghub/kafka-scanner.git#egg=kafka_scanner
+
 hubstorage==0.16.1
 mysql-python==1.2.5
 
@@ -35,3 +36,4 @@ nose==1.3.6
 # docs
 Sphinx==1.3.1
 watchdog==0.8.3
+
