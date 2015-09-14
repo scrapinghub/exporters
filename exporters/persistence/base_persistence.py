@@ -10,7 +10,6 @@ class BasePersistence(BasePipelineItem):
 
     def __init__(self, options, settings):
         super(BasePersistence, self).__init__(options.persistence_options, settings)
-        self.parameters = getattr(self, 'parameters', {})
         self.settings = settings
         self.configuration = options
         self.check_options()

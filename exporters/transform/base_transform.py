@@ -9,7 +9,6 @@ class BaseTransform(BasePipelineItem):
     def __init__(self, options, settings):
         super(BaseTransform, self).__init__(options, settings)
         self.settings = settings
-        self.parameters = getattr(self, 'parameters', {})
         self.check_options()
         self.logger = TransformLogger(self.settings)
 

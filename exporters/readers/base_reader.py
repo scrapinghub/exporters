@@ -12,7 +12,6 @@ class BaseReader(BasePipelineItem):
         super(BaseReader, self).__init__(options, settings)
         self.settings = settings
         self.finished = False
-        self.parameters = getattr(self, 'parameters', {})
         self.check_options()
         self.logger = ReaderLogger(self.settings)
         self.last_position = 0

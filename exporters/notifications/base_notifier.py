@@ -8,7 +8,6 @@ class BaseNotifier(object):
     def __init__(self, options, settings):
         self.options = options
         self.settings = settings
-        self.parameters = getattr(self, 'parameters', {})
         self.check_options()
 
     def notify_start_dump(self, receivers=None, info=None):
