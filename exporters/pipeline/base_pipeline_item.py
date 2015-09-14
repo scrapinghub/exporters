@@ -2,6 +2,9 @@ from exporters.notifications.notifiers_list import NotifiersList
 
 
 class BasePipelineItem(object):
+
+    parameters = {}
+
     def __init__(self, options, settings):
         self.options = options.get('options', {})
         self.notifiers = NotifiersList(settings)
