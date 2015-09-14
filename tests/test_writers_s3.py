@@ -64,6 +64,20 @@ class S3WriterTest(unittest.TestCase):
         self.assertEquals(1, len(saved_keys))
         self.assertTrue(re.match('tests/.*[.]gz', saved_keys[0].name))
 
+    def test_connect_to_specific_region(self):
+        conn = boto.s3.connect_to_region('eu-west-1')
+        conn.create_bucket('another_fake_bucket')
+        # given:
+        options = self.get_writer_config()
+        options['options']['aws_region'] = 'eu-west-1'
+        options['options']['bucket'] = 'another_fake_bucket'
+
+        # when:
+        writer = S3Writer(options, self.settings)
+
+        # then:
+        self.assertEquals('eu-west-1', writer.bucket.get_location())
+
     def get_writer_config(self):
         return {
             'name': 'exporters.writers.s3_writer.S3Writer',
