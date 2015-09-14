@@ -4,6 +4,7 @@ import exporters.transform as transform_classes
 import exporters.groupers as groupers_classes
 import exporters.persistence as persistence_classes
 import exporters.filters as filter_classes
+import exporters.stats_managers as stats_managers
 from importlib import import_module
 from inspect import getmembers, isclass
 import collections
@@ -42,6 +43,10 @@ class ConfigApi(object):
     @property
     def filters(self):
         return self._get_available_classes(filter_classes)
+
+    @property
+    def stats_managers(self):
+        return self._get_available_classes(stats_managers)
 
     def _get_available_classes(self, module):
         classes_names = []
