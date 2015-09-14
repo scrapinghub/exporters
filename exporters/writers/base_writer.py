@@ -8,7 +8,7 @@ import tempfile
 
 TEMP_FILES_NAME = 'temp'
 
-MAX_TMP_ITEMS = 10000
+ITEMS_PER_BUFFER_WRITE = 10000
 
 
 class ItemsLimitReached(Exception):
@@ -37,19 +37,18 @@ class BaseWriter(BasePipelineItem):
         super(BaseWriter, self).__init__(options, settings)
         self.settings = settings
         self.finished = False
-        self.requirements = getattr(self, 'requirements', {})
+        self.parameters = getattr(self, 'parameters', {})
         # If it's not there, we add it as a not mandatory requirement to publish it via config api
-        if 'items_limit' not in self.requirements:
-            self.requirements['items_limit'] = {'type': int, 'required': False, 'default': 0}
+        if 'items_limit' not in self.parameters:
+            self.parameters['items_limit'] = {'type': int, 'default': 0}
         self.options['options'] = self.options.get('options', {})
         self.tmp_folder = tempfile.mkdtemp()
         self.check_options()
-        self.max_tmp_items = self.options.get('MAX_TMP_ITEMS', MAX_TMP_ITEMS)
+        self.items_per_buffer_write = self.options.get('items_per_buffer_write', ITEMS_PER_BUFFER_WRITE)
         self.items_limit = self.options.get('items_limit', 0)
         self.logger = WriterLogger(self.settings)
         self.items_count = 0
         self.grouping_info = {}
-
 
     def write(self, path, key):
         """
@@ -62,12 +61,12 @@ class BaseWriter(BasePipelineItem):
         It receives the batch and writes it.
         """
         for item in batch:
-            self._write_item(item)
+            self._send_item_to_buffer(item)
 
-    def _is_flush_needed(self, key):
-        return self.grouping_info[key].get('predump_items', 0) >= self.max_tmp_items
+    def _should_write_buffer(self, key):
+        return self.grouping_info[key].get('buffered_items', 0) >= self.items_per_buffer_write
 
-    def _write_item(self, item):
+    def _send_item_to_buffer(self, item):
         """
         It receives an item and writes it.
         """
@@ -76,10 +75,13 @@ class BaseWriter(BasePipelineItem):
             self.grouping_info[key] = {}
             self.grouping_info[key]['membership'] = item.group_membership
             self.grouping_info[key]['total_items'] = 0
-            self.grouping_info[key]['predump_items'] = 0
+            self.grouping_info[key]['buffered_items'] = 0
             self.grouping_info[key]['group_file'] = []
 
-        self._write_and_flush(item, key)
+        self._add_to_buffer(item, key)
+        if self._should_write_buffer(key):
+            self.logger.debug('Buffer write is needed.')
+            self._write_buffer(key)
         self.items_count += 1
         if self.items_limit and self.items_limit == self.items_count:
             raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'.format(self.items_count))
@@ -92,32 +94,37 @@ class BaseWriter(BasePipelineItem):
             self.grouping_info[key]['group_file'].append(path)
         return path
 
-    def _write_and_flush(self, item, key):
+    def _add_to_buffer(self, item, key):
         path = self._get_group_path(key)
         with open(path, 'a') as f:
             f.write(item.formatted+'\n')
         self.grouping_info[key]['total_items'] += 1
-        self.grouping_info[key]['predump_items'] += 1
-        if self._is_flush_needed(key):
-            self.logger.debug('Flush is needed.')
-            self._flush(key)
-            self._reset_key(key)
+        self.grouping_info[key]['buffered_items'] += 1
 
-    def _flush(self, key):
+    def _compress_file(self, path):
+        compressed_path = path+'.gz'
+        with gzip.open(compressed_path, 'wb') as predump_file, open(path) as fl:
+            shutil.copyfileobj(fl, predump_file)
+        return compressed_path
+
+    def _create_buffer_path_for_key(self, key):
+        new_buffer_path = os.path.join(self.tmp_folder, str(uuid.uuid4()))
+        self.grouping_info[key]['group_file'].append(new_buffer_path)
+
+    def _write_buffer(self, key):
         path = self._get_group_path(key)
-        with gzip.open(path+'.gz', 'wb') as predump_file:
-            with open(path) as fl:
-                predump_file.write(fl.read())
-        self.write(path+'.gz', self.grouping_info[key]['membership'])
-        self.grouping_info[key]['group_file'].append(os.path.join(self.tmp_folder, str(uuid.uuid4())))
+        compressed_path = self._compress_file(path)
+        self.write(compressed_path, self.grouping_info[key]['membership'])
+        self._create_buffer_path_for_key(key)
+        self._reset_key(key)
 
     def _reset_key(self, key):
-        self.grouping_info[key]['predump_items'] = 0
+        self.grouping_info[key]['buffered_items'] = 0
 
     def close_writer(self):
         """
         Called to clean all possible tmp files created during the process.
         """
         for key in self.grouping_info.keys():
-            self._flush(key)
+            self._write_buffer(key)
         shutil.rmtree(self.tmp_folder, ignore_errors=True)

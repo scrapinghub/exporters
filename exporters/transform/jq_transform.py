@@ -14,9 +14,9 @@ class JQTransform(BaseTransform):
         - jq_filter (str)
             Valid jq filter
     """
-    # List of required options to set up the batch
-    requirements = {
-        'jq_filter': {'type': basestring, 'required': True}
+    # List of options to set up the batch
+    parameters = {
+        'jq_filter': {'type': basestring}
     }
 
     def __init__(self, options, settings):

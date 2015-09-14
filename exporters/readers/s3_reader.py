@@ -33,14 +33,14 @@ class S3Reader(BaseReader):
             Prefix of s3 keys to be read.
     """
 
-    # List of required options to set up the reader
-    requirements = {
-        'batch_size': {'type': int, 'required': False, 'default': 10000},
-        'bucket': {'type': basestring, 'required': True},
-        'aws_access_key_id': {'type': basestring, 'required': True},
-        'aws_secret_access_key': {'type': basestring, 'required': True},
-        'tmp_folder': {'type': basestring, 'required': False, 'default': '/tmp/'},
-        'prefix': {'type': basestring, 'required': True}
+    # List of options to set up the reader
+    parameters = {
+        'batch_size': {'type': int, 'default': 10000},
+        'bucket': {'type': basestring},
+        'aws_access_key_id': {'type': basestring},
+        'aws_secret_access_key': {'type': basestring},
+        'tmp_folder': {'type': basestring, 'default': '/tmp/'},
+        'prefix': {'type': basestring}
     }
     def __init__(self, options, settings):
         super(S3Reader, self).__init__(options, settings)

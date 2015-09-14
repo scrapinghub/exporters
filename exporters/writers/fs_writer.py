@@ -19,8 +19,8 @@ class FSWriter(BaseWriter):
             Final path of items file.
     """
 
-    requirements = {
-        'filebase': {'type': basestring, 'required': False, 'default': '.'}
+    parameters = {
+        'filebase': {'type': basestring, 'default': '.'}
     }
 
     def __init__(self, options, settings):
@@ -39,4 +39,4 @@ class FSWriter(BaseWriter):
         self._create_path_if_not_exist(target_path)
         number_of_files = len(os.listdir(target_path))
         shutil.move(dump_path, os.path.join(target_path, 'predump_{}.gz'.format(number_of_files)))
-        self.logger.debug('Flushed {}'.format(dump_path))
+        self.logger.debug('Saved {}'.format(dump_path))

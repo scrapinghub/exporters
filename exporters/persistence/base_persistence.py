@@ -10,17 +10,17 @@ class BasePersistence(BasePipelineItem):
 
     def __init__(self, options, settings):
         super(BasePersistence, self).__init__(options.persistence_options, settings)
-        self.requirements = getattr(self, 'requirements', {})
+        self.parameters = getattr(self, 'parameters', {})
         self.settings = settings
         self.configuration = options
         self.check_options()
         self.logger = PersistenceLogger(self.settings)
-        if not settings.get('RESUME'):
+        if not settings.get('resume'):
             self.job_id = self.generate_new_job()
             self.logger.info('Created job with id: ' + str(self.job_id))
             self.last_position = None
         else:
-            self.job_id = settings.get('JOB_ID')
+            self.job_id = settings.get('jobid')
             self.last_position = self.get_last_position()
             self.logger.info('Resumed job with id: ' + str(self.job_id))
 

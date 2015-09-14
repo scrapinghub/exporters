@@ -25,11 +25,11 @@ class S3Writer(BaseWriter):
         - filebase (str)
             Base path to store the items in the bucket.
     """
-    requirements = {
-        'bucket': {'type': basestring, 'required': True},
-        'aws_access_key_id': {'type': basestring, 'required': True},
-        'aws_secret_access_key': {'type': basestring, 'required': True},
-        'filebase': {'type': basestring, 'required': True}
+    parameters = {
+        'bucket': {'type': basestring},
+        'aws_access_key_id': {'type': basestring},
+        'aws_secret_access_key': {'type': basestring},
+        'filebase': {'type': basestring}
     }
 
     def __init__(self, options, settings):
@@ -51,4 +51,4 @@ class S3Writer(BaseWriter):
         with open(dump_path, 'r') as f:
             key.set_contents_from_file(f)
         key.close()
-        self.logger.debug('Flushed {} to s3://{}/{}'.format(dump_path, self.read_option('bucket'), key_name))
+        self.logger.debug('Saved {} to s3://{}/{}'.format(dump_path, self.read_option('bucket'), key_name))

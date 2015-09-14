@@ -12,8 +12,8 @@ class BaseTransformTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
             },
             'reader': {
                 'name': 'exporters.readers.random_reader.RandomReader',
@@ -35,8 +35,8 @@ class NoTransformTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
             },
             'reader': {
                 'name': 'exporters.readers.random_reader.RandomReader',
@@ -63,8 +63,8 @@ class JqTransformTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
             },
         }
 
@@ -93,8 +93,8 @@ class PythonexpTransformTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
             },
         }
 

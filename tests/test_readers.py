@@ -4,12 +4,13 @@ from exporters.readers.base_reader import BaseReader
 from exporters.readers.random_reader import RandomReader
 
 
+
 class BaseReaderTest(unittest.TestCase):
 
     def setUp(self):
         exporter_options =  {
-            'LOG_LEVEL': 'DEBUG',
-            'LOGGER_NAME': 'export-pipeline'
+            'log_level': 'DEBUG',
+            'logger_name': 'export-pipeline'
         }
         settings = Settings(exporter_options)
         self.reader = BaseReader({}, settings)
@@ -28,8 +29,8 @@ class RandomReaderTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
             },
             'reader': {
                 'name': 'exporters.readers.random_reader.RandomReader',

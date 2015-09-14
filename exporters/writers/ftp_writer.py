@@ -32,12 +32,12 @@ class FTPWriter(BaseWriter):
         - filebase (str)
             Base path to store the items in.
     """
-    requirements = {
-        'host': {'type': basestring, 'required': True},
-        'port': {'type': int, 'required': True},
-        'ftp_user': {'type': basestring, 'required': True},
-        'ftp_password': {'type': basestring, 'required': True},
-        'filebase': {'type': basestring, 'required': True}
+    parameters = {
+        'host': {'type': basestring},
+        'port': {'type': int},
+        'ftp_user': {'type': basestring},
+        'ftp_password': {'type': basestring},
+        'filebase': {'type': basestring}
     }
 
     def __init__(self, options, settings):
@@ -99,4 +99,4 @@ class FTPWriter(BaseWriter):
         self._create_target_dir_if_needed(destination_path)
         self.ftp.storbinary('STOR %s' % (destination_path + '/predump_{}.gz'.format(uuid.uuid4())), open(dump_path))
         self.ftp.close()
-        self.logger.debug('Flushed {}'.format(dump_path))
+        self.logger.debug('Saved {}'.format(dump_path))

@@ -12,9 +12,9 @@ class KeyValueFilter(BaseFilter):
             The filter will delete those items that do not contain a
             key "key" or, if they do, that key is not the same as "value".
     """
-    # List of required options
-    requirements = {
-        'keys': {'type': list, 'required': True}
+    # List of options
+    parameters = {
+        'keys': {'type': list}
     }
 
     def __init__(self, options, settings):

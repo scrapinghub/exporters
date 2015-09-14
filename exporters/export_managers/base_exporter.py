@@ -1,5 +1,6 @@
 import datetime
 import traceback
+import re
 from exporters.export_managers.bypass import RequisitesNotMet
 from exporters.export_managers.settings import Settings
 from exporters.logger.base_logger import ExportManagerLogger
@@ -28,12 +29,14 @@ class BaseExporter(object):
         self.grouper = self._create_grouper(exporter_options.grouper_options)
         self.notifiers = NotifiersList(self.settings)
         self.logger.debug('{} has been initiated'.format(self.__class__.__name__))
-        self.job_info = {
+        job_info = {
             'configuration': configuration,
             'items_count': 0,
             'start_time': datetime.datetime.now(),
             'script_name': 'basic_export_manager'
         }
+        self.stats_manager = self._create_stats_manager(exporter_options.stats_options)
+        self.stats_manager.stats = job_info
 
     def _create_reader(self, options):
         return self.module_loader.load_reader(options, self.settings)
@@ -56,6 +59,9 @@ class BaseExporter(object):
     def _create_grouper(self, options):
         return self.module_loader.load_grouper(options, self.settings)
 
+    def _create_stats_manager(self, options):
+        return self.module_loader.load_stats_manager(options, self.settings)
+
     def _run_pipeline_iteration(self):
         self.logger.debug('Getting new batch')
         next_batch = self.reader.get_next_batch()
@@ -69,7 +75,7 @@ class BaseExporter(object):
         self.persistence.commit_position(last_position)
 
     def _init_export_job(self):
-        self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM], info=self.job_info)
+        self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM], info=self.stats_manager.stats)
         last_position = self.persistence.get_last_position()
         self.reader.set_last_position(last_position)
 
@@ -78,12 +84,9 @@ class BaseExporter(object):
         self.writer.close_writer()
 
     def _finish_export_job(self):
-        self.job_info['items_count'] = self.writer.items_count
-        self.job_info['end_time'] = datetime.datetime.now()
-        self.job_info['elapsed_time'] = self.job_info['end_time'] - self.job_info['start_time']
-
-    def populate_stats(self):
-        self.logger.info(str(self.job_info))
+        self.stats_manager.stats['items_count'] = self.writer.items_count
+        self.stats_manager.stats['end_time'] = datetime.datetime.now()
+        self.stats_manager.stats['elapsed_time'] = self.stats_manager.stats['end_time'] - self.stats_manager.stats['start_time']
 
     @property
     def bypass_cases(self):
@@ -91,10 +94,10 @@ class BaseExporter(object):
 
     def bypass_exporter(self, bypass_script):
         self.logger.info('Executing bypass {}.'.format(bypass_script.__class__.__name__))
-        self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM], info=self.job_info)
+        self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM], info=self.stats_manager.stats)
         bypass_script.bypass()
         self.logger.info('Finished executing bypass {}.'.format(bypass_script.__class__.__name__))
-        self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM], info=self.job_info)
+        self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM], info=self.stats_manager.stats)
 
     def bypass(self):
         for bypass_script in self.bypass_cases:
@@ -109,7 +112,7 @@ class BaseExporter(object):
     def _handle_export_exception(self, exception):
         self.logger.error(traceback.format_exc(exception))
         self.logger.error(str(exception))
-        self.notifiers.notify_failed_job(str(exception), str(traceback.format_exc(exception)), receivers=[TEAM], info=self.job_info)
+        self.notifiers.notify_failed_job(str(exception), str(traceback.format_exc(exception)), receivers=[TEAM], info=self.stats_manager.stats)
 
     def _run_pipeline(self):
         while not self.reader.is_finished():
@@ -119,18 +122,18 @@ class BaseExporter(object):
                 self.logger.info('{!r}'.format(e))
                 break
             else:
-                self.populate_stats()
+                self.stats_manager.populate()
 
     def export(self):
         if not self.bypass():
             try:
                 self._init_export_job()
                 self._run_pipeline()
-                self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM], info=self.job_info)
+                self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM], info=self.stats_manager.stats)
             except Exception as e:
                 self._handle_export_exception(e)
                 raise e
             finally:
                 self._clean_export_job()
                 self._finish_export_job()
-        self.logger.info(str(self.job_info))
+        self.logger.info(str(self.stats_manager.stats))

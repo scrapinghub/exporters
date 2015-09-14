@@ -23,12 +23,12 @@ class HubstorageReader(BaseReader):
             Name of the collection.
     """
 
-    # List of required options to set up the reader
-    requirements = {
-        'batch_size': {'type': int, 'required': False, 'default': 10000},
-        'apikey': {'type': basestring, 'required': True},
-        'project_id': {'type': basestring, 'required': True},
-        'collection_name': {'type': basestring, 'required': True}
+    # List of options to set up the reader
+    parameters = {
+        'batch_size': {'type': int, 'default': 10000},
+        'apikey': {'type': basestring},
+        'project_id': {'type': basestring},
+        'collection_name': {'type': basestring}
     }
 
     def __init__(self, options, settings):
@@ -49,16 +49,12 @@ class HubstorageReader(BaseReader):
 
     def get_next_batch(self):
         batch = self.scan_collection()
-        count = 0
-        for item in batch:
-            base_item = BaseRecord(item)
-            count += 1
-            self.last_position += 1
-            yield base_item
-            if count == self.batch_size:
-                break
-        # if count < self.batch_size:
-        if count < self.batch_size:
+        try:
+            for item in batch:
+                base_item = BaseRecord(item)
+                self.last_position += 1
+                yield base_item
+        except StopIteration:
             self.finished = True
         self.logger.debug('Done reading batch')
 

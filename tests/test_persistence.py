@@ -7,16 +7,15 @@ from exporters.persistence.base_persistence import BasePersistence
 from exporters.persistence.pickle_persistence import PicklePersistence
 
 
-
 class BasePersistenceTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline',
-                'RESUME': False,
-                'FORMATTER': {}
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline',
+                'resume': False,
+                'formatter':  {}
             },
             'reader': {},
             'persistence': {},
@@ -54,10 +53,10 @@ class PicklePersistenceTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline',
-                'RESUME': False,
-                'FORMATTER': {}
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline',
+                'resume': False,
+                'formatter':  {}
             },
             'reader': {},
             'writer': {}
@@ -105,10 +104,10 @@ class MysqlPersistenceTest(unittest.TestCase):
     def test_create_persistence_job(self, mock_commit, mock_metadata):
         options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline',
-                'RESUME': False,
-                'FORMATTER':{}
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline',
+                'resume': False,
+                'formatter': {}
             },
             'persistence':{
                 'name': 'exporters.persistence.alchemy_persistence.MysqlPersistence',
@@ -135,11 +134,11 @@ class MysqlPersistenceTest(unittest.TestCase):
     def test_create_persistence_job_resume(self, mock_query, mock_metadata):
         options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline',
-                'RESUME': True,
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline',
+                'resume': True,
                 'JOB_ID': '',
-                'FORMATTER':{}
+                'formatter': {}
             },
             'persistence':{
                 'name': 'exporters.persistence.alchemy_persistence.MysqlPersistence',
@@ -166,10 +165,10 @@ class MysqlPersistenceTest(unittest.TestCase):
     def test_create_persistence_job(self, mock_commit, mock_metadata):
         options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline',
-                'RESUME': False,
-                'FORMATTER':{}
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline',
+                'resume': False,
+                'formatter': {}
             },
             'persistence':{
                 'name': 'exporters.persistence.alchemy_persistence.MysqlPersistence',
@@ -197,10 +196,10 @@ class MysqlPersistenceTest(unittest.TestCase):
     def test_commit(self, mock_commit, mock_metadata, mock_query):
         options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline',
-                'RESUME': False,
-                'FORMATTER':{}
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline',
+                'resume': False,
+                'formatter': {}
             },
             'persistence':{
                 'name': 'exporters.persistence.alchemy_persistence.MysqlPersistence',
@@ -229,10 +228,10 @@ class MysqlPersistenceTest(unittest.TestCase):
     def test_delete(self, mock_commit, mock_metadata, mock_query):
         options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline',
-                'RESUME': False,
-                'FORMATTER':{}
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline',
+                'resume': False,
+                'formatter': {}
             },
             'persistence':{
                 'name': 'exporters.persistence.alchemy_persistence.MysqlPersistence',
@@ -261,10 +260,10 @@ class MysqlPersistenceTest(unittest.TestCase):
     def test_get_last_position(self,  mock_commit, mock_metadata, mock_query):
         options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline',
-                'RESUME': False,
-                'FORMATTER':{}
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline',
+                'resume': False,
+                'formatter': {}
             },
             'persistence':{
                 'name': 'exporters.persistence.alchemy_persistence.MysqlPersistence',
@@ -292,10 +291,10 @@ class PostgresqlPersistenceTest(unittest.TestCase):
     def setUp(self):
         self.options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline',
-                'RESUME': False,
-                'FORMATTER':{}
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline',
+                'resume': False,
+                'formatter': {}
             },
             'persistence':{
                 'name': 'exporters.persistence.alchemy_persistence.PostgresqlPersistence',
@@ -336,11 +335,11 @@ class PostgresqlPersistenceTest(unittest.TestCase):
     def test_create_persistence_job_resume(self, mock_query, mock_metadata):
         options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline',
-                'RESUME': True,
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline',
+                'resume': True,
                 'JOB_ID': '',
-                'FORMATTER':{}
+                'formatter': {}
             },
             'persistence':{
                 'name': 'exporters.persistence.alchemy_persistence.PostgresqlPersistence',
@@ -368,10 +367,10 @@ class PostgresqlPersistenceTest(unittest.TestCase):
     def test_commit(self, mock_commit, mock_metadata, mock_query):
         options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline',
-                'RESUME': False,
-                'FORMATTER':{}
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline',
+                'resume': False,
+                'formatter': {}
             },
             'persistence':{
                 'name': 'exporters.persistence.alchemy_persistence.PostgresqlPersistence',
@@ -400,10 +399,10 @@ class PostgresqlPersistenceTest(unittest.TestCase):
     def test_delete(self, mock_commit, mock_metadata, mock_query):
         options = {
             'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline',
-                'RESUME': False,
-                'FORMATTER':{}
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline',
+                'resume': False,
+                'formatter': {}
             },
             'persistence':{
                 'name': 'exporters.persistence.alchemy_persistence.PostgresqlPersistence',

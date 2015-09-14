@@ -37,7 +37,7 @@ class BaseNotifierTest(unittest.TestCase):
     def test_check_not_existing_required_parameter(self):
         with self.assertRaises(Exception):
             test_notifier = self.notifier
-            test_notifier.requirements.append({'name': 'test', 'type': basestring, 'required': True})
+            test_notifier.parameters.append({'name': 'test', 'type': basestring})
             test_notifier.check_options()
 
     def test_check_not_required_parameter(self):
@@ -52,7 +52,7 @@ class BaseNotifierTest(unittest.TestCase):
         }
 
         test_notifier = BaseNotifier(options, self.settings)
-        test_notifier.requirements['test'] = {'type': int, 'required': False}
+        test_notifier.parameters['test'] = {'type': int, 'default': 5}
         test_notifier.check_options()
 
     def test_check_bad_type_required_parameter(self):
@@ -67,7 +67,7 @@ class BaseNotifierTest(unittest.TestCase):
         }
         with self.assertRaises(Exception):
             test_notifier = BaseNotifier(options, self.settings)
-            test_notifier.requirements.append({'name': 'test', 'type': basestring, 'required': True})
+            test_notifier.parameters.append({'name': 'test', 'type': basestring})
             test_notifier.check_options()
 
 

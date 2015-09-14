@@ -5,14 +5,14 @@ from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 
 class CSVExportFormatter(BaseExportFormatter):
 
-    requirements = {
-        'show_titles': {'type': bool, 'required': False, 'default': False},
-        'delimiter': {'type': basestring, 'required': False, 'default': ','},
-        'string_delimiter': {'type': basestring, 'required': False, 'default': '"'},
-        'line_end_character': {'type': basestring, 'required': False, 'default': '\n'},
-        'columns': {'type': list, 'required': False, 'default': []},
-        'titles': {'type': list, 'required': False, 'default': []},
-        'null_element': {'type': basestring, 'required': False, 'default': ''}
+    parameters = {
+        'show_titles': {'type': bool, 'default': False},
+        'delimiter': {'type': basestring, 'default': ','},
+        'string_delimiter': {'type': basestring, 'default': '"'},
+        'line_end_character': {'type': basestring, 'default': '\n'},
+        'columns': {'type': list, 'default': []},
+        'titles': {'type': list, 'default': []},
+        'null_element': {'type': basestring, 'default': ''}
     }
 
     def __init__(self, options, settings):
@@ -25,15 +25,13 @@ class CSVExportFormatter(BaseExportFormatter):
         self.columns = self.read_option('columns')
         if self.show_titles:
             self.titles = self.read_option('titles')
-            if len(self.columns) != len(self.columns):
+            if len(self.columns) != len(self.titles):
                 raise ValueError('Columns and Titles have different sizes')
         self.null_element = self.read_option('null_element')
 
     def format(self, batch):
         if self.show_titles and not self.titles_already_shown:
             # Show titles
-            if not isinstance(self.delimiter, str):
-                raise ValueError('Delimiter should be a string')
             item = self.delimiter.join(self.titles) + self.line_end_character
             self.titles_already_shown = True
             yield item

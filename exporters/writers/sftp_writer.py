@@ -28,12 +28,12 @@ class SFTPWriter(BaseWriter):
         - filebase (str)
             Base path to store the items in.
     """
-    requirements = {
-        'host': {'type': basestring, 'required': True},
-        'port': {'type': int, 'required': True},
-        'sftp_user': {'type': basestring, 'required': True},
-        'sftp_password': {'type': basestring, 'required': True},
-        'filebase': {'type': basestring, 'required': True}
+    parameters = {
+        'host': {'type': basestring},
+        'port': {'type': int},
+        'sftp_user': {'type': basestring},
+        'sftp_password': {'type': basestring},
+        'filebase': {'type': basestring}
     }
 
     def __init__(self, options, settings):
@@ -59,4 +59,4 @@ class SFTPWriter(BaseWriter):
             if not sftp.exists(destination_path):
                 sftp.makedirs(destination_path)
             sftp.put(dump_path, destination_path + '/predump_{}.gz'.format(uuid.uuid4()))
-        self.logger.debug('Flushed {}'.format(dump_path))
+        self.logger.debug('Saved {}'.format(dump_path))
