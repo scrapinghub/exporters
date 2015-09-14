@@ -18,7 +18,7 @@ class InvalidConfigError(RuntimeError):
 
 
 class ConfigApi(object):
-    required_sections = ('reader', 'writer', 'persistence', 'exporter_options')
+    required_sections = ('reader', 'writer', 'exporter_options')
 
     @property
     def readers(self):
@@ -78,7 +78,8 @@ class ConfigApi(object):
             self._check_valid_parameters(config.get('filter_after'))
         if 'transform' in config:
             self._check_valid_parameters(config['transform'])
-        self._check_valid_parameters(config['persistence'])
+        if 'persistence' in config:
+            self._check_valid_parameters(config['persistence'])
         return True
 
     def _find_missing_sections(self, config):
