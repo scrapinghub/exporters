@@ -5,10 +5,11 @@ class BaseNotifier(object):
     parameter is an array of notification objects. To extend and add notification endpoints, they can implement the following
     methods:
     """
+    parameters = {}
+
     def __init__(self, options, settings):
         self.options = options
         self.settings = settings
-        self.parameters = getattr(self, 'parameters', {})
         self.check_options()
 
     def notify_start_dump(self, receivers=None, info=None):

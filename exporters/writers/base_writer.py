@@ -37,7 +37,6 @@ class BaseWriter(BasePipelineItem):
         super(BaseWriter, self).__init__(options, settings)
         self.settings = settings
         self.finished = False
-        self.parameters = getattr(self, 'parameters', {})
         # If it's not there, we add it as a not mandatory requirement to publish it via config api
         if 'items_limit' not in self.parameters:
             self.parameters['items_limit'] = {'type': int, 'default': 0}
