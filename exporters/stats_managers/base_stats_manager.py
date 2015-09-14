@@ -7,7 +7,7 @@ class BaseStatsManager(BasePipelineItem):
     def __init__(self, options, settings):
         super(BaseStatsManager, self).__init__(options, settings)
         self.settings = settings
-        self.requirements = getattr(self, 'requirements', {})
+        self.parameters = getattr(self, 'parameters', {})
         self.check_options()
         self.stats = {}
         self.logger = StatsManagerLogger(self.settings)
