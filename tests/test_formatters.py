@@ -64,9 +64,11 @@ class CSVFormatterTest(unittest.TestCase):
 
     def test_show_titles_different_sizes(self):
         options = {
-            'show_titles': True,
-            'columns': ['col1', 'col2'],
-            'titles': ['title1']
+            'options': {
+                'show_titles': True,
+                'columns': ['col1', 'col2'],
+                'titles': ['title1']
+            }
         }
         with self.assertRaises(ValueError):
             CSVExportFormatter(options, self.settings)
