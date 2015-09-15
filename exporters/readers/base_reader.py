@@ -6,13 +6,10 @@ class BaseReader(BasePipelineItem):
     """
     This module reads and creates a batch to pass them to the pipeline. It can implement the following methods:
     """
-    parameters = {}
 
-    def __init__(self, options, settings):
-        super(BaseReader, self).__init__(options, settings)
-        self.settings = settings
+    def __init__(self, configuration, settings):
+        super(BaseReader, self).__init__(configuration, settings)
         self.finished = False
-        self.check_options()
         self.logger = ReaderLogger(self.settings)
         self.last_position = 0
 

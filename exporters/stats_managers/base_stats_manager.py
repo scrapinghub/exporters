@@ -4,10 +4,8 @@ from exporters.pipeline.base_pipeline_item import BasePipelineItem
 
 class BaseStatsManager(BasePipelineItem):
 
-    def __init__(self, options, settings):
-        super(BaseStatsManager, self).__init__(options, settings)
-        self.settings = settings
-        self.check_options()
+    def __init__(self, configuration, settings):
+        super(BaseStatsManager, self).__init__(configuration, settings)
         self.stats = {}
         self.logger = StatsManagerLogger(self.settings)
 

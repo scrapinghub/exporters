@@ -21,7 +21,7 @@ class ModuleLoader(object):
 
     def load_persistence(self, options, settings):
         from exporters.persistence.base_persistence import BasePersistence
-        return self._load_persistence_module(options, settings, BasePersistence)
+        return self._load_module(options, settings, BasePersistence)
 
     def load_formatter(self, options, settings):
         from exporters.export_formatter.base_export_formatter import BaseExportFormatter
@@ -52,11 +52,3 @@ class ModuleLoader(object):
         if not isinstance(class_instance, module_type):
             raise TypeError('Module must inherit from ' + str(module_type))
         return class_instance
-
-    def _load_persistence_module(self, options, settings, module_type):
-        grouper_name = options.persistence_options['name']
-        class_instance = self._load_class(grouper_name, options, settings)
-        if not isinstance(class_instance, module_type):
-            raise TypeError('Module must inherit from ' + str(module_type))
-        return class_instance
-

@@ -6,7 +6,7 @@ from exporters.export_managers.settings import Settings
 from exporters.logger.base_logger import ExportManagerLogger
 from exporters.notifications.notifiers_list import NotifiersList
 from exporters.module_loader import ModuleLoader
-from exporters.exporter_options import ExporterOptions
+from exporters.exporter_config import ExporterConfig
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
 from exporters.writers.base_writer import ItemsLimitReached
 
@@ -14,19 +14,19 @@ from exporters.writers.base_writer import ItemsLimitReached
 class BaseExporter(object):
 
     def __init__(self, configuration):
-        exporter_options = ExporterOptions(configuration)
-        self.configuration = configuration
-        self.settings = Settings(exporter_options.exporter_options)
+        self.config = ExporterConfig(configuration)
+        self.settings = Settings(self.config.exporter_options)
         self.logger = ExportManagerLogger(self.settings)
         self.module_loader = ModuleLoader()
-        self.reader = self._create_reader(exporter_options.reader_options)
-        self.filter_before = self._create_filter(exporter_options.filter_before_options)
-        self.filter_after = self._create_filter(exporter_options.filter_after_options)
-        self.transform = self._create_transform(exporter_options.transform_options)
-        self.writer = self._create_writer(exporter_options.writer_options)
-        self.persistence = self._create_persistence(exporter_options)
-        self.export_formatter = self._create_formatter(exporter_options.formatter_options)
-        self.grouper = self._create_grouper(exporter_options.grouper_options)
+        
+        self.reader = self._create_reader(self.config.reader_options)
+        self.filter_before = self._create_filter(self.config.filter_before_options)
+        self.filter_after = self._create_filter(self.config.filter_after_options)
+        self.transform = self._create_transform(self.config.transform_options)
+        self.writer = self._create_writer(self.config.writer_options)
+        self.persistence = self._create_persistence(self.config.persistence_options)
+        self.export_formatter = self._create_formatter(self.config.formatter_options)
+        self.grouper = self._create_grouper(self.config.grouper_options)
         self.notifiers = NotifiersList(self.settings)
         self.logger.debug('{} has been initiated'.format(self.__class__.__name__))
         job_info = {
@@ -35,29 +35,43 @@ class BaseExporter(object):
             'start_time': datetime.datetime.now(),
             'script_name': 'basic_export_manager'
         }
-        self.stats_manager = self._create_stats_manager(exporter_options.stats_options)
+        self.stats_manager = self._create_stats_manager(self.config.stats_options)
         self.stats_manager.stats = job_info
 
     def _create_reader(self, options):
-        return self.module_loader.load_reader(options, self.settings)
+        reader = self.module_loader.load_reader(options, self.settings)
+        reader.set_configuration(self.config)
+        return reader
 
     def _create_transform(self, options):
-        return self.module_loader.load_transform(options, self.settings)
+        transform = self.module_loader.load_transform(options, self.settings)
+        transform.set_configuration(self.config)
+        return transform
 
     def _create_filter(self, options):
-        return self.module_loader.load_filter(options, self.settings)
+        efilter = self.module_loader.load_filter(options, self.settings)
+        efilter.set_configuration(self.config)
+        return efilter
 
     def _create_writer(self, options):
-        return self.module_loader.load_writer(options, self.settings)
+        writer = self.module_loader.load_writer(options, self.settings)
+        writer.set_configuration(self.config)
+        return writer
 
     def _create_persistence(self, options):
-        return self.module_loader.load_persistence(options, self.settings)
+        persistence = self.module_loader.load_persistence(options, self.settings)
+        persistence.set_configuration(self.config)
+        return persistence
 
     def _create_formatter(self, options):
-        return self.module_loader.load_formatter(options, self.settings)
+        formatter = self.module_loader.load_formatter(options, self.settings)
+        formatter.set_configuration(self.config)
+        return formatter
 
     def _create_grouper(self, options):
-        return self.module_loader.load_grouper(options, self.settings)
+        grouper = self.module_loader.load_grouper(options, self.settings)
+        grouper.set_configuration(self.config)
+        return grouper
 
     def _create_stats_manager(self, options):
         return self.module_loader.load_stats_manager(options, self.settings)
