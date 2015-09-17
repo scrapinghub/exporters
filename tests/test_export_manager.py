@@ -1,12 +1,11 @@
 import unittest
 from exporters.export_managers.base_exporter import BaseExporter
-from exporters.export_managers.bypass import BaseBypass, S3Bypass
-from exporters.export_managers.unified_exporter import UnifiedExporter
+from exporters.export_managers.basic_exporter import BasicExporter
+from exporters.export_managers.bypass import BaseBypass
 from exporters.exporter_options import ExporterOptions
 from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
 from exporters.writers.console_writer import ConsoleWriter
-
 
 
 class BaseExportManagerTest(unittest.TestCase):
@@ -76,8 +75,7 @@ class BaseExportManagerTest(unittest.TestCase):
             self.exporter.bypass_exporter(BaseBypass(ExporterOptions(self.exporter.configuration)))
 
 
-
-class UnifiedExportManagerTest(unittest.TestCase):
+class BasicExportManagerTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
@@ -131,7 +129,7 @@ class UnifiedExportManagerTest(unittest.TestCase):
                 }
             }
         }
-        self.manager = UnifiedExporter(self.options)
+        self.manager = BasicExporter(self.options)
 
     def test_parses_the_options_and_loads_pipeline_items(self):
         self.assertTrue(isinstance(self.manager.reader, RandomReader))
@@ -139,5 +137,5 @@ class UnifiedExportManagerTest(unittest.TestCase):
         self.assertTrue(isinstance(self.manager.transform, NoTransform))
 
     def test_from_file_configuration(self):
-        test_manager = UnifiedExporter.from_file_configuration('./tests/data/basic_config.json')
-        self.assertIsInstance(test_manager, UnifiedExporter)
+        test_manager = BasicExporter.from_file_configuration('./tests/data/basic_config.json')
+        self.assertIsInstance(test_manager, BasicExporter)
