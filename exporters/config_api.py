@@ -1,4 +1,3 @@
-import json
 import exporters.readers as reader_classes
 import exporters.writers as writer_classes
 import exporters.transform as transform_classes
