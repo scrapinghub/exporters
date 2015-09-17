@@ -37,7 +37,7 @@ class MailWriter(BaseWriter):
     def __init__(self, options, settings):
         super(MailWriter, self).__init__(options, settings)
         self.email = self.read_option('email')
-        self.max_sent = self.read_option('sent')
+        self.max_sent = self.read_option('max_sent')
         self.mails_sent = 0
         self.items_per_buffer_write = self.options.get('items_per_buffer_write', ITEMS_PER_BUFFER_WRITE)
         self.ses = boto.connect_ses(self.options['aws_login'], self.options['aws_key'])
@@ -46,7 +46,7 @@ class MailWriter(BaseWriter):
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def write(self, dump_path, group_key=None):
-        if self.items_limit or self.max_sent == self.mails_sent:
+        if self.items_limit and self.max_sent == self.mails_sent:
             raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'
                                     .format(self.mails_sent))
 
