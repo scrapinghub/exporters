@@ -6,4 +6,3 @@ class BasePipelineItem(Parameterized):
 
     def __init__(self, configuration):
         super(BasePipelineItem, self).__init__(configuration)
-        # self.notifiers = NotifiersList(configuration.notifiers)
