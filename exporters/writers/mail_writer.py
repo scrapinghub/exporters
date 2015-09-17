@@ -29,7 +29,7 @@ class MailWriter(BaseWriter):
 
     parameters = {
         'email': {'type': basestring},
-        'max_sent': {'type': int, 'default': '5'},
+        'max_sent': {'type': int, 'default': 5},
         'aws_login': {'type': basestring},
         'aws_key': {'type': basestring}
     }
