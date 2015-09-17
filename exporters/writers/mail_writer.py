@@ -2,10 +2,10 @@ import email
 import uuid
 import boto
 from exporters.writers.base_writer import BaseWriter
+from exporters.writers.base_writer import ItemsLimitReached
 from retrying import retry
 
-# credentials for sending email through Amazon SES
-SES_LOGIN = ('AKIAID6WTWATZMQUKHWQ', 'KhTJzJGoqIK+F3CUZYsIdXeUAgGgjwGlIGqBS15i')
+ITEMS_PER_BUFFER_WRITE = 5000
 
 
 class MailWriter(BaseWriter):
@@ -29,21 +29,27 @@ class MailWriter(BaseWriter):
 
     parameters = {
         'email': {'type': basestring},
-        'max_size': {'type': basestring, 'default': '10'},
-        'max_sent': {'type': basestring, 'default': '5'}
+        'max_sent': {'type': int, 'default': '5'},
+        'aws_login': {'type': basestring},
+        'aws_key': {'type': basestring}
     }
 
     def __init__(self, options, settings):
         super(MailWriter, self).__init__(options, settings)
         self.email = self.read_option('email')
-        self.max_size = self.read_option('size')
         self.max_sent = self.read_option('sent')
-        self.ses = boto.connect_ses(SES_LOGIN[0], SES_LOGIN[1])
+        self.mails_sent = 0
+        self.items_per_buffer_write = self.options.get('items_per_buffer_write', ITEMS_PER_BUFFER_WRITE)
+        self.ses = boto.connect_ses(self.options['aws_login'], self.options['aws_key'])
         self.items_limit = 10
         self.logger.info('MailWriter has been initiated. Sending to: {}'.format(self.email))
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def write(self, dump_path, group_key=None):
+        if self.items_limit or self.max_sent == self.mails_sent:
+            raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'
+                                    .format(self.mails_sent))
+
         m = email.mime.multipart.MIMEMultipart()
         m['Subject'] = 'Test'
         m['From'] = 'Scrapinghub data services <dataservices@scrapinghub.com>'
@@ -60,5 +66,5 @@ class MailWriter(BaseWriter):
         m.attach(part)
 
         self.ses.send_raw_email(source=m['From'], raw_message=m.as_string(), destinations=m['To'])
-
+        self.mails_sent += 1
         self.logger.debug('Saved {}'.format(dump_path))
