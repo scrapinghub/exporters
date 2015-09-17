@@ -2,20 +2,20 @@
 Implements parameters and options base code
 """
 
+
 class Parameterized(object):
 
     base_parameters = {}
     parameters = {}
     
-    def __new__(cls, options, settings):
+    def __new__(cls, options):
         obj = object.__new__(cls)
-        object.__init__(obj, options, settings)
+        object.__init__(obj, options)
         obj.parameters = cls.base_parameters.copy()
         obj.parameters.update(cls.parameters)
         return obj
 
-    def __init__(self, options, settings):
-        self.settings = settings
+    def __init__(self, options):
         self.options = options.get('options', {})
         self.configuration = None
         self.check_options()

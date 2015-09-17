@@ -6,8 +6,8 @@ class BaseGrouper(BasePipelineItem):
     This module adds support to grouping items. It must implement the following methods:
     """
 
-    def __init__(self, configuration, settings):
-        super(BaseGrouper, self).__init__(configuration, settings)
+    def __init__(self, configuration):
+        super(BaseGrouper, self).__init__(configuration)
 
     def group_batch(self, batch):
         """

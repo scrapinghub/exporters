@@ -28,9 +28,9 @@ class BaseAlchemyPersistence(BasePersistence):
         'database': {'type': basestring}
     }
 
-    def __init__(self, options, settings):
+    def __init__(self, options):
         self.engine = None
-        super(BaseAlchemyPersistence, self).__init__(options, settings)
+        super(BaseAlchemyPersistence, self).__init__(options)
 
     def _db_init(self):
         user = self.read_option('user')

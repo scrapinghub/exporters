@@ -37,15 +37,14 @@ class BaseWriter(BasePipelineItem):
         'items_limit': {'type': int, 'default': 0},
     }
 
-    def __init__(self, options, settings):
-        super(BaseWriter, self).__init__(options, settings)
-        self.settings = settings
+    def __init__(self, options):
+        super(BaseWriter, self).__init__(options)
         self.finished = False
         self.tmp_folder = tempfile.mkdtemp()
         self.check_options()
         self.items_per_buffer_write = self.read_option('items_per_buffer_write')
         self.items_limit = self.read_option('items_limit')
-        self.logger = WriterLogger(self.settings)
+        self.logger = WriterLogger(options.get('settings', {}))
         self.items_count = 0
         self.grouping_info = {}
 

@@ -15,8 +15,8 @@ class CSVExportFormatter(BaseExportFormatter):
         'null_element': {'type': basestring, 'default': ''}
     }
 
-    def __init__(self, options, settings):
-        super(CSVExportFormatter, self).__init__(options, settings)
+    def __init__(self, options):
+        super(CSVExportFormatter, self).__init__(options)
         self.show_titles = self.read_option('show_titles')
         self.titles_already_shown = False
         self.delimiter = self.read_option('delimiter')

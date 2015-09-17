@@ -4,6 +4,6 @@ from exporters.notifications.notifiers_list import NotifiersList
 
 class BasePipelineItem(Parameterized):
 
-    def __init__(self, configuration, settings):
-        super(BasePipelineItem, self).__init__(configuration, settings)
-        self.notifiers = NotifiersList(settings)
+    def __init__(self, configuration):
+        super(BasePipelineItem, self).__init__(configuration)
+        # self.notifiers = NotifiersList(configuration.notifiers)

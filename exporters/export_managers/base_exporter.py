@@ -18,7 +18,6 @@ class BaseExporter(object):
         self.settings = Settings(self.config.exporter_options)
         self.logger = ExportManagerLogger(self.settings)
         self.module_loader = ModuleLoader()
-        
         self.reader = self._create_reader(self.config.reader_options)
         self.filter_before = self._create_filter(self.config.filter_before_options)
         self.filter_after = self._create_filter(self.config.filter_after_options)
@@ -27,7 +26,7 @@ class BaseExporter(object):
         self.persistence = self._create_persistence(self.config.persistence_options)
         self.export_formatter = self._create_formatter(self.config.formatter_options)
         self.grouper = self._create_grouper(self.config.grouper_options)
-        self.notifiers = NotifiersList(self.settings)
+        self.notifiers = NotifiersList(self.config.notifiers)
         self.logger.debug('{} has been initiated'.format(self.__class__.__name__))
         job_info = {
             'configuration': configuration,
@@ -39,42 +38,42 @@ class BaseExporter(object):
         self.stats_manager.stats = job_info
 
     def _create_reader(self, options):
-        reader = self.module_loader.load_reader(options, self.settings)
+        reader = self.module_loader.load_reader(options)
         reader.set_configuration(self.config)
         return reader
 
     def _create_transform(self, options):
-        transform = self.module_loader.load_transform(options, self.settings)
+        transform = self.module_loader.load_transform(options)
         transform.set_configuration(self.config)
         return transform
 
     def _create_filter(self, options):
-        efilter = self.module_loader.load_filter(options, self.settings)
+        efilter = self.module_loader.load_filter(options)
         efilter.set_configuration(self.config)
         return efilter
 
     def _create_writer(self, options):
-        writer = self.module_loader.load_writer(options, self.settings)
+        writer = self.module_loader.load_writer(options)
         writer.set_configuration(self.config)
         return writer
 
     def _create_persistence(self, options):
-        persistence = self.module_loader.load_persistence(options, self.settings)
+        persistence = self.module_loader.load_persistence(options)
         persistence.set_configuration(self.config)
         return persistence
 
     def _create_formatter(self, options):
-        formatter = self.module_loader.load_formatter(options, self.settings)
+        formatter = self.module_loader.load_formatter(options)
         formatter.set_configuration(self.config)
         return formatter
 
     def _create_grouper(self, options):
-        grouper = self.module_loader.load_grouper(options, self.settings)
+        grouper = self.module_loader.load_grouper(options)
         grouper.set_configuration(self.config)
         return grouper
 
     def _create_stats_manager(self, options):
-        return self.module_loader.load_stats_manager(options, self.settings)
+        return self.module_loader.load_stats_manager(options)
 
     def _run_pipeline_iteration(self):
         self.logger.debug('Getting new batch')

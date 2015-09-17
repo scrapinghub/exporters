@@ -7,8 +7,8 @@ class ConsoleWriter(BaseWriter):
     """
     parameters = {}
 
-    def __init__(self, options, settings):
-        super(ConsoleWriter, self).__init__(options, settings)
+    def __init__(self, options):
+        super(ConsoleWriter, self).__init__(options)
         self.logger.info('ConsoleWriter has been initiated')
 
     def write_batch(self, batch):

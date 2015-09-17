@@ -32,8 +32,8 @@ class S3Writer(BaseWriter):
         'filebase': {'type': basestring}
     }
 
-    def __init__(self, options, settings):
-        super(S3Writer, self).__init__(options, settings)
+    def __init__(self, options):
+        super(S3Writer, self).__init__(options)
         self.conn = boto.connect_s3(self.read_option('aws_access_key_id'), self.read_option('aws_secret_access_key'))
         self.bucket = self.conn.get_bucket(self.read_option('bucket'))
         self.filebase = self.read_option('filebase').format(datetime.datetime.now())
