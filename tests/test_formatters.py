@@ -18,8 +18,7 @@ class BaseExportFormatterTest(unittest.TestCase):
 
             }
         }
-        self.settings = Settings(self.options['exporter_options'])
-        self.export_formatter = BaseExportFormatter(self.options, self.settings)
+        self.export_formatter = BaseExportFormatter(self.options)
 
     def test_format_not_implemented(self):
         with self.assertRaises(NotImplementedError):
@@ -34,8 +33,7 @@ class JsonFormatterTest(unittest.TestCase):
 
             }
         }
-        self.settings = Settings(self.options['exporter_options'])
-        self.export_formatter = JsonExportFormatter(self.options, self.settings)
+        self.export_formatter = JsonExportFormatter(self.options)
 
     def test_format(self):
         item = BaseRecord()
@@ -71,13 +69,13 @@ class CSVFormatterTest(unittest.TestCase):
             }
         }
         with self.assertRaises(ValueError):
-            CSVExportFormatter(options, self.settings)
+            CSVExportFormatter(options)
 
     def test_format_batch_default(self):
         options = {
 
         }
-        formatter = CSVExportFormatter(options, self.settings)
+        formatter = CSVExportFormatter(options)
         items = formatter.format(self.batch)
         for item in items:
             self.assertIsInstance(item.formatted, basestring)
@@ -89,7 +87,7 @@ class CSVFormatterTest(unittest.TestCase):
             'columns': ['key1', 'key1'],
             'titles': ['title1', 'title2']
         }
-        formatter = CSVExportFormatter(options, self.settings)
+        formatter = CSVExportFormatter(options)
         items = formatter.format(self.batch)
         for item in items:
             if isinstance(item, basestring):

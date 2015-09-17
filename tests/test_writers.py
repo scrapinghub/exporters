@@ -12,13 +12,12 @@ class BaseWriterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
+            'settings': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline'
-            },
+            }
         }
-        self.settings = Settings(self.options['exporter_options'])
-        self.writer = BaseWriter({}, self.settings)
+        self.writer = BaseWriter(self.options)
 
     def test_write_not_implemented(self):
         with self.assertRaises(NotImplementedError):
@@ -29,13 +28,12 @@ class ConsoleWriterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
+            'settings': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline'
-            },
+            }
         }
-        self.settings = Settings(self.options['exporter_options'])
-        self.writer = ConsoleWriter({}, self.settings)
+        self.writer = ConsoleWriter(self.options)
 
     def test_write_console(self):
         items_to_write = []
@@ -58,6 +56,7 @@ def create_fake_bucket():
     bucket.new_key.side_effect = create_fake_key()
     return bucket
 
+
 def create_fake_connection():
     connection = Mock()
     connection.get_bucket.side_effect = create_fake_bucket()
@@ -69,10 +68,7 @@ class S3WriterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
-                'log_level': 'DEBUG',
-                'logger_name': 'export-pipeline'
-            },
+
             'writer':{
                 'name': 'exporters.writers.s3_writer.S3Writer',
                 'options': {
@@ -82,15 +78,17 @@ class S3WriterTest(unittest.TestCase):
                     'filebase': 'tests',
                     'predump_folder': 'export_pipelines',
                     'tmp_folder': '/tmp'
+                },
+                'settings': {
+                    'log_level': 'DEBUG',
+                    'logger_name': 'export-pipeline'
                 }
             }
         }
-        self.settings = Settings(self.options['exporter_options'])
-
 
     def test_write_s3(self, conn_mock):
         conn_mock.return_value = create_fake_connection()
-        writer = S3Writer(self.options['writer'], self.settings)
+        writer = S3Writer(self.options['writer'])
         items_to_write = []
         for i in range(0, 10):
             item = BaseRecord()

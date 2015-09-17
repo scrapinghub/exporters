@@ -8,7 +8,6 @@ from exporters.transform.no_transform import NoTransform
 from exporters.writers.console_writer import ConsoleWriter
 
 
-
 class BaseExportManagerTest(unittest.TestCase):
     def setUp(self):
         self.config = {
