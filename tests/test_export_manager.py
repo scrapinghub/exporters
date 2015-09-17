@@ -8,7 +8,6 @@ from exporters.transform.no_transform import NoTransform
 from exporters.writers.console_writer import ConsoleWriter
 
 
-
 class BaseExportManagerTest(unittest.TestCase):
     def setUp(self):
         self.options = {
@@ -66,6 +65,7 @@ class BaseExportManagerTest(unittest.TestCase):
 
     def test_iteration(self):
         self.assertIs(self.exporter._run_pipeline_iteration(), None)
+        self.exporter._clean_export_job()
 
     def test_full_export(self):
         self.assertIs(self.exporter._handle_export_exception(Exception()), None)
@@ -74,7 +74,7 @@ class BaseExportManagerTest(unittest.TestCase):
     def test_bypass(self):
         with self.assertRaises(NotImplementedError):
             self.exporter.bypass_exporter(BaseBypass(ExporterOptions(self.exporter.configuration)))
-
+        self.exporter._clean_export_job()
 
 
 class UnifiedExportManagerTest(unittest.TestCase):
@@ -131,13 +131,19 @@ class UnifiedExportManagerTest(unittest.TestCase):
                 }
             }
         }
-        self.manager = UnifiedExporter(self.options)
+        self.exporter = UnifiedExporter(self.options)
+
+    def tearDown(self):
+        self.exporter._clean_export_job()
 
     def test_parses_the_options_and_loads_pipeline_items(self):
-        self.assertTrue(isinstance(self.manager.reader, RandomReader))
-        self.assertTrue(isinstance(self.manager.writer, ConsoleWriter))
-        self.assertTrue(isinstance(self.manager.transform, NoTransform))
+        self.assertTrue(isinstance(self.exporter.reader, RandomReader))
+        self.assertTrue(isinstance(self.exporter.writer, ConsoleWriter))
+        self.assertTrue(isinstance(self.exporter.transform, NoTransform))
+
 
     def test_from_file_configuration(self):
         test_manager = UnifiedExporter.from_file_configuration('./tests/data/basic_config.json')
         self.assertIsInstance(test_manager, UnifiedExporter)
+        test_manager._clean_export_job()
+

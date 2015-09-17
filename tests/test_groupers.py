@@ -30,7 +30,6 @@ class BaseGrouperTest(unittest.TestCase):
             grouper.group_batch([])
 
 
-
 class FileKeyGrouperTest(unittest.TestCase):
 
     country_codes = ['es', 'uk', 'us']
@@ -65,7 +64,6 @@ class FileKeyGrouperTest(unittest.TestCase):
             }
 
         }
-
 
     def test_group_batch(self):
         grouper = FileKeyGrouper(self.options['grouper'], {})

@@ -230,7 +230,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'reader': {
-                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100
@@ -238,7 +238,7 @@ class ModuleLoaderTest(unittest.TestCase):
             },
         }
         settings = Settings(options['exporter_options'])
-        with self.assertRaises(Exception):
+        with self.assertRaises(TypeError):
             self.module_loader.load_reader(options['reader'], settings)
 
     def test_writer_valid_class(self):
@@ -256,7 +256,7 @@ class ModuleLoaderTest(unittest.TestCase):
             },
         }
         settings = Settings(options['exporter_options'])
-        with self.assertRaises(Exception):
+        with self.assertRaises(TypeError):
             self.module_loader.load_writer(options['writer'], settings)
 
     def test_persistence_valid_class(self):
@@ -265,8 +265,10 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
             },
+            'reader': {},
+            'writer': {},
             'persistence': {
-                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100
@@ -274,8 +276,9 @@ class ModuleLoaderTest(unittest.TestCase):
             },
         }
         settings = Settings(options['exporter_options'])
-        with self.assertRaises(Exception):
-            self.module_loader.load_persistence(options['persistence'], settings)
+        o = ExporterOptions(options)
+        with self.assertRaises(AttributeError):
+            self.module_loader.load_persistence(o, settings)
 
     def test_formatter_valid_class(self):
         options = {
@@ -285,7 +288,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 "EXPORTER": 'exporters.writers.console_writer.ConsoleWriter',
             },
             'reader': {
-                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100
@@ -293,7 +296,7 @@ class ModuleLoaderTest(unittest.TestCase):
             },
         }
         settings = Settings(options['exporter_options'])
-        with self.assertRaises(Exception):
+        with self.assertRaises(TypeError):
             self.module_loader.load_formatter(options['reader'], settings)
 
     def test_notifier_valid_class(self):
@@ -303,7 +306,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'notifier': {
-                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100
@@ -311,7 +314,7 @@ class ModuleLoaderTest(unittest.TestCase):
             },
         }
         settings = Settings(options['exporter_options'])
-        with self.assertRaises(Exception):
+        with self.assertRaises(TypeError):
             self.module_loader.load_notifier(options['notifier'], settings)
 
     def test_grouper_valid_class(self):
@@ -321,7 +324,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'grouper': {
-                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100
@@ -329,7 +332,7 @@ class ModuleLoaderTest(unittest.TestCase):
             },
         }
         settings = Settings(options['exporter_options'])
-        with self.assertRaises(Exception):
+        with self.assertRaises(TypeError):
             self.module_loader.load_grouper(options['grouper'], settings)
 
     def test_grouper_valid_class(self):
@@ -339,7 +342,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'grouper': {
-                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100
@@ -347,7 +350,7 @@ class ModuleLoaderTest(unittest.TestCase):
             },
         }
         settings = Settings(options['exporter_options'])
-        with self.assertRaises(Exception):
+        with self.assertRaises(TypeError):
             self.module_loader.load_grouper(options['grouper'], settings)
 
     def test_filter_valid_class(self):
@@ -357,7 +360,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'filter': {
-                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100
@@ -365,7 +368,7 @@ class ModuleLoaderTest(unittest.TestCase):
             },
         }
         settings = Settings(options['exporter_options'])
-        with self.assertRaises(Exception):
+        with self.assertRaises(TypeError):
             self.module_loader.load_filter(options['filter'], settings)
 
     def test_transform_valid_class(self):
@@ -375,7 +378,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'transform': {
-                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'name': 'exporters.filters.no_filter.NoFilter',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100
@@ -383,7 +386,7 @@ class ModuleLoaderTest(unittest.TestCase):
             },
         }
         settings = Settings(options['exporter_options'])
-        with self.assertRaises(Exception):
+        with self.assertRaises(TypeError):
             self.module_loader.load_transform(options['transform'], settings)
 
     def test_load_grouper(self):

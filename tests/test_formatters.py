@@ -8,8 +8,6 @@ from exporters.export_managers.settings import Settings
 from exporters.records.base_record import BaseRecord
 
 
-
-
 class BaseExportFormatterTest(unittest.TestCase):
 
     def setUp(self):

@@ -18,6 +18,9 @@ class BaseWriterTest(unittest.TestCase):
         self.settings = Settings(self.options['exporter_options'])
         self.writer = BaseWriter({}, self.settings)
 
+    def tearDown(self):
+        self.writer.close_writer()
+
     def test_write_not_implemented(self):
         with self.assertRaises(NotImplementedError):
             self.writer.write('', '')
@@ -34,6 +37,9 @@ class ConsoleWriterTest(unittest.TestCase):
         }
         self.settings = Settings(self.options['exporter_options'])
         self.writer = ConsoleWriter({}, self.settings)
+
+    def tearDown(self):
+        self.writer.close_writer()
 
     def test_write_console(self):
         items_to_write = []

@@ -4,7 +4,6 @@ from exporters.readers.base_reader import BaseReader
 from exporters.readers.random_reader import RandomReader
 
 
-
 class BaseReaderTest(unittest.TestCase):
 
     def setUp(self):

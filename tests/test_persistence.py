@@ -71,15 +71,15 @@ class PicklePersistenceTest(unittest.TestCase):
         exporter_options = ExporterOptions(self.options)
         persistence = PicklePersistence(exporter_options, self.settings)
         self.assertIsInstance(persistence, PicklePersistence)
+        persistence.delete_instance()
 
-
+    @patch('os.path.isfile', autospec=True)
     @patch('__builtin__.open', autospec=True)
     @patch('pickle.dump', autospec=True)
     @patch('pickle.load', autospec=True)
-    @patch('uuid.uuid4', autospec=True)
-    def test_get_last_position(self, mock_uuid, mock_load_pickle, mock_dump_pickle, mock_open):
+    def test_get_last_position(self, mock_load_pickle, mock_dump_pickle, mock_open, mock_is_file):
         mock_dump_pickle.return_value = True
-        mock_uuid.return_value = 1
+        mock_is_file.return_value = True
         mock_load_pickle.return_value = {'last_position': 10}
         exporter_options = ExporterOptions(self.options)
         persistence = PicklePersistence(exporter_options, self.settings)
@@ -95,6 +95,7 @@ class PicklePersistenceTest(unittest.TestCase):
         exporter_options = ExporterOptions(self.options)
         persistence = PicklePersistence(exporter_options, self.settings)
         self.assertEqual(None, persistence.commit_position(10))
+
 
 
 class MysqlPersistenceTest(unittest.TestCase):
