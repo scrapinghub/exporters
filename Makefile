@@ -41,6 +41,7 @@ build: clean
 
 install-all-deps:
 	pip install -r requirements.txt -U
+	pip install -r lazy_requirements.txt -U
 
 
 build-docs:

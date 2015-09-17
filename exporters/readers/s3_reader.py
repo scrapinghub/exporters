@@ -1,7 +1,6 @@
 import gzip
 import json
 import os
-import boto
 from retrying import retry
 
 from exporters.readers.base_reader import BaseReader
@@ -43,6 +42,7 @@ class S3Reader(BaseReader):
         'prefix': {'type': basestring}
     }
     def __init__(self, options, settings):
+        import boto
         super(S3Reader, self).__init__(options, settings)
         self.batch_size = self.read_option('batch_size')
         self.connection = boto.connect_s3(self.read_option('aws_access_key_id'), self.read_option('aws_secret_access_key'))

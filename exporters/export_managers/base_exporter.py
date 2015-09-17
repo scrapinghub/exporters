@@ -1,6 +1,5 @@
 import datetime
 import traceback
-import re
 from exporters.export_managers.bypass import RequisitesNotMet
 from exporters.export_managers.settings import Settings
 from exporters.logger.base_logger import ExportManagerLogger

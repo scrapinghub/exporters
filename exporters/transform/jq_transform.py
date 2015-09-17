@@ -1,7 +1,6 @@
 import yaml
 from exporters.records.base_record import BaseRecord
 from exporters.transform.base_transform import BaseTransform
-from jq import jq
 
 
 class JQTransform(BaseTransform):
@@ -27,6 +26,7 @@ class JQTransform(BaseTransform):
             raise ValueError('JQ expression is not valid')
 
     def transform_batch(self, batch):
+        from jq import jq
         for item in batch:
             transformed_item = jq(self.jq_expression).transform(item)
             if not isinstance(transformed_item, dict):

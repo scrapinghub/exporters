@@ -1,4 +1,3 @@
-import ftplib
 import os
 import re
 import datetime
@@ -41,6 +40,7 @@ class FTPWriter(BaseWriter):
     }
 
     def __init__(self, options, settings):
+        import ftplib
         super(FTPWriter, self).__init__(options, settings)
         self.ftp_host = self.read_option('host')
         self.ftp_port = self.read_option('port')

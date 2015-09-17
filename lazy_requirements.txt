@@ -1,0 +1,12 @@
+boto==2.38.0
+-e git+git@github.com:scrapinghub/collection-scanner.git#egg=collection_scanner
+kafka-python==0.9.4
+msgpack-python==0.4.2
+-e git+git@github.com:scrapinghub/kafka-scanner.git#egg=kafka_scanner
+jq==0.1.2
+
+pysftp==0.2.8
+ecdsa==0.13
+paramiko==1.15.2
+pycrypto==2.6.1
+wsgiref==0.1.2

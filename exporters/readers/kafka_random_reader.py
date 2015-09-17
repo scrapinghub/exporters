@@ -1,15 +1,11 @@
 """
 Kafka random reader
 """
-import zlib
-import msgpack
 from retrying import retry
-import kafka
 import random
-
+import zlib
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
-from kafka_scanner.msg_processor import MsgProcessor
 
 
 class KafkaRandomReader(BaseReader):
@@ -43,6 +39,7 @@ class KafkaRandomReader(BaseReader):
     }
 
     def __init__(self, options, settings):
+        import kafka
         super(KafkaRandomReader, self).__init__(options, settings)
 
         brokers = self.read_option('brokers')
@@ -108,6 +105,7 @@ class KafkaRandomReader(BaseReader):
         self.last_position = self.consumer.offsets
 
     def create_processor(self):
+        from kafka_scanner.msg_processor import MsgProcessor
         processor = MsgProcessor()
         # NOTE This is the order we want the functions to run:
         # each of it (except last) should return a generator.
@@ -135,6 +133,7 @@ class KafkaRandomReader(BaseReader):
 
     @staticmethod
     def unpack_messages(msgs):
+        import msgpack
         """ Deserialize a message to python structures """
 
         for key, msg in msgs:
