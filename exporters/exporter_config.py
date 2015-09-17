@@ -49,5 +49,6 @@ class ExporterConfig(object):
     def _merge_options_and_settings(self, module_name, default=None):
         options = self.configuration.get(module_name, default)
         options.update({'settings': {'log_level': self.exporter_options.get('log_level', DEFAULT_LOGGER_LEVEL),
-                                     'logger_name': self.exporter_options.get('logger_name', DEFAULT_LOGGER_NAME)}})
+                                     'logger_name': self.exporter_options.get('logger_name', DEFAULT_LOGGER_NAME)},
+                        'configuration': self.configuration})
         return options

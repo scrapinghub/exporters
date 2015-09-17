@@ -17,11 +17,7 @@ class Parameterized(object):
 
     def __init__(self, options):
         self.options = options.get('options', {})
-        self.configuration = None
         self.check_options()
-
-    def set_configuration(self, configuration):
-        self.configuration = configuration
 
     def check_options(self):
         for parameter_name, parameter_info in self.parameters.iteritems():
