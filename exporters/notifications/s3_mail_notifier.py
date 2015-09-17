@@ -101,7 +101,9 @@ class S3MailNotifier(BaseNotifier):
             info = {}
         body = "{name} dump finished with following parameters:\n\n"
         body += 'Destination: {filebase}\n'
-        body += 'Total records dumped: {total}\n'
+        body += 'Total records dumped: {total}\n\n'
+        body += 'If you have any questions or concerns about the data you have received, ' \
+                'please email us at help@scrapinghub.com.\n'
 
         body = body.format(
             name=info.get('script_name', 'dump_job'),

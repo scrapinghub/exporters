@@ -24,17 +24,27 @@ class S3Writer(BaseWriter):
 
         - filebase (str)
             Base path to store the items in the bucket.
+
+        - aws_region (str)
+            AWS region to connect to.
     """
     parameters = {
         'bucket': {'type': basestring},
         'aws_access_key_id': {'type': basestring},
         'aws_secret_access_key': {'type': basestring},
-        'filebase': {'type': basestring}
+        'filebase': {'type': basestring},
+        'aws_region': {'type': basestring, 'default': 'us-east-1'},
     }
 
-    def __init__(self, options):
-        super(S3Writer, self).__init__(options)
-        self.conn = boto.connect_s3(self.read_option('aws_access_key_id'), self.read_option('aws_secret_access_key'))
+    def __init__(self, options, settings):
+        super(S3Writer, self).__init__(options, settings)
+        access_key = self.read_option('aws_access_key_id')
+        secret_key = self.read_option('aws_secret_access_key')
+        aws_region = self.read_option('aws_region')
+
+        self.conn = boto.s3.connect_to_region(aws_region,
+                                              aws_access_key_id=access_key,
+                                              aws_secret_access_key=secret_key)
         self.bucket = self.conn.get_bucket(self.read_option('bucket'))
         self.filebase = self.read_option('filebase').format(datetime.datetime.now())
         self.logger.info('S3Writer has been initiated. Writing to s3://{}{}'.format(self.bucket, self.filebase))
