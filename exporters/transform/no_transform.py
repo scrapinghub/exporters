@@ -5,8 +5,6 @@ class NoTransform(BaseTransform):
     """
     It leaves the batch as is. This is provided for the cases where no transformations are needed on the original items.
     """
-    # List of options to set up the batch
-    parameters = {}
 
     def __init__(self, options):
         super(NoTransform, self).__init__(options)

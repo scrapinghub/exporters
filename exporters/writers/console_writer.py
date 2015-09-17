@@ -5,7 +5,6 @@ class ConsoleWriter(BaseWriter):
     """
     It is just a writer with testing purposes. It prints every item in console.
     """
-    parameters = {}
 
     def __init__(self, options):
         super(ConsoleWriter, self).__init__(options)
