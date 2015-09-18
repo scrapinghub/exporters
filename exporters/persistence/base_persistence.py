@@ -8,18 +8,16 @@ class BasePersistence(BasePipelineItem):
     inform of that state on demand. It can implement the following methods:
     """
 
-    def __init__(self, options, settings):
-        super(BasePersistence, self).__init__(options.persistence_options, settings)
-        self.settings = settings
-        self.configuration = options
-        self.check_options()
-        self.logger = PersistenceLogger(self.settings)
-        if not settings.get('resume'):
+    def __init__(self, options):
+        super(BasePersistence, self).__init__(options)
+        self.configuration = options.get('configuration', {})
+        self.logger = PersistenceLogger(options.get('settings', {}))
+        if not options.get('resume'):
             self.job_id = self.generate_new_job()
             self.logger.info('Created job with id: ' + str(self.job_id))
             self.last_position = None
         else:
-            self.job_id = settings.get('jobid')
+            self.job_id = options.get('jobid')
             self.last_position = self.get_last_position()
             self.logger.info('Resumed job with id: ' + str(self.job_id))
 

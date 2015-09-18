@@ -32,20 +32,19 @@ class BaseWriter(BasePipelineItem):
     This module receives a batch and writes it where needed. It adds an optionsl items_limit parameter to allow
      to limit the number of exported items. If set to 0, there is no limit.
     """
+    base_parameters = {
+        'items_per_buffer_write': {'type': int, 'default': ITEMS_PER_BUFFER_WRITE},
+        'items_limit': {'type': int, 'default': 0},
+    }
 
-    def __init__(self, options, settings):
-        super(BaseWriter, self).__init__(options, settings)
-        self.settings = settings
+    def __init__(self, options):
+        super(BaseWriter, self).__init__(options)
         self.finished = False
-        # If it's not there, we add it as a not mandatory requirement to publish it via config api
-        if 'items_limit' not in self.parameters:
-            self.parameters['items_limit'] = {'type': int, 'default': 0}
-        self.options['options'] = self.options.get('options', {})
         self.tmp_folder = tempfile.mkdtemp()
         self.check_options()
-        self.items_per_buffer_write = self.options.get('items_per_buffer_write', ITEMS_PER_BUFFER_WRITE)
-        self.items_limit = self.options.get('items_limit', 0)
-        self.logger = WriterLogger(self.settings)
+        self.items_per_buffer_write = self.read_option('items_per_buffer_write')
+        self.items_limit = self.read_option('items_limit')
+        self.logger = WriterLogger(options.get('settings', {}))
         self.items_count = 0
         self.grouping_info = {}
 

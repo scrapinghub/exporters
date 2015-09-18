@@ -3,7 +3,6 @@ import requests
 import yaml
 from exporters.export_managers.base_exporter import BaseExporter
 from exporters.export_managers.bypass import S3Bypass
-from exporters.exporter_options import ExporterOptions
 from exporters.persistence.persistence_config_dispatcher import PersistenceConfigDispatcher
 
 
@@ -11,9 +10,6 @@ class UnifiedExporter(BaseExporter):
     """
     Dataservices export manager reading configuration from api url. It adds bypass support.
     """
-
-    def __init__(self, configuration):
-        super(UnifiedExporter, self).__init__(configuration)
 
     @staticmethod
     def from_url_configuration(url, apikey):
@@ -34,5 +30,4 @@ class UnifiedExporter(BaseExporter):
 
     @property
     def bypass_cases(self):
-        config = ExporterOptions(self.configuration)
-        return [S3Bypass(config)]
+        return [S3Bypass(self.config)]

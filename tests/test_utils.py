@@ -7,7 +7,7 @@ from exporters.pipeline.base_pipeline_item import BasePipelineItem
 from exporters.config_api import ConfigApi, InvalidConfigError
 from exporters.exceptions import InvalidExpression
 from exporters.module_loader import ModuleLoader
-from exporters.exporter_options import ExporterOptions
+from exporters.exporter_config import ExporterConfig
 from exporters.python_interpreter import Interpreter
 
 
@@ -51,26 +51,20 @@ class BaseLoggerTest(unittest.TestCase):
 
 
 class BasePipelineItemTest(unittest.TestCase):
-    def setUp(self):
-        self.options = {
-            'exporter_options': {
-            },
-        }
-        self.settings = Settings(self.options['exporter_options'])
 
     def test_false_required(self):
-        pipelineItem = BasePipelineItem({}, self.settings)
+        pipelineItem = BasePipelineItem({})
         pipelineItem.parameters = {'number_of_items': {'type': int, 'default': 10}}
         pipelineItem.check_options()
 
     def test_not_present(self):
-        pipelineItem = BasePipelineItem({}, self.settings)
+        pipelineItem = BasePipelineItem({})
         pipelineItem.parameters = {'number_of_items': {'type': int}}
         with self.assertRaises(ValueError):
             pipelineItem.check_options()
 
     def test_wrong_type(self):
-        pipelineItem = BasePipelineItem({'options': {'number_of_items': 'wrong_string'}}, self.settings)
+        pipelineItem = BasePipelineItem({'options': {'number_of_items': 'wrong_string'}})
         pipelineItem.parameters = {'number_of_items': {'type': int, 'default': 10}}
         with self.assertRaises(ValueError):
             pipelineItem.check_options()
@@ -275,10 +269,9 @@ class ModuleLoaderTest(unittest.TestCase):
                 }
             },
         }
-        settings = Settings(options['exporter_options'])
-        o = ExporterOptions(options)
-        with self.assertRaises(AttributeError):
-            self.module_loader.load_persistence(o, settings)
+        o = ExporterConfig(options)
+        with self.assertRaises(TypeError):
+            self.module_loader.load_persistence(o.persistence_options)
 
     def test_formatter_valid_class(self):
         options = {
@@ -402,30 +395,29 @@ class ModuleLoaderTest(unittest.TestCase):
                 }
             },
         }
-        settings = Settings(options['exporter_options'])
-        self.assertIsInstance(self.module_loader.load_grouper(options['grouper'], settings), BaseGrouper)
+        self.assertIsInstance(self.module_loader.load_grouper(options['grouper']), BaseGrouper)
 
 
 class OptionsParserTest(unittest.TestCase):
     def test_curate_options(self):
         options = {}
         with self.assertRaises(Exception):
-            ExporterOptions(options)
+            ExporterConfig(options)
         options = {'reader': ''}
         with self.assertRaises(Exception):
-            ExporterOptions(options)
+            ExporterConfig(options)
         options = {'reader': '', 'filter': ''}
         with self.assertRaises(Exception):
-            ExporterOptions(options)
+            ExporterConfig(options)
         options = {'reader': '', 'filter': '', 'transform': ''}
         with self.assertRaises(Exception):
-            ExporterOptions(options)
+            ExporterConfig(options)
         options = {'reader': '', 'filter': '', 'transform': '', 'writer': ''}
         with self.assertRaises(Exception):
-            ExporterOptions(options)
-        options = {'reader': '', 'filter': '', 'transform': '', 'writer': '', 'persistence': '',
+            ExporterConfig(options)
+        options = {'reader': {}, 'filter': {}, 'transform': {}, 'writer': {}, 'persistence': {},
                    'exporter_options': {'formatter': {}}}
-        self.assertIsInstance(ExporterOptions(options), ExporterOptions)
+        self.assertIsInstance(ExporterConfig(options), ExporterConfig)
 
 
 class PythonInterpreterTest(unittest.TestCase):
@@ -455,7 +447,7 @@ class BaseByPassTest(unittest.TestCase):
 class S3ByPassTest(unittest.TestCase):
 
     def test_not_meet_parameters(self):
-        exporter_options = ExporterOptions({
+        exporter_options = ExporterConfig({
             'reader': {'name': 'some other reader'},
             'writer': {'name': 'exporters.writers.s3_writer.S3Writer'},
             'exporter_options': {'formatter': {}},
@@ -466,7 +458,7 @@ class S3ByPassTest(unittest.TestCase):
             bypass.meets_conditions()
 
     def test_meet_parameters(self):
-        exporter_options = ExporterOptions({
+        exporter_options = ExporterConfig({
             'reader': {'name': 'exporters.readers.s3_reader.S3Reader'},
             'writer': {'name': 'exporters.writers.s3_writer.S3Writer'},
             'exporter_options': {'formatter': {}},

@@ -2,7 +2,7 @@ import unittest
 from exporters.export_managers.base_exporter import BaseExporter
 from exporters.export_managers.bypass import BaseBypass, S3Bypass
 from exporters.export_managers.unified_exporter import UnifiedExporter
-from exporters.exporter_options import ExporterOptions
+from exporters.exporter_config import ExporterConfig
 from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
 from exporters.writers.console_writer import ConsoleWriter
@@ -10,7 +10,7 @@ from exporters.writers.console_writer import ConsoleWriter
 
 class BaseExportManagerTest(unittest.TestCase):
     def setUp(self):
-        self.options = {
+        self.config = {
             'exporter_options': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
@@ -61,7 +61,7 @@ class BaseExportManagerTest(unittest.TestCase):
                 }
             }
         }
-        self.exporter = BaseExporter(self.options)
+        self.exporter = BaseExporter(self.config)
 
     def test_iteration(self):
         self.assertIs(self.exporter._run_pipeline_iteration(), None)
@@ -73,8 +73,9 @@ class BaseExportManagerTest(unittest.TestCase):
 
     def test_bypass(self):
         with self.assertRaises(NotImplementedError):
-            self.exporter.bypass_exporter(BaseBypass(ExporterOptions(self.exporter.configuration)))
+            self.exporter.bypass_exporter(BaseBypass(ExporterConfig(self.config)))
         self.exporter._clean_export_job()
+
 
 
 class UnifiedExportManagerTest(unittest.TestCase):

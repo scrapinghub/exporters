@@ -23,8 +23,8 @@ class FSWriter(BaseWriter):
         'filebase': {'type': basestring, 'default': '.'}
     }
 
-    def __init__(self, options, settings):
-        super(FSWriter, self).__init__(options, settings)
+    def __init__(self, options):
+        super(FSWriter, self).__init__(options)
         self.prefix = self.read_option('filebase').format(datetime.datetime.now())
         self.logger.info('FSWriter has been initiated. Writing to: {}'.format(self.prefix))
 

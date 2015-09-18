@@ -21,8 +21,8 @@ class PicklePersistence(BasePersistence):
 
     uri_regex = "pickle:(([a-zA-Z\d-]|\/)+)"
 
-    def __init__(self, options, settings):
-        super(PicklePersistence, self).__init__(options, settings)
+    def __init__(self, options):
+        super(PicklePersistence, self).__init__(options)
 
     def get_last_position(self):
         if not os.path.isfile(os.path.join(self.read_option('file_path'), self.job_id)):
