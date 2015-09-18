@@ -54,7 +54,6 @@ class MailWriter(BaseWriter):
         m = email.mime.multipart.MIMEMultipart()
         m['Subject'] = self.subject
         m['From'] = self.sender
-        m['To'] = self.email
 
         # Attachment
         key_name = '{}_{}.{}'.format('ds_dump', uuid.uuid4(), 'gz')
@@ -65,11 +64,12 @@ class MailWriter(BaseWriter):
             part.add_header('Content-Disposition', 'attachment', filename=key_name)
             m.attach(part)
 
-        self.send_mail(m)
+        for destination in self.email:
+            self.send_mail(m, destination)
         self.mails_sent += 1
         self.logger.debug('Sent {}'.format(dump_path))
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
-    def send_mail(self, m):
-        self.ses.send_raw_email(source=m['From'], raw_message=m.as_string(), destinations=m['To'])
-        self.logger.info('Sending email. Sending to: {}'.format(self.email))
+    def send_mail(self, m, destination):
+        self.ses.send_raw_email(source=m['From'], raw_message=m.as_string(), destinations=destination)
+        self.logger.info('Sending email. Sending to: {}'.format(destination))
