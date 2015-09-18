@@ -1,7 +1,6 @@
 import yaml
 from exporters.export_managers.base_exporter import BaseExporter
 from exporters.export_managers.bypass import S3Bypass
-from exporters.exporter_options import ExporterOptions
 from exporters.persistence.persistence_config_dispatcher import PersistenceConfigDispatcher
 
 
@@ -25,5 +24,4 @@ class BasicExporter(BaseExporter):
 
     @property
     def bypass_cases(self):
-        config = ExporterOptions(self.configuration)
-        return [S3Bypass(config)]
+        return [S3Bypass(self.config)]

@@ -12,8 +12,7 @@ class BaseReaderTest(unittest.TestCase):
             'log_level': 'DEBUG',
             'logger_name': 'export-pipeline'
         }
-        settings = Settings(exporter_options)
-        self.reader = BaseReader({}, settings)
+        self.reader = BaseReader({})
 
     def test_get_next_batch_not_implemented(self):
         with self.assertRaises(NotImplementedError):
@@ -41,8 +40,7 @@ class RandomReaderTest(unittest.TestCase):
             },
 
         }
-        self.settings = Settings(self.options['exporter_options'])
-        self.reader = RandomReader(self.options['reader'], self.settings)
+        self.reader = RandomReader(self.options)
 
     def test_get_next_batch(self):
         batch = list(self.reader.get_next_batch())

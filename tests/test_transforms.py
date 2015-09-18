@@ -23,8 +23,8 @@ class BaseTransformTest(unittest.TestCase):
                 }
             },
         }
-        self.settings = Settings(self.options['exporter_options'])
-        self.transform = BaseTransform(self.options, self.settings)
+
+        self.transform = BaseTransform(self.options)
 
     def test_raise_exception(self):
         with self.assertRaises(NotImplementedError):
@@ -46,14 +46,14 @@ class NoTransformTest(unittest.TestCase):
                 }
             },
         }
-        self.settings = Settings(self.options['exporter_options'])
-        self.transform = NoTransform(self.options, self.settings)
+
+        self.transform = NoTransform(self.options)
 
     def test_transform_empty_batch(self):
         self.assertTrue(self.transform.transform_batch([]) == [])
 
     def test_transform_batch(self):
-        reader = ModuleLoader().load_reader(self.options['reader'], self.settings)
+        reader = ModuleLoader().load_reader(self.options['reader'])
         # FIXME inline batch, without a reader
         batch = reader.get_next_batch()
         self.assertTrue(self.transform.transform_batch(batch) == batch)
@@ -69,21 +69,21 @@ class JqTransformTest(unittest.TestCase):
         }
 
         self.batch = [BaseRecord({'name': 'item1', 'country_code': 'es'}), BaseRecord({'name': 'item2', 'country_code': 'uk'})]
-        self.settings = Settings(self.options['exporter_options'])
+
 
     def test_transform_empty_batch(self):
-        transform = JQTransform({'options': {'jq_filter': '.'}}, self.settings)
+        transform = JQTransform({'options': {'jq_filter': '.'}})
         self.assertTrue(list(transform.transform_batch([])) == [])
 
     def test_no_transform_batch(self):
-        transform = JQTransform({'options': {'jq_filter': '.'}}, self.settings)
+        transform = JQTransform({'options': {'jq_filter': '.'}})
         index = 0
         for item in list(transform.transform_batch(self.batch)):
             self.assertEqual(item, self.batch[index])
             index += 1
 
     def test_transform_batch(self):
-        transform = JQTransform({'options': {'jq_filter': '{country_code: .country_code}'}}, self.settings)
+        transform = JQTransform({'options': {'jq_filter': '{country_code: .country_code}'}})
         for item in list(transform.transform_batch(self.batch)):
             self.assertIn('country_code', item)
             self.assertNotIn('name', item)
@@ -99,10 +99,9 @@ class PythonexpTransformTest(unittest.TestCase):
         }
 
         self.batch = [BaseRecord({'name': 'item1', 'country_code': 'es'}), BaseRecord({'name': 'item2', 'country_code': 'uk'})]
-        self.settings = Settings(self.options['exporter_options'])
+
         self.transform = PythonexpTransform({'options': {'python_expressions': [
-            "item.update({'new_field': item.get('country_code')+'-'+item.get('name')})"]}},
-                                            self.settings)
+            "item.update({'new_field': item.get('country_code')+'-'+item.get('name')})"]}})
 
     def test_transform_empty_batch(self):
         self.assertTrue(list(self.transform.transform_batch([])) == [])

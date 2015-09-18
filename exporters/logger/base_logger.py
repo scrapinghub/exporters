@@ -12,8 +12,9 @@ LEVEL_DICT = {
 
 class BaseLogger(object):
     def __init__(self, settings):
-        level = LEVEL_DICT[settings.get('log_level')]
-        self.logger = logging.getLogger(settings.get('logger_name'))
+
+        level = LEVEL_DICT.get(settings.get('log_level'), 'INFO')
+        self.logger = logging.getLogger(settings.get('logger_name', 'export-pipeline'))
         self.logger.setLevel(level)
 
 

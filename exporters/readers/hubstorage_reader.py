@@ -1,7 +1,6 @@
 from retrying import retry
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
-from collection_scanner import CollectionScanner
 
 
 class HubstorageReader(BaseReader):
@@ -31,8 +30,9 @@ class HubstorageReader(BaseReader):
         'collection_name': {'type': basestring}
     }
 
-    def __init__(self, options, settings):
-        super(HubstorageReader, self).__init__(options, settings)
+    def __init__(self, options):
+        from collection_scanner import CollectionScanner
+        super(HubstorageReader, self).__init__(options)
         self.batch_size = self.read_option('batch_size')
         self.collection_scanner = CollectionScanner(self.read_option('apikey'), self.read_option('project_id'),
                                                     self.read_option('collection_name'),

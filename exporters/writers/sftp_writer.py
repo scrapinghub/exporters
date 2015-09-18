@@ -4,7 +4,6 @@ import re
 from retrying import retry
 from exporters.writers.base_writer import BaseWriter
 import uuid
-import pysftp
 
 
 class SFTPWriter(BaseWriter):
@@ -36,8 +35,8 @@ class SFTPWriter(BaseWriter):
         'filebase': {'type': basestring}
     }
 
-    def __init__(self, options, settings):
-        super(SFTPWriter, self).__init__(options, settings)
+    def __init__(self, options):
+        super(SFTPWriter, self).__init__(options)
         self.sftp_host = self.read_option('host')
         self.sftp_port = self.read_option('port')
         self.sftp_user = self.read_option('sftp_user')
@@ -49,6 +48,7 @@ class SFTPWriter(BaseWriter):
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def write(self, dump_path, group_key=None):
+        import pysftp
         if group_key is None:
             group_key = []
         normalized = [re.sub('\W', '_', s) for s in group_key]

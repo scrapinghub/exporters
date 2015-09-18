@@ -1,6 +1,5 @@
 import os
 import re
-import boto
 import datetime
 from retrying import retry
 from exporters.writers.base_writer import BaseWriter
@@ -36,8 +35,9 @@ class S3Writer(BaseWriter):
         'aws_region': {'type': basestring, 'default': 'us-east-1'},
     }
 
-    def __init__(self, options, settings):
-        super(S3Writer, self).__init__(options, settings)
+    def __init__(self, options):
+        import boto
+        super(S3Writer, self).__init__(options)
         access_key = self.read_option('aws_access_key_id')
         secret_key = self.read_option('aws_secret_access_key')
         aws_region = self.read_option('aws_region')

@@ -1,4 +1,3 @@
-import boto
 import datetime
 import logging
 from retrying import retry
@@ -38,6 +37,7 @@ class S3Bypass(BaseBypass):
             raise RequisitesNotMet
 
     def bypass(self):
+        import boto
         reader_options = self.config.reader_options['options']
         writer_options = self.config.writer_options['options']
         source_connection = boto.connect_s3(reader_options['aws_access_key_id'],reader_options['aws_secret_access_key'])
