@@ -1,6 +1,5 @@
 import json
 import os
-import boto
 from exporters.notifications.base_notifier import BaseNotifier
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
 
@@ -71,6 +70,7 @@ class S3MailNotifier(BaseNotifier):
         self._notify_failed_job(msg, stack_trace, mails, info)
 
     def _send_email(self, mails, subject, body):
+        import boto
         ses = boto.connect_ses(self.options['aws_login'], self.options['aws_key'])
         ses.send_email(self.options.get('mail_from', DEFAULT_MAIN_FROM), subject, body, mails)
 

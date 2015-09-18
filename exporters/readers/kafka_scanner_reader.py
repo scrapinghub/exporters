@@ -4,7 +4,6 @@ Kafka reader
 from retrying import retry
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
-from kafka_scanner import KafkaScanner
 
 
 class KafkaScannerReader(BaseReader):
@@ -35,8 +34,8 @@ class KafkaScannerReader(BaseReader):
     }
 
     def __init__(self, options):
+        from kafka_scanner import KafkaScanner
         super(KafkaScannerReader, self).__init__(options)
-
         brokers = self.read_option('brokers')
         group = self.read_option('group')
         topic = self.read_option('topic')
