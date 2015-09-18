@@ -8,11 +8,10 @@ class BaseFilter(BasePipelineItem):
     This module receives a batch, filter it according to some parameters, and returns it.
     It must implement the following methods:
     """
-    def __init__(self, options, settings):
-        super(BaseFilter, self).__init__(options, settings)
-        self.settings = settings
+    def __init__(self, options):
+        super(BaseFilter, self).__init__(options)
         self.check_options()
-        self.logger = FilterLogger(self.settings)
+        self.logger = FilterLogger(options.get('settings', {}))
         self.filtered_out = 0
         self.total = 0
 

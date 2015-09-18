@@ -10,13 +10,12 @@ class BaseWriterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
+            'settings': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline'
-            },
+            }
         }
-        self.settings = Settings(self.options['exporter_options'])
-        self.writer = BaseWriter({}, self.settings)
+        self.writer = BaseWriter(self.options)
 
     def test_write_not_implemented(self):
         with self.assertRaises(NotImplementedError):
@@ -27,13 +26,12 @@ class ConsoleWriterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
+            'settings': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline'
-            },
+            }
         }
-        self.settings = Settings(self.options['exporter_options'])
-        self.writer = ConsoleWriter({}, self.settings)
+        self.writer = ConsoleWriter(self.options)
 
     def test_write_console(self):
         items_to_write = []

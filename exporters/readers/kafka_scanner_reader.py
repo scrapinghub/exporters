@@ -34,14 +34,14 @@ class KafkaScannerReader(BaseReader):
         'group': {'type': basestring}
     }
 
-    def __init__(self, options, settings):
-        super(KafkaScannerReader, self).__init__(options, settings)
+    def __init__(self, options):
+        super(KafkaScannerReader, self).__init__(options)
 
         brokers = self.read_option('brokers')
         group = self.read_option('group')
         topic = self.read_option('topic')
         scanner = KafkaScanner(brokers, topic, group,
-                batchsize=self.read_option('batch_size'), keep_offsets=settings.get('RESUME'))
+                batchsize=self.read_option('batch_size'), keep_offsets=options.get('RESUME'))
 
         self.batches = scanner.scan_topic_batches()
 
