@@ -24,8 +24,7 @@ class BaseGrouperTest(unittest.TestCase):
         }
 
     def test_raise_exception(self):
-        grouper = BaseGrouper(self.options['writer']['grouper'],
-                                      {'keys': ['country_code', 'state', 'city']})
+        grouper = BaseGrouper(self.options)
         with self.assertRaises(NotImplementedError):
             grouper.group_batch([])
 
@@ -68,7 +67,7 @@ class FileKeyGrouperTest(unittest.TestCase):
 
 
     def test_group_batch(self):
-        grouper = FileKeyGrouper(self.options['grouper'], {})
+        grouper = FileKeyGrouper(self.options['grouper'])
         batch = self._get_batch()
         grouped = grouper.group_batch(batch)
         for item in grouped:
@@ -84,7 +83,7 @@ class FileKeyGrouperTest(unittest.TestCase):
                 'keys': ['country_code', 'not_a_key', 'city']
             }
         }
-        grouper = FileKeyGrouper(g_opts, {})
+        grouper = FileKeyGrouper(g_opts)
         batch = self._get_batch()
         grouped = grouper.group_batch(batch)
         for item in grouped:

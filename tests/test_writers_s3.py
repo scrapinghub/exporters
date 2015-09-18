@@ -39,7 +39,6 @@ class S3WriterTest(unittest.TestCase):
             'log_level': 'DEBUG',
             'logger_name': 'export-pipeline',
         }
-        self.settings = Settings(exporter_options)
 
     def tearDown(self):
         self.mock_s3.stop()
@@ -54,7 +53,7 @@ class S3WriterTest(unittest.TestCase):
         options = self.get_writer_config()
 
         # when:
-        writer = S3Writer(options, self.settings)
+        writer = S3Writer(options)
         writer.write_batch(items_to_write)
         writer.close_writer()
 
@@ -73,7 +72,7 @@ class S3WriterTest(unittest.TestCase):
         options['options']['bucket'] = 'another_fake_bucket'
 
         # when:
-        writer = S3Writer(options, self.settings)
+        writer = S3Writer(options)
 
         # then:
         self.assertEquals('eu-west-1', writer.bucket.get_location())

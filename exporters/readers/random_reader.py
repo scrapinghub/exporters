@@ -26,8 +26,8 @@ class RandomReader(BaseReader):
         'batch_size': {'type': int, 'default': 100}
     }
 
-    def __init__(self, options, settings):
-        super(RandomReader, self).__init__(options, settings)
+    def __init__(self, options):
+        super(RandomReader, self).__init__(options)
         self.last_key = self.last_position * self.read_option('batch_size')
         self.logger.info('RandomReader has been initiated')
         self.country_codes = ['es', 'uk', 'us']

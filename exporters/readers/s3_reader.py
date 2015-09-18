@@ -41,9 +41,10 @@ class S3Reader(BaseReader):
         'tmp_folder': {'type': basestring, 'default': '/tmp/'},
         'prefix': {'type': basestring}
     }
-    def __init__(self, options, settings):
+
+    def __init__(self, options):
         import boto
-        super(S3Reader, self).__init__(options, settings)
+        super(S3Reader, self).__init__(options)
         self.batch_size = self.read_option('batch_size')
         self.connection = boto.connect_s3(self.read_option('aws_access_key_id'), self.read_option('aws_secret_access_key'))
         self.bucket = self.connection.get_bucket(self.read_option('bucket'))

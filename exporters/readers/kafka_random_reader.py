@@ -38,10 +38,9 @@ class KafkaRandomReader(BaseReader):
         'group': {'type': basestring}
     }
 
-    def __init__(self, options, settings):
+    def __init__(self, options):
         import kafka
-        super(KafkaRandomReader, self).__init__(options, settings)
-
+        super(KafkaRandomReader, self).__init__(options)
         brokers = self.read_option('brokers')
         group = self.read_option('group')
         topic = self.read_option('topic')

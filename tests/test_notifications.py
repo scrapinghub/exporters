@@ -1,7 +1,6 @@
 import unittest
 import datetime
 from mock import patch, Mock
-from exporters.export_managers.settings import Settings
 from exporters.notifications.base_notifier import BaseNotifier
 from exporters.notifications.s3_mail_notifier import S3MailNotifier
 from exporters.notifications.webhook_notifier import WebhookNotifier
@@ -19,8 +18,7 @@ class BaseNotifierTest(unittest.TestCase):
 
             }
         }
-        self.settings = Settings(self.options['exporter_options'])
-        self.notifier = BaseNotifier(self.options, self.settings)
+        self.notifier = BaseNotifier(self.options)
 
     def test_raise_exception_start_dump(self):
         with self.assertRaises(NotImplementedError):
@@ -51,7 +49,7 @@ class BaseNotifierTest(unittest.TestCase):
             }
         }
 
-        test_notifier = BaseNotifier(options, self.settings)
+        test_notifier = BaseNotifier(options)
         test_notifier.parameters['test'] = {'type': int, 'default': 5}
         test_notifier.check_options()
 
@@ -66,7 +64,7 @@ class BaseNotifierTest(unittest.TestCase):
             }
         }
         with self.assertRaises(Exception):
-            test_notifier = BaseNotifier(options, self.settings)
+            test_notifier = BaseNotifier(options)
             test_notifier.parameters.append({'name': 'test', 'type': basestring})
             test_notifier.check_options()
 
@@ -100,8 +98,7 @@ class S3MailNotifierTest(unittest.TestCase):
             'start_time': datetime.datetime.now(),
             'script_name': 'basic_export_manager'
         }
-        self.settings = Settings(self.options['exporter_options'])
-        self.notifier = S3MailNotifier(self.options['exporter_options']['NOTIFICATIONS'][0], self.settings)
+        self.notifier = S3MailNotifier(self.options['exporter_options']['NOTIFICATIONS'][0])
 
     @patch('boto.connect_ses')
     def test_start_dump(self, mock_connect):
@@ -190,8 +187,7 @@ class WebhookNotifierTest(unittest.TestCase):
             'start_time': datetime.datetime.now(),
             'script_name': 'basic_export_manager'
         }
-        self.settings = Settings(self.options['exporter_options'])
-        self.notifier = WebhookNotifier(self.options['exporter_options']['NOTIFICATIONS'][0], self.settings)
+        self.notifier = WebhookNotifier(self.options['exporter_options']['NOTIFICATIONS'][0])
 
     @patch('requests.post')
     def test_start_dump(self, mock_request):

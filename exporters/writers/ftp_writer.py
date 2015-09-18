@@ -39,9 +39,9 @@ class FTPWriter(BaseWriter):
         'filebase': {'type': basestring}
     }
 
-    def __init__(self, options, settings):
+    def __init__(self, options):
+        super(FTPWriter, self).__init__(options)
         import ftplib
-        super(FTPWriter, self).__init__(options, settings)
         self.ftp_host = self.read_option('host')
         self.ftp_port = self.read_option('port')
         self.ftp_user = self.read_option('ftp_user')
