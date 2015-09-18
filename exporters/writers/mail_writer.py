@@ -1,11 +1,12 @@
 import email
 import uuid
 import boto
+import os
 from exporters.writers.base_writer import BaseWriter
 from exporters.writers.base_writer import ItemsLimitReached
 from retrying import retry
 
-ITEMS_PER_BUFFER_WRITE = 5000
+ITEMS_PER_BUFFER_WRITE = 3000
 
 
 class MailWriter(BaseWriter):
@@ -58,11 +59,25 @@ class MailWriter(BaseWriter):
         # Attachment
         key_name = '{}_{}.{}'.format('ds_dump', uuid.uuid4(), 'gz')
         with open(dump_path, 'rb') as fd:
+            filesize = os.path.getsize(dump_path)
             part = email.mime.base.MIMEBase('application', 'octet-stream')
             part.set_payload(fd.read())
             email.encoders.encode_base64(part)
             part.add_header('Content-Disposition', 'attachment', filename=key_name)
             m.attach(part)
+
+        # Message body
+        body = "File Name: {key_name} \n"
+        body += "Size: {filesize}\n"
+        body += "Number of Records: {ITEMS_PER_BUFFER_WRITE}\n"
+
+        body = body.format(
+            key_name=key_name,
+            filesize=filesize,
+            ITEMS_PER_BUFFER_WRITE=ITEMS_PER_BUFFER_WRITE
+        )
+        part = email.mime.text.MIMEText(body)
+        m.attach(part)
 
         for destination in self.email:
             self.send_mail(m, destination)
