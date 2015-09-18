@@ -14,57 +14,62 @@ class MailWriter(BaseWriter):
 
     Needed parameters:
 
-        - tmp_folder (str)
-            Path to store temp files.
-
         - email (str)
             Email address where data will be sent.
 
-        - max_size (str)
-            maximum size of the attachment for delivery.
+        - subject (str)
+            Subject of the email.
 
-        - max_sent (str)
+        - from (str)
+            Sender of the email.
+
+        - max_mails_sent (str)
             maximum amount of emails that would be sent.
     """
 
     parameters = {
-        'email': {'type': basestring},
-        'max_sent': {'type': int, 'default': 5},
+        'email': {'type': list},
+        'subject': {'type': basestring},
+        'from': {'type': basestring},
+        'max_mails_sent': {'type': int, 'default': 5},
         'aws_login': {'type': basestring},
         'aws_key': {'type': basestring}
     }
 
-    def __init__(self, options, settings):
-        super(MailWriter, self).__init__(options, settings)
+    def __init__(self, options):
+        super(MailWriter, self).__init__(options)
         self.email = self.read_option('email')
-        self.max_sent = self.read_option('max_sent')
+        self.subject = self.read_option('subject')
+        self.sender = self.read_option('from')
+        self.max_mails_sent = self.read_option('max_mails_sent')
         self.mails_sent = 0
         self.items_per_buffer_write = self.options.get('items_per_buffer_write', ITEMS_PER_BUFFER_WRITE)
         self.ses = boto.connect_ses(self.options['aws_login'], self.options['aws_key'])
-        self.items_limit = 10
         self.logger.info('MailWriter has been initiated. Sending to: {}'.format(self.email))
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def write(self, dump_path, group_key=None):
-        if self.items_limit and self.max_sent == self.mails_sent:
+        if self.max_mails_sent == self.mails_sent:
             raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'
                                     .format(self.mails_sent))
-
         m = email.mime.multipart.MIMEMultipart()
-        m['Subject'] = 'Test'
-        m['From'] = 'Scrapinghub data services <dataservices@scrapinghub.com>'
+        m['Subject'] = self.subject
+        m['From'] = self.sender
         m['To'] = self.email
-
-        # Message body
-        part = email.mime.text.MIMEText('test file attached')
-        m.attach(part)
 
         # Attachment
         key_name = '{}_{}.{}'.format('ds_dump', uuid.uuid4(), 'gz')
-        part = email.mime.text.MIMEText('contents of test file here')
-        part.add_header('Content-Disposition', 'attachment; filename=%s' % key_name)
-        m.attach(part)
+        with open(dump_path, 'rb') as fd:
+            part = email.mime.base.MIMEBase('application', 'octet-stream')
+            part.set_payload(fd.read())
+            email.encoders.encode_base64(part)
+            part.add_header('Content-Disposition', 'attachment', filename=key_name)
+            m.attach(part)
 
-        self.ses.send_raw_email(source=m['From'], raw_message=m.as_string(), destinations=m['To'])
+        self.send_mail(m)
         self.mails_sent += 1
-        self.logger.debug('Saved {}'.format(dump_path))
+        self.logger.debug('Sent {}'.format(dump_path))
+
+    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
+    def send_mail(self, m):
+        self.ses.send_raw_email(source=m['From'], raw_message=m.as_string(), destinations=m['To'])
+        self.logger.info('Sending email. Sending to: {}'.format(self.email))
