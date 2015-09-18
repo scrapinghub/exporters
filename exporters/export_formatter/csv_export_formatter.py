@@ -1,6 +1,7 @@
 import csv
 import io
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
+from exporters.records.base_record import BaseRecord
 
 
 class CSVExportFormatter(BaseExportFormatter):
@@ -15,8 +16,8 @@ class CSVExportFormatter(BaseExportFormatter):
         'null_element': {'type': basestring, 'default': ''}
     }
 
-    def __init__(self, options, settings):
-        super(CSVExportFormatter, self).__init__(options, settings)
+    def __init__(self, options):
+        super(CSVExportFormatter, self).__init__(options)
         self.show_titles = self.read_option('show_titles')
         self.titles_already_shown = False
         self.delimiter = self.read_option('delimiter')
@@ -32,7 +33,8 @@ class CSVExportFormatter(BaseExportFormatter):
     def format(self, batch):
         if self.show_titles and not self.titles_already_shown:
             # Show titles
-            item = self.delimiter.join(self.titles) + self.line_end_character
+            item = BaseRecord({})
+            item.formatted = self.delimiter.join(self.titles) + self.line_end_character
             self.titles_already_shown = True
             yield item
 

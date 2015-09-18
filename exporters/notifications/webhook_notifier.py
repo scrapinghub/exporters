@@ -1,6 +1,5 @@
 import json
 import logging
-import requests
 from exporters.notifications.base_notifier import BaseNotifier
 from retrying import retry
 import datetime
@@ -26,13 +25,13 @@ class WebhookNotifier(BaseNotifier):
             Endpoints waiting for a start notification
 
     """
-    def __init__(self, options, settings):
+    def __init__(self, options):
         # List of options
         self.parameters = {
             'endpoints': {'type': list, 'default': []}
         }
 
-        super(WebhookNotifier, self).__init__(options, settings)
+        super(WebhookNotifier, self).__init__(options)
         self.options = options['options']
         self.endpoints = self.options.get('endpoints', [])
 
@@ -68,5 +67,6 @@ class WebhookNotifier(BaseNotifier):
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def _make_request(self, url, payload):
+        import requests
         headers = {'Content-type': 'application/json'}
         requests.post(url, data=payload, headers=headers)

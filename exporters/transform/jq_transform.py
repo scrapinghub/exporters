@@ -1,7 +1,6 @@
 import yaml
 from exporters.records.base_record import BaseRecord
 from exporters.transform.base_transform import BaseTransform
-from jq import jq
 
 
 class JQTransform(BaseTransform):
@@ -19,14 +18,15 @@ class JQTransform(BaseTransform):
         'jq_filter': {'type': basestring}
     }
 
-    def __init__(self, options, settings):
-        super(JQTransform, self).__init__(options, settings)
+    def __init__(self, options):
+        super(JQTransform, self).__init__(options)
         self.jq_expression = self.read_option('jq_filter')
         self.logger.info('JQTransform has been initiated. Expression: {}'.format(self.jq_expression))
         if not self.is_valid_jq_expression(self.jq_expression):
             raise ValueError('JQ expression is not valid')
 
     def transform_batch(self, batch):
+        from jq import jq
         for item in batch:
             transformed_item = jq(self.jq_expression).transform(item)
             if not isinstance(transformed_item, dict):

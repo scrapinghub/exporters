@@ -9,8 +9,8 @@ class NoGrouper(BaseGrouper):
 
     }
 
-    def __init__(self, options, settings):
-        super(NoGrouper, self).__init__(options, settings)
+    def __init__(self, options):
+        super(NoGrouper, self).__init__(options)
 
     def group_batch(self, batch):
         return batch

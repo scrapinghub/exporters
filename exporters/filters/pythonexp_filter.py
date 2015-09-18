@@ -16,8 +16,8 @@ class PythonexpFilter(BaseFilter):
         'python_expression': {'type': basestring}
     }
 
-    def __init__(self, options, settings):
-        super(PythonexpFilter, self).__init__(options, settings)
+    def __init__(self, options):
+        super(PythonexpFilter, self).__init__(options)
         self.expression = self.read_option('python_expression')
         self.interpreter = Interpreter()
         self.logger.info('PythonexpFilter has been initiated. Expression: {!r}'.format(self.expression))
