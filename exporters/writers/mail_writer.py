@@ -1,6 +1,5 @@
 import email
 import uuid
-import boto
 import os
 from exporters.writers.base_writer import BaseWriter
 from exporters.writers.base_writer import ItemsLimitReached
@@ -36,6 +35,7 @@ class MailWriter(BaseWriter):
     }
 
     def __init__(self, options):
+        import boto
         super(MailWriter, self).__init__(options)
         self.emails = self.read_option('emails')
         self.subject = self.read_option('subject')
