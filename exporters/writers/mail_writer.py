@@ -6,8 +6,6 @@ from exporters.writers.base_writer import BaseWriter
 from exporters.writers.base_writer import ItemsLimitReached
 from retrying import retry
 
-ITEMS_PER_BUFFER_WRITE = 3000
-
 
 class MailWriter(BaseWriter):
     """
@@ -29,7 +27,7 @@ class MailWriter(BaseWriter):
     """
 
     parameters = {
-        'email': {'type': list},
+        'emails': {'type': list},
         'subject': {'type': basestring},
         'from': {'type': basestring},
         'max_mails_sent': {'type': int, 'default': 5},
@@ -39,27 +37,27 @@ class MailWriter(BaseWriter):
 
     def __init__(self, options):
         super(MailWriter, self).__init__(options)
-        self.email = self.read_option('email')
+        self.emails = self.read_option('emails')
         self.subject = self.read_option('subject')
         self.sender = self.read_option('from')
         self.max_mails_sent = self.read_option('max_mails_sent')
         self.mails_sent = 0
-        self.items_per_buffer_write = self.options.get('items_per_buffer_write', ITEMS_PER_BUFFER_WRITE)
         self.ses = boto.connect_ses(self.options['aws_login'], self.options['aws_key'])
-        self.logger.info('MailWriter has been initiated. Sending to: {}'.format(self.email))
+        self.logger.info('MailWriter has been initiated. Sending to: {}'.format(self.emails))
+        self.writer_finished = False
 
     def write(self, dump_path, group_key=None):
-        if self.max_mails_sent == self.mails_sent:
-            raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'
-                                    .format(self.mails_sent))
+        if self.writer_finished:
+            return
+
         m = email.mime.multipart.MIMEMultipart()
         m['Subject'] = self.subject
         m['From'] = self.sender
 
         # Attachment
         key_name = '{}_{}.{}'.format('ds_dump', uuid.uuid4(), 'gz')
+        filesize = os.path.getsize(dump_path)
         with open(dump_path, 'rb') as fd:
-            filesize = os.path.getsize(dump_path)
             part = email.mime.base.MIMEBase('application', 'octet-stream')
             part.set_payload(fd.read())
             email.encoders.encode_base64(part)
@@ -69,20 +67,25 @@ class MailWriter(BaseWriter):
         # Message body
         body = "File Name: {key_name} \n"
         body += "Size: {filesize}\n"
-        body += "Number of Records: {ITEMS_PER_BUFFER_WRITE}\n"
+        body += "Number of Records: {buffered_items}\n"
 
         body = body.format(
             key_name=key_name,
             filesize=filesize,
-            ITEMS_PER_BUFFER_WRITE=ITEMS_PER_BUFFER_WRITE
+            buffered_items=self.grouping_info[tuple(group_key)]['buffered_items']
         )
         part = email.mime.text.MIMEText(body)
         m.attach(part)
 
-        for destination in self.email:
+        for destination in self.emails:
             self.send_mail(m, destination)
         self.mails_sent += 1
         self.logger.debug('Sent {}'.format(dump_path))
+
+        if self.max_mails_sent == self.mails_sent:
+            self.writer_finished = True
+            raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'
+                                    .format(self.mails_sent))
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def send_mail(self, m, destination):
