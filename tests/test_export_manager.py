@@ -1,7 +1,7 @@
 import unittest
 from exporters.export_managers.base_exporter import BaseExporter
-from exporters.export_managers.bypass import BaseBypass, S3Bypass
-from exporters.export_managers.unified_exporter import UnifiedExporter
+from exporters.export_managers.basic_exporter import BasicExporter
+from exporters.export_managers.bypass import BaseBypass
 from exporters.exporter_config import ExporterConfig
 from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
@@ -77,8 +77,7 @@ class BaseExportManagerTest(unittest.TestCase):
         self.exporter._clean_export_job()
 
 
-
-class UnifiedExportManagerTest(unittest.TestCase):
+class BasicExportManagerTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
@@ -132,7 +131,7 @@ class UnifiedExportManagerTest(unittest.TestCase):
                 }
             }
         }
-        self.exporter = UnifiedExporter(self.options)
+        self.exporter = BasicExporter(self.options)
 
     def tearDown(self):
         self.exporter._clean_export_job()
@@ -142,9 +141,7 @@ class UnifiedExportManagerTest(unittest.TestCase):
         self.assertTrue(isinstance(self.exporter.writer, ConsoleWriter))
         self.assertTrue(isinstance(self.exporter.transform, NoTransform))
 
-
     def test_from_file_configuration(self):
-        test_manager = UnifiedExporter.from_file_configuration('./tests/data/basic_config.json')
-        self.assertIsInstance(test_manager, UnifiedExporter)
+        test_manager = BasicExporter.from_file_configuration('./tests/data/basic_config.json')
+        self.assertIsInstance(test_manager, BasicExporter)
         test_manager._clean_export_job()
-
