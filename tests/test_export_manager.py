@@ -2,6 +2,7 @@ import unittest
 from exporters.export_managers.base_exporter import BaseExporter
 from exporters.export_managers.basic_exporter import BasicExporter
 from exporters.export_managers.bypass import BaseBypass
+from exporters.exporter_config import ExporterConfig
 from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
 from exporters.writers.console_writer import ConsoleWriter
@@ -130,7 +131,7 @@ class BasicExportManagerTest(unittest.TestCase):
                 }
             }
         }
-        self.manager = BasicExporter(self.options)
+        self.exporter = BasicExporter(self.options)
 
     def tearDown(self):
         self.exporter._clean_export_job()
