@@ -11,7 +11,7 @@ class BaseFilter(BasePipelineItem):
     def __init__(self, options):
         super(BaseFilter, self).__init__(options)
         self.check_options()
-        self.logger = FilterLogger(options.get('settings', {}))
+        self.logger = FilterLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
         self.filtered_out = 0
         self.total = 0
 

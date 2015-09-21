@@ -47,7 +47,7 @@ class BaseWriter(BasePipelineItem):
         self.items_per_buffer_write = self.read_option('items_per_buffer_write')
         self.size_per_buffer_write = self.read_option('size_per_buffer_write')
         self.items_limit = self.read_option('items_limit')
-        self.logger = WriterLogger(options.get('settings', {}))
+        self.logger = WriterLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
         self.items_count = 0
         self.grouping_info = {}
 
