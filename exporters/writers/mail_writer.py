@@ -89,5 +89,6 @@ class MailWriter(BaseWriter):
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def send_mail(self, m, destination):
-        self.ses.send_raw_email(source=m['From'], raw_message=m.as_string(), destinations=destination)
         self.logger.info('Sending email. Sending to: {}'.format(destination))
+        self.ses.send_raw_email(source=m['From'], raw_message=m.as_string(), destinations=destination)
+        self.logger.info('Email sent to {}'.format(destination))
