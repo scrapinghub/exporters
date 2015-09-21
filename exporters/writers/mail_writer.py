@@ -2,8 +2,13 @@ import email
 import uuid
 import os
 from exporters.writers.base_writer import BaseWriter
-from exporters.writers.base_writer import ItemsLimitReached
 from retrying import retry
+
+
+class MaxMailsSent(Exception):
+    """
+    This exception is thrown when we try to send more than allowed mails number
+    """
 
 
 class MailWriter(BaseWriter):
@@ -47,8 +52,10 @@ class MailWriter(BaseWriter):
         self.writer_finished = False
 
     def write(self, dump_path, group_key=None):
-        if self.writer_finished:
-            return
+
+        if self.max_mails_sent == self.mails_sent:
+            raise MaxMailsSent('Finishing job after max_mails_sent reached: {} mails sent.'
+                               .format(self.mails_sent))
 
         m = email.mime.multipart.MIMEMultipart()
         m['Subject'] = self.subject
@@ -81,11 +88,6 @@ class MailWriter(BaseWriter):
             self.send_mail(m, destination)
         self.mails_sent += 1
         self.logger.debug('Sent {}'.format(dump_path))
-
-        if self.max_mails_sent == self.mails_sent:
-            self.writer_finished = True
-            raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'
-                                    .format(self.mails_sent))
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def send_mail(self, m, destination):
