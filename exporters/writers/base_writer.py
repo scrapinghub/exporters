@@ -9,6 +9,7 @@ import tempfile
 TEMP_FILES_NAME = 'temp'
 
 ITEMS_PER_BUFFER_WRITE = 10000
+SIZE_PER_BUFFER_WRITE = 0
 
 
 class ItemsLimitReached(Exception):
@@ -34,6 +35,7 @@ class BaseWriter(BasePipelineItem):
     """
     base_parameters = {
         'items_per_buffer_write': {'type': int, 'default': ITEMS_PER_BUFFER_WRITE},
+        'size_per_buffer_write': {'type': int, 'default': SIZE_PER_BUFFER_WRITE},
         'items_limit': {'type': int, 'default': 0},
     }
 
@@ -43,6 +45,7 @@ class BaseWriter(BasePipelineItem):
         self.tmp_folder = tempfile.mkdtemp()
         self.check_options()
         self.items_per_buffer_write = self.read_option('items_per_buffer_write')
+        self.size_per_buffer_write = self.read_option('size_per_buffer_write')
         self.items_limit = self.read_option('items_limit')
         self.logger = WriterLogger(options.get('settings', {}))
         self.items_count = 0
@@ -62,6 +65,9 @@ class BaseWriter(BasePipelineItem):
             self._send_item_to_buffer(item)
 
     def _should_write_buffer(self, key):
+        if self.size_per_buffer_write and os.path.getsize(
+                self.grouping_info[key]['group_file'][-1]) >= self.size_per_buffer_write:
+            return True
         return self.grouping_info[key].get('buffered_items', 0) >= self.items_per_buffer_write
 
     def _send_item_to_buffer(self, item):
@@ -82,7 +88,8 @@ class BaseWriter(BasePipelineItem):
             self._write_buffer(key)
         self.items_count += 1
         if self.items_limit and self.items_limit == self.items_count:
-            raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'.format(self.items_count))
+            raise ItemsLimitReached(
+                'Finishing job after items_limit reached: {} items written.'.format(self.items_count))
 
     def _get_group_path(self, key):
         if self.grouping_info[key]['group_file']:
@@ -95,12 +102,12 @@ class BaseWriter(BasePipelineItem):
     def _add_to_buffer(self, item, key):
         path = self._get_group_path(key)
         with open(path, 'a') as f:
-            f.write(item.formatted+'\n')
+            f.write(item.formatted + '\n')
         self.grouping_info[key]['total_items'] += 1
         self.grouping_info[key]['buffered_items'] += 1
 
     def _compress_file(self, path):
-        compressed_path = path+'.gz'
+        compressed_path = path + '.gz'
         with gzip.open(compressed_path, 'wb') as predump_file, open(path) as fl:
             shutil.copyfileobj(fl, predump_file)
         return compressed_path
@@ -108,6 +115,8 @@ class BaseWriter(BasePipelineItem):
     def _create_buffer_path_for_key(self, key):
         new_buffer_path = os.path.join(self.tmp_folder, str(uuid.uuid4()))
         self.grouping_info[key]['group_file'].append(new_buffer_path)
+        f = open(new_buffer_path, 'w')
+        f.close()
 
     def _write_buffer(self, key):
         path = self._get_group_path(key)
