@@ -17,6 +17,9 @@ class BaseWriterTest(unittest.TestCase):
         }
         self.writer = BaseWriter(self.options)
 
+    def tearDown(self):
+        self.writer.close_writer()
+
     def test_write_not_implemented(self):
         with self.assertRaises(NotImplementedError):
             self.writer.write('', '')
@@ -32,6 +35,9 @@ class ConsoleWriterTest(unittest.TestCase):
             }
         }
         self.writer = ConsoleWriter(self.options)
+
+    def tearDown(self):
+        self.writer.close_writer()
 
     def test_write_console(self):
         items_to_write = []

@@ -76,6 +76,7 @@ class S3WriterTest(unittest.TestCase):
 
         # then:
         self.assertEquals('eu-west-1', writer.bucket.get_location())
+        writer.close_writer()
 
     def get_writer_config(self):
         return {
