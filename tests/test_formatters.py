@@ -4,7 +4,6 @@ import unittest
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
-from exporters.export_managers.settings import Settings
 from exporters.records.base_record import BaseRecord
 
 
@@ -49,7 +48,6 @@ class JsonFormatterTest(unittest.TestCase):
 class CSVFormatterTest(unittest.TestCase):
 
     def setUp(self):
-        self.settings = Settings({})
         self.batch = [
             BaseRecord({'key1': 'value1', 'key2': 'value2'}),
             BaseRecord({'key1': 'value1', 'key2': 'value2'}),

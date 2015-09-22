@@ -10,8 +10,6 @@ class KafkaScannerReader(BaseReader):
     """
     Reads items from kafka brokers.
 
-    Needed parameters:
-
         - batch_size (int)
             Number of items to be returned in each batch
 
@@ -26,7 +24,7 @@ class KafkaScannerReader(BaseReader):
     """
 
      # List of options to set up the reader
-    parameters = {
+    supported_options = {
         'batch_size': {'type': int, 'default': 10000},
         'brokers': {'type': list},
         'topic': {'type': basestring},

@@ -1,6 +1,7 @@
-from exporters.parameterized import Parameterized
+from exporters.pipeline.base_pipeline_item import BasePipelineItem
 
-class BaseNotifier(Parameterized):
+
+class BaseNotifier(BasePipelineItem):
     """
     This module takes care of notifications delivery. It has a slightly different architecture than the others due to the support
     of multiple notification endpoints to be loaded at the same time. As you can see in the provided example, the notifications

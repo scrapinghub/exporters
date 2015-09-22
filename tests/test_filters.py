@@ -1,5 +1,4 @@
 import unittest
-from exporters.export_managers.settings import Settings
 from exporters.filters.base_filter import BaseFilter
 from exporters.filters.key_value_filter import KeyValueFilter
 from exporters.filters.key_value_regex_filter import KeyValueRegexFilter

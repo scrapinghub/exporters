@@ -12,8 +12,6 @@ class RandomReader(BaseReader):
     """
     It is just a reader with testing purposes. It generates random data in a quantity that is set in its config section.
 
-    Needed parameters:
-
         - number_of_items (int)
             Number of total items that must be returned by the reader before finishing.
 
@@ -21,7 +19,7 @@ class RandomReader(BaseReader):
             Number of items to be returned in each batch
     """
 
-    parameters = {
+    supported_options = {
         'number_of_items': {'type': int, 'default': 1000},
         'batch_size': {'type': int, 'default': 100}
     }

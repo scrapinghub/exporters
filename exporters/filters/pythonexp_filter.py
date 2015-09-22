@@ -6,13 +6,11 @@ class PythonexpFilter(BaseFilter):
     """
     Filter items depending on python expression.
 
-    Needed parameters:
-
         - python_expression (str)
             Python expression to filter by.
     """
     # List of options
-    parameters = {
+    supported_options = {
         'python_expression': {'type': basestring}
     }
 

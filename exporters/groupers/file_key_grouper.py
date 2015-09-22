@@ -5,12 +5,10 @@ class FileKeyGrouper(BaseGrouper):
     """
     Groups items depending on their keys. It adds the group membership information to items.
 
-        Needed parameters:
-
         - keys (list)
             A list of keys to group by
     """
-    parameters = {
+    supported_options = {
         'keys': {'type': list}
     }
 

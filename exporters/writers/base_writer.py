@@ -33,7 +33,7 @@ class BaseWriter(BasePipelineItem):
     This module receives a batch and writes it where needed. It adds an optionsl items_limit parameter to allow
      to limit the number of exported items. If set to 0, there is no limit.
     """
-    base_parameters = {
+    base_supported_options = {
         'items_per_buffer_write': {'type': int, 'default': ITEMS_PER_BUFFER_WRITE},
         'size_per_buffer_write': {'type': int, 'default': SIZE_PER_BUFFER_WRITE},
         'items_limit': {'type': int, 'default': 0},
@@ -47,7 +47,7 @@ class BaseWriter(BasePipelineItem):
         self.items_per_buffer_write = self.read_option('items_per_buffer_write')
         self.size_per_buffer_write = self.read_option('size_per_buffer_write')
         self.items_limit = self.read_option('items_limit')
-        self.logger = WriterLogger(options.get('settings', {}))
+        self.logger = WriterLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
         self.items_count = 0
         self.grouping_info = {}
 

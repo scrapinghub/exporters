@@ -1,6 +1,5 @@
 import random
 import unittest
-from exporters.export_managers.settings import Settings
 from exporters.records.base_record import BaseRecord
 from exporters.writers.base_writer import BaseWriter
 from exporters.writers.console_writer import ConsoleWriter
@@ -10,10 +9,8 @@ class BaseWriterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'settings': {
-                'log_level': 'DEBUG',
-                'logger_name': 'export-pipeline'
-            }
+            'log_level': 'DEBUG',
+            'logger_name': 'export-pipeline'
         }
         self.writer = BaseWriter(self.options)
 
@@ -29,10 +26,8 @@ class ConsoleWriterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'settings': {
-                'log_level': 'DEBUG',
-                'logger_name': 'export-pipeline'
-            }
+            'log_level': 'DEBUG',
+            'logger_name': 'export-pipeline'
         }
         self.writer = ConsoleWriter(self.options)
 

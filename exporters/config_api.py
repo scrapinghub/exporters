@@ -55,49 +55,49 @@ class ConfigApi(object):
                 classes_names.append(obj.__module__ + '.' + obj.__name__)
         return classes_names
 
-    def get_module_parameters(self, module_name):
+    def get_module_supported_options(self, module_name):
         try:
             class_path_list = module_name.split('.')
             mod = import_module('.'.join(class_path_list[0:-1]))
+            supported_options = getattr(mod, class_path_list[-1]).supported_options
+            return supported_options
         except Exception as e:
             raise InvalidConfigError('There was a problem loading {} class. Exception: {}'.format(module_name, e))
-        parameters = getattr(mod, class_path_list[-1]).parameters
-        return parameters
 
     def check_valid_config(self, config):
         if self._find_missing_sections(config):
             raise InvalidConfigError(
                 "Configuration is missing sections: %s" % ', '.join(self._find_missing_sections(config)))
-        self._check_valid_parameters(config['reader'])
-        self._check_valid_parameters(config['writer'])
+        self._check_valid_options(config['reader'])
+        self._check_valid_options(config['writer'])
         if 'filter' in config:
-            self._check_valid_parameters(config['filter'])
+            self._check_valid_options(config['filter'])
         if 'filter_before' in config:
-            self._check_valid_parameters(config['filter_before'])
+            self._check_valid_options(config['filter_before'])
         if 'filter_after' in config:
-            self._check_valid_parameters(config.get('filter_after'))
+            self._check_valid_options(config.get('filter_after'))
         if 'transform' in config:
-            self._check_valid_parameters(config['transform'])
+            self._check_valid_options(config['transform'])
         if 'persistence' in config:
-            self._check_valid_parameters(config['persistence'])
+            self._check_valid_options(config['persistence'])
         return True
 
     def _find_missing_sections(self, config):
         return set(self.required_sections) - set(config.keys())
 
-    def _check_required_config_section(self, parameter, config_section):
-        if parameter.name not in config_section['options']:
-            raise InvalidConfigError('{} parameter is missing'.format(parameter.name))
-        if not isinstance(config_section['options'][parameter.name], parameter.options['type']):
+    def _check_required_config_section(self, option_definition, config_section):
+        if option_definition.name not in config_section['options']:
+            raise InvalidConfigError('{} option_definition is missing'.format(option_definition.name))
+        if not isinstance(config_section['options'][option_definition.name], option_definition.options['type']):
             raise InvalidConfigError(
-                'Wrong type for parameter {}. Found: {}. Expected {}'.format(parameter.name, type(
-                    config_section['options'][parameter.name]), parameter.options['type']))
+                'Wrong type for option {}. Found: {}. Expected {}'.format(option_definition.name, type(
+                    config_section['options'][option_definition.name]), option_definition.options['type']))
 
-    def _check_valid_parameters(self, config_section):
+    def _check_valid_options(self, config_section):
         if 'name' not in config_section or 'options' not in config_section:
-            raise InvalidConfigError('Module has not name or options parameter')
-        # We only check the required parameters
-        parameters = [Parameter(name=r_name, options=r_info) for r_name, r_info in
-                      self.get_module_parameters(config_section['name']).iteritems() if not 'default' in r_info]
-        for parameter in parameters:
-            self._check_required_config_section(parameter, config_section)
+            raise InvalidConfigError('Module is missing name or option definitions')
+        # We only check the required supported_options
+        supported_options = [Parameter(name=r_name, options=r_info) for r_name, r_info in
+                      self.get_module_supported_options(config_section['name']).iteritems() if not 'default' in r_info]
+        for supported_option in supported_options:
+            self._check_required_config_section(supported_option, config_section)

@@ -20,7 +20,7 @@ class Job(Base):
 
 
 class BaseAlchemyPersistence(BasePersistence):
-    parameters = {
+    supported_options = {
         'user': {'type': basestring},
         'password': {'type': basestring},
         'host': {'type': basestring},

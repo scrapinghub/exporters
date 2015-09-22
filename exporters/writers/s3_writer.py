@@ -10,8 +10,6 @@ class S3Writer(BaseWriter):
     """
     Writes items to S3 bucket.
 
-    Needed parameters:
-
         - bucket (str)
             Name of the bucket to write the items to.
 
@@ -27,7 +25,7 @@ class S3Writer(BaseWriter):
         - aws_region (str)
             AWS region to connect to.
     """
-    parameters = {
+    supported_options = {
         'bucket': {'type': basestring},
         'aws_access_key_id': {'type': basestring},
         'aws_secret_access_key': {'type': basestring},

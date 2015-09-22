@@ -10,8 +10,6 @@ class SFTPWriter(BaseWriter):
     """
     Writes items to SFTP server.
 
-    Needed parameters:
-
         - host (str)
             SFtp server ip
 
@@ -27,7 +25,7 @@ class SFTPWriter(BaseWriter):
         - filebase (str)
             Base path to store the items in.
     """
-    parameters = {
+    supported_options = {
         'host': {'type': basestring},
         'port': {'type': int},
         'sftp_user': {'type': basestring},

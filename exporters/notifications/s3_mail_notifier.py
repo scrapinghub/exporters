@@ -10,8 +10,6 @@ class S3MailNotifier(BaseNotifier):
     """
     Sends emails using aws mail service
 
-    Needed parameters:
-
         - team_mails (list)
             List of the mails from the team members
 
@@ -26,7 +24,7 @@ class S3MailNotifier(BaseNotifier):
     """
     def __init__(self, options):
         # List of options
-        self.parameters = {
+        self.supported_options = {
             'team_mails': {'type': list, 'default': []},
             'client_mails': {'type': list, 'default': []},
             'aws_login': {'type': basestring},

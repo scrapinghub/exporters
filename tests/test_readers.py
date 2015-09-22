@@ -1,5 +1,4 @@
 import unittest
-from exporters.export_managers.settings import Settings
 from exporters.readers.base_reader import BaseReader
 from exporters.readers.random_reader import RandomReader
 

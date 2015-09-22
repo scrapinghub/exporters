@@ -9,17 +9,17 @@ class ExporterConfig(object):
         self.configuration = configuration
         self.curate_configuration(configuration)
         self.exporter_options = self.configuration['exporter_options']
-        self.reader_options = self._merge_options_and_settings('reader')
+        self.reader_options = self._merge_options('reader')
         if 'filter' in self.configuration:
-            self.filter_before_options = self._merge_options_and_settings('filter')
+            self.filter_before_options = self._merge_options('filter')
         else:
-            self.filter_before_options = self._merge_options_and_settings('filter_before', DEFAULT_FILTER_CLASS)
-        self.filter_after_options = self._merge_options_and_settings('filter_after', DEFAULT_FILTER_CLASS)
-        self.transform_options = self._merge_options_and_settings('transform', DEFAULT_TRANSFORM_CLASS)
-        self.grouper_options = self._merge_options_and_settings('grouper', DEFAULT_GROUPER_CLASS)
-        self.writer_options = self._merge_options_and_settings('writer')
-        self.persistence_options = self._merge_options_and_settings('persistence', DEFAULT_PERSISTENCE_CLASS)
-        self.stats_options = self._merge_options_and_settings('stats_manager', DEFAULT_STATS_MANAGER_CLASS)
+            self.filter_before_options = self._merge_options('filter_before', DEFAULT_FILTER_CLASS)
+        self.filter_after_options = self._merge_options('filter_after', DEFAULT_FILTER_CLASS)
+        self.transform_options = self._merge_options('transform', DEFAULT_TRANSFORM_CLASS)
+        self.grouper_options = self._merge_options('grouper', DEFAULT_GROUPER_CLASS)
+        self.writer_options = self._merge_options('writer')
+        self.persistence_options = self._merge_options('persistence', DEFAULT_PERSISTENCE_CLASS)
+        self.stats_options = self._merge_options('stats_manager', DEFAULT_STATS_MANAGER_CLASS)
         self.formatter_options = self.configuration['exporter_options'].get('formatter', DEFAULT_FORMATTER_CLASS)
         self.notifiers = self.configuration['exporter_options'].get('notifications', [])
 
@@ -34,9 +34,13 @@ class ExporterConfig(object):
     def __str__(self):
         return json.dumps(self.configuration)
 
-    def _merge_options_and_settings(self, module_name, default=None):
+    def _merge_options(self, module_name, default=None):
         options = self.configuration.get(module_name, default)
-        options.update({'settings': {'log_level': self.exporter_options.get('log_level', DEFAULT_LOGGER_LEVEL),
-                                     'logger_name': self.exporter_options.get('logger_name', DEFAULT_LOGGER_NAME)},
-                        'configuration': self.configuration})
+        options.update(self.log_options)
+        options.update({'configuration': self.configuration})
         return options
+
+    @property
+    def log_options(self):
+        return {'log_level': self.exporter_options.get('log_level', DEFAULT_LOGGER_LEVEL),
+                'logger_name': self.exporter_options.get('logger_name', DEFAULT_LOGGER_NAME)}
