@@ -10,8 +10,6 @@ class FSWriter(BaseWriter):
     """
     Writes items to local file system.
 
-    Needed parameters:
-
         - tmp_folder (str)
             Path to store temp files.
 
@@ -19,7 +17,7 @@ class FSWriter(BaseWriter):
             Final path of items file.
     """
 
-    parameters = {
+    supported_options = {
         'filebase': {'type': basestring, 'default': '.'}
     }
 

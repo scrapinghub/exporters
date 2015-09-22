@@ -32,13 +32,13 @@ class BaseNotifierTest(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             self.notifier.notify_failed_job('', '', [])
 
-    def test_check_not_existing_required_parameter(self):
+    def test_check_not_existing_required_supported_option(self):
         with self.assertRaises(Exception):
             test_notifier = self.notifier
-            test_notifier.parameters.append({'name': 'test', 'type': basestring})
+            test_notifier.supported_options.append({'name': 'test', 'type': basestring})
             test_notifier.check_options()
 
-    def test_check_not_required_parameter(self):
+    def test_check_not_required_supported_option(self):
         options = {
             'exporter_options': {
                 'LOG_LEVEL': 'DEBUG',
@@ -50,10 +50,10 @@ class BaseNotifierTest(unittest.TestCase):
         }
 
         test_notifier = BaseNotifier(options)
-        test_notifier.parameters['test'] = {'type': int, 'default': 5}
+        test_notifier.supported_options['test'] = {'type': int, 'default': 5}
         test_notifier.check_options()
 
-    def test_check_bad_type_required_parameter(self):
+    def test_check_bad_type_required_supported_option(self):
         options = {
             'exporter_options': {
                 'LOG_LEVEL': 'DEBUG',
@@ -65,7 +65,7 @@ class BaseNotifierTest(unittest.TestCase):
         }
         with self.assertRaises(Exception):
             test_notifier = BaseNotifier(options)
-            test_notifier.parameters.append({'name': 'test', 'type': basestring})
+            test_notifier.supported_options.append({'name': 'test', 'type': basestring})
             test_notifier.check_options()
 
 

@@ -10,12 +10,10 @@ class PicklePersistence(BasePersistence):
     """
     Manages persistence using pickle module loading and dumping as a backend.
 
-    Needed parameters:
-
         - file_path (str)
             Path to store the pickle file
     """
-    parameters = {
+    supported_options = {
         'file_path': {'type': basestring, 'default': '.'}
     }
 

@@ -7,8 +7,6 @@ class HubstorageReader(BaseReader):
     """
     Reads items from Hubstorage collections.
 
-    Needed parameters:
-
         - batch_size (int)
             Number of items to be returned in each batch
 
@@ -23,7 +21,7 @@ class HubstorageReader(BaseReader):
     """
 
     # List of options to set up the reader
-    parameters = {
+    supported_options = {
         'batch_size': {'type': int, 'default': 10000},
         'apikey': {'type': basestring},
         'project_id': {'type': basestring},

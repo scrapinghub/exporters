@@ -11,8 +11,6 @@ class S3Reader(BaseReader):
     """
     Reads items from s3 keys with a common prefix.
 
-    Needed parameters:
-
         - batch_size (int)
             Number of items to be returned in each batch
 
@@ -33,7 +31,7 @@ class S3Reader(BaseReader):
     """
 
     # List of options to set up the reader
-    parameters = {
+    supported_options = {
         'batch_size': {'type': int, 'default': 10000},
         'bucket': {'type': basestring},
         'aws_access_key_id': {'type': basestring},

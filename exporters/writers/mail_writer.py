@@ -15,8 +15,6 @@ class MailWriter(BaseWriter):
     """
     Writes items for email delivery.
 
-    Needed parameters:
-
         - email (str)
             Email address where data will be sent.
 
@@ -30,7 +28,7 @@ class MailWriter(BaseWriter):
             maximum amount of emails that would be sent.
     """
 
-    parameters = {
+    supported_options = {
         'emails': {'type': list},
         'subject': {'type': basestring},
         'from': {'type': basestring},

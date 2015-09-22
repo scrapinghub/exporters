@@ -5,9 +5,6 @@ class NoGrouper(BaseGrouper):
     """
     Default group module, used when no grouping strategies are needed.
     """
-    parameters = {
-
-    }
 
     def __init__(self, options):
         super(NoGrouper, self).__init__(options)

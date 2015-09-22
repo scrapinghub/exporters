@@ -14,8 +14,6 @@ class FTPWriter(BaseWriter):
     """
     Writes items to FTP server.
 
-    Needed parameters:
-
         - host (str)
             Ftp server ip
 
@@ -31,7 +29,7 @@ class FTPWriter(BaseWriter):
         - filebase (str)
             Base path to store the items in.
     """
-    parameters = {
+    supported_options = {
         'host': {'type': basestring},
         'port': {'type': int},
         'ftp_user': {'type': basestring},

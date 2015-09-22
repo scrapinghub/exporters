@@ -12,8 +12,6 @@ class KafkaRandomReader(BaseReader):
     """
     Reads a random subset of items from kafka brokers.
 
-    Needed parameters:
-
         - record_count (int)
             Number of items to be returned in total
 
@@ -30,7 +28,7 @@ class KafkaRandomReader(BaseReader):
             Reading group for kafka client.
     """
 
-    parameters = {
+    supported_options = {
         'record_count': {'type': int},
         'batch_size': {'type': int, 'default': 10000},
         'brokers': {'type': list},

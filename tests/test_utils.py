@@ -54,18 +54,18 @@ class BasePipelineItemTest(unittest.TestCase):
 
     def test_false_required(self):
         pipelineItem = BasePipelineItem({})
-        pipelineItem.parameters = {'number_of_items': {'type': int, 'default': 10}}
+        pipelineItem.supported_options = {'number_of_items': {'type': int, 'default': 10}}
         pipelineItem.check_options()
 
     def test_not_present(self):
         pipelineItem = BasePipelineItem({})
-        pipelineItem.parameters = {'number_of_items': {'type': int}}
+        pipelineItem.supported_options = {'number_of_items': {'type': int}}
         with self.assertRaises(ValueError):
             pipelineItem.check_options()
 
     def test_wrong_type(self):
         pipelineItem = BasePipelineItem({'options': {'number_of_items': 'wrong_string'}})
-        pipelineItem.parameters = {'number_of_items': {'type': int, 'default': 10}}
+        pipelineItem.supported_options = {'number_of_items': {'type': int, 'default': 10}}
         with self.assertRaises(ValueError):
             pipelineItem.check_options()
 
@@ -74,11 +74,11 @@ class ConfigApiTest(unittest.TestCase):
     def setUp(self):
         self.config_api = ConfigApi()
 
-    def test_get_parameters(self):
+    def test_get_supported_options(self):
         for reader in self.config_api.readers:
-            parameters = self.config_api.get_module_parameters(reader)
-            print parameters
-            for requirement_name, requirement_info in parameters.iteritems():
+            supported_options = self.config_api.get_module_supported_options(reader)
+            print supported_options
+            for requirement_name, requirement_info in supported_options.iteritems():
                 self.assertIsInstance(requirement_info, dict)
                 self.assertIsInstance(requirement_name, basestring)
 
@@ -92,7 +92,7 @@ class ConfigApiTest(unittest.TestCase):
 
     def test_get_wrong_module_name(self):
         with self.assertRaises(InvalidConfigError):
-            self.config_api.get_module_parameters('not a valid module name')
+            self.config_api.get_module_supported_options('not a valid module name')
 
     def test_find_missing_sections(self):
         with self.assertRaises(InvalidConfigError):
@@ -140,7 +140,7 @@ class ConfigApiTest(unittest.TestCase):
         }
         self.assertIs(self.config_api.check_valid_config(config), True)
 
-    def test_missing_parameters(self):
+    def test_missing_supported_options(self):
         config = {
             'reader': {
                 'name': 'exporters.readers.random_reader.RandomReader',
@@ -169,7 +169,7 @@ class ConfigApiTest(unittest.TestCase):
         with self.assertRaises(InvalidConfigError):
             self.config_api.check_valid_config(config)
 
-    def test_wrong_type_parameters(self):
+    def test_wrong_type_supported_options(self):
         config = {
             'reader': {
                 'name': 'exporters.readers.random_reader.RandomReader',
@@ -202,7 +202,7 @@ class ConfigApiTest(unittest.TestCase):
 
     def test_missing_items_in_config_section(self):
         with self.assertRaises(InvalidConfigError):
-            self.config_api._check_valid_parameters({})
+            self.config_api._check_valid_supported_options({})
 
     def test_check_valid_grouper(self):
         grouper = {
@@ -210,7 +210,7 @@ class ConfigApiTest(unittest.TestCase):
             'options': {}
         }
 
-        self.assertIs(self.config_api._check_valid_parameters(grouper), None)
+        self.assertIs(self.config_api._check_valid_supported_options(grouper), None)
 
 
 class ModuleLoaderTest(unittest.TestCase):
@@ -446,7 +446,7 @@ class BaseByPassTest(unittest.TestCase):
 
 class S3ByPassTest(unittest.TestCase):
 
-    def test_not_meet_parameters(self):
+    def test_not_meet_supported_options(self):
         exporter_options = ExporterConfig({
             'reader': {'name': 'some other reader'},
             'writer': {'name': 'exporters.writers.s3_writer.S3Writer'},
@@ -457,7 +457,7 @@ class S3ByPassTest(unittest.TestCase):
         with self.assertRaises(RequisitesNotMet):
             bypass.meets_conditions()
 
-    def test_meet_parameters(self):
+    def test_meet_supported_options(self):
         exporter_options = ExporterConfig({
             'reader': {'name': 'exporters.readers.s3_reader.S3Reader'},
             'writer': {'name': 'exporters.writers.s3_writer.S3Writer'},

@@ -6,13 +6,11 @@ class PythonexpTransform(BaseTransform):
     """
     It applies python expressions to items.
 
-    Needed parameters:
-
         - python_expression (str)
             Valid python expression
     """
     # List of options to set up the transform module
-    parameters = {
+    supported_options = {
         'python_expressions': {'type': list}
     }
 

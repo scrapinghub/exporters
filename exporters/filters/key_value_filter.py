@@ -5,15 +5,13 @@ class KeyValueFilter(BaseFilter):
     """
     Filter items depending on keys and values.
 
-    Needed parameters:
-
         - keys (list)
             It is a list of dicts with the following structure: {"key": "value"}.
             The filter will delete those items that do not contain a
             key "key" or, if they do, that key is not the same as "value".
     """
     # List of options
-    parameters = {
+    supported_options = {
         'keys': {'type': list}
     }
 

@@ -8,13 +8,11 @@ class JQTransform(BaseTransform):
     It applies jq transformations to items. To see documentation about possible jq transformations please refer to its
     `official documentation <http://stedolan.github.io/jq/manual/>`_.
 
-    Needed parameters:
-
         - jq_filter (str)
             Valid jq filter
     """
     # List of options to set up the batch
-    parameters = {
+    supported_options = {
         'jq_filter': {'type': basestring}
     }
 

@@ -6,7 +6,7 @@ from exporters.records.base_record import BaseRecord
 
 class CSVExportFormatter(BaseExportFormatter):
 
-    parameters = {
+    supported_options = {
         'show_titles': {'type': bool, 'default': False},
         'delimiter': {'type': basestring, 'default': ','},
         'string_delimiter': {'type': basestring, 'default': '"'},

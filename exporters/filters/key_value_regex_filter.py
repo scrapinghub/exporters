@@ -5,14 +5,12 @@ class KeyValueRegexFilter(BaseFilter):
     """
     Filter items depending on keys and values.
 
-    Needed parameters:
-
         - keys (list)
             It is a list of dicts with the following structure: {"key": "regex"}.
             The filter will delete those items that do not contain a
             key "key" or, if they do, that key value does not match "regex".
     """
-    parameters = {
+    supported_options = {
         'keys': {'type': list}
     }
 

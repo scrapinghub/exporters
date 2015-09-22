@@ -19,15 +19,13 @@ class WebhookNotifier(BaseNotifier):
     """
     Performs a POST request to provided endpoints
 
-    Needed parameters:
-
         - endpoints (list)
             Endpoints waiting for a start notification
 
     """
     def __init__(self, options):
         # List of options
-        self.parameters = {
+        self.supported_options = {
             'endpoints': {'type': list, 'default': []}
         }
 
