@@ -1,6 +1,5 @@
 import unittest
 from mock import patch
-from exporters.export_managers.settings import Settings
 from exporters.exporter_config import ExporterConfig
 from exporters.persistence.alchemy_persistence import MysqlPersistence, PostgresqlPersistence
 from exporters.persistence.base_persistence import BasePersistence
@@ -305,7 +304,6 @@ class PostgresqlPersistenceTest(unittest.TestCase):
             'reader': {},
             'writer': {}
         }
-        self.settings = Settings(self.config['exporter_options'])
 
     @patch('sqlalchemy.schema.MetaData.create_all')
     @patch('sqlalchemy.orm.session.SessionTransaction.commit')

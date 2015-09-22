@@ -1,5 +1,4 @@
 import unittest
-from exporters.export_managers.settings import Settings
 from exporters.records.base_record import BaseRecord
 from exporters.transform.base_transform import BaseTransform
 from exporters.transform.jq_transform import JQTransform

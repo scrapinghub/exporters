@@ -1,6 +1,6 @@
 import unittest
 from exporters.export_managers.base_exporter import BaseExporter
-from exporters.export_managers.bypass import BaseBypass, S3Bypass
+from exporters.export_managers.bypass import BaseBypass
 from exporters.export_managers.unified_exporter import UnifiedExporter
 from exporters.exporter_config import ExporterConfig
 from exporters.readers.random_reader import RandomReader

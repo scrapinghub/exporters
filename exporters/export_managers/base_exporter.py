@@ -1,7 +1,6 @@
 import datetime
 import traceback
 from exporters.export_managers.bypass import RequisitesNotMet
-from exporters.export_managers.settings import Settings
 from exporters.logger.base_logger import ExportManagerLogger
 from exporters.notifications.notifiers_list import NotifiersList
 from exporters.module_loader import ModuleLoader
@@ -14,8 +13,7 @@ class BaseExporter(object):
 
     def __init__(self, configuration):
         self.config = ExporterConfig(configuration)
-        self.settings = Settings(self.config.exporter_options)
-        self.logger = ExportManagerLogger(self.settings)
+        self.logger = ExportManagerLogger(self.config.log_options)
         self.module_loader = ModuleLoader()
         self.reader = self.module_loader.load_reader(self.config.reader_options)
         self.filter_before = self.module_loader.load_filter(self.config.filter_before_options)

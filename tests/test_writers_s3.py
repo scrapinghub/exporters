@@ -5,7 +5,6 @@ import boto
 import moto
 import mock
 
-from exporters.export_managers.settings import Settings
 from exporters.records.base_record import BaseRecord
 from exporters.writers.s3_writer import S3Writer
 
