@@ -183,7 +183,7 @@ class ConfigApiTest(unittest.TestCase):
 
     def test_missing_items_in_config_section(self):
         with self.assertRaises(InvalidConfigError):
-            self.config_api._check_valid_supported_options({})
+            self.config_api._check_valid_options({})
 
     def test_check_valid_grouper(self):
         grouper = {
@@ -191,7 +191,7 @@ class ConfigApiTest(unittest.TestCase):
             'options': {}
         }
 
-        self.assertIs(self.config_api._check_valid_supported_options(grouper), None)
+        self.assertIs(self.config_api._check_valid_options(grouper), None)
 
 
 class ModuleLoaderTest(unittest.TestCase):

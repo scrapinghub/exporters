@@ -59,41 +59,41 @@ class ConfigApi(object):
         try:
             class_path_list = module_name.split('.')
             mod = import_module('.'.join(class_path_list[0:-1]))
+            supported_options = getattr(mod, class_path_list[-1]).supported_options
+            return supported_options
         except Exception as e:
             raise InvalidConfigError('There was a problem loading {} class. Exception: {}'.format(module_name, e))
-        supported_options = getattr(mod, class_path_list[-1]).supported_options
-        return supported_options
 
     def check_valid_config(self, config):
         if self._find_missing_sections(config):
             raise InvalidConfigError(
                 "Configuration is missing sections: %s" % ', '.join(self._find_missing_sections(config)))
-        self._check_valid_supported_options(config['reader'])
-        self._check_valid_supported_options(config['writer'])
+        self._check_valid_options(config['reader'])
+        self._check_valid_options(config['writer'])
         if 'filter' in config:
-            self._check_valid_supported_options(config['filter'])
+            self._check_valid_options(config['filter'])
         if 'filter_before' in config:
-            self._check_valid_supported_options(config['filter_before'])
+            self._check_valid_options(config['filter_before'])
         if 'filter_after' in config:
-            self._check_valid_supported_options(config.get('filter_after'))
+            self._check_valid_options(config.get('filter_after'))
         if 'transform' in config:
-            self._check_valid_supported_options(config['transform'])
+            self._check_valid_options(config['transform'])
         if 'persistence' in config:
-            self._check_valid_supported_options(config['persistence'])
+            self._check_valid_options(config['persistence'])
         return True
 
     def _find_missing_sections(self, config):
         return set(self.required_sections) - set(config.keys())
 
-    def _check_required_config_section(self, supported_option, config_section):
-        if supported_option.name not in config_section['options']:
-            raise InvalidConfigError('{} supported_option is missing'.format(supported_option.name))
-        if not isinstance(config_section['options'][supported_option.name], supported_option.options['type']):
+    def _check_required_config_section(self, option_definition, config_section):
+        if option_definition.name not in config_section['options']:
+            raise InvalidConfigError('{} option_definition is missing'.format(option_definition.name))
+        if not isinstance(config_section['options'][option_definition.name], option_definition.options['type']):
             raise InvalidConfigError(
-                'Wrong type for supported_option {}. Found: {}. Expected {}'.format(supported_option.name, type(
-                    config_section['options'][supported_option.name]), supported_option.options['type']))
+                'Wrong type for option {}. Found: {}. Expected {}'.format(option_definition.name, type(
+                    config_section['options'][option_definition.name]), option_definition.options['type']))
 
-    def _check_valid_supported_options(self, config_section):
+    def _check_valid_options(self, config_section):
         if 'name' not in config_section or 'options' not in config_section:
             raise InvalidConfigError('Module has not name or options supported_option')
         # We only check the required supported_options
