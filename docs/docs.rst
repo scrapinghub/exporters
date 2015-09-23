@@ -9,7 +9,7 @@ Documentation uses `Sphinx`_.
 .. _Sphinx: http://sphinx-doc.org/tutorial.html
 
 Editing the docs
-----------------------
+----------------
 
 1. Install requirements (``watchdog`` and ``sphinx``)::
 
