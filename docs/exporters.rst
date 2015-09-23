@@ -1,7 +1,7 @@
 .. _exporters:
 
-Exporters usage and configuration
-=================================
+Exporters description
+=====================
 
 What are exporters?
 -------------------
@@ -29,23 +29,14 @@ This is an example of a config file using kafka reader and s3 writer.
 
     {
        "exporter_options":{
-           "LOG_LEVEL": "DEBUG",
-           "LOGGER_NAME": "export-pipeline",
-           "RESUME": false,
-           "JOB_ID": "",
-           "NUMBER_OF_RETRIES": 3,
-           "EXPORTER": "exporters.export_formatter.json_export_formatter.JsonExportFormatter",
-           "NOTIFICATIONS":[
-               {
-                   "name": "exporters.notifications.s3_mail_notifier.S3MailNotifier",
-                   "options":
-                       {
-                           "team_mails": ["bernardo@scrapinghub.com"],
-                           "client_mails": ["contacto@bernardobotella.com"],
-                           "aws_login": "AKIAID6WTWATZMQUKHWQ",
-                           "aws_key": "KhTJzJGoqIK+F3CUZYsIdXeUAgGgjwGlIGqBS15i"
-                       }
-               }
+           "log_level": "DEBUG",
+           "logger_name": "export-pipeline",
+           "formatter": {
+                "name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter",
+                "options":{}
+           },
+           "notifications":[
+
            ]
        },
        "reader": {
@@ -110,36 +101,16 @@ This module is in charge of the pipeline iteration, and it is the one executed t
 get a batch, call the transform module, and finally write and commit the batch. It is also in charge of notifications
 and retries management.
 
-Provided export managers
-************************
+Provided exporters
+******************
 
 BasicExporter
-##################
+#############
 .. automodule:: exporters.export_managers.basic_export_manager
     :members:
     :undoc-members:
     :show-inheritance:
 
-URLExportManager
-################
-.. automodule:: exporters.export_managers.url_export_manager
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-UnifiedExporter
-###############
-.. automodule:: exporters.export_managers.ds_export_manager
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-UnifiedLocalExporter
-####################
-.. automodule:: exporters.export_managers.ds_local_export_manager
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 Bypass support
 **************
@@ -250,6 +221,14 @@ HubstorageWriter
 FSWriter
 ########
 .. automodule:: exporters.writers.fs_writer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+MailWriter
+##########
+.. automodule:: exporters.writers.mail_writer
     :members:
     :undoc-members:
     :show-inheritance:
