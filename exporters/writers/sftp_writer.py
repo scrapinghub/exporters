@@ -2,11 +2,11 @@ import os
 import datetime
 import re
 from retrying import retry
-from exporters.writers.base_writer import BaseWriter
 import uuid
+from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
-class SFTPWriter(BaseWriter):
+class SFTPWriter(FilebaseBaseWriter):
     """
     Writes items to SFTP server.
 
@@ -29,8 +29,7 @@ class SFTPWriter(BaseWriter):
         'host': {'type': basestring},
         'port': {'type': int},
         'sftp_user': {'type': basestring},
-        'sftp_password': {'type': basestring},
-        'filebase': {'type': basestring}
+        'sftp_password': {'type': basestring}
     }
 
     def __init__(self, options):
@@ -56,5 +55,5 @@ class SFTPWriter(BaseWriter):
                                password=self.sftp_password) as sftp:
             if not sftp.exists(destination_path):
                 sftp.makedirs(destination_path)
-            sftp.put(dump_path, destination_path + '/predump_{}.gz'.format(uuid.uuid4()))
+            sftp.put(dump_path, destination_path + '/{}_{}.gz'.format(self.filename, uuid.uuid4()))
         self.logger.debug('Saved {}'.format(dump_path))

@@ -3,10 +3,10 @@ import shutil
 import datetime
 import re
 from retrying import retry
-from exporters.writers.base_writer import BaseWriter
+from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
-class FSWriter(BaseWriter):
+class FSWriter(FilebaseBaseWriter):
     """
     Writes items to local file system.
 
@@ -18,7 +18,7 @@ class FSWriter(BaseWriter):
     """
 
     supported_options = {
-        'filebase': {'type': basestring, 'default': '.'}
+
     }
 
     def __init__(self, options):
@@ -36,5 +36,5 @@ class FSWriter(BaseWriter):
         target_path = os.path.join(self.prefix, os.path.sep.join(normalized))
         self._create_path_if_not_exist(target_path)
         number_of_files = len(os.listdir(target_path))
-        shutil.move(dump_path, os.path.join(target_path, 'predump_{}.gz'.format(number_of_files)))
+        shutil.move(dump_path, os.path.join(target_path, '{}_{}.gz'.format(self.filename, number_of_files)))
         self.logger.debug('Saved {}'.format(dump_path))

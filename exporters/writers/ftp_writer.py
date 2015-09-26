@@ -2,15 +2,15 @@ import os
 import re
 import datetime
 from retrying import retry
-from exporters.writers.base_writer import BaseWriter
 import uuid
+from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
 class FtpCreateDirsException(Exception):
     pass
 
 
-class FTPWriter(BaseWriter):
+class FTPWriter(FilebaseBaseWriter):
     """
     Writes items to FTP server.
 
@@ -33,8 +33,7 @@ class FTPWriter(BaseWriter):
         'host': {'type': basestring},
         'port': {'type': int},
         'ftp_user': {'type': basestring},
-        'ftp_password': {'type': basestring},
-        'filebase': {'type': basestring}
+        'ftp_password': {'type': basestring}
     }
 
     def __init__(self, options):
@@ -95,6 +94,6 @@ class FTPWriter(BaseWriter):
         self.ftp.connect(self.ftp_host, self.ftp_port)
         self.ftp.login(self.ftp_user, self.ftp_password)
         self._create_target_dir_if_needed(destination_path)
-        self.ftp.storbinary('STOR %s' % (destination_path + '/predump_{}.gz'.format(uuid.uuid4())), open(dump_path))
+        self.ftp.storbinary('STOR %s' % (destination_path + '/{}_{}.gz'.format(self.filename, uuid.uuid4())), open(dump_path))
         self.ftp.close()
         self.logger.debug('Saved {}'.format(dump_path))
