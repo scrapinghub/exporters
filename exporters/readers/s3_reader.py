@@ -66,8 +66,8 @@ class S3Reader(BaseReader):
             self.get_key(file_path)
             self.last_line = 0
 
-        predump_file = gzip.open(file_path, 'r')
-        lines = predump_file.readlines()
+        dump_file = gzip.open(file_path, 'r')
+        lines = dump_file.readlines()
         if self.last_line+self.batch_size <= len(lines):
             last_item = self.last_line+self.batch_size
         else:
@@ -82,7 +82,7 @@ class S3Reader(BaseReader):
             line = line.replace("\n", '')
             item = BaseRecord(json.loads(line))
             yield item
-        predump_file.close()
+        dump_file.close()
 
         self.last_line += self.batch_size
 

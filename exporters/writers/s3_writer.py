@@ -54,7 +54,7 @@ class S3Writer(FilebaseBaseWriter):
         destination_path = os.path.join(self.filebase, os.path.sep.join(normalized))
         key_name = '{}/{}_{}.{}'.format(destination_path, self.filename, uuid.uuid4(), 'gz')
         key = self.bucket.new_key(key_name)
-        self.logger.debug('Uploading predump file')
+        self.logger.debug('Uploading dump file')
         with open(dump_path, 'r') as f:
             key.set_contents_from_file(f)
         key.close()

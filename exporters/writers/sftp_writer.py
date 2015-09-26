@@ -50,7 +50,7 @@ class SFTPWriter(FilebaseBaseWriter):
             group_key = []
         normalized = [re.sub('\W', '_', s) for s in group_key]
         destination_path = os.path.join(self.filebase, os.path.sep.join(normalized))
-        self.logger.debug('Uploading predump file')
+        self.logger.debug('Uploading dump file')
         with pysftp.Connection(self.sftp_host, port=self.sftp_port, username=self.sftp_user,
                                password=self.sftp_password) as sftp:
             if not sftp.exists(destination_path):

@@ -90,7 +90,7 @@ class FTPWriter(FilebaseBaseWriter):
             group_key = []
         normalized = [re.sub('\W', '_', s) for s in group_key]
         destination_path = os.path.join(self.filebase, os.path.sep.join(normalized))
-        self.logger.debug('Uploading predump file')
+        self.logger.debug('Uploading dump file')
         self.ftp.connect(self.ftp_host, self.ftp_port)
         self.ftp.login(self.ftp_user, self.ftp_password)
         self._create_target_dir_if_needed(destination_path)
