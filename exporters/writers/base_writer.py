@@ -8,7 +8,7 @@ import tempfile
 
 TEMP_FILES_NAME = 'temp'
 
-ITEMS_PER_BUFFER_WRITE = 10000
+ITEMS_PER_BUFFER_WRITE = 500000
 SIZE_PER_BUFFER_WRITE = 0
 
 
@@ -95,7 +95,7 @@ class BaseWriter(BasePipelineItem):
         if self.grouping_info[key]['group_file']:
             path = self.grouping_info[key]['group_file'][-1]
         else:
-            path = os.path.join(self.tmp_folder, str(uuid.uuid4()))
+            path = self._get_new_path_name()
             self.grouping_info[key]['group_file'].append(path)
         return path
 
@@ -113,10 +113,13 @@ class BaseWriter(BasePipelineItem):
         return compressed_path
 
     def _create_buffer_path_for_key(self, key):
-        new_buffer_path = os.path.join(self.tmp_folder, str(uuid.uuid4()))
+        new_buffer_path = self._get_new_path_name()
         self.grouping_info[key]['group_file'].append(new_buffer_path)
         f = open(new_buffer_path, 'w')
         f.close()
+
+    def _get_new_path_name(self):
+        return os.path.join(self.tmp_folder, str(uuid.uuid4())+'.jl')
 
     def _write_buffer(self, key):
         path = self._get_group_path(key)
