@@ -55,5 +55,5 @@ class SFTPWriter(FilebaseBaseWriter):
                                password=self.sftp_password) as sftp:
             if not sftp.exists(destination_path):
                 sftp.makedirs(destination_path)
-            sftp.put(dump_path, destination_path + '/{}_{}.gz'.format(self.prefix, uuid.uuid4()))
+            sftp.put(dump_path, destination_path + '/{}_{}.gz'.format(self.filenames_prefix, uuid.uuid4()))
         self.logger.debug('Saved {}'.format(dump_path))

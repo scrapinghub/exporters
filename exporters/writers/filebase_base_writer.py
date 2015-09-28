@@ -13,9 +13,9 @@ class FilebaseBaseWriter(BaseWriter):
         self.supported_options = supported_options
         super(FilebaseBaseWriter, self).__init__(options)
         self.filebase = self.read_option('filebase').format(datetime.datetime.now())
-        self.filebase_path, self.prefix = os.path.split(self.filebase)
-        if not self.prefix:
-            self.prefix = DEFAULT_FILENAME
+        self.filebase_path, self.filenames_prefix = os.path.split(self.filebase)
+        if not self.filenames_prefix:
+            self.filenames_prefix = DEFAULT_FILENAME
 
     def write(self, dump_path, group_key):
         raise NotImplementedError

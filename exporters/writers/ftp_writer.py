@@ -46,8 +46,9 @@ class FTPWriter(FilebaseBaseWriter):
         self.filebase = self.read_option('filebase').format(datetime.datetime.now())
         self.ftp = ftplib.FTP()
         self.logger.info(
-            'FTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(self.ftp_host, self.ftp_port,
-                                                                                    self.filebase))
+            'FTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(
+                self.ftp_host, self.ftp_port,
+                self.filebase))
 
     # TODO: Refactor recursivity
     def _create_target_dir_if_needed(self, target, depth_limit=20):
@@ -84,7 +85,8 @@ class FTPWriter(FilebaseBaseWriter):
             except:
                 pass
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
+    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000,
+           stop_max_attempt_number=10)
     def write(self, dump_path, group_key=None):
         if group_key is None:
             group_key = []
@@ -94,6 +96,8 @@ class FTPWriter(FilebaseBaseWriter):
         self.ftp.connect(self.ftp_host, self.ftp_port)
         self.ftp.login(self.ftp_user, self.ftp_password)
         self._create_target_dir_if_needed(destination_path)
-        self.ftp.storbinary('STOR %s' % (destination_path + '/{}_{}.gz'.format(self.prefix, uuid.uuid4())), open(dump_path))
+        self.ftp.storbinary('STOR %s' % (
+        destination_path + '/{}_{}.gz'.format(self.filenames_prefix, uuid.uuid4())),
+                            open(dump_path))
         self.ftp.close()
         self.logger.debug('Saved {}'.format(dump_path))

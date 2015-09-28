@@ -52,7 +52,7 @@ class S3Writer(FilebaseBaseWriter):
             group_key = []
         normalized = [re.sub('\W', '_', s) for s in group_key]
         destination_path = os.path.join(self.filebase_path, os.path.sep.join(normalized))
-        key_name = '{}/{}_{}.{}'.format(destination_path, self.prefix, uuid.uuid4(), 'gz')
+        key_name = '{}/{}_{}.{}'.format(destination_path, self.filenames_prefix, uuid.uuid4(), 'gz')
         key = self.bucket.new_key(key_name)
         self.logger.debug('Uploading dump file')
         with open(dump_path, 'r') as f:
