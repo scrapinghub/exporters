@@ -9,7 +9,8 @@ DEFAULT_FILENAME = 'export'
 class FilebaseBaseWriter(BaseWriter):
     def __init__(self, options):
         supported_options = getattr(self, 'supported_options')
-        supported_options['filebase'] = {'type': basestring}
+        if 'filebase' not in supported_options:
+            supported_options['filebase'] = {'type': basestring}
         self.supported_options = supported_options
         super(FilebaseBaseWriter, self).__init__(options)
         self.filebase = self.read_option('filebase').format(datetime.datetime.now())
