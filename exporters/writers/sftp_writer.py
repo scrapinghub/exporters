@@ -49,11 +49,11 @@ class SFTPWriter(FilebaseBaseWriter):
         if group_key is None:
             group_key = []
         normalized = [re.sub('\W', '_', s) for s in group_key]
-        destination_path = os.path.join(self.filebase, os.path.sep.join(normalized))
+        destination_path = os.path.join(self.filebase_path, os.path.sep.join(normalized))
         self.logger.debug('Uploading dump file')
         with pysftp.Connection(self.sftp_host, port=self.sftp_port, username=self.sftp_user,
                                password=self.sftp_password) as sftp:
             if not sftp.exists(destination_path):
                 sftp.makedirs(destination_path)
-            sftp.put(dump_path, destination_path + '/{}_{}.gz'.format(self.filename, uuid.uuid4()))
+            sftp.put(dump_path, destination_path + '/{}_{}.gz'.format(self.prefix, uuid.uuid4()))
         self.logger.debug('Saved {}'.format(dump_path))

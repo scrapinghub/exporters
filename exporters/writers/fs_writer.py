@@ -23,18 +23,17 @@ class FSWriter(FilebaseBaseWriter):
 
     def __init__(self, options):
         super(FSWriter, self).__init__(options)
-        self.prefix = self.read_option('filebase').format(datetime.datetime.now())
-        self.logger.info('FSWriter has been initiated. Writing to: {}'.format(self.prefix))
+        self.logger.info('FSWriter has been initiated. Writing to: {}'.format(self.filebase_path))
 
     def _create_path_if_not_exist(self, path):
         if not os.path.exists(path):
             os.makedirs(path)
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
+    # @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def write(self, dump_path, group_key):
         normalized = [re.sub('\W', '_', s) for s in group_key]
-        target_path = os.path.join(self.prefix, os.path.sep.join(normalized))
+        target_path = os.path.join(self.filebase_path, os.path.sep.join(normalized))
         self._create_path_if_not_exist(target_path)
         number_of_files = len(os.listdir(target_path))
-        shutil.move(dump_path, os.path.join(target_path, '{}_{}.gz'.format(self.filename, number_of_files)))
+        shutil.move(dump_path, os.path.join(target_path, '{}_{}.gz'.format(self.prefix, number_of_files)))
         self.logger.debug('Saved {}'.format(dump_path))
