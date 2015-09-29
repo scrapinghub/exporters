@@ -46,9 +46,6 @@ class S3Writer(FilebaseBaseWriter):
         self.filebase = self.read_option('filebase').format(datetime.datetime.now())
         self.logger.info('S3Writer has been initiated. Writing to s3://{}{}'.format(self.bucket, self.filebase))
 
-    def _get_file_number(self, path, filename):
-        return str(uuid.uuid4())
-
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def write(self, dump_path, group_key=None):
         if group_key is None:

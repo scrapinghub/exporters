@@ -31,12 +31,12 @@ class FSWriter(FilebaseBaseWriter):
         if not os.path.exists(path):
             os.makedirs(path)
 
-    def _get_file_number(self, path, filename, number_of_digits=4):
+    def get_file_suffix(self, path, prefix):
         try:
-            number_of_files = len(glob.glob(os.path.join(path, filename) + '*'))
+            number_of_files = len(glob.glob(os.path.join(path, prefix) + '*'))
         except:
             number_of_files = 0
-        return ('{0:0' + str(number_of_digits) + '}').format(number_of_files)
+        return '{0:04}'.format(number_of_files)
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000,
            stop_max_attempt_number=10)
