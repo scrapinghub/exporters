@@ -1,5 +1,4 @@
 import datetime
-import glob
 import os
 import re
 from exporters.writers.base_writer import BaseWriter
@@ -24,6 +23,3 @@ class FilebaseBaseWriter(BaseWriter):
         filebase_path, filename = os.path.split(filebase)
         filename += self._get_file_number(filebase_path, filename) + '.' + extension
         return filebase_path, filename
-
-    def write(self, dump_path, group_key):
-        raise NotImplementedError
