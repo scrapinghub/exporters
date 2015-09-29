@@ -1,8 +1,3 @@
-# encoding=utf8
-import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
-
 import csv
 import io
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
@@ -46,11 +41,19 @@ class CSVExportFormatter(BaseExportFormatter):
             item.formatted = self._item_to_csv(item)
             yield item
 
+    def _encode_string(self, path, key, value):
+        if isinstance(value, basestring):
+            return key, value.encode('utf-8')
+        return key, value
+
     def _item_to_csv(self, item):
+        from boltons.iterutils import remap
         output = io.BytesIO()
         writer = csv.DictWriter(output, fieldnames=item.keys(), delimiter=self.delimiter,
                                 quotechar=self.string_delimiter,
                                 quoting=csv.QUOTE_NONNUMERIC,
                                 lineterminator=self.line_end_character)
+
+        item = remap(item, visit=self._encode_string)
         writer.writerow(item)
         return output.getvalue().rstrip()
