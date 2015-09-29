@@ -1,5 +1,6 @@
 import json
 import gzip
+from retrying import retry
 
 from exporters.writers.base_writer import BaseWriter
 
@@ -30,6 +31,7 @@ class ODOWriter(BaseWriter):
         self.flatson = Flatson(schema)
         self.logger.info('ODOWriter has been initiated. Writing to: {}'.format(self.odo_uri))
 
+    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def write(self, dump_path, group_key=''):
         from odo import odo, resource, discover
         import pandas as pd
