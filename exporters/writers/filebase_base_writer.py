@@ -1,9 +1,8 @@
 import datetime
+import glob
 import os
+import re
 from exporters.writers.base_writer import BaseWriter
-
-
-DEFAULT_FILENAME = 'export'
 
 
 class FilebaseBaseWriter(BaseWriter):
@@ -13,10 +12,18 @@ class FilebaseBaseWriter(BaseWriter):
             supported_options['filebase'] = {'type': basestring}
         self.supported_options = supported_options
         super(FilebaseBaseWriter, self).__init__(options)
-        self.filebase = self.read_option('filebase').format(datetime.datetime.now())
-        self.filebase_path, self.filenames_prefix = os.path.split(self.filebase)
-        if not self.filenames_prefix:
-            self.filenames_prefix = DEFAULT_FILENAME
+        self.filebase = self.read_option('filebase')
+
+    def _get_file_number(self, path, filename, number_of_digits=4):
+        raise NotImplementedError
+
+    def create_filebase_name(self, group_info, extension='gz'):
+        normalized = [re.sub('\W', '_', s) for s in group_info]
+        filebase = self.read_option('filebase').format(datetime.datetime.now(),
+                                                       group=normalized)
+        filebase_path, filename = os.path.split(filebase)
+        filename += self._get_file_number(filebase_path, filename) + '.' + extension
+        return filebase_path, filename
 
     def write(self, dump_path, group_key):
         raise NotImplementedError

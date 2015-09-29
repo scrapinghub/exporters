@@ -85,19 +85,19 @@ class FTPWriter(FilebaseBaseWriter):
             except:
                 pass
 
+    def _get_file_number(self, path, filename):
+        return str(uuid.uuid4())
+
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000,
            stop_max_attempt_number=10)
     def write(self, dump_path, group_key=None):
         if group_key is None:
             group_key = []
-        normalized = [re.sub('\W', '_', s) for s in group_key]
-        destination_path = os.path.join(self.filebase_path, os.path.sep.join(normalized))
+        filebase_path, filename = self.create_filebase_name(group_key)
         self.logger.debug('Uploading dump file')
         self.ftp.connect(self.ftp_host, self.ftp_port)
         self.ftp.login(self.ftp_user, self.ftp_password)
-        self._create_target_dir_if_needed(destination_path)
-        self.ftp.storbinary('STOR %s' % (
-        destination_path + '/{}_{}.gz'.format(self.filenames_prefix, uuid.uuid4())),
-                            open(dump_path))
+        self._create_target_dir_if_needed(filebase_path)
+        self.ftp.storbinary('STOR %s' % (filebase_path + '/' + filename), open(dump_path))
         self.ftp.close()
         self.logger.debug('Saved {}'.format(dump_path))
