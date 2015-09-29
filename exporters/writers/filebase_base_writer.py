@@ -21,6 +21,6 @@ class FilebaseBaseWriter(BaseWriter):
         normalized = [re.sub('\W', '_', s) for s in group_info]
         filebase = self.read_option('filebase').format(datetime.datetime.now(),
                                                        group=normalized)
-        filebase_path, filename = os.path.split(filebase)
-        filename += self.get_file_suffix(filebase_path, filename) + '.' + extension
+        filebase_path, prefix = os.path.split(filebase)
+        filename = prefix + self.get_file_suffix(filebase_path, prefix) + '.' + extension
         return filebase_path, filename
