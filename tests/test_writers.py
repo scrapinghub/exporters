@@ -57,6 +57,8 @@ class FilebaseBaseWriterTest(unittest.TestCase):
         }
         writer = FilebaseBaseWriter(writer_config)
         self.assertIsInstance(writer.get_file_suffix('', ''), basestring)
+        path, file_name = writer.create_filebase_name([])
+        self.assertEqual(path, '/tmp')
 
 
 class FSWriterTest(unittest.TestCase):
