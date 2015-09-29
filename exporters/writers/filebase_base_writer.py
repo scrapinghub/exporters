@@ -19,8 +19,9 @@ class FilebaseBaseWriter(BaseWriter):
 
     def create_filebase_name(self, group_info, extension='gz'):
         normalized = [re.sub('\W', '_', s) for s in group_info]
-        filebase = self.read_option('filebase').format(datetime.datetime.now(),
-                                                       group=normalized)
+        filebase = self.read_option('filebase').format(date=datetime.datetime.now(),
+                                                       groups=normalized)
+        filebase = datetime.datetime.now().strftime(filebase)
         filebase_path, prefix = os.path.split(filebase)
         filename = prefix + self.get_file_suffix(filebase_path, prefix) + '.' + extension
         return filebase_path, filename
