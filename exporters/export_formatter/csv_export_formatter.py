@@ -1,3 +1,8 @@
+# encoding=utf8
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 import csv
 import io
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
@@ -5,7 +10,6 @@ from exporters.records.base_record import BaseRecord
 
 
 class CSVExportFormatter(BaseExportFormatter):
-
     supported_options = {
         'show_titles': {'type': bool, 'default': False},
         'delimiter': {'type': basestring, 'default': ','},
@@ -44,7 +48,9 @@ class CSVExportFormatter(BaseExportFormatter):
 
     def _item_to_csv(self, item):
         output = io.BytesIO()
-        writer = csv.DictWriter(output, fieldnames=item.keys(), delimiter=self.delimiter, quotechar=self.string_delimiter,
-                            quoting=csv.QUOTE_NONNUMERIC, lineterminator=self.line_end_character)
+        writer = csv.DictWriter(output, fieldnames=item.keys(), delimiter=self.delimiter,
+                                quotechar=self.string_delimiter,
+                                quoting=csv.QUOTE_NONNUMERIC,
+                                lineterminator=self.line_end_character)
         writer.writerow(item)
         return output.getvalue().rstrip()
