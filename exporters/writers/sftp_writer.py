@@ -39,13 +39,15 @@ class SFTPWriter(FilebaseBaseWriter):
         self.sftp_user = self.read_option('sftp_user')
         self.sftp_password = self.read_option('sftp_password')
         self.logger.info(
-            'SFTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(self.sftp_host, self.sftp_port,
-                                                                                     self.filebase))
+            'SFTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(
+                self.sftp_host, self.sftp_port,
+                self.filebase))
 
     def _get_file_number(self, path, filename):
         return str(uuid.uuid4())
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
+    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000,
+           stop_max_attempt_number=10)
     def write(self, dump_path, group_key=None):
         import pysftp
         if group_key is None:
@@ -54,7 +56,8 @@ class SFTPWriter(FilebaseBaseWriter):
         filebase_path, filename = self.create_filebase_name(group_key)
 
         self.logger.debug('Uploading dump file')
-        with pysftp.Connection(self.sftp_host, port=self.sftp_port, username=self.sftp_user,
+        with pysftp.Connection(self.sftp_host, port=self.sftp_port,
+                               username=self.sftp_user,
                                password=self.sftp_password) as sftp:
             if not sftp.exists(filebase_path):
                 sftp.makedirs(filebase_path)
