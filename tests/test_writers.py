@@ -64,8 +64,11 @@ class FSWriterTest(unittest.TestCase):
     def test_get_file_number(self):
         writer_config = {
             'options': {
-                'filebase': '/tmp/'
+                'filebase': '/tmp/exporter_test'
             }
         }
         writer = FSWriter(writer_config)
         self.assertEqual(writer.get_file_suffix('test', 'test'), '0000')
+        path, file_name = writer.create_filebase_name([])
+        self.assertEqual(path, '/tmp')
+        self.assertEqual(file_name, 'exporter_test0000.gz')
