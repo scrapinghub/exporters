@@ -59,4 +59,4 @@ class SFTPWriter(FilebaseBaseWriter):
             if not sftp.exists(filebase_path):
                 sftp.makedirs(filebase_path)
             sftp.put(dump_path, filebase_path + '/' + filename)
-        self.logger.debug('Saved {}'.format(dump_path))
+        self.logger.info('Saved {}'.format(dump_path))

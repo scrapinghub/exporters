@@ -59,4 +59,4 @@ class S3Writer(FilebaseBaseWriter):
         with open(dump_path, 'r') as f:
             key.set_contents_from_file(f)
         key.close()
-        self.logger.debug('Saved {} to s3://{}/{}'.format(dump_path, self.read_option('bucket'), key_name))
+        self.logger.info('Saved {} to s3://{}/{}'.format(dump_path, self.read_option('bucket'), key_name))

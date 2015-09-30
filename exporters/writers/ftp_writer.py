@@ -97,4 +97,4 @@ class FTPWriter(FilebaseBaseWriter):
         self._create_target_dir_if_needed(filebase_path)
         self.ftp.storbinary('STOR %s' % (filebase_path + '/' + filename), open(dump_path))
         self.ftp.close()
-        self.logger.debug('Saved {}'.format(dump_path))
+        self.logger.info('Saved {}'.format(dump_path))
