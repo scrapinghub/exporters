@@ -4,3 +4,7 @@ class InvalidExpression(Exception):
 
 class WriterNotSupportingGroupedBatch(Exception):
     pass
+
+
+class OptionValueError(ValueError):
+    "Invalid value provided to a module option"
