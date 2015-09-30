@@ -1,8 +1,10 @@
 import random
 import unittest
 from exporters.records.base_record import BaseRecord
+from exporters.writers import FSWriter
 from exporters.writers.base_writer import BaseWriter
 from exporters.writers.console_writer import ConsoleWriter
+from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
 class BaseWriterTest(unittest.TestCase):
@@ -43,3 +45,34 @@ class ConsoleWriterTest(unittest.TestCase):
             items_to_write.append(item)
 
         self.writer.write_batch(items_to_write)
+
+
+class FilebaseBaseWriterTest(unittest.TestCase):
+
+    def test_get_file_number_not_implemented(self):
+        writer_config = {
+            'options': {
+                'filebase': '/tmp/'
+            }
+        }
+        writer = FilebaseBaseWriter(writer_config)
+        self.assertIsInstance(writer.get_file_suffix('', ''), basestring)
+        path, file_name = writer.create_filebase_name([])
+        self.assertEqual(path, '/tmp')
+        writer.close_writer()
+
+
+class FSWriterTest(unittest.TestCase):
+
+    def test_get_file_number(self):
+        writer_config = {
+            'options': {
+                'filebase': '/tmp/exporter_test'
+            }
+        }
+        writer = FSWriter(writer_config)
+        self.assertEqual(writer.get_file_suffix('test', 'test'), '0000')
+        path, file_name = writer.create_filebase_name([])
+        self.assertEqual(path, '/tmp')
+        self.assertEqual(file_name, 'exporter_test0000.gz')
+        writer.close_writer()
