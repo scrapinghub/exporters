@@ -1,0 +1,22 @@
+image: bradrydzewski/python:2.7-scrapinghub
+
+script:
+  - git restore-mtime
+  - pip install -U tox coverage shub
+  - tox
+
+deploy:
+  bash:
+    script:
+      - shub deploy-egg 7389
+    when:
+      branch: master
+
+notify:
+  slack:
+    webhook_url: 'https://hooks.slack.com/services/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'
+    username: 'drone'
+    channel: '#dataservices'
+    on_started: false
+    on_success: false
+    on_failure: true
