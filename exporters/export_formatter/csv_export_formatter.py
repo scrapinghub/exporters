@@ -1,5 +1,6 @@
 import csv
 import io
+import six
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 from exporters.records.base_record import BaseRecord
 
@@ -42,11 +43,8 @@ class CSVExportFormatter(BaseExportFormatter):
             yield item
 
     def _encode_string(self, path, key, value):
-        if isinstance(value, basestring):
-            try:
-                return key, unicode(value).encode('utf-8')
-            except:
-                 pass
+        if isinstance(value, six.text_type):
+            return key, value.encode('utf-8')
         return key, value
 
     def _item_to_csv(self, item):
