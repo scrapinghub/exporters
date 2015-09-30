@@ -45,5 +45,6 @@ class FSWriter(FilebaseBaseWriter):
             group_key = []
         filebase_path, filename = self.create_filebase_name(group_key)
         self._create_path_if_not_exist(filebase_path)
+        self.logger.info('Start uploading to {}'.format(dump_path))
         shutil.move(dump_path, os.path.join(filebase_path, filename))
         self.logger.info('Saved {}'.format(dump_path))

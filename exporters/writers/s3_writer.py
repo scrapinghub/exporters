@@ -55,7 +55,7 @@ class S3Writer(FilebaseBaseWriter):
 
         key_name = filebase_path + '/' + filename
         key = self.bucket.new_key(key_name)
-        self.logger.debug('Uploading dump file')
+        self.logger.info('Start uploading to {}'.format(dump_path))
         with open(dump_path, 'r') as f:
             key.set_contents_from_file(f)
         key.close()
