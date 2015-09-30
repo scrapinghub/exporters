@@ -2,15 +2,15 @@ import os
 import re
 import datetime
 from retrying import retry
-from exporters.writers.base_writer import BaseWriter
 import uuid
+from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
 class FtpCreateDirsException(Exception):
     pass
 
 
-class FTPWriter(BaseWriter):
+class FTPWriter(FilebaseBaseWriter):
     """
     Writes items to FTP server.
 
@@ -33,8 +33,7 @@ class FTPWriter(BaseWriter):
         'host': {'type': basestring},
         'port': {'type': int},
         'ftp_user': {'type': basestring},
-        'ftp_password': {'type': basestring},
-        'filebase': {'type': basestring}
+        'ftp_password': {'type': basestring}
     }
 
     def __init__(self, options):
@@ -47,8 +46,9 @@ class FTPWriter(BaseWriter):
         self.filebase = self.read_option('filebase').format(datetime.datetime.now())
         self.ftp = ftplib.FTP()
         self.logger.info(
-            'FTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(self.ftp_host, self.ftp_port,
-                                                                                    self.filebase))
+            'FTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(
+                self.ftp_host, self.ftp_port,
+                self.filebase))
 
     # TODO: Refactor recursivity
     def _create_target_dir_if_needed(self, target, depth_limit=20):
@@ -85,16 +85,16 @@ class FTPWriter(BaseWriter):
             except:
                 pass
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
+    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000,
+           stop_max_attempt_number=10)
     def write(self, dump_path, group_key=None):
         if group_key is None:
             group_key = []
-        normalized = [re.sub('\W', '_', s) for s in group_key]
-        destination_path = os.path.join(self.filebase, os.path.sep.join(normalized))
-        self.logger.debug('Uploading predump file')
+        filebase_path, filename = self.create_filebase_name(group_key)
+        self.logger.debug('Uploading dump file')
         self.ftp.connect(self.ftp_host, self.ftp_port)
         self.ftp.login(self.ftp_user, self.ftp_password)
-        self._create_target_dir_if_needed(destination_path)
-        self.ftp.storbinary('STOR %s' % (destination_path + '/predump_{}.gz'.format(uuid.uuid4())), open(dump_path))
+        self._create_target_dir_if_needed(filebase_path)
+        self.ftp.storbinary('STOR %s' % (filebase_path + '/' + filename), open(dump_path))
         self.ftp.close()
         self.logger.debug('Saved {}'.format(dump_path))

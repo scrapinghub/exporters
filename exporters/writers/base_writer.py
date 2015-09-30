@@ -108,8 +108,8 @@ class BaseWriter(BasePipelineItem):
 
     def _compress_file(self, path):
         compressed_path = path + '.gz'
-        with gzip.open(compressed_path, 'wb') as predump_file, open(path) as fl:
-            shutil.copyfileobj(fl, predump_file)
+        with gzip.open(compressed_path, 'wb') as dump_file, open(path) as fl:
+            shutil.copyfileobj(fl, dump_file)
         return compressed_path
 
     def _create_buffer_path_for_key(self, key):

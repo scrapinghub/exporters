@@ -2,11 +2,11 @@ import os
 import re
 import datetime
 from retrying import retry
-from exporters.writers.base_writer import BaseWriter
 import uuid
+from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
-class S3Writer(BaseWriter):
+class S3Writer(FilebaseBaseWriter):
     """
     Writes items to S3 bucket.
 
@@ -29,7 +29,6 @@ class S3Writer(BaseWriter):
         'bucket': {'type': basestring},
         'aws_access_key_id': {'type': basestring},
         'aws_secret_access_key': {'type': basestring},
-        'filebase': {'type': basestring},
         'aws_region': {'type': basestring, 'default': 'us-east-1'},
     }
 
@@ -51,11 +50,12 @@ class S3Writer(BaseWriter):
     def write(self, dump_path, group_key=None):
         if group_key is None:
             group_key = []
-        normalized = [re.sub('\W', '_', s) for s in group_key]
-        destination_path = os.path.join(self.filebase, os.path.sep.join(normalized))
-        key_name = '{}/{}_{}.{}'.format(destination_path, 'ds_dump', uuid.uuid4(), 'gz')
+
+        filebase_path, filename = self.create_filebase_name(group_key)
+
+        key_name = filebase_path + '/' + filename
         key = self.bucket.new_key(key_name)
-        self.logger.debug('Uploading predump file')
+        self.logger.debug('Uploading dump file')
         with open(dump_path, 'r') as f:
             key.set_contents_from_file(f)
         key.close()
