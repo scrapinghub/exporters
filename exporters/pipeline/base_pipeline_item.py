@@ -1,3 +1,6 @@
+from exporters.exceptions import ConfigurationError
+
+
 class BasePipelineItem(object):
 
     base_supported_options = {}
@@ -15,14 +18,15 @@ class BasePipelineItem(object):
         self.check_options()
 
     def check_options(self):
-        for supported_option_name, supported_option_info in self.supported_options.iteritems():
-            supported_option_value = self.read_option(supported_option_name)
-            if supported_option_value and not isinstance(supported_option_value, supported_option_info['type']):
-                raise ValueError('Parameter ' + supported_option_name + ' should be type: ' + str(supported_option_info['type']))
-            if 'default' in supported_option_info:
+        for option_name, option_spec in self.supported_options.iteritems():
+            option_value = self.read_option(option_name)
+            if option_value and not isinstance(option_value, option_spec['type']):
+                raise ConfigurationError('Option %s should be type: %s' %
+                                         (option_name, option_spec['type']))
+            if 'default' in option_spec:
                 continue
-            if not supported_option_value:
-                raise ValueError('Options object should have supported_option: ' + supported_option_name)
+            if not option_value:
+                raise ConfigurationError('Missing value for option %s' % option_name)
 
     def read_option(self, option_name, default=None):
         if option_name in self.options:

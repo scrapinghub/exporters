@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-This script wraps exporters launching logic, and should be used to make export jobs both from localhost and from dash.
+This script wraps exporters launching logic, and should be used to
+make export jobs both from localhost and from dash.
 """
 
 from __future__ import print_function
-import yaml
 from exporters.export_managers.basic_exporter import BasicExporter
+from exporters.exceptions import ConfigurationError
+import logging
 
 
 def parse_args():
@@ -20,11 +22,15 @@ def parse_args():
 
 
 def run(args):
-    if args.resume:
-        exporter = BasicExporter.from_persistence_configuration(args.resume)
+    try:
+        if args.resume:
+            exporter = BasicExporter.from_persistence_configuration(args.resume)
+        else:
+            exporter = BasicExporter.from_file_configuration(args.config)
+    except ConfigurationError as e:
+        logging.error(e)
     else:
-        exporter = BasicExporter.from_file_configuration(args.config)
-    exporter.export()
+        exporter.export()
 
 
 if '__main__' == __name__:
