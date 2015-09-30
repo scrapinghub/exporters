@@ -59,6 +59,7 @@ class FilebaseBaseWriterTest(unittest.TestCase):
         self.assertIsInstance(writer.get_file_suffix('', ''), basestring)
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')
+        writer.close_writer()
 
 
 class FSWriterTest(unittest.TestCase):
@@ -74,3 +75,4 @@ class FSWriterTest(unittest.TestCase):
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')
         self.assertEqual(file_name, 'exporter_test0000.gz')
+        writer.close_writer()
