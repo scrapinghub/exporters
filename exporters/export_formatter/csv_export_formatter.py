@@ -43,7 +43,10 @@ class CSVExportFormatter(BaseExportFormatter):
 
     def _encode_string(self, path, key, value):
         if isinstance(value, basestring):
-            return key, value.encode('utf-8')
+            try:
+                return key, unicode(value).encode('utf-8')
+            except:
+                 pass
         return key, value
 
     def _item_to_csv(self, item):
