@@ -36,7 +36,7 @@ class ODOWriter(BaseWriter):
         from odo import odo, resource, discover
         import pandas as pd
         with gzip.open(dump_path) as f:
-            lines = (json.loads(line.replace('\n', '')) for line in f.readlines())
+            lines = [json.loads(line.replace('\n', '')) for line in f.readlines()]
         flattened_lines = (self.flatson.flatten(line) for line in lines)
         pf = pd.DataFrame(flattened_lines, columns=self.flatson.fieldnames)
         dshape = discover(pf)
