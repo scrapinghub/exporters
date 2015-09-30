@@ -1,4 +1,5 @@
 import json
+from exporters.exceptions import ConfigurationError
 from exporters.defaults import DEFAULT_FILTER_CLASS, DEFAULT_GROUPER_CLASS, DEFAULT_PERSISTENCE_CLASS, \
     DEFAULT_STATS_MANAGER_CLASS, DEFAULT_FORMATTER_CLASS, DEFAULT_LOGGER_LEVEL, DEFAULT_LOGGER_NAME, \
     DEFAULT_TRANSFORM_CLASS
@@ -25,11 +26,11 @@ class ExporterConfig(object):
 
     def curate_configuration(self, configuration):
         if 'reader' not in configuration:
-            raise ValueError('Configuration must contain a reader definition')
+            raise ConfigurationError('Configuration must contain a reader definition')
         if 'writer' not in configuration:
-            raise ValueError('Configuration must contain a writer definition')
+            raise ConfigurationError('Configuration must contain a writer definition')
         if 'exporter_options' not in configuration:
-            raise ValueError('Configuration must contain a exporter_options definition')
+            raise ConfigurationError('Configuration must contain a exporter_options definition')
 
     def __str__(self):
         return json.dumps(self.configuration)
