@@ -91,10 +91,10 @@ class FTPWriter(FilebaseBaseWriter):
         if group_key is None:
             group_key = []
         filebase_path, filename = self.create_filebase_name(group_key)
-        self.logger.debug('Uploading dump file')
+        self.logger.info('Start uploading to {}'.format(dump_path))
         self.ftp.connect(self.ftp_host, self.ftp_port)
         self.ftp.login(self.ftp_user, self.ftp_password)
         self._create_target_dir_if_needed(filebase_path)
         self.ftp.storbinary('STOR %s' % (filebase_path + '/' + filename), open(dump_path))
         self.ftp.close()
-        self.logger.debug('Saved {}'.format(dump_path))
+        self.logger.info('Saved {}'.format(dump_path))
