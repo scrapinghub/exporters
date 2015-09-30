@@ -12,7 +12,7 @@ from exporters.export_managers.basic_exporter import BasicExporter
 def parse_args():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
-    group = parser.add_mutually_exclusive_group()
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--resume', help='Resume a preexisting export job')
     group.add_argument('--config', help='Configuration file path')
     args = parser.parse_args()
