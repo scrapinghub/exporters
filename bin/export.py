@@ -7,7 +7,7 @@ make export jobs both from localhost and from dash.
 
 from __future__ import print_function
 from exporters.export_managers.basic_exporter import BasicExporter
-from exporters.exceptions import OptionValueError
+from exporters.exceptions import ConfigurationError
 import logging
 
 
@@ -27,8 +27,8 @@ def run(args):
             exporter = BasicExporter.from_persistence_configuration(args.resume)
         else:
             exporter = BasicExporter.from_file_configuration(args.config)
-    except OptionValueError as e:
-        logging.error('Configuration error: %s' % e)
+    except ConfigurationError as e:
+        logging.error(e)
     else:
         exporter.export()
 

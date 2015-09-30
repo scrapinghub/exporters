@@ -1,4 +1,5 @@
 from importlib import import_module
+from exporters.exceptions import ConfigurationError
 
 
 class ModuleLoader(object):
@@ -39,16 +40,18 @@ class ModuleLoader(object):
         from exporters.stats_managers.base_stats_manager import BaseStatsManager
         return self._load_module(options, BaseStatsManager)
 
-    def _load_class(self, class_name, options):
+    def _instantiate_class(self, class_name, options):
         class_path_list = class_name.split('.')
         mod = import_module('.'.join(class_path_list[0:-1]))
         class_instance = getattr(mod, class_path_list[-1])(options)
         return class_instance
 
-    # Load an exporter module
     def _load_module(self, options, module_type):
         module_name = options['name']
-        class_instance = self._load_class(module_name, options)
-        if not isinstance(class_instance, module_type):
+        try:
+            instance = self._instantiate_class(module_name, options)
+        except ConfigurationError as e:
+            raise ConfigurationError('Error in configuration for module %s: %s' % (module_name, e))
+        if not isinstance(instance, module_type):
             raise TypeError('Module must inherit from ' + str(module_type))
-        return class_instance
+        return instance

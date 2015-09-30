@@ -6,5 +6,5 @@ class WriterNotSupportingGroupedBatch(Exception):
     pass
 
 
-class OptionValueError(ValueError):
-    "Invalid value provided to a module option"
+class ConfigurationError(ValueError):
+    "Configuration provided isn't valid."
