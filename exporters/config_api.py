@@ -103,10 +103,9 @@ class ConfigApi(object):
         if 'name' not in config_section or 'options' not in config_section:
             raise InvalidConfigError('Module is missing name or option definitions')
         # We only check the required supported_options
-        supported_options = (Parameter(name=name, options=option_spec) for
-                             name, option_spec in
-                             self.get_module_supported_options(
-                                 config_section['name']).iteritems() if
-                             not 'default' in option_spec)
+        supported_options = (Parameter(name=name, options=option_spec)
+                             for name, option_spec in
+                             self.get_module_supported_options(config_section['name']).iteritems()
+                             if 'default' not in option_spec)
         for supported_option in supported_options:
             self._check_required_config_section(supported_option, config_section)
