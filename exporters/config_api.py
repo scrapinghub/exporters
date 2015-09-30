@@ -9,7 +9,6 @@ from importlib import import_module
 from inspect import getmembers, isclass
 import collections
 
-
 Parameter = collections.namedtuple('Parameter', 'name options')
 
 
@@ -62,12 +61,15 @@ class ConfigApi(object):
             supported_options = getattr(mod, class_path_list[-1]).supported_options
             return supported_options
         except Exception as e:
-            raise InvalidConfigError('There was a problem loading {} class. Exception: {}'.format(module_name, e))
+            raise InvalidConfigError(
+                'There was a problem loading {} class. Exception: {}'.format(module_name,
+                                                                             e))
 
     def check_valid_config(self, config):
         if self._find_missing_sections(config):
             raise InvalidConfigError(
-                "Configuration is missing sections: %s" % ', '.join(self._find_missing_sections(config)))
+                "Configuration is missing sections: %s" % ', '.join(
+                    self._find_missing_sections(config)))
         self._check_valid_options(config['reader'])
         self._check_valid_options(config['writer'])
         if 'filter' in config:
@@ -87,17 +89,24 @@ class ConfigApi(object):
 
     def _check_required_config_section(self, option_definition, config_section):
         if option_definition.name not in config_section['options']:
-            raise InvalidConfigError('{} option_definition is missing'.format(option_definition.name))
-        if not isinstance(config_section['options'][option_definition.name], option_definition.options['type']):
             raise InvalidConfigError(
-                'Wrong type for option {}. Found: {}. Expected {}'.format(option_definition.name, type(
-                    config_section['options'][option_definition.name]), option_definition.options['type']))
+                '{} option_definition is missing'.format(option_definition.name))
+        if not isinstance(config_section['options'][option_definition.name],
+                          option_definition.options['type']):
+            raise InvalidConfigError(
+                'Wrong type for option {}. Found: {}. Expected {}'.format(
+                    option_definition.name, type(
+                        config_section['options'][option_definition.name]),
+                    option_definition.options['type']))
 
     def _check_valid_options(self, config_section):
         if 'name' not in config_section or 'options' not in config_section:
             raise InvalidConfigError('Module is missing name or option definitions')
         # We only check the required supported_options
-        supported_options = (Parameter(name=r_name, options=r_info) for r_name, r_info in
-                      self.get_module_supported_options(config_section['name']).iteritems() if not 'default' in r_info)
+        supported_options = (Parameter(name=name, options=option_spec) for
+                             name, option_spec in
+                             self.get_module_supported_options(
+                                 config_section['name']).iteritems() if
+                             not 'default' in option_spec)
         for supported_option in supported_options:
             self._check_required_config_section(supported_option, config_section)
