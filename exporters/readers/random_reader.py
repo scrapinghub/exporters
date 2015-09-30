@@ -28,14 +28,14 @@ class RandomReader(BaseReader):
         super(RandomReader, self).__init__(options)
         self.last_key = self.last_position * self.read_option('batch_size')
         self.logger.info('RandomReader has been initiated')
-        self.country_codes = ['es', 'uk', 'us']
-        self.states = ['valéncia', 'madrid', 'barcelona']
+        self.country_codes = [u'es', u'uk', u'us']
+        self.states = [u'valéncia', u'madrid', u'barcelona']
         self.cities = [
-            {'name': 'alicante', 'district': 'dist1'},
-            {'name': 'alicante', 'district': 'dist2'},
-            {'name': 'alicante', 'district': 'dist3'},
-            {'name': 'lléida', 'district': 'dist1'},
-            {'name': 'somecity', 'district': 'dist1'}]
+            {'name': u'alicante', 'district': u'dist1'},
+            {'name': u'alicante', 'district': u'dist2'},
+            {'name': u'alicante', 'district': u'dist3'},
+            {'name': u'lléida', 'district': u'dist1'},
+            {'name': u'somecity', 'district': u'dist1'}]
         self.batch_size = self.read_option('batch_size')
 
     def get_next_batch(self):
