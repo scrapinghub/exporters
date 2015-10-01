@@ -59,7 +59,7 @@ class HubstorageReader(BaseReader):
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def scan_collection(self):
-        return self.batches.next()
+        return next(self.batches)
 
     def get_next_batch(self):
         try:
