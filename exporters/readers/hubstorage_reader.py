@@ -52,26 +52,19 @@ class HubstorageReader(BaseReader):
                                                     prefix=self.read_option('prefixes'),
                                                     exclude_prefixes=self.read_option('exclude_prefixes'),
                                                     meta=['_key'])
-        self.batches = self.collection_scanner.scan_collection_batches()
         self.logger.info('HubstorageReader has been initiated. Project id: {}. Collection name: {}'.format(
             self.read_option('project_id'), self.read_option('collection_name')))
         self.last_position = 0
 
-    def scan_collection(self):
-        return next(self.batches)
-
     def get_next_batch(self):
-        try:
-            batch = self.scan_collection()
-        except StopIteration:
-            self.logger.debug('No more batches')
-            self.finished = True
-        else:
+        for batch in self.collection_scanner.scan_collection_batches():
             for item in batch:
                 base_item = BaseRecord(item)
                 self.last_position += 1
                 yield base_item
             self.logger.debug('Done reading batch')
+        self.logger.debug('No more batches')
+        self.finished = True
 
     def set_last_position(self, last_position):
         if last_position:
