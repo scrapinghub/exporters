@@ -38,7 +38,6 @@ class ExporterConfig(object):
     def _merge_options(self, module_name, default=None):
         options = self.configuration.get(module_name, default)
         options.update(self.log_options)
-        options.update({'configuration': self.configuration})
         return options
 
     @property

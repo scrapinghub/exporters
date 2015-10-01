@@ -85,11 +85,13 @@ class S3MailNotifier(BaseNotifier):
         if info is None:
             info = {}
         body = "{name} dump started with following parameters:\n\n"
-        body += 'Destination: {filebase}\n'
+        body += 'Used writer: {writer}\n'
+        body += 'Options used: {options}\n'
 
         body = body.format(
             name=info.get('script_name', 'dump_job'),
-            filebase=info['configuration']['writer']
+            writer=info['configuration']['writer']['name'],
+            options=info['configuration']['writer']['options']
         )
         subject = 'Started {client} {name} dump'.format(client=info.get('client_name', 'Customer'), name=info.get('script_name', 'dump_job'))
         self._send_email(mails, subject, body)
@@ -98,14 +100,16 @@ class S3MailNotifier(BaseNotifier):
         if info is None:
             info = {}
         body = "{name} dump finished with following parameters:\n\n"
-        body += 'Destination: {filebase}\n'
+        body += 'Used writer: {writer}\n'
+        body += 'Options used: {options}\n'
         body += 'Total records dumped: {total}\n\n'
         body += 'If you have any questions or concerns about the data you have received, ' \
                 'please email us at help@scrapinghub.com.\n'
 
         body = body.format(
             name=info.get('script_name', 'dump_job'),
-            filebase=info['configuration']['writer'],
+            writer=info['configuration']['writer']['name'],
+            options=info['configuration']['writer']['options'],
             total=info.get('items_count', 0),
         )
 
