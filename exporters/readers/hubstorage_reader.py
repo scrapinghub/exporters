@@ -18,6 +18,15 @@ class HubstorageReader(BaseReader):
 
         - collection_name (str)
             Name of the collection.
+
+        - count (int)
+            number of records to read from collection
+
+        - prefixes (list)
+            Only include records with given key prefixes
+
+        - exclude_prefixes (list)
+            Exclude records with given key prefixes
     """
 
     # List of options to set up the reader
@@ -25,7 +34,10 @@ class HubstorageReader(BaseReader):
         'batch_size': {'type': int, 'default': 10000},
         'apikey': {'type': basestring},
         'project_id': {'type': basestring},
-        'collection_name': {'type': basestring}
+        'collection_name': {'type': basestring},
+        'count': {'type': int, 'default': 0},
+        'prefixes': {'type': list, 'default': []},
+        'exclude_prefixes': {'type': list, 'default': []},
     }
 
     def __init__(self, options):
@@ -35,26 +47,24 @@ class HubstorageReader(BaseReader):
         self.collection_scanner = CollectionScanner(self.read_option('apikey'), self.read_option('project_id'),
                                                     self.read_option('collection_name'),
                                                     batchsize=self.batch_size,
-                                                    startafter=self.last_position)
-        self.batches = self.collection_scanner.scan_collection_batches()
+                                                    startafter=self.last_position,
+                                                    count=self.read_option('count'),
+                                                    prefix=self.read_option('prefixes'),
+                                                    exclude_prefixes=self.read_option('exclude_prefixes'),
+                                                    meta=['_key'])
         self.logger.info('HubstorageReader has been initiated. Project id: {}. Collection name: {}'.format(
             self.read_option('project_id'), self.read_option('collection_name')))
         self.last_position = 0
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
-    def scan_collection(self):
-        return self.batches.next()
-
     def get_next_batch(self):
-        batch = self.scan_collection()
-        try:
+        for batch in self.collection_scanner.scan_collection_batches():
             for item in batch:
                 base_item = BaseRecord(item)
                 self.last_position += 1
                 yield base_item
-        except StopIteration:
-            self.finished = True
-        self.logger.debug('Done reading batch')
+            self.logger.debug('Done reading batch')
+        self.logger.debug('No more batches')
+        self.finished = True
 
     def set_last_position(self, last_position):
         if last_position:
