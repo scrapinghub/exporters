@@ -57,7 +57,6 @@ class HubstorageReader(BaseReader):
             self.read_option('project_id'), self.read_option('collection_name')))
         self.last_position = 0
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def scan_collection(self):
         return next(self.batches)
 
