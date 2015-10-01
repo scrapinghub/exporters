@@ -81,44 +81,45 @@ class S3MailNotifier(BaseNotifier):
                 mails.extend(self.team_mails)
         return mails
 
-    def _notify_start_dump(self, mails, info=None):
-        if info is None:
-            info = {}
+    def _generate_start_dump_body(self, info):
         body = "{name} dump started with following parameters:\n\n"
         body += 'Used writer: {writer}\n'
-        body += 'Options used: {options}\n'
 
         body = body.format(
             name=info.get('script_name', 'dump_job'),
             writer=info['configuration']['writer']['name'],
-            options=info['configuration']['writer']['options']
         )
+        return body
+
+    def _notify_start_dump(self, mails, info=None):
+        if info is None:
+            info = {}
+        body = self._generate_start_dump_body(info)
         subject = 'Started {client} {name} dump'.format(client=info.get('client_name', 'Customer'), name=info.get('script_name', 'dump_job'))
         self._send_email(mails, subject, body)
+
+    def _generate_complete_dump_body(self, info):
+        body = "{name} dump finished with following parameters:\n\n"
+        body += 'Used writer: {writer}\n'
+        body += 'Total records dumped: {total}\n\n'
+        body += 'If you have any questions or concerns about the data you have received, ' \
+                'please email us at help@scrapinghub.com.\n'
+        body = body.format(
+            name=info.get('script_name', 'dump_job'),
+            writer=info['configuration']['writer']['name'],
+            total=info.get('items_count', 0),
+        )
+        return body
 
     def _notify_complete_dump(self, mails, info=None):
         if info is None:
             info = {}
-        body = "{name} dump finished with following parameters:\n\n"
-        body += 'Used writer: {writer}\n'
-        body += 'Options used: {options}\n'
-        body += 'Total records dumped: {total}\n\n'
-        body += 'If you have any questions or concerns about the data you have received, ' \
-                'please email us at help@scrapinghub.com.\n'
-
-        body = body.format(
-            name=info.get('script_name', 'dump_job'),
-            writer=info['configuration']['writer']['name'],
-            options=info['configuration']['writer']['options'],
-            total=info.get('items_count', 0),
-        )
-
+        body = self._generate_complete_dump_body(info)
         subject = '{client} {name} dump completed'.format(client=info.get('client_name', 'Customer'), name=info.get('script_name', 'dump_job'))
         self._send_email(mails, subject, body)
 
-    def _notify_failed_job(self, msg, stack_trace, mails, info=None):
-        if info is None:
-            info = {}
+
+    def _generate_failed_job_body(self, msg, stack_trace, info):
         body = '{} dump failed with following error:\n\n'.format(info.get('script_name', 'dump_job'))
         if 'SHUB_JOBKEY' in os.environ:
             pid, jobid = os.environ['SHUB_JOBKEY'].split('/', 1)
@@ -129,5 +130,11 @@ class S3MailNotifier(BaseNotifier):
         msg += '\n\nStacktrace: \n' + stack_trace
         msg += '\n\nConfiguration: \n' + json.dumps(info.get('configuration'))
         body = body + msg
+        return body
+
+    def _notify_failed_job(self, msg, stack_trace, mails, info=None):
+        if info is None:
+            info = {}
+        body = self._generate_failed_job_body(msg, stack_trace, info)
         subject = '{name} dump for {client} failed.'.format(client=info.get('client_name', 'Customer'), name=info.get('script_name', 'dump_job'))
         self._send_email(mails, subject, body)

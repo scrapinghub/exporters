@@ -76,7 +76,7 @@ class S3MailNotifierTest(unittest.TestCase):
             'exporter_options': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline',
-                'NOTIFICATIONS': [
+                'notifications': [
                     {
                         'name': 'exporters.notifications.s3_mail_notifier.S3MailNotifier',
                         'options':
@@ -89,7 +89,12 @@ class S3MailNotifierTest(unittest.TestCase):
                     }
                 ]
             },
-            'writer': {}
+            'writer': {
+                'name': 'somewriter',
+                'options': {
+                    'some_option': 'some_value'
+                }
+            }
 
         }
         self.job_info = {
@@ -98,7 +103,7 @@ class S3MailNotifierTest(unittest.TestCase):
             'start_time': datetime.datetime.now(),
             'script_name': 'basic_export_manager'
         }
-        self.notifier = S3MailNotifier(self.options['exporter_options']['NOTIFICATIONS'][0])
+        self.notifier = S3MailNotifier(self.options['exporter_options']['notifications'][0])
 
     @patch('boto.connect_ses')
     def test_start_dump(self, mock_connect):
@@ -168,7 +173,7 @@ class WebhookNotifierTest(unittest.TestCase):
             'exporter_options': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline',
-                'NOTIFICATIONS': [
+                'notifications': [
                     {
                         'name': 'exporters.notifications.webhook_notifier.WebhookNotifier',
                         'options':
@@ -178,7 +183,12 @@ class WebhookNotifierTest(unittest.TestCase):
                     }
                 ]
             },
-            'writer': {}
+            'writer': {
+                'name': 'somewriter',
+                'options': {
+                    'some_option': 'some_value'
+                }
+            }
 
         }
         self.job_info = {
@@ -187,7 +197,7 @@ class WebhookNotifierTest(unittest.TestCase):
             'start_time': datetime.datetime.now(),
             'script_name': 'basic_export_manager'
         }
-        self.notifier = WebhookNotifier(self.options['exporter_options']['NOTIFICATIONS'][0])
+        self.notifier = WebhookNotifier(self.options['exporter_options']['notifications'][0])
 
     @patch('requests.post')
     def test_start_dump(self, mock_request):
