@@ -3,7 +3,7 @@ import unittest
 import datetime
 from mock import patch, Mock
 from exporters.notifications.base_notifier import BaseNotifier
-from exporters.notifications.s3_mail_notifier import S3MailNotifier
+from exporters.notifications.ses_mail_notifier import S3MailNotifier
 from exporters.notifications.webhook_notifier import WebhookNotifier
 
 
