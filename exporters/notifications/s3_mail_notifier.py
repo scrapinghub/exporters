@@ -27,8 +27,8 @@ class S3MailNotifier(BaseNotifier):
         self.supported_options = {
             'team_mails': {'type': list, 'default': []},
             'client_mails': {'type': list, 'default': []},
-            'aws_login': {'type': basestring},
-            'aws_key': {'type': basestring}
+            'aws_login': {'type': basestring, 'env_fallback': 'EXPORTERS_MAIL_AWS_LOGIN'},
+            'aws_key': {'type': basestring, 'env_fallback': 'EXPORTERS_MAIL_AWS_KEY'}
         }
 
         super(S3MailNotifier, self).__init__(options)
@@ -69,7 +69,7 @@ class S3MailNotifier(BaseNotifier):
 
     def _send_email(self, mails, subject, body):
         import boto
-        ses = boto.connect_ses(self.options['aws_login'], self.options['aws_key'])
+        ses = boto.connect_ses(self.read_option('aws_login'), self.read_option('aws_key'))
         ses.send_email(self.options.get('mail_from', DEFAULT_MAIN_FROM), subject, body, mails)
 
     def _get_mails(self, receivers):

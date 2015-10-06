@@ -27,8 +27,8 @@ class S3Writer(FilebaseBaseWriter):
     """
     supported_options = {
         'bucket': {'type': basestring},
-        'aws_access_key_id': {'type': basestring},
-        'aws_secret_access_key': {'type': basestring},
+        'aws_access_key_id': {'type': basestring, 'env_fallback': 'EXPORTERS_S3WRITER_AWS_LOGIN'},
+        'aws_secret_access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_S3WRITER_AWS_SECRET'},
         'aws_region': {'type': basestring, 'default': 'us-east-1'},
     }
 

@@ -33,8 +33,8 @@ class MailWriter(BaseWriter):
         'subject': {'type': basestring},
         'from': {'type': basestring},
         'max_mails_sent': {'type': int, 'default': 5},
-        'aws_login': {'type': basestring},
-        'aws_key': {'type': basestring}
+        'aws_login': {'type': basestring, 'env_fallback': 'EXPORTERS_MAILWRITER_AWS_LOGIN'},
+        'aws_key': {'type': basestring, 'env_fallback': 'EXPORTERS_MAILWRITER_AWS_SECRET'}
     }
 
     def __init__(self, options):

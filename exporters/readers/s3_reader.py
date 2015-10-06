@@ -34,8 +34,8 @@ class S3Reader(BaseReader):
     supported_options = {
         'batch_size': {'type': int, 'default': 10000},
         'bucket': {'type': basestring},
-        'aws_access_key_id': {'type': basestring},
-        'aws_secret_access_key': {'type': basestring},
+        'aws_access_key_id': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_KEY'},
+        'aws_secret_access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_SECRET'},
         'tmp_folder': {'type': basestring, 'default': '/tmp/'},
         'prefix': {'type': basestring}
     }
