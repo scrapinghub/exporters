@@ -1,9 +1,14 @@
 import json
 import os
+import re
 from exporters.notifications.base_notifier import BaseNotifier
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
 
 DEFAULT_MAIN_FROM = 'Scrapinghub data services <dataservices@scrapinghub.com>'
+
+
+class InvalidMailProvided(Exception):
+    pass
 
 
 class S3MailNotifier(BaseNotifier):
@@ -35,6 +40,12 @@ class S3MailNotifier(BaseNotifier):
         self.options = options['options']
         self.team_mails = self.options['team_mails']
         self.client_mails = self.options['client_mails']
+        self._check_mails()
+
+    def _check_mails(self):
+        for mail in self.team_mails + self.client_mails:
+            if not re.match('.+@.+', mail):
+                raise InvalidMailProvided()
 
     def notify_team(self, msg):
         self._send_email(self.team_mails, 'Notification', msg)
