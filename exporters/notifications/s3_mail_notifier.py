@@ -33,13 +33,15 @@ class S3MailNotifier(BaseNotifier):
             'team_mails': {'type': list, 'default': []},
             'client_mails': {'type': list, 'default': []},
             'aws_login': {'type': basestring},
-            'aws_key': {'type': basestring}
+            'aws_key': {'type': basestring},
+            'client_name': {'type': basestring, 'default': 'Customer'}
         }
 
         super(S3MailNotifier, self).__init__(options)
         self.options = options['options']
         self.team_mails = self.options['team_mails']
         self.client_mails = self.options['client_mails']
+        self.client_name = self.read_option('client_name')
         self._check_mails()
 
     def _check_mails(self):
@@ -106,7 +108,7 @@ class S3MailNotifier(BaseNotifier):
         if info is None:
             info = {}
         body = self._generate_start_dump_body(info)
-        subject = 'Started {client} {name} dump'.format(client=info.get('client_name', 'Customer'), name=info.get('script_name', 'dump_job'))
+        subject = 'Started {client} {name} dump'.format(client=self.client_name, name=info.get('script_name', 'dump_job'))
         self._send_email(mails, subject, body)
 
     def _generate_complete_dump_body(self, info):
@@ -126,7 +128,7 @@ class S3MailNotifier(BaseNotifier):
         if info is None:
             info = {}
         body = self._generate_complete_dump_body(info)
-        subject = '{client} {name} dump completed'.format(client=info.get('client_name', 'Customer'), name=info.get('script_name', 'dump_job'))
+        subject = '{client} {name} dump completed'.format(client=self.client_name, name=info.get('script_name', 'dump_job'))
         self._send_email(mails, subject, body)
 
 
@@ -147,5 +149,5 @@ class S3MailNotifier(BaseNotifier):
         if info is None:
             info = {}
         body = self._generate_failed_job_body(msg, stack_trace, info)
-        subject = '{name} dump for {client} failed.'.format(client=info.get('client_name', 'Customer'), name=info.get('script_name', 'dump_job'))
+        subject = '{name} dump for {client} failed.'.format(client=self.client_name, name=info.get('script_name', 'dump_job'))
         self._send_email(mails, subject, body)
