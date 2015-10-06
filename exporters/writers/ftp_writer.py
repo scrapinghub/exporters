@@ -32,8 +32,8 @@ class FTPWriter(FilebaseBaseWriter):
     supported_options = {
         'host': {'type': basestring},
         'port': {'type': int},
-        'ftp_user': {'type': basestring},
-        'ftp_password': {'type': basestring}
+        'ftp_user': {'type': basestring, 'secret': True},
+        'ftp_password': {'type': basestring, 'secret': True}
     }
 
     def __init__(self, options):

@@ -27,8 +27,8 @@ class S3MailNotifier(BaseNotifier):
         self.supported_options = {
             'team_mails': {'type': list, 'default': []},
             'client_mails': {'type': list, 'default': []},
-            'aws_login': {'type': basestring},
-            'aws_key': {'type': basestring}
+            'aws_login': {'type': basestring, 'secret': True},
+            'aws_key': {'type': basestring, 'secret': True}
         }
 
         super(S3MailNotifier, self).__init__(options)

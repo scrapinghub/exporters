@@ -28,8 +28,8 @@ class SFTPWriter(FilebaseBaseWriter):
     supported_options = {
         'host': {'type': basestring},
         'port': {'type': int},
-        'sftp_user': {'type': basestring},
-        'sftp_password': {'type': basestring}
+        'sftp_user': {'type': basestring, 'secret': True},
+        'sftp_password': {'type': basestring, 'secret': True}
     }
 
     def __init__(self, options):
