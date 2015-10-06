@@ -33,8 +33,8 @@ class MailWriter(BaseWriter):
         'subject': {'type': basestring},
         'from': {'type': basestring},
         'max_mails_sent': {'type': int, 'default': 5},
-        'aws_login': {'type': basestring},
-        'aws_key': {'type': basestring}
+        'aws_login': {'type': basestring, 'secret': True},
+        'aws_key': {'type': basestring, 'secret': True}
     }
 
     def __init__(self, options):
