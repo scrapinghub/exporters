@@ -11,7 +11,6 @@ from exporters.writers.odo_writer import ODOWriter
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
-
 class BaseWriterTest(unittest.TestCase):
     def setUp(self):
         self.options = {
@@ -48,6 +47,7 @@ class ConsoleWriterTest(unittest.TestCase):
             items_to_write.append(item)
 
         self.writer.write_batch(items_to_write)
+        self.assertEqual(self.writer.items_count, 10)
 
 
 class OdoWriterTest(unittest.TestCase):
