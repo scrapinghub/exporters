@@ -48,7 +48,7 @@ class BaseExportManagerTest(unittest.TestCase):
 
                 }
             },
-            'writer':{
+            'writer': {
                 'name': 'exporters.writers.console_writer.ConsoleWriter',
                 'options': {
 
@@ -78,7 +78,6 @@ class BaseExportManagerTest(unittest.TestCase):
 
 
 class BasicExportManagerTest(unittest.TestCase):
-
     def setUp(self):
         self.options = {
             'exporter_options': {
@@ -91,7 +90,23 @@ class BasicExportManagerTest(unittest.TestCase):
                         'columns': ['city', 'country_code'],
                         'titles': ['City', 'CC']
                     }
-                }
+                },
+                "notifications": [
+                    {
+                        "name": "exporters.notifications.s3_mail_notifier.S3MailNotifier",
+                        "options": {
+                            "client_name": "someclient",
+                            "team_mails": [
+                                "teammail@mail"
+                            ],
+                            "client_mails": [
+                                "clientmail@mail"
+                            ],
+                            "aws_login": "somekey",
+                            "aws_key": "someotherkey"
+                        }
+                    }
+                ]
             },
             'reader': {
                 'name': 'exporters.readers.random_reader.RandomReader',
@@ -118,7 +133,7 @@ class BasicExportManagerTest(unittest.TestCase):
 
                 }
             },
-            'writer':{
+            'writer': {
                 'name': 'exporters.writers.console_writer.ConsoleWriter',
                 'options': {
 
@@ -142,6 +157,12 @@ class BasicExportManagerTest(unittest.TestCase):
         self.assertTrue(isinstance(self.exporter.transform, NoTransform))
 
     def test_from_file_configuration(self):
-        test_manager = BasicExporter.from_file_configuration('./tests/data/basic_config.json')
+        test_manager = BasicExporter.from_file_configuration(
+            './tests/data/basic_config.json')
         self.assertIsInstance(test_manager, BasicExporter)
         test_manager._clean_export_job()
+
+    def test_secure_option(self):
+        options = self.exporter.secure_configuration['exporter_options']['notifications'][0]['options']
+        self.assertNotIn('aws_login', options)
+        self.assertNotIn('aws_key', options)
