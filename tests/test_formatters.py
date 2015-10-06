@@ -56,16 +56,6 @@ class CSVFormatterTest(unittest.TestCase):
             BaseRecord({'key1': 'value1', 'key2': 'value2'})
         ]
 
-    def test_show_titles_different_sizes(self):
-        options = {
-            'options': {
-                'show_titles': True,
-                'columns': ['col1', 'col2'],
-                'titles': ['title1']
-            }
-        }
-        with self.assertRaises(ValueError):
-            CSVExportFormatter(options)
 
     def test_format_batch_default(self):
         options = {
