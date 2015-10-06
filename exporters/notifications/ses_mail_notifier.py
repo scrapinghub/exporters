@@ -6,7 +6,7 @@ from exporters.notifications.receiver_groups import CLIENTS, TEAM
 DEFAULT_MAIN_FROM = 'Scrapinghub data services <dataservices@scrapinghub.com>'
 
 
-class S3MailNotifier(BaseNotifier):
+class SESMailNotifier(BaseNotifier):
     """
     Sends emails using aws mail service
 
@@ -31,7 +31,7 @@ class S3MailNotifier(BaseNotifier):
             'aws_key': {'type': basestring}
         }
 
-        super(S3MailNotifier, self).__init__(options)
+        super(SESMailNotifier, self).__init__(options)
         self.options = options['options']
         self.team_mails = self.options['team_mails']
         self.client_mails = self.options['client_mails']

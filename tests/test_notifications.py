@@ -3,7 +3,7 @@ import unittest
 import datetime
 from mock import patch, Mock
 from exporters.notifications.base_notifier import BaseNotifier
-from exporters.notifications.ses_mail_notifier import S3MailNotifier
+from exporters.notifications.ses_mail_notifier import SESMailNotifier
 from exporters.notifications.webhook_notifier import WebhookNotifier
 
 
@@ -79,7 +79,7 @@ class S3MailNotifierTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline',
                 'notifications': [
                     {
-                        'name': 'exporters.notifications.s3_mail_notifier.S3MailNotifier',
+                        'name': 'exporters.notifications.s3_mail_notifier.SESMailNotifier',
                         'options':
                             {
                                 'team_mails': ['test@test.com'],
@@ -104,7 +104,7 @@ class S3MailNotifierTest(unittest.TestCase):
             'start_time': datetime.datetime.now(),
             'script_name': 'basic_export_manager'
         }
-        self.notifier = S3MailNotifier(self.options['exporter_options']['notifications'][0])
+        self.notifier = SESMailNotifier(self.options['exporter_options']['notifications'][0])
 
     @patch('boto.connect_ses')
     def test_start_dump(self, mock_connect):

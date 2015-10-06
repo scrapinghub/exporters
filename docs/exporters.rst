@@ -340,7 +340,7 @@ Notifications
 
 Provided notifications
 **********************
-S3MailNotifier
+SESMailNotifier
 ##############
 .. automodule:: exporters.notifications.s3_mail_notifier
     :members:
