@@ -1,6 +1,7 @@
 import json
 import random
 import unittest
+from exporters.exceptions import ConfigurationError
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
@@ -56,30 +57,62 @@ class CSVFormatterTest(unittest.TestCase):
             BaseRecord({'key1': 'value1', 'key2': 'value2'})
         ]
 
-
-    def test_format_batch_default(self):
+    def test_format_raises_parameters(self):
         options = {
 
         }
-        formatter = CSVExportFormatter(options)
-        items = formatter.format(self.batch)
-        for item in items:
-            self.assertIsInstance(item.formatted, basestring)
-            self.assertEqual(len(item.formatted.split(',')), 2)
+        with self.assertRaises(ConfigurationError):
+            formatter = CSVExportFormatter(options)
+
 
     def test_format_batch_titles(self):
         options = {
-            'show_titles': True,
-            'columns': ['key1', 'key1'],
-            'titles': ['title1', 'title2']
+            'options': {
+                'show_titles': True,
+                'fields': ['key1']
+            }
         }
         formatter = CSVExportFormatter(options)
         items = formatter.format(self.batch)
-        for item in items:
-            if isinstance(item, basestring):
-                title1, title2 = item.replace('\n', '').split(',')
-                self.assertEqual(title1, 'title1')
-                self.assertEqual(title2, 'title2')
-            else:
-                self.assertIsInstance(item.formatted, basestring)
-                self.assertEqual(len(item.formatted.split(',')), 2)
+        items = list(items)
+        self.assertEqual(items[0].formatted, '"key1"')
+        self.assertEqual(items[1].formatted, '"value1"')
+
+    def test_format_batch_no_titles(self):
+        options = {
+            'options': {
+                'fields': ['key1']
+            }
+        }
+        formatter = CSVExportFormatter(options)
+        items = formatter.format(self.batch)
+        items = list(items)
+        self.assertEqual(items[0].formatted, '"value1"')
+
+    def test_format_from_schema(self):
+        options = {
+            'options': {
+                'show_titles': True,
+                'schema': {
+                    '$schema': 'http://json-schema.org/draft-04/schema',
+                    'properties': {
+                        'key1': {
+                            'type': 'string'
+                        },
+                        'key2': {
+                            'type': 'string'
+                        }
+                    },
+                    'required': [
+                        'key2',
+                        'key1'
+                    ],
+                    'type': 'object'
+                }
+            }
+        }
+        formatter = CSVExportFormatter(options)
+        items = formatter.format(self.batch)
+        items = list(items)
+        self.assertEqual(items[0].formatted, '"key2","key1"')
+        self.assertEqual(items[1].formatted, '"value2","value1"')

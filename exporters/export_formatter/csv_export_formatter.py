@@ -1,6 +1,7 @@
 import csv
 import io
 import six
+from exporters.exceptions import ConfigurationError
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 from exporters.records.base_record import BaseRecord
 
@@ -12,7 +13,8 @@ class CSVExportFormatter(BaseExportFormatter):
         'string_delimiter': {'type': basestring, 'default': '"'},
         'line_end_character': {'type': basestring, 'default': '\n'},
         'null_element': {'type': basestring, 'default': ''},
-        'fields': {'type': list, 'default': []}
+        'fields': {'type': list, 'default': []},
+        'schema': {'type': dict, 'default': {}}
     }
 
     def __init__(self, options):
@@ -24,7 +26,18 @@ class CSVExportFormatter(BaseExportFormatter):
         self.line_end_character = self.read_option('line_end_character')
         self.columns = self.read_option('columns')
         self.null_element = self.read_option('null_element')
-        self.fields = self.read_option('fields')
+        self.fields = self._get_fields()
+
+    def _get_fields_from_schema(self):
+        schema = self.read_option('schema')
+        return schema.get('required')
+
+    def _get_fields(self):
+        if self.read_option('fields'):
+            return self.read_option('fields')
+        elif not self.read_option('schema'):
+            raise ConfigurationError('Whether fields or schema options must be declared.')
+        return self._get_fields_from_schema()
 
     def _write_titles(self, item):
         output = io.BytesIO()

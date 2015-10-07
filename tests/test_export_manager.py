@@ -18,8 +18,7 @@ class BaseExportManagerTest(unittest.TestCase):
                     'name': 'exporters.export_formatter.csv_export_formatter.CSVExportFormatter',
                     'options': {
                         'show_titles': True,
-                        'columns': ['city', 'country_code'],
-                        'titles': ['City', 'CC']
+                        'fields': ['city', 'country_code']
                     }
                 }
             },
@@ -88,8 +87,7 @@ class BasicExportManagerTest(unittest.TestCase):
                     'name': 'exporters.export_formatter.csv_export_formatter.CSVExportFormatter',
                     'options': {
                         'show_titles': True,
-                        'columns': ['city', 'country_code'],
-                        'titles': ['City', 'CC']
+                        'fields': ['city', 'country_code']
                     }
                 }
             },
