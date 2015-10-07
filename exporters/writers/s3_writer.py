@@ -1,8 +1,5 @@
-import os
-import re
 import datetime
 from retrying import retry
-import uuid
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
@@ -44,7 +41,8 @@ class S3Writer(FilebaseBaseWriter):
                                               aws_secret_access_key=secret_key)
         self.bucket = self.conn.get_bucket(self.read_option('bucket'))
         self.filebase = self.read_option('filebase').format(datetime.datetime.now())
-        self.logger.info('S3Writer has been initiated. Writing to s3://{}{}'.format(self.bucket, self.filebase))
+        s3_path = 's3://{}/{}'.format(self.bucket.name, self.filebase)
+        self.logger.info('S3Writer has been initiated. Writing to %s' % s3_path)
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def write(self, dump_path, group_key=None):
@@ -59,4 +57,4 @@ class S3Writer(FilebaseBaseWriter):
         with open(dump_path, 'r') as f:
             key.set_contents_from_file(f)
         key.close()
-        self.logger.info('Saved {} to s3://{}/{}'.format(dump_path, self.read_option('bucket'), key_name))
+        self.logger.info('Saved {} to s3://{}/{}'.format(dump_path, self.bucket.name, key_name))
