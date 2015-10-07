@@ -11,7 +11,8 @@ class CSVExportFormatter(BaseExportFormatter):
         'delimiter': {'type': basestring, 'default': ','},
         'string_delimiter': {'type': basestring, 'default': '"'},
         'line_end_character': {'type': basestring, 'default': '\n'},
-        'null_element': {'type': basestring, 'default': ''}
+        'null_element': {'type': basestring, 'default': ''},
+        'fields': {'type': list, 'default': []}
     }
 
     def __init__(self, options):
@@ -23,13 +24,14 @@ class CSVExportFormatter(BaseExportFormatter):
         self.line_end_character = self.read_option('line_end_character')
         self.columns = self.read_option('columns')
         self.null_element = self.read_option('null_element')
+        self.fields = self.read_option('fields')
 
     def _write_titles(self, item):
         output = io.BytesIO()
-        writer = csv.DictWriter(output, fieldnames=item.keys(), delimiter=self.delimiter,
+        writer = csv.DictWriter(output, fieldnames=self.fields, delimiter=self.delimiter,
                             quotechar=self.string_delimiter,
                             quoting=csv.QUOTE_NONNUMERIC,
-                            lineterminator=self.line_end_character)
+                            lineterminator=self.line_end_character,extrasaction='ignore')
         writer.writeheader()
         header = BaseRecord({})
         header.formatted = output.getvalue().rstrip()
@@ -51,10 +53,10 @@ class CSVExportFormatter(BaseExportFormatter):
     def _item_to_csv(self, item):
         from boltons.iterutils import remap
         output = io.BytesIO()
-        writer = csv.DictWriter(output, fieldnames=item.keys(), delimiter=self.delimiter,
+        writer = csv.DictWriter(output, fieldnames=self.fields, delimiter=self.delimiter,
                                 quotechar=self.string_delimiter,
                                 quoting=csv.QUOTE_NONNUMERIC,
-                                lineterminator=self.line_end_character)
+                                lineterminator=self.line_end_character,extrasaction='ignore')
 
         item = remap(item, visit=self._encode_string)
         writer.writerow(item)
