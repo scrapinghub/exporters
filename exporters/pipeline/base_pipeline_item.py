@@ -26,11 +26,11 @@ class BasePipelineItem(object):
                                          (option_name, option_spec['type']))
             if 'default' in option_spec:
                 continue
-            if 'env_fallback' in option_spec and not option_value:
+            if 'env_fallback' in option_spec and option_value is None:
                 if not os.environ.get(option_spec['env_fallback']):
-                    raise ConfigurationError('No env variable for {}. Expecting {}'
+                    raise ConfigurationError('Missing value for option {}. (tried also: {} from env)'
                                              .format(option_name, option_spec['env_fallback']))
-            elif not option_value:
+            elif option_value in None:
                 raise ConfigurationError('Missing value for option %s' % option_name)
 
     def read_option(self, option_name, default=None):
