@@ -101,11 +101,11 @@ class BaseExporter(object):
             try:
                 self._init_export_job()
                 self._run_pipeline()
+                self._finish_export_job()
                 self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM], info=self.stats_manager.stats)
             except Exception as e:
                 self._handle_export_exception(e)
                 raise e
             finally:
                 self._clean_export_job()
-                self._finish_export_job()
         self.logger.info(str(self.stats_manager.stats))
