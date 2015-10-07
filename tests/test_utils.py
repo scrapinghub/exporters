@@ -1,10 +1,11 @@
+import os
 import unittest
 from exporters.export_managers.bypass import BaseBypass, S3Bypass, RequisitesNotMet
 from exporters.groupers.base_grouper import BaseGrouper
 from exporters.logger.base_logger import CategoryLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 from exporters.config_api import ConfigApi, InvalidConfigError
-from exporters.exceptions import InvalidExpression
+from exporters.exceptions import InvalidExpression, ConfigurationError
 from exporters.module_loader import ModuleLoader
 from exporters.exporter_config import ExporterConfig
 from exporters.python_interpreter import Interpreter
@@ -32,7 +33,6 @@ class BaseLoggerTest(unittest.TestCase):
 
 
 class BasePipelineItemTest(unittest.TestCase):
-
     def test_false_required(self):
         pipelineItem = BasePipelineItem({})
         pipelineItem.supported_options = {'number_of_items': {'type': int, 'default': 10}}
@@ -49,6 +49,36 @@ class BasePipelineItemTest(unittest.TestCase):
         pipelineItem.supported_options = {'number_of_items': {'type': int, 'default': 10}}
         with self.assertRaises(ValueError):
             pipelineItem.check_options()
+
+    def test_pipeline_item_with_env_fallback(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': basestring, 'env_fallback': 'ENV_TEST'}}
+        os.environ['ENV_TEST'] = 'test'
+        instance = MyPipelineItem({})
+        self.assertIs(instance.read_option('opt1'), 'test')
+        del os.environ['ENV_TEST']
+
+    def test_pipeline_item_with_env_fallback_and_default(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': basestring, 'default': 'default_value',
+                                          'env_fallback': 'ENV_TEST'}}
+        os.environ['ENV_TEST'] = 'test'
+        instance = MyPipelineItem({})
+        self.assertIs(instance.read_option('opt1'), 'test')
+        del os.environ['ENV_TEST']
+
+    def test_pipeline_item_with_no_env_fallback_and_default(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': basestring, 'default': 'default_value',
+                                          'env_fallback': 'ENV_TEST'}}
+        instance = MyPipelineItem({})
+        self.assertIs(instance.read_option('opt1'), 'default_value')
+
+    def test_pipeline_item_with_no_env_fallback_and_no_default(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': basestring, 'env_fallback': 'ENV_TEST'}}
+        with self.assertRaises(ConfigurationError):
+            MyPipelineItem({})
 
 
 class ConfigApiTest(unittest.TestCase):
@@ -211,7 +241,7 @@ class ModuleLoaderTest(unittest.TestCase):
                     'batch_size': 100
                 }
             },
-            'writer':{}
+            'writer': {}
         }
         with self.assertRaises(TypeError):
             o = ExporterConfig(options)
@@ -309,7 +339,7 @@ class ModuleLoaderTest(unittest.TestCase):
                     'batch_size': 100
                 }
             },
-            'reader':{},
+            'reader': {},
             'writer': {}
         }
         with self.assertRaises(TypeError):
@@ -389,7 +419,8 @@ class ModuleLoaderTest(unittest.TestCase):
                 }
             },
         }
-        self.assertIsInstance(self.module_loader.load_grouper(options['grouper']), BaseGrouper)
+        self.assertIsInstance(self.module_loader.load_grouper(options['grouper']),
+                              BaseGrouper)
 
 
 class OptionsParserTest(unittest.TestCase):
@@ -409,7 +440,8 @@ class OptionsParserTest(unittest.TestCase):
         options = {'reader': '', 'filter': '', 'transform': '', 'writer': ''}
         with self.assertRaises(Exception):
             ExporterConfig(options)
-        options = {'reader': {}, 'filter': {}, 'transform': {}, 'writer': {}, 'persistence': {},
+        options = {'reader': {}, 'filter': {}, 'transform': {}, 'writer': {},
+                   'persistence': {},
                    'exporter_options': {'formatter': {}}}
         self.assertIsInstance(ExporterConfig(options), ExporterConfig)
 
@@ -439,7 +471,6 @@ class BaseByPassTest(unittest.TestCase):
 
 
 class S3ByPassTest(unittest.TestCase):
-
     def test_not_meet_supported_options(self):
         exporter_options = ExporterConfig({
             'reader': {'name': 'some other reader'},
