@@ -1,6 +1,7 @@
 import csv
 import io
 import six
+from exporters.exceptions import ConfigurationError
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 from exporters.records.base_record import BaseRecord
 
@@ -11,9 +12,9 @@ class CSVExportFormatter(BaseExportFormatter):
         'delimiter': {'type': basestring, 'default': ','},
         'string_delimiter': {'type': basestring, 'default': '"'},
         'line_end_character': {'type': basestring, 'default': '\n'},
-        'columns': {'type': list, 'default': []},
-        'titles': {'type': list, 'default': []},
-        'null_element': {'type': basestring, 'default': ''}
+        'null_element': {'type': basestring, 'default': ''},
+        'fields': {'type': list, 'default': []},
+        'schema': {'type': dict, 'default': {}}
     }
 
     def __init__(self, options):
@@ -24,21 +25,36 @@ class CSVExportFormatter(BaseExportFormatter):
         self.string_delimiter = self.read_option('string_delimiter')
         self.line_end_character = self.read_option('line_end_character')
         self.columns = self.read_option('columns')
-        if self.show_titles:
-            self.titles = self.read_option('titles')
-            if len(self.columns) != len(self.titles):
-                raise ValueError('Columns and Titles have different sizes')
         self.null_element = self.read_option('null_element')
+        self.fields = self._get_fields()
+
+    def _get_fields_from_schema(self):
+        schema = self.read_option('schema')
+        return schema.get('required')
+
+    def _get_fields(self):
+        if self.read_option('fields'):
+            return self.read_option('fields')
+        elif not self.read_option('schema'):
+            raise ConfigurationError('Whether fields or schema options must be declared.')
+        return self._get_fields_from_schema()
+
+    def _write_titles(self, item):
+        output = io.BytesIO()
+        writer = csv.DictWriter(output, fieldnames=self.fields, delimiter=self.delimiter,
+                            quotechar=self.string_delimiter,
+                            quoting=csv.QUOTE_NONNUMERIC,
+                            lineterminator=self.line_end_character,extrasaction='ignore')
+        writer.writeheader()
+        header = BaseRecord({})
+        header.formatted = output.getvalue().rstrip()
+        self.titles_already_shown = True
+        return header
 
     def format(self, batch):
-        if self.show_titles and not self.titles_already_shown:
-            # Show titles
-            item = BaseRecord({})
-            item.formatted = self.delimiter.join(self.titles) + self.line_end_character
-            self.titles_already_shown = True
-            yield item
-
         for item in batch:
+            if self.show_titles and not self.titles_already_shown:
+                yield self._write_titles(item)
             item.formatted = self._item_to_csv(item)
             yield item
 
@@ -50,10 +66,10 @@ class CSVExportFormatter(BaseExportFormatter):
     def _item_to_csv(self, item):
         from boltons.iterutils import remap
         output = io.BytesIO()
-        writer = csv.DictWriter(output, fieldnames=item.keys(), delimiter=self.delimiter,
+        writer = csv.DictWriter(output, fieldnames=self.fields, delimiter=self.delimiter,
                                 quotechar=self.string_delimiter,
                                 quoting=csv.QUOTE_NONNUMERIC,
-                                lineterminator=self.line_end_character)
+                                lineterminator=self.line_end_character,extrasaction='ignore')
 
         item = remap(item, visit=self._encode_string)
         writer.writerow(item)

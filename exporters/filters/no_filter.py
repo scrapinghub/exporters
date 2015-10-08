@@ -8,7 +8,6 @@ class NoFilter(BaseFilter):
 
     def __init__(self, options):
         super(NoFilter, self).__init__(options)
-        self.logger.info('NoFilter has been initiated')
 
     def filter_batch(self, batch):
         return batch
