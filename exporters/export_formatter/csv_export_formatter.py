@@ -11,7 +11,7 @@ class CSVExportFormatter(BaseExportFormatter):
     format_name = 'csv'
 
     supported_options = {
-        'show_titles': {'type': bool, 'default': False},
+        'show_titles': {'type': bool, 'default': True},
         'fields': {'type': list, 'default': []},
         'schema': {'type': dict, 'default': {}}
     }
