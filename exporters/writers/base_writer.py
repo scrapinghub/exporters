@@ -64,7 +64,7 @@ class BaseWriter(BasePipelineItem):
         It receives the batch and writes it.
         """
         for item in batch:
-            self.file_format = item.file_format
+            self.file_format = item.format
             if not item.header:
                 self._send_item_to_buffer(item)
             else:
