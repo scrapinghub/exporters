@@ -8,5 +8,7 @@ class BaseRecord(dict):
         - formatted: Item serialized to string using the configured formatter.
     """
     group_key = []
-    group_membership = []
+    group_membership = ()
     formatted = ''
+    format = 'json'
+    header = False
