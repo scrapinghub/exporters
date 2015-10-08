@@ -1,5 +1,6 @@
 import os
 import unittest
+from decorator import contextmanager
 from exporters.export_managers.bypass import BaseBypass, S3Bypass, RequisitesNotMet
 from exporters.groupers.base_grouper import BaseGrouper
 from exporters.logger.base_logger import CategoryLogger
@@ -32,6 +33,16 @@ class BaseLoggerTest(unittest.TestCase):
         logger.critical('Critial message')
 
 
+@contextmanager
+def environment(env):
+    original_env = os.environ
+    os.environ = env
+    try:
+        yield
+    finally:
+        os.environ = original_env
+
+
 class BasePipelineItemTest(unittest.TestCase):
     def test_false_required(self):
         pipelineItem = BasePipelineItem({})
@@ -53,19 +64,17 @@ class BasePipelineItemTest(unittest.TestCase):
     def test_pipeline_item_with_env_fallback(self):
         class MyPipelineItem(BasePipelineItem):
             supported_options = {'opt1': {'type': basestring, 'env_fallback': 'ENV_TEST'}}
-        os.environ['ENV_TEST'] = 'test'
-        instance = MyPipelineItem({})
-        self.assertIs(instance.read_option('opt1'), 'test')
-        del os.environ['ENV_TEST']
+        with environment({'ENV_TEST': 'test'}):
+            instance = MyPipelineItem({})
+            self.assertIs(instance.read_option('opt1'), 'test')
 
     def test_pipeline_item_with_env_fallback_and_default(self):
         class MyPipelineItem(BasePipelineItem):
             supported_options = {'opt1': {'type': basestring, 'default': 'default_value',
                                           'env_fallback': 'ENV_TEST'}}
-        os.environ['ENV_TEST'] = 'test'
-        instance = MyPipelineItem({})
-        self.assertIs(instance.read_option('opt1'), 'test')
-        del os.environ['ENV_TEST']
+        with environment({'ENV_TEST': 'test'}):
+            instance = MyPipelineItem({})
+            self.assertIs(instance.read_option('opt1'), 'test')
 
     def test_pipeline_item_with_no_env_fallback_and_default(self):
         class MyPipelineItem(BasePipelineItem):
@@ -79,6 +88,34 @@ class BasePipelineItemTest(unittest.TestCase):
             supported_options = {'opt1': {'type': basestring, 'env_fallback': 'ENV_TEST'}}
         with self.assertRaises(ConfigurationError):
             MyPipelineItem({})
+
+    def test_pipeline_item_with_env_fallback_and_default_and_value(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': basestring, 'default': 'default_value',
+                                          'env_fallback': 'ENV_TEST'}}
+        with environment({'ENV_TEST': 'test'}):
+            instance = MyPipelineItem({'options': {'opt1': 'given_value'}})
+            self.assertIs(instance.read_option('opt1'), 'given_value')
+
+    def test_pipeline_item_with_no_env_fallback_and_default_and_value(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': basestring, 'default': 'default_value'}}
+        instance = MyPipelineItem({'options': {'opt1': 'given_value'}})
+        self.assertIs(instance.read_option('opt1'), 'given_value')
+
+    def test_pipeline_item_with_no_env_fallback_and_no_default_and_value(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': basestring}}
+        instance = MyPipelineItem({'options': {'opt1': 'given_value'}})
+        self.assertIs(instance.read_option('opt1'), 'given_value')
+
+    def test_pipeline_item_with_empty_env_fallback_and_default(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': basestring, 'default': 'default_value',
+                                          'env_fallback': 'ENV_TEST'}}
+        with environment({'ENV_TEST': ''}):
+            instance = MyPipelineItem({})
+            self.assertIs(instance.read_option('opt1'), 'default_value')
 
 
 class ConfigApiTest(unittest.TestCase):
