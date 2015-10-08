@@ -1,8 +1,8 @@
-import os
-import re
 import datetime
+import os
+
 from retrying import retry
-import uuid
+
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
@@ -31,7 +31,7 @@ class FTPWriter(FilebaseBaseWriter):
     """
     supported_options = {
         'host': {'type': basestring},
-        'port': {'type': int},
+        'port': {'type': int, 'default': 21},
         'ftp_user': {'type': basestring},
         'ftp_password': {'type': basestring}
     }
