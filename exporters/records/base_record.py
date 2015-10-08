@@ -11,3 +11,4 @@ class BaseRecord(dict):
     group_membership = []
     formatted = ''
     file_format = 'jsonl'
+    header = False

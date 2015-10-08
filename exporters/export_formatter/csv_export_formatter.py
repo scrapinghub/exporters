@@ -52,6 +52,7 @@ class CSVExportFormatter(BaseExportFormatter):
         header = BaseRecord({})
         header.formatted = output.getvalue().rstrip()
         header.file_format = self.FILE_FORMAT
+        header.header = True
         self.titles_already_shown = True
         return header
 

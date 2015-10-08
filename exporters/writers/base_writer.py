@@ -51,6 +51,7 @@ class BaseWriter(BasePipelineItem):
         self.items_count = 0
         self.grouping_info = {}
         self.file_format = 'jsonl'
+        self.header_line = None
 
     def write(self, path, key):
         """
@@ -64,7 +65,10 @@ class BaseWriter(BasePipelineItem):
         """
         for item in batch:
             self.file_format = item.file_format
-            self._send_item_to_buffer(item)
+            if not item.header:
+                self._send_item_to_buffer(item)
+            else:
+                self.header_line = item.formatted
 
     def _should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(
@@ -98,6 +102,9 @@ class BaseWriter(BasePipelineItem):
             path = self.grouping_info[key]['group_file'][-1]
         else:
             path = self._get_new_path_name()
+            with open(path, 'w') as f:
+                if self.header_line:
+                    f.write(self.header_line + '\n')
             self.grouping_info[key]['group_file'].append(path)
         return path
 
@@ -134,6 +141,7 @@ class BaseWriter(BasePipelineItem):
         self.grouping_info[key]['buffered_items'] = 0
 
     def close_writer(self):
+        print self.grouping_info
         """
         Called to clean all possible tmp files created during the process.
         """

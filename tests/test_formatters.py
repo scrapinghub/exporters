@@ -62,7 +62,7 @@ class CSVFormatterTest(unittest.TestCase):
 
         }
         with self.assertRaises(ConfigurationError):
-            formatter = CSVExportFormatter(options)
+            CSVExportFormatter(options)
 
 
     def test_format_batch_titles(self):
@@ -116,3 +116,7 @@ class CSVFormatterTest(unittest.TestCase):
         items = list(items)
         self.assertEqual(items[0].formatted, '"key2","key1"')
         self.assertEqual(items[1].formatted, '"value2","value1"')
+        self.assertIs(items[0].header, True)
+        self.assertIs(items[1].header, False)
+        self.assertIs(items[0].file_format, 'csv')
+        self.assertIs(items[1].file_format, 'csv')
