@@ -1,8 +1,5 @@
-import os
-import re
-import datetime
+from contextlib import closing
 from retrying import retry
-import uuid
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
@@ -43,20 +40,22 @@ class S3Writer(FilebaseBaseWriter):
                                               aws_access_key_id=access_key,
                                               aws_secret_access_key=secret_key)
         self.bucket = self.conn.get_bucket(self.read_option('bucket'))
-        self.filebase = self.read_option('filebase').format(datetime.datetime.now())
-        self.logger.info('S3Writer has been initiated. Writing to s3://{}{}'.format(self.bucket, self.filebase))
+        self.logger.info('S3Writer has been initiated.'
+                         'Writing to s3://{}/{}'.format(self.bucket.name, self.filebase))
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
+    def _write_s3_key(self, dump_path, key_name):
+        self.logger.info('Start uploading to {}'.format(dump_path))
+
+        with closing(self.bucket.new_key(key_name)) as key, open(dump_path, 'r') as f:
+            key.set_contents_from_file(f)
+
+        self.logger.info('Saved {} to s3://{}/{}'.format(dump_path, self.bucket.name, key_name))
+
     def write(self, dump_path, group_key=None):
         if group_key is None:
             group_key = []
 
         filebase_path, filename = self.create_filebase_name(group_key)
-
         key_name = filebase_path + '/' + filename
-        key = self.bucket.new_key(key_name)
-        self.logger.info('Start uploading to {}'.format(dump_path))
-        with open(dump_path, 'r') as f:
-            key.set_contents_from_file(f)
-        key.close()
-        self.logger.info('Saved {} to s3://{}/{}'.format(dump_path, self.read_option('bucket'), key_name))
+        self._write_s3_key(dump_path, key_name)

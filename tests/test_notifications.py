@@ -3,7 +3,7 @@ import unittest
 import datetime
 from mock import patch, Mock
 from exporters.notifications.base_notifier import BaseNotifier
-from exporters.notifications.ses_mail_notifier import SESMailNotifier
+from exporters.notifications.ses_mail_notifier import SESMailNotifier, InvalidMailProvided
 from exporters.notifications.webhook_notifier import WebhookNotifier
 
 
@@ -70,7 +70,7 @@ class BaseNotifierTest(unittest.TestCase):
             test_notifier.check_options()
 
 
-class S3MailNotifierTest(unittest.TestCase):
+class SESMailNotifierTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
@@ -195,6 +195,34 @@ class S3MailNotifierTest(unittest.TestCase):
         send_mail_mock.send_email.return_value = True
         mock_connect.return_value = send_mail_mock
         self.notifier.notify_failed_job('Test fail reason', '', ['test@test.com'], self.job_info)
+
+    def test_invalid_mails(self):
+        options = {
+            'exporter_options': {
+                'LOG_LEVEL': 'DEBUG',
+                'LOGGER_NAME': 'export-pipeline',
+                'notifications': [
+                    {
+                        'name': 'exporters.notifications.s3_mail_notifier.S3MailNotifier',
+                        'options':
+                            {
+                                'team_mails': ['badmail'],
+                                'client_mails': [],
+                                'aws_login': 'somelogin',
+                                'aws_key': 'somekey'
+                            }
+                    }
+                ]
+            },
+            'writer': {
+                'name': 'somewriter',
+                'options': {
+                    'some_option': 'some_value'
+                }
+            }
+        }
+        with self.assertRaises(InvalidMailProvided):
+            SESMailNotifier(options['exporter_options']['notifications'][0])
 
 
 class WebhookNotifierTest(unittest.TestCase):
