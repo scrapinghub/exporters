@@ -10,3 +10,4 @@ class BaseRecord(dict):
     group_key = []
     group_membership = []
     formatted = ''
+    file_format = 'jsonl'

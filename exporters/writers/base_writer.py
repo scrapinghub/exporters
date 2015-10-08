@@ -50,6 +50,7 @@ class BaseWriter(BasePipelineItem):
         self.logger = WriterLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
         self.items_count = 0
         self.grouping_info = {}
+        self.file_format = 'jsonl'
 
     def write(self, path, key):
         """
@@ -62,6 +63,7 @@ class BaseWriter(BasePipelineItem):
         It receives the batch and writes it.
         """
         for item in batch:
+            self.file_format = item.file_format
             self._send_item_to_buffer(item)
 
     def _should_write_buffer(self, key):
@@ -119,7 +121,7 @@ class BaseWriter(BasePipelineItem):
         f.close()
 
     def _get_new_path_name(self):
-        return os.path.join(self.tmp_folder, str(uuid.uuid4())+'.jl')
+        return os.path.join(self.tmp_folder, str(uuid.uuid4())+'.'+self.file_format)
 
     def _write_buffer(self, key):
         path = self._get_group_path(key)

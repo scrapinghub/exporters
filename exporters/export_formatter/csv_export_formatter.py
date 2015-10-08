@@ -7,6 +7,9 @@ from exporters.records.base_record import BaseRecord
 
 
 class CSVExportFormatter(BaseExportFormatter):
+
+    FILE_FORMAT = 'csv'
+
     supported_options = {
         'show_titles': {'type': bool, 'default': False},
         'delimiter': {'type': basestring, 'default': ','},
@@ -39,7 +42,7 @@ class CSVExportFormatter(BaseExportFormatter):
             raise ConfigurationError('Whether fields or schema options must be declared.')
         return self._get_fields_from_schema()
 
-    def _write_titles(self, item):
+    def _write_titles(self):
         output = io.BytesIO()
         writer = csv.DictWriter(output, fieldnames=self.fields, delimiter=self.delimiter,
                             quotechar=self.string_delimiter,
@@ -48,14 +51,16 @@ class CSVExportFormatter(BaseExportFormatter):
         writer.writeheader()
         header = BaseRecord({})
         header.formatted = output.getvalue().rstrip()
+        header.file_format = self.FILE_FORMAT
         self.titles_already_shown = True
         return header
 
     def format(self, batch):
         for item in batch:
             if self.show_titles and not self.titles_already_shown:
-                yield self._write_titles(item)
+                yield self._write_titles()
             item.formatted = self._item_to_csv(item)
+            item.file_format = self.FILE_FORMAT
             yield item
 
     def _encode_string(self, path, key, value):
