@@ -65,7 +65,7 @@ class CustomWriterTest(unittest.TestCase):
         output = writer.custom_output[()]
         self.assertEquals([json.dumps(item) for item in self.batch],
                           output.splitlines())
-        self.assertEquals('json', writer.file_format)
+        self.assertEquals('jl', writer.file_extension)
 
     def test_custom_writer_with_csv_formatter(self):
         # given:
@@ -88,7 +88,7 @@ class CustomWriterTest(unittest.TestCase):
                 ['value13', 'value23'],
             ],
             [l for l in csv.reader(output)])
-        self.assertEquals('csv', writer.file_format)
+        self.assertEquals('csv', writer.file_extension)
 
 
 class ConsoleWriterTest(unittest.TestCase):

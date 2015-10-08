@@ -38,6 +38,10 @@ class BaseWriter(BasePipelineItem):
         'size_per_buffer_write': {'type': int, 'default': SIZE_PER_BUFFER_WRITE},
         'items_limit': {'type': int, 'default': 0},
     }
+    supported_file_extensions = {
+        'csv': 'csv',
+        'json': 'jl',
+    }
 
     def __init__(self, options):
         super(BaseWriter, self).__init__(options)
@@ -50,7 +54,7 @@ class BaseWriter(BasePipelineItem):
         self.logger = WriterLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
         self.items_count = 0
         self.grouping_info = {}
-        self.file_format = 'jsonl'
+        self.file_extension = None
         self.header_line = None
 
     def write(self, path, key):
@@ -64,11 +68,12 @@ class BaseWriter(BasePipelineItem):
         Receive the batch and write it.
         """
         for item in batch:
-            self.file_format = item.format
-            if not item.header:
-                self._send_item_to_buffer(item)
-            else:
+            if self.file_extension is None:
+                self.file_extension = self.supported_file_extensions[item.format]
+            if item.header:
                 self.header_line = item.formatted
+            else:
+                self._send_item_to_buffer(item)
 
     def _should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(
@@ -129,7 +134,7 @@ class BaseWriter(BasePipelineItem):
         f.close()
 
     def _get_new_path_name(self):
-        return os.path.join(self.tmp_folder, str(uuid.uuid4())+'.'+self.file_format)
+        return os.path.join(self.tmp_folder, '%s.%s' % (uuid.uuid4(), self.file_extension))
 
     def _write_buffer(self, key):
         path = self._get_group_path(key)
