@@ -115,7 +115,7 @@ class BasePipelineItemTest(unittest.TestCase):
                                           'env_fallback': 'ENV_TEST'}}
         with environment({'ENV_TEST': ''}):
             instance = MyPipelineItem({})
-            self.assertIs(instance.read_option('opt1'), 'default_value')
+            self.assertIs(instance.read_option('opt1'), '')
 
 
 class ConfigApiTest(unittest.TestCase):

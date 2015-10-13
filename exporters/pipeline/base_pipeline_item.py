@@ -37,6 +37,6 @@ class BasePipelineItem(object):
         if option_name in self.options:
             return self.options.get(option_name)
         env_name = self.supported_options.get(option_name, {}).get('env_fallback')
-        if env_name and os.environ.get(env_name) is not None and os.environ.get(env_name) is not '':
+        if env_name and env_name in os.environ:
             return os.environ.get(env_name)
         return self.supported_options.get(option_name, {}).get('default', default)
