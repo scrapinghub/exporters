@@ -26,7 +26,7 @@ class S3Writer(FilebaseBaseWriter):
         'bucket': {'type': basestring},
         'aws_access_key_id': {'type': basestring},
         'aws_secret_access_key': {'type': basestring},
-        'aws_region': {'type': basestring, 'default': 'us-east-1'},
+        'aws_region': {'type': basestring, 'default': None},
     }
 
     def __init__(self, options):
@@ -34,14 +34,26 @@ class S3Writer(FilebaseBaseWriter):
         super(S3Writer, self).__init__(options)
         access_key = self.read_option('aws_access_key_id')
         secret_key = self.read_option('aws_secret_access_key')
-        aws_region = self.read_option('aws_region')
+        self.aws_region = self.read_option('aws_region')
+        bucket_name = self.read_option('bucket')
 
-        self.conn = boto.s3.connect_to_region(aws_region,
+        if self.aws_region is None:
+            try:
+                self.aws_region = self._get_bucket_location(access_key, secret_key,
+                                                            bucket_name)
+            except:
+                self.aws_region = 'us-east-1'
+
+        self.conn = boto.s3.connect_to_region(self.aws_region,
                                               aws_access_key_id=access_key,
                                               aws_secret_access_key=secret_key)
-        self.bucket = self.conn.get_bucket(self.read_option('bucket'))
+        self.bucket = self.conn.get_bucket(bucket_name)
         self.logger.info('S3Writer has been initiated.'
                          'Writing to s3://{}/{}'.format(self.bucket.name, self.filebase))
+
+    def _get_bucket_location(self, access_key, secret_key, bucket):
+        import boto
+        return boto.connect_s3(access_key, secret_key).get_bucket(bucket).get_location()
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def _write_s3_key(self, dump_path, key_name):

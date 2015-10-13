@@ -34,11 +34,6 @@ class S3WriterTest(unittest.TestCase):
         self.s3_conn = boto.connect_s3()
         self.s3_conn.create_bucket('fake_bucket')
 
-        exporter_options = {
-            'log_level': 'DEBUG',
-            'logger_name': 'export-pipeline',
-        }
-
     def tearDown(self):
         self.mock_s3.stop()
 
@@ -63,9 +58,10 @@ class S3WriterTest(unittest.TestCase):
         self.assertTrue(re.match('tests/.*[.]gz', saved_keys[0].name))
 
     def test_connect_to_specific_region(self):
-        conn = boto.s3.connect_to_region('eu-west-1')
-        conn.create_bucket('another_fake_bucket')
         # given:
+        conn = boto.connect_s3()
+        conn.create_bucket('another_fake_bucket')
+
         options = self.get_writer_config()
         options['options']['aws_region'] = 'eu-west-1'
         options['options']['bucket'] = 'another_fake_bucket'
@@ -74,7 +70,22 @@ class S3WriterTest(unittest.TestCase):
         writer = S3Writer(options)
 
         # then:
-        self.assertEquals('eu-west-1', writer.bucket.get_location())
+        self.assertEquals('eu-west-1', writer.aws_region)
+        writer.close_writer()
+
+    def test_connect_to_bucket_location(self):
+        # given:
+        conn = boto.s3.connect_to_region('eu-west-1')
+        conn.create_bucket('another_fake_bucket')
+
+        options = self.get_writer_config()
+        options['options']['bucket'] = 'another_fake_bucket'
+
+        # when:
+        writer = S3Writer(options)
+
+        # then:
+        self.assertEquals('eu-west-1', writer.aws_region)
         writer.close_writer()
 
     def get_writer_config(self):
