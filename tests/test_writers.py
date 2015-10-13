@@ -89,6 +89,7 @@ class CustomWriterTest(unittest.TestCase):
             ],
             [l for l in csv.reader(output)])
         self.assertEquals('csv', writer.file_extension)
+        self.assertEqual(writer.items_count, 3)
 
 
 class ConsoleWriterTest(unittest.TestCase):
