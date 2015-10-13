@@ -49,7 +49,6 @@ class MailWriter(BaseWriter):
         self.logger.info('MailWriter has been initiated. Sending to: {}'.format(self.emails))
         self.writer_finished = False
 
-
     def _write_mail(self, dump_path, group_key):
         if self.max_mails_sent == self.mails_sent:
             raise MaxMailsSent('Finishing job after max_mails_sent reached: {} mails sent.'
