@@ -57,12 +57,13 @@ class S3Writer(FilebaseBaseWriter):
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def _write_s3_key(self, dump_path, key_name):
-        self.logger.info('Start uploading to {}'.format(dump_path))
+        destination = 's3://{}/{}'.format(self.bucket.name, key_name)
+        self.logger.info('Start uploading {} to {}'.format(dump_path, destination))
 
         with closing(self.bucket.new_key(key_name)) as key, open(dump_path, 'r') as f:
             key.set_contents_from_file(f)
 
-        self.logger.info('Saved {} to s3://{}/{}'.format(dump_path, self.bucket.name, key_name))
+        self.logger.info('Saved {}'.format(destination))
 
     def write(self, dump_path, group_key=None):
         if group_key is None:
