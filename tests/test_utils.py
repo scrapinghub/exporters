@@ -44,78 +44,66 @@ def environment(env):
 
 
 class BasePipelineItemTest(unittest.TestCase):
-    def test_false_required(self):
-        pipelineItem = BasePipelineItem({})
-        pipelineItem.supported_options = {'number_of_items': {'type': int, 'default': 10}}
-        pipelineItem.check_options()
+    def test_pipeline_item_with_type_declared(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': int}}
 
-    def test_not_present(self):
-        pipelineItem = BasePipelineItem({})
-        pipelineItem.supported_options = {'number_of_items': {'type': int}}
-        with self.assertRaises(ValueError):
-            pipelineItem.check_options()
-
-    def test_wrong_type(self):
-        pipelineItem = BasePipelineItem({'options': {'number_of_items': 'wrong_string'}})
-        pipelineItem.supported_options = {'number_of_items': {'type': int, 'default': 10}}
-        with self.assertRaises(ValueError):
-            pipelineItem.check_options()
+        with self.assertRaisesRegexp(ValueError, 'Value for option .* should be of type'):
+            MyPipelineItem({'options': {'opt1': 'string'}})
 
     def test_pipeline_item_with_env_fallback(self):
         class MyPipelineItem(BasePipelineItem):
             supported_options = {'opt1': {'type': basestring, 'env_fallback': 'ENV_TEST'}}
+
         with environment({'ENV_TEST': 'test'}):
             instance = MyPipelineItem({})
             self.assertIs(instance.read_option('opt1'), 'test')
+
+        with self.assertRaisesRegexp(ConfigurationError, "Missing value for option"):
+            MyPipelineItem({})
 
     def test_pipeline_item_with_env_fallback_and_default(self):
         class MyPipelineItem(BasePipelineItem):
-            supported_options = {'opt1': {'type': basestring, 'default': 'default_value',
-                                          'env_fallback': 'ENV_TEST'}}
+            supported_options = {
+                'opt1': {
+                    'type': basestring,
+                    'default': 'default_value',
+                    'env_fallback': 'ENV_TEST'
+                },
+            }
+
+        instance = MyPipelineItem({})
+        self.assertIs(instance.read_option('opt1'), 'default_value')
+
         with environment({'ENV_TEST': 'test'}):
             instance = MyPipelineItem({})
             self.assertIs(instance.read_option('opt1'), 'test')
 
-    def test_pipeline_item_with_no_env_fallback_and_default(self):
-        class MyPipelineItem(BasePipelineItem):
-            supported_options = {'opt1': {'type': basestring, 'default': 'default_value',
-                                          'env_fallback': 'ENV_TEST'}}
-        instance = MyPipelineItem({})
-        self.assertIs(instance.read_option('opt1'), 'default_value')
-
-    def test_pipeline_item_with_no_env_fallback_and_no_default(self):
-        class MyPipelineItem(BasePipelineItem):
-            supported_options = {'opt1': {'type': basestring, 'env_fallback': 'ENV_TEST'}}
-        with self.assertRaises(ConfigurationError):
-            MyPipelineItem({})
-
-    def test_pipeline_item_with_env_fallback_and_default_and_value(self):
-        class MyPipelineItem(BasePipelineItem):
-            supported_options = {'opt1': {'type': basestring, 'default': 'default_value',
-                                          'env_fallback': 'ENV_TEST'}}
         with environment({'ENV_TEST': 'test'}):
             instance = MyPipelineItem({'options': {'opt1': 'given_value'}})
             self.assertIs(instance.read_option('opt1'), 'given_value')
 
-    def test_pipeline_item_with_no_env_fallback_and_default_and_value(self):
-        class MyPipelineItem(BasePipelineItem):
-            supported_options = {'opt1': {'type': basestring, 'default': 'default_value'}}
-        instance = MyPipelineItem({'options': {'opt1': 'given_value'}})
-        self.assertIs(instance.read_option('opt1'), 'given_value')
-
-    def test_pipeline_item_with_no_env_fallback_and_no_default_and_value(self):
-        class MyPipelineItem(BasePipelineItem):
-            supported_options = {'opt1': {'type': basestring}}
-        instance = MyPipelineItem({'options': {'opt1': 'given_value'}})
-        self.assertIs(instance.read_option('opt1'), 'given_value')
-
-    def test_pipeline_item_with_empty_env_fallback_and_default(self):
-        class MyPipelineItem(BasePipelineItem):
-            supported_options = {'opt1': {'type': basestring, 'default': 'default_value',
-                                          'env_fallback': 'ENV_TEST'}}
         with environment({'ENV_TEST': ''}):
             instance = MyPipelineItem({})
             self.assertIs(instance.read_option('opt1'), '')
+
+    def test_pipeline_item_with_no_env_fallback_and_default_and_value(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': basestring, 'default': 'default_value'}}
+
+        instance = MyPipelineItem({'options': {'opt1': 'given_value'}})
+
+        self.assertIs(instance.read_option('opt1'), 'given_value')
+
+    def test_simple_supported_option(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': basestring}}
+
+        instance = MyPipelineItem({'options': {'opt1': 'given_value'}})
+        self.assertIs(instance.read_option('opt1'), 'given_value')
+
+        with self.assertRaisesRegexp(ValueError, "Missing value for option"):
+            MyPipelineItem({'options': {}})
 
 
 class ConfigApiTest(unittest.TestCase):

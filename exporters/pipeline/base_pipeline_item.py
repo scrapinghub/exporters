@@ -22,7 +22,7 @@ class BasePipelineItem(object):
         for option_name, option_spec in self.supported_options.iteritems():
             option_value = self.read_option(option_name)
             if option_value and not isinstance(option_value, option_spec['type']):
-                raise ConfigurationError('Option %s should be type: %s' %
+                raise ConfigurationError('Value for option %s should be of type: %s' %
                                          (option_name, option_spec['type']))
             if 'default' in option_spec:
                 continue
