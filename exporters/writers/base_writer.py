@@ -38,6 +38,10 @@ class BaseWriter(BasePipelineItem):
         'size_per_buffer_write': {'type': int, 'default': SIZE_PER_BUFFER_WRITE},
         'items_limit': {'type': int, 'default': 0},
     }
+    supported_file_extensions = {
+        'csv': 'csv',
+        'json': 'jl',
+    }
 
     def __init__(self, options):
         super(BaseWriter, self).__init__(options)
@@ -50,19 +54,26 @@ class BaseWriter(BasePipelineItem):
         self.logger = WriterLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
         self.items_count = 0
         self.grouping_info = {}
+        self.file_extension = None
+        self.header_line = None
 
     def write(self, path, key):
         """
-        It receives where the tmp dump file is stored and group information, and it must write it wherever needed.
+        Receive path to temp dump file and group key, and write it to the proper location.
         """
         raise NotImplementedError
 
     def write_batch(self, batch):
         """
-        It receives the batch and writes it.
+        Receive the batch and write it.
         """
         for item in batch:
-            self._send_item_to_buffer(item)
+            if self.file_extension is None:
+                self.file_extension = self.supported_file_extensions[item.format]
+            if item.header:
+                self.header_line = item.formatted
+            else:
+                self._send_item_to_buffer(item)
 
     def _should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(
@@ -72,12 +83,12 @@ class BaseWriter(BasePipelineItem):
 
     def _send_item_to_buffer(self, item):
         """
-        It receives an item and writes it.
+        Receive an item and write it.
         """
         key = tuple(item.group_membership)
         if key not in self.grouping_info:
             self.grouping_info[key] = {}
-            self.grouping_info[key]['membership'] = item.group_membership
+            self.grouping_info[key]['membership'] = key
             self.grouping_info[key]['total_items'] = 0
             self.grouping_info[key]['buffered_items'] = 0
             self.grouping_info[key]['group_file'] = []
@@ -89,13 +100,17 @@ class BaseWriter(BasePipelineItem):
         self.items_count += 1
         if self.items_limit and self.items_limit == self.items_count:
             raise ItemsLimitReached(
-                'Finishing job after items_limit reached: {} items written.'.format(self.items_count))
+                'Finishing job after items_limit reached:'
+                ' {} items written.'.format(self.items_count))
 
     def _get_group_path(self, key):
         if self.grouping_info[key]['group_file']:
             path = self.grouping_info[key]['group_file'][-1]
         else:
             path = self._get_new_path_name()
+            with open(path, 'w') as f:
+                if self.header_line:
+                    f.write(self.header_line + '\n')
             self.grouping_info[key]['group_file'].append(path)
         return path
 
@@ -119,7 +134,7 @@ class BaseWriter(BasePipelineItem):
         f.close()
 
     def _get_new_path_name(self):
-        return os.path.join(self.tmp_folder, str(uuid.uuid4())+'.jl')
+        return os.path.join(self.tmp_folder, '%s.%s' % (uuid.uuid4(), self.file_extension))
 
     def _write_buffer(self, key):
         path = self._get_group_path(key)
@@ -135,6 +150,8 @@ class BaseWriter(BasePipelineItem):
         """
         Called to clean all possible tmp files created during the process.
         """
-        for key in self.grouping_info.keys():
-            self._write_buffer(key)
-        shutil.rmtree(self.tmp_folder, ignore_errors=True)
+        try:
+            for key in self.grouping_info.keys():
+                self._write_buffer(key)
+        finally:
+            shutil.rmtree(self.tmp_folder, ignore_errors=True)

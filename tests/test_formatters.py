@@ -43,7 +43,7 @@ class JsonFormatterTest(unittest.TestCase):
 
     def test_raise_exception(self):
         with self.assertRaises(Exception):
-            list(self.export_formatter.format([1,2,3]))
+            list(self.export_formatter.format([1, 2, 3]))
 
 
 class CSVFormatterTest(unittest.TestCase):
@@ -57,13 +57,9 @@ class CSVFormatterTest(unittest.TestCase):
             BaseRecord({'key1': 'value1', 'key2': 'value2'})
         ]
 
-    def test_format_raises_parameters(self):
-        options = {
-
-        }
-        with self.assertRaises(ConfigurationError):
-            formatter = CSVExportFormatter(options)
-
+    def test_create_without_options_raises_errors(self):
+        with self.assertRaisesRegexp(ConfigurationError, "requires at least one of"):
+            CSVExportFormatter({})
 
     def test_format_batch_titles(self):
         options = {
@@ -79,17 +75,22 @@ class CSVFormatterTest(unittest.TestCase):
         self.assertEqual(items[1].formatted, '"value1"')
 
     def test_format_batch_no_titles(self):
+        # given:
         options = {
             'options': {
                 'fields': ['key1']
             }
         }
         formatter = CSVExportFormatter(options)
-        items = formatter.format(self.batch)
-        items = list(items)
+
+        # when:
+        items = list(formatter.format(self.batch))
+
+        # then:
         self.assertEqual(items[0].formatted, '"value1"')
 
     def test_format_from_schema(self):
+        # given:
         options = {
             'options': {
                 'show_titles': True,
@@ -112,7 +113,12 @@ class CSVFormatterTest(unittest.TestCase):
             }
         }
         formatter = CSVExportFormatter(options)
-        items = formatter.format(self.batch)
-        items = list(items)
-        self.assertEqual(items[0].formatted, '"key2","key1"')
-        self.assertEqual(items[1].formatted, '"value2","value1"')
+
+        # when:
+        items = list(formatter.format(self.batch))
+
+        # then:
+        self.assertEqual([True] + [False] * 5, [i.header for i in items])
+        self.assertEqual(['"key2","key1"'] + ['"value2","value1"'] * 5,
+                         [i.formatted for i in items])
+        self.assertEqual(set(['csv']), set(i.format for i in items))

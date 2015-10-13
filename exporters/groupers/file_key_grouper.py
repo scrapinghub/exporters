@@ -29,5 +29,5 @@ class FileKeyGrouper(BaseGrouper):
             membership = []
             for key in self.keys:
                 membership.append(self._get_nested_value(item, key))
-            item.group_membership = membership
+            item.group_membership = tuple(membership)
             yield item

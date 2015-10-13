@@ -1,14 +1,16 @@
-import os
+import gzip
+import json
 import random
-import shutil
-import tempfile
 import unittest
+import csv
+
 from exporters.records.base_record import BaseRecord
 from exporters.writers import FSWriter
 from exporters.writers.base_writer import BaseWriter
 from exporters.writers.console_writer import ConsoleWriter
-from exporters.writers.odo_writer import ODOWriter
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
+from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
+from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 
 
 class BaseWriterTest(unittest.TestCase):
@@ -25,6 +27,68 @@ class BaseWriterTest(unittest.TestCase):
     def test_write_not_implemented(self):
         with self.assertRaises(NotImplementedError):
             self.writer.write('', '')
+
+
+class FakeWriter(BaseWriter):
+    """CustomWriter writing records to self.custom_output
+    to test BaseWriter extensibility
+    """
+    def __init__(self, *args, **kwargs):
+        super(FakeWriter, self).__init__(*args, **kwargs)
+        self.custom_output = {}
+
+    def write(self, path, key):
+        with gzip.open(path) as f:
+            self.custom_output[key] = f.read()
+
+
+class CustomWriterTest(unittest.TestCase):
+    def setUp(self):
+        self.batch = [
+            BaseRecord({u'key1': u'value11', u'key2': u'value21'}),
+            BaseRecord({u'key1': u'value12', u'key2': u'value22'}),
+            BaseRecord({u'key1': u'value13', u'key2': u'value23'}),
+        ]
+
+    def test_custom_writer(self):
+        # given:
+        self.batch = list(JsonExportFormatter({}).format(self.batch))
+        writer = FakeWriter({})
+
+        # when:
+        try:
+            writer.write_batch(self.batch)
+        finally:
+            writer.close_writer()
+
+        # then:
+        output = writer.custom_output[()]
+        self.assertEquals([json.dumps(item) for item in self.batch],
+                          output.splitlines())
+        self.assertEquals('jl', writer.file_extension)
+
+    def test_custom_writer_with_csv_formatter(self):
+        # given:
+        formatter = CSVExportFormatter({'options': {'fields': ['key1', 'key2']}})
+        self.batch = list(formatter.format(self.batch))
+        writer = FakeWriter({})
+
+        # when:
+        try:
+            writer.write_batch(self.batch)
+        finally:
+            writer.close_writer()
+
+        # then:
+        output = writer.custom_output[()].splitlines()
+        self.assertEquals(
+            [
+                ['value11', 'value21'],
+                ['value12', 'value22'],
+                ['value13', 'value23'],
+            ],
+            [l for l in csv.reader(output)])
+        self.assertEquals('csv', writer.file_extension)
 
 
 class ConsoleWriterTest(unittest.TestCase):
@@ -48,34 +112,6 @@ class ConsoleWriterTest(unittest.TestCase):
 
         self.writer.write_batch(items_to_write)
         self.assertEqual(self.writer.items_count, 10)
-
-
-class OdoWriterTest(unittest.TestCase):
-
-    def setUp(self):
-        self.batch_path = 'tests/data/test_data.jl.gz'
-
-        self.tmp_path = tempfile.mkdtemp()
-        self.tmp_file = os.path.join(self.tmp_path, 'test.csv')
-
-        self.schema = {'$schema': u'http://json-schema.org/draft-04/schema',
-                       'required': [u'item'], 'type': 'object',
-                       'properties': {u'item': {'type': 'string'}}}
-        self.writer_config = {
-            'options': {
-                'odo_uri': self.tmp_file,
-                'schema': self.schema
-            }
-        }
-
-    def test_write_csv(self):
-        writer = ODOWriter(self.writer_config)
-        writer.write(self.batch_path, [])
-        writer.close_writer()
-        with open(self.tmp_file) as f:
-            lines = f.readlines()
-        self.assertEqual(lines, ['item\n', 'value1\n', 'value2\n', 'value3\n'])
-        shutil.rmtree(self.tmp_path)
 
 
 class FilebaseBaseWriterTest(unittest.TestCase):
