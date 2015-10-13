@@ -69,7 +69,7 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_custom_writer_with_csv_formatter(self):
         # given:
-        formatter = CSVExportFormatter({'options': {'fields': ['key1', 'key2']}})
+        formatter = CSVExportFormatter({'options': {'show_titles': False, 'fields': ['key1', 'key2']}})
         self.batch = list(formatter.format(self.batch))
         writer = FakeWriter({})
 
