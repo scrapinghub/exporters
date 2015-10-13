@@ -3,7 +3,8 @@ from exporters.export_managers.bypass import BaseBypass, S3Bypass, RequisitesNot
 from exporters.groupers.base_grouper import BaseGrouper
 from exporters.logger.base_logger import CategoryLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
-from exporters.config_api import ConfigApi, InvalidConfigError
+from exporters.config_api import ConfigApi, InvalidConfigError, \
+    IncompatibleModulesUsedError
 from exporters.exceptions import InvalidExpression
 from exporters.module_loader import ModuleLoader
 from exporters.exporter_config import ExporterConfig
@@ -192,6 +193,52 @@ class ConfigApiTest(unittest.TestCase):
         }
 
         self.assertIs(self.config_api._check_valid_options(grouper), None)
+
+    def test_incompatible_configuration(self):
+        config = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {}
+            },
+            'writer': {
+                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'options': {}
+            },
+            'exporter_options': {
+                "formatter": {
+                    "name": "exporters.export_formatter.csv_export_formatter.CSVExportFormatter",
+                    "options": {
+
+                    }
+                }
+            },
+
+        }
+        with self.assertRaises(IncompatibleModulesUsedError):
+            self.config_api.check_compatibility(config)
+
+    def test_incompatible_ignore_configuration(self):
+        config = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {}
+            },
+            'writer': {
+                'name': 'exporters.writers.mail_writer.MailWriter',
+                'options': {}
+            },
+            'exporter_options': {
+                "notifications": [
+                    {
+                        'name': 'exporters.notifications.s3_mail_notifier.S3MailNotifier',
+                        'options': {}
+                    }
+                ]
+            },
+
+        }
+        new_config = self.config_api.check_compatibility(config)
+        self.assertEquals(len(new_config['exporter_options']['notifications']), 0)
 
 
 class ModuleLoaderTest(unittest.TestCase):
