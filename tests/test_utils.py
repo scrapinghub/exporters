@@ -1,10 +1,12 @@
+import os
 import unittest
+from decorator import contextmanager
 from exporters.export_managers.bypass import BaseBypass, S3Bypass, RequisitesNotMet
 from exporters.groupers.base_grouper import BaseGrouper
 from exporters.logger.base_logger import CategoryLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 from exporters.config_api import ConfigApi, InvalidConfigError
-from exporters.exceptions import InvalidExpression
+from exporters.exceptions import InvalidExpression, ConfigurationError
 from exporters.module_loader import ModuleLoader
 from exporters.exporter_config import ExporterConfig
 from exporters.python_interpreter import Interpreter
@@ -31,24 +33,77 @@ class BaseLoggerTest(unittest.TestCase):
         logger.critical('Critial message')
 
 
+@contextmanager
+def environment(env):
+    original_env = os.environ
+    os.environ = env
+    try:
+        yield
+    finally:
+        os.environ = original_env
+
+
 class BasePipelineItemTest(unittest.TestCase):
+    def test_pipeline_item_with_type_declared(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': int}}
 
-    def test_false_required(self):
-        pipelineItem = BasePipelineItem({})
-        pipelineItem.supported_options = {'number_of_items': {'type': int, 'default': 10}}
-        pipelineItem.check_options()
+        with self.assertRaisesRegexp(ValueError, 'Value for option .* should be of type'):
+            MyPipelineItem({'options': {'opt1': 'string'}})
 
-    def test_not_present(self):
-        pipelineItem = BasePipelineItem({})
-        pipelineItem.supported_options = {'number_of_items': {'type': int}}
-        with self.assertRaises(ValueError):
-            pipelineItem.check_options()
+    def test_pipeline_item_with_env_fallback(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': basestring, 'env_fallback': 'ENV_TEST'}}
 
-    def test_wrong_type(self):
-        pipelineItem = BasePipelineItem({'options': {'number_of_items': 'wrong_string'}})
-        pipelineItem.supported_options = {'number_of_items': {'type': int, 'default': 10}}
-        with self.assertRaises(ValueError):
-            pipelineItem.check_options()
+        with environment({'ENV_TEST': 'test'}):
+            instance = MyPipelineItem({})
+            self.assertIs(instance.read_option('opt1'), 'test')
+
+        with self.assertRaisesRegexp(ConfigurationError, "Missing value for option"):
+            MyPipelineItem({})
+
+    def test_pipeline_item_with_env_fallback_and_default(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {
+                'opt1': {
+                    'type': basestring,
+                    'default': 'default_value',
+                    'env_fallback': 'ENV_TEST'
+                },
+            }
+
+        instance = MyPipelineItem({})
+        self.assertIs(instance.read_option('opt1'), 'default_value')
+
+        with environment({'ENV_TEST': 'test'}):
+            instance = MyPipelineItem({})
+            self.assertIs(instance.read_option('opt1'), 'test')
+
+        with environment({'ENV_TEST': 'test'}):
+            instance = MyPipelineItem({'options': {'opt1': 'given_value'}})
+            self.assertIs(instance.read_option('opt1'), 'given_value')
+
+        with environment({'ENV_TEST': ''}):
+            instance = MyPipelineItem({})
+            self.assertIs(instance.read_option('opt1'), '')
+
+    def test_pipeline_item_with_no_env_fallback_and_default_and_value(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': basestring, 'default': 'default_value'}}
+
+        instance = MyPipelineItem({'options': {'opt1': 'given_value'}})
+
+        self.assertIs(instance.read_option('opt1'), 'given_value')
+
+    def test_simple_supported_option(self):
+        class MyPipelineItem(BasePipelineItem):
+            supported_options = {'opt1': {'type': basestring}}
+
+        instance = MyPipelineItem({'options': {'opt1': 'given_value'}})
+        self.assertIs(instance.read_option('opt1'), 'given_value')
+
+        with self.assertRaisesRegexp(ValueError, "Missing value for option"):
+            MyPipelineItem({'options': {}})
 
 
 class ConfigApiTest(unittest.TestCase):
@@ -211,7 +266,7 @@ class ModuleLoaderTest(unittest.TestCase):
                     'batch_size': 100
                 }
             },
-            'writer':{}
+            'writer': {}
         }
         with self.assertRaises(TypeError):
             o = ExporterConfig(options)
@@ -309,7 +364,7 @@ class ModuleLoaderTest(unittest.TestCase):
                     'batch_size': 100
                 }
             },
-            'reader':{},
+            'reader': {},
             'writer': {}
         }
         with self.assertRaises(TypeError):
@@ -389,7 +444,8 @@ class ModuleLoaderTest(unittest.TestCase):
                 }
             },
         }
-        self.assertIsInstance(self.module_loader.load_grouper(options['grouper']), BaseGrouper)
+        self.assertIsInstance(self.module_loader.load_grouper(options['grouper']),
+                              BaseGrouper)
 
 
 class OptionsParserTest(unittest.TestCase):
@@ -409,7 +465,8 @@ class OptionsParserTest(unittest.TestCase):
         options = {'reader': '', 'filter': '', 'transform': '', 'writer': ''}
         with self.assertRaises(Exception):
             ExporterConfig(options)
-        options = {'reader': {}, 'filter': {}, 'transform': {}, 'writer': {}, 'persistence': {},
+        options = {'reader': {}, 'filter': {}, 'transform': {}, 'writer': {},
+                   'persistence': {},
                    'exporter_options': {'formatter': {}}}
         self.assertIsInstance(ExporterConfig(options), ExporterConfig)
 
@@ -439,7 +496,6 @@ class BaseByPassTest(unittest.TestCase):
 
 
 class S3ByPassTest(unittest.TestCase):
-
     def test_not_meet_supported_options(self):
         exporter_options = ExporterConfig({
             'reader': {'name': 'some other reader'},

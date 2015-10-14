@@ -3,7 +3,7 @@ import unittest
 import datetime
 from mock import patch, Mock
 from exporters.notifications.base_notifier import BaseNotifier
-from exporters.notifications.s3_mail_notifier import S3MailNotifier, InvalidMailProvided
+from exporters.notifications.ses_mail_notifier import SESMailNotifier, InvalidMailProvided
 from exporters.notifications.webhook_notifier import WebhookNotifier
 
 
@@ -70,7 +70,7 @@ class BaseNotifierTest(unittest.TestCase):
             test_notifier.check_options()
 
 
-class S3MailNotifierTest(unittest.TestCase):
+class SESMailNotifierTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
@@ -79,13 +79,13 @@ class S3MailNotifierTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline',
                 'notifications': [
                     {
-                        'name': 'exporters.notifications.s3_mail_notifier.S3MailNotifier',
+                        'name': 'exporters.notifications.s3_mail_notifier.SESMailNotifier',
                         'options':
                             {
                                 'team_mails': ['test@test.com'],
                                 'client_mails': ['test@test.com'],
-                                'aws_login': 'somelogin',
-                                'aws_key': 'somekey'
+                                'access_key': 'somelogin',
+                                'secret_key': 'somekey'
                             }
                     }
                 ]
@@ -104,7 +104,7 @@ class S3MailNotifierTest(unittest.TestCase):
             'start_time': datetime.datetime.now(),
             'script_name': 'basic_export_manager'
         }
-        self.notifier = S3MailNotifier(self.options['exporter_options']['notifications'][0])
+        self.notifier = SESMailNotifier(self.options['exporter_options']['notifications'][0])
 
     @patch('boto.connect_ses')
     def test_start_dump(self, mock_connect):
@@ -208,8 +208,8 @@ class S3MailNotifierTest(unittest.TestCase):
                             {
                                 'team_mails': ['badmail'],
                                 'client_mails': [],
-                                'aws_login': 'somelogin',
-                                'aws_key': 'somekey'
+                                'access_key': 'somelogin',
+                                'secret_key': 'somekey'
                             }
                     }
                 ]
@@ -222,7 +222,7 @@ class S3MailNotifierTest(unittest.TestCase):
             }
         }
         with self.assertRaises(InvalidMailProvided):
-            notifier = S3MailNotifier(options['exporter_options']['notifications'][0])
+            SESMailNotifier(options['exporter_options']['notifications'][0])
 
 
 class WebhookNotifierTest(unittest.TestCase):

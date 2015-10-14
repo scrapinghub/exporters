@@ -7,11 +7,14 @@ from exporters.notifications.receiver_groups import CLIENTS, TEAM
 DEFAULT_MAIN_FROM = 'Scrapinghub data services <dataservices@scrapinghub.com>'
 
 
+
+
+
 class InvalidMailProvided(Exception):
     pass
 
 
-class S3MailNotifier(BaseNotifier):
+class SESMailNotifier(BaseNotifier):
     """
     Sends emails using aws mail service
 
@@ -21,23 +24,22 @@ class S3MailNotifier(BaseNotifier):
         - client_mails (list)
             List of client mails
 
-        - aws_login (str)
-            Aws acces key
+        - access_key (str)
+            AWS access key
 
-        - aws_key (str)
-            Aws secret access key
+        - secret_key (str)
+            AWS secret access key
     """
     def __init__(self, options):
-        # List of options
         self.supported_options = {
             'team_mails': {'type': list, 'default': []},
             'client_mails': {'type': list, 'default': []},
-            'aws_login': {'type': basestring},
-            'aws_key': {'type': basestring},
+            'access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_MAIL_AWS_ACCESS_KEY'},
+            'secret_key': {'type': basestring, 'env_fallback': 'EXPORTERS_MAIL_AWS_SECRET_KEY'},
             'client_name': {'type': basestring, 'default': 'Customer'}
         }
 
-        super(S3MailNotifier, self).__init__(options)
+        super(SESMailNotifier, self).__init__(options)
         self.options = options['options']
         self.team_mails = self.options['team_mails']
         self.client_mails = self.options['client_mails']
@@ -82,7 +84,7 @@ class S3MailNotifier(BaseNotifier):
 
     def _send_email(self, mails, subject, body):
         import boto
-        ses = boto.connect_ses(self.options['aws_login'], self.options['aws_key'])
+        ses = boto.connect_ses(self.read_option('access_key'), self.read_option('secret_key'))
         ses.send_email(self.options.get('mail_from', DEFAULT_MAIN_FROM), subject, body, mails)
 
     def _get_mails(self, receivers):

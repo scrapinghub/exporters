@@ -94,6 +94,7 @@ class BaseExporter(object):
                 self.logger.info('{!r}'.format(e))
                 break
             else:
+                self.stats_manager.stats['items_count'] = self.writer.items_count
                 self.stats_manager.populate()
 
     def export(self):
@@ -102,6 +103,7 @@ class BaseExporter(object):
                 self._init_export_job()
                 self._run_pipeline()
                 self._finish_export_job()
+                self.stats_manager.populate()
                 self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM], info=self.stats_manager.stats)
             except Exception as e:
                 self._handle_export_exception(e)
