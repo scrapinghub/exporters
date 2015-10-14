@@ -103,6 +103,7 @@ class BaseExporter(object):
                 self._init_export_job()
                 self._run_pipeline()
                 self._finish_export_job()
+                self.stats_manager.populate()
                 self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM], info=self.stats_manager.stats)
             except Exception as e:
                 self._handle_export_exception(e)
