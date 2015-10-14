@@ -94,6 +94,7 @@ class BaseExporter(object):
                 self.logger.info('{!r}'.format(e))
                 break
             else:
+                self.stats_manager.stats['items_count'] = self.writer.items_count
                 self.stats_manager.populate()
 
     def export(self):
