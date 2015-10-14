@@ -87,7 +87,8 @@ class CSVFormatterTest(unittest.TestCase):
         items = list(formatter.format(self.batch))
 
         # then:
-        self.assertEqual(items[0].formatted, '"value1"')
+        self.assertEqual(items[0].formatted, '"key1"')
+        self.assertEqual(items[1].formatted, '"value1"')
 
     def test_format_from_schema(self):
         # given:
