@@ -84,8 +84,8 @@ class SESMailNotifierTest(unittest.TestCase):
                             {
                                 'team_mails': ['test@test.com'],
                                 'client_mails': ['test@test.com'],
-                                'aws_login': 'somelogin',
-                                'aws_key': 'somekey'
+                                'access_key': 'somelogin',
+                                'secret_key': 'somekey'
                             }
                     }
                 ]
@@ -208,8 +208,8 @@ class SESMailNotifierTest(unittest.TestCase):
                             {
                                 'team_mails': ['badmail'],
                                 'client_mails': [],
-                                'aws_login': 'somelogin',
-                                'aws_key': 'somekey'
+                                'access_key': 'somelogin',
+                                'secret_key': 'somekey'
                             }
                     }
                 ]

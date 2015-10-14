@@ -1,8 +1,5 @@
-import os
-import datetime
-import re
 from retrying import retry
-import uuid
+
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
@@ -27,9 +24,9 @@ class SFTPWriter(FilebaseBaseWriter):
     """
     supported_options = {
         'host': {'type': basestring},
-        'port': {'type': int},
-        'sftp_user': {'type': basestring},
-        'sftp_password': {'type': basestring}
+        'sftp_user': {'type': basestring, 'env_fallback': 'EXPORTERS_SFTP_USER'},
+        'sftp_password': {'type': basestring, 'env_fallback': 'EXPORTERS_SFTP_PASSWORD'},
+        'port': {'type': int, 'default': 22},
     }
 
     def __init__(self, options):
