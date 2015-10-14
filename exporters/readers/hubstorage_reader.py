@@ -32,7 +32,7 @@ class HubstorageReader(BaseReader):
     # List of options to set up the reader
     supported_options = {
         'batch_size': {'type': int, 'default': 10000},
-        'apikey': {'type': basestring},
+        'apikey': {'type': basestring, 'env_fallback': 'EXPORTERS_HS_APIKEY'},
         'project_id': {'type': basestring},
         'collection_name': {'type': basestring},
         'count': {'type': int, 'default': 0},

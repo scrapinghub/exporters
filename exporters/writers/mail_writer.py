@@ -33,8 +33,14 @@ class MailWriter(BaseWriter):
         'subject': {'type': basestring},
         'from': {'type': basestring},
         'max_mails_sent': {'type': int, 'default': 5},
-        'aws_login': {'type': basestring},
-        'aws_key': {'type': basestring}
+        'access_key': {
+            'type': basestring,
+            'env_fallback': 'EXPORTERS_MAIL_AWS_ACCESS_KEY',
+        },
+        'secret_key': {
+            'type': basestring,
+            'env_fallback': 'EXPORTERS_MAIL_AWS_SECRET_KEY',
+        }
     }
 
     def __init__(self, options):
@@ -45,7 +51,7 @@ class MailWriter(BaseWriter):
         self.sender = self.read_option('from')
         self.max_mails_sent = self.read_option('max_mails_sent')
         self.mails_sent = 0
-        self.ses = boto.connect_ses(self.options['aws_login'], self.options['aws_key'])
+        self.ses = boto.connect_ses(self.options['access_key'], self.options['secret_key'])
         self.logger.info('MailWriter has been initiated. Sending to: {}'.format(self.emails))
         self.writer_finished = False
 
