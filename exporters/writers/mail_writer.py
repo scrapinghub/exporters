@@ -55,8 +55,7 @@ class MailWriter(BaseWriter):
         self.logger.info('MailWriter has been initiated. Sending to: {}'.format(self.emails))
         self.writer_finished = False
 
-    def write(self, dump_path, group_key=None):
-
+    def _write_mail(self, dump_path, group_key):
         if self.max_mails_sent == self.mails_sent:
             raise MaxMailsSent('Finishing job after max_mails_sent reached: {} mails sent.'
                                .format(self.mails_sent))
@@ -92,6 +91,12 @@ class MailWriter(BaseWriter):
             self.send_mail(m, destination)
         self.mails_sent += 1
         self.logger.debug('Sent {}'.format(dump_path))
+
+    def write(self, dump_path, group_key=None):
+        if self.items_count:
+            self._write_mail(dump_path, group_key)
+        else:
+            self.logger.debug('Mail not sent. 0 records exported')
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def send_mail(self, m, destination):
