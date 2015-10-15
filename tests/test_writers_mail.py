@@ -1,7 +1,17 @@
 import unittest
 from exporters.writers import MailWriter
 
-from exporters.writers.odo_writer import ODOWriter
+
+
+class FakeMailWriter(MailWriter):
+
+    def __init__(self, options):
+        self.send_called_number = 0
+        super(FakeMailWriter, self).__init__(options)
+
+    def _write_mail(self, dump_path, group_key):
+        self.send_called_number += 1
+
 
 
 class MailWriterTest(unittest.TestCase):
@@ -16,11 +26,12 @@ class MailWriterTest(unittest.TestCase):
                 'secret_key': 'test'
             }
         }
-        self.batch_path = 'not_a_path'
+        self.batch_path = 'some_path'
 
     def test_write_no_items(self):
-        writer = MailWriter(self.writer_config)
+        writer = FakeMailWriter(self.writer_config)
         writer.write(self.batch_path, [])
+        self.assertEqual(writer.send_called_number, 0)
         writer.items_count = 1
-        with self.assertRaises(OSError):
-            writer.write(self.batch_path, [])
+        writer.write(self.batch_path, [])
+        self.assertEqual(writer.send_called_number, 1)
