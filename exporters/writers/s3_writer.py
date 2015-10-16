@@ -2,6 +2,8 @@ from contextlib import closing
 from retrying import retry
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
+DEFAULT_BUCKET_REGION = 'us-east-1'
+
 
 class S3Writer(FilebaseBaseWriter):
     """
@@ -42,7 +44,7 @@ class S3Writer(FilebaseBaseWriter):
                 self.aws_region = self._get_bucket_location(access_key, secret_key,
                                                             bucket_name)
             except:
-                self.aws_region = 'us-east-1'
+                self.aws_region = DEFAULT_BUCKET_REGION
 
         self.conn = boto.s3.connect_to_region(self.aws_region,
                                               aws_access_key_id=access_key,
@@ -53,7 +55,7 @@ class S3Writer(FilebaseBaseWriter):
 
     def _get_bucket_location(self, access_key, secret_key, bucket):
         import boto
-        return boto.connect_s3(access_key, secret_key).get_bucket(bucket).get_location()
+        return boto.connect_s3(access_key, secret_key).get_bucket(bucket).get_location() or DEFAULT_BUCKET_REGION
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def _write_s3_key(self, dump_path, key_name):
