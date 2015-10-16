@@ -35,3 +35,4 @@ class MailWriterTest(unittest.TestCase):
         writer.items_count = 1
         writer.write(self.batch_path, [])
         self.assertEqual(writer.send_called_number, 1)
+        writer.close_writer()

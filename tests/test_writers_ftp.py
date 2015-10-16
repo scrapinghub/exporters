@@ -12,3 +12,4 @@ class FTPWriterTest(unittest.TestCase):
             filebase='test/'))
         writer = FTPWriter(options)
         self.assertEquals(21, writer.read_option('port'))
+        writer.close_writer()
