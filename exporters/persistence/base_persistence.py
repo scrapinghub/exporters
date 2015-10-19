@@ -1,3 +1,4 @@
+import json
 from exporters.logger.base_logger import PersistenceLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 
@@ -10,14 +11,14 @@ class BasePersistence(BasePipelineItem):
 
     def __init__(self, options):
         super(BasePersistence, self).__init__(options)
-        self.configuration = options.get('configuration', {})
+        self.configuration = json.loads(options.get('configuration', {}))
         self.logger = PersistenceLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
         if not options.get('resume'):
             self.job_id = self.generate_new_job()
             self.logger.info('Created job with id: ' + str(self.job_id))
             self.last_position = None
         else:
-            self.job_id = options.get('jobid')
+            self.job_id = options.get('job_id')
             self.last_position = self.get_last_position()
             self.logger.info('Resumed job with id: ' + str(self.job_id))
 
