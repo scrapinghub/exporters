@@ -1,7 +1,6 @@
 import gzip
 import json
 import os
-from boto.file import Key
 from retrying import retry
 
 from exporters.readers.base_reader import BaseReader
