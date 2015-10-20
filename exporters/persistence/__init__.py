@@ -2,4 +2,4 @@ from exporters.persistence.exporter_api_persistence import ExporterApiPersistenc
 from .pickle_persistence import PicklePersistence
 from .alchemy_persistence import MysqlPersistence, PostgresqlPersistence
 
-persistence_list = [PicklePersistence, MysqlPersistence, PostgresqlPersistence, ExporterApiPersistence]
+PERSISTENCE_LIST = [PicklePersistence, MysqlPersistence, PostgresqlPersistence, ExporterApiPersistence]
