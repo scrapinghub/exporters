@@ -11,7 +11,6 @@ class JQTransform(BaseTransform):
         - jq_filter (str)
             Valid jq filter
     """
-    # List of options to set up the batch
     supported_options = {
         'jq_filter': {'type': basestring}
     }
@@ -25,16 +24,20 @@ class JQTransform(BaseTransform):
 
     def transform_batch(self, batch):
         from jq import jq
+        jq_program = jq(self.jq_expression)
         for item in batch:
-            transformed_item = jq(self.jq_expression).transform(item)
+            try:
+                transformed_item = jq_program.transform(item)
+            except StopIteration:
+                # jq.transform() raise StopIteration for filtered items
+                continue
+
             if not isinstance(transformed_item, dict):
                 transformed_item = yaml.safe_load(transformed_item)
-            new_base_record = BaseRecord()
-            for key in transformed_item.keys():
-                new_base_record[key] = transformed_item[key]
-            yield new_base_record
+
+            yield BaseRecord(transformed_item)
         self.logger.debug('Transformed items')
 
-    # TODO: Make a expression validator
     def is_valid_jq_expression(self, jq_expression):
+        # TODO: Make a expression validator
         return True
