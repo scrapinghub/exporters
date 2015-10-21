@@ -12,15 +12,9 @@ try:
 except ImportError:
     pass
 
-try:
-    from .pickle_persistence import PicklePersistence
-    PERSISTENCE_LIST.append(PicklePersistence)
-except ImportError:
-    pass
 
-try:
-    from exporters.persistence.exporter_api_persistence import ExporterApiPersistence
-    PERSISTENCE_LIST.append(ExporterApiPersistence)
-except ImportError:
-    pass
+from .pickle_persistence import PicklePersistence
+PERSISTENCE_LIST.append(PicklePersistence)
+from exporters.persistence.exporter_api_persistence import ExporterApiPersistence
+PERSISTENCE_LIST.append(ExporterApiPersistence)
 
