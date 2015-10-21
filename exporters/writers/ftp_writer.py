@@ -87,8 +87,8 @@ class FTPWriter(FilebaseBaseWriter):
             except:
                 pass
 
-    # @retry(wait_exponential_multiplier=500, wait_exponential_max=10000,
-    #        stop_max_attempt_number=10)
+    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000,
+           stop_max_attempt_number=10)
     def write(self, dump_path, group_key=None):
         if group_key is None:
             group_key = []
