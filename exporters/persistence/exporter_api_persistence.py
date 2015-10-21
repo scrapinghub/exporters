@@ -29,13 +29,11 @@ class ApiClient(object):
         url = '{}{}'.format(self.url, position_id)
         data = kwargs
         data['last_position'] = json.dumps(position)
-        data['type'] = type(position).__name__
         return self._put_request(url, data)
 
-    def create_position(self, last_position, position_type, configuration):
+    def create_position(self, last_position, configuration):
         data = {
             'last_position': json.dumps(last_position),
-            'type': str(position_type),
             'configuration': json.dumps(configuration)
         }
         return self._post_request(self.url, data)
@@ -62,10 +60,7 @@ class ExporterApiPersistence(BasePersistence):
         if self.last_position == 'null':
             self.last_position = None
         else:
-            try:
-                exec('self.last_position = {}({})'.format(position['type'], position['last_position']))
-            except Exception as e:
-                print e
+            self.last_position = json.loads(position['last_position'])
         return self.last_position
 
     def commit_position(self, last_position=None):
@@ -75,7 +70,7 @@ class ExporterApiPersistence(BasePersistence):
 
     def generate_new_job(self):
         self.last_position = None
-        persistence_object = self.api_client.create_position(None, type(self.last_position).__name__, self.configuration)
+        persistence_object = self.api_client.create_position(None, self.configuration)
         self.logger.debug('Created persistence export entry in with id {}'.format(persistence_object['id']))
         return persistence_object['id']
 
