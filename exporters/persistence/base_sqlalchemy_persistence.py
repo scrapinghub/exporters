@@ -1,7 +1,7 @@
 import datetime
 import json
 import re
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import yaml
@@ -16,7 +16,7 @@ class Job(Base):
     last_position = Column(String(1500), nullable=False)
     last_committed = Column(DateTime)
     job_finished = Column(Boolean)
-    configuration = Column(String(50000), nullable=False)
+    configuration = Column(Text, nullable=False)
 
 
 class BaseAlchemyPersistence(BasePersistence):
