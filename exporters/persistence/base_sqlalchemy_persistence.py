@@ -13,7 +13,7 @@ Base = declarative_base()
 class Job(Base):
     __tablename__ = 'job'
     id = Column(Integer, primary_key=True)
-    last_position = Column(String(1500), nullable=False)
+    last_position = Column(Text, nullable=False)
     last_committed = Column(DateTime)
     job_finished = Column(Boolean)
     configuration = Column(Text, nullable=False)
