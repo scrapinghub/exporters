@@ -276,6 +276,7 @@ class MysqlPersistenceTest(unittest.TestCase):
         }
         mock_metadata.return_value = True
         mock_commit.return_value = True
+        mock_query.return_value.filter.return_value.first.return_value.last_position = '0'
         exporter_config = ExporterConfig(options)
         persistence = MysqlPersistence(exporter_config.persistence_options)
         self.assertTrue(persistence.get_last_position() == 0)
@@ -320,6 +321,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
     def test_get_last_position(self,  mock_commit, mock_metadata, mock_query):
         mock_metadata.return_value = True
         mock_commit.return_value = True
+        mock_query.return_value.filter.return_value.first.return_value.last_position = '0'
         exporter_config = ExporterConfig(self.config)
         persistence = PostgresqlPersistence(exporter_config.persistence_options)
         self.assertTrue(persistence.get_last_position() == 0)
