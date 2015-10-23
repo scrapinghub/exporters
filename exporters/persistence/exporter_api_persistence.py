@@ -13,17 +13,23 @@ class ApiClient(object):
         self.auth = HTTPBasicAuth(apikey, '')
 
     def _get_request(self, url):
-        return json.loads(requests.get(url).text, auth=self.auth)
+        return json.loads(requests.get(url, auth=self.auth).text)
 
     def _put_request(self, url, data):
-        return json.loads(requests.put(url, data=data).text, auth=self.auth)
+        return json.loads(requests.put(url, data=data, auth=self.auth).text)
 
     def _post_request(self, url, data):
-        return json.loads(requests.post(url, data=data).text, auth=self.auth)
+        return json.loads(requests.post(url, data=data, auth=self.auth).text)
 
     def position(self, position_id):
         url = '{}{}'.format(self.url, position_id)
         return self._get_request(url)
+
+    def position_by_export_id(self, position_id):
+        url = '{}?export_job_id={}'.format(self.url, position_id)
+        response = self._get_request(url)
+        if response.get('count', 0) == 1:
+            return response['results'][0]
 
     def update_position(self, position_id, position, **kwargs):
         url = '{}{}'.format(self.url, position_id)
@@ -31,11 +37,13 @@ class ApiClient(object):
         data['last_position'] = json.dumps(position)
         return self._put_request(url, data)
 
-    def create_position(self, last_position, configuration):
+    def create_position(self, last_position, configuration, export_id=None):
         data = {
             'last_position': json.dumps(last_position),
             'configuration': json.dumps(configuration)
         }
+        if export_id:
+            data['export_job_id'] = export_id
         return self._post_request(self.url, data)
 
 
@@ -43,19 +51,47 @@ class ExporterApiPersistence(BasePersistence):
 
     supported_options = {
         'apikey': {'type': basestring},
+        'export_job_id': {'type': basestring, 'default': None},
+        'apimode': {'type': bool, 'default': False},
         'api_url': {'type': basestring, 'default': 'https://datahub-exports-api.scrapinghub.com/exports_persistence/'}
     }
 
     uri_regex = "sh_exporter:(([a-zA-Z\d-]|\/)+)"
 
     def __init__(self, options):
+        self.last_position = None
+        super(ExporterApiPersistence, self).__init__(options)
         api_url = self.read_option('api_url')
         apikey = self.read_option('apikey')
+        self.api_client = self._get_api_client(api_url, apikey)
+        self.export_job_id = self.read_option('export_job_id')
+        self.apimode = self.read_option('apimode')
+
+    def _get_api_client(self, api_url, apikey):
+        if hasattr(self, 'api_client'):
+            return self.api_client
         self.api_client = ApiClient(api_url, apikey)
-        super(ExporterApiPersistence, self).__init__(options)
+        return self.api_client
+
+    def _get_job_id_from_export_id(self):
+        api_url = self.read_option('api_url')
+        apikey = self.read_option('apikey')
+        api_client = self._get_api_client(api_url, apikey)
+        position = api_client.position_by_export_id(self.job_id)
+        return position['id']
 
     def get_last_position(self):
-        position = self.api_client.position(self.job_id)
+        if not self.last_position and self.read_option('apimode'):
+            self.job_id = self._get_job_id_from_export_id()
+            api_url = self.read_option('api_url')
+            apikey = self.read_option('apikey')
+            api_client = self._get_api_client(api_url, apikey)
+            position = api_client.position(self.job_id)
+        else:
+            api_url = self.read_option('api_url')
+            apikey = self.read_option('apikey')
+            api_client = self._get_api_client(api_url, apikey)
+            position = api_client.position(self.job_id)
         self.last_position = position.get('last_position')
         if self.last_position == 'null':
             self.last_position = None
@@ -69,8 +105,14 @@ class ExporterApiPersistence(BasePersistence):
         self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: ' + str(self.job_id))
 
     def generate_new_job(self):
+        api_url = self.read_option('api_url')
+        apikey = self.read_option('apikey')
+        api_client = self._get_api_client(api_url, apikey)
         self.last_position = None
-        persistence_object = self.api_client.create_position(None, self.configuration)
+        if 'export_job_id' in self.options:
+            persistence_object = api_client.create_position(None, self.configuration, self.options.get('export_job_id'))
+        else:
+            persistence_object = api_client.create_position(None, self.configuration)
         self.logger.debug('Created persistence export entry in with id {}'.format(persistence_object['id']))
         return persistence_object['id']
 
