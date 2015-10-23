@@ -48,6 +48,23 @@ class ApiClient(object):
 
 
 class ExporterApiPersistence(BasePersistence):
+    """
+    This module handles persistence using exporters API. It has three working modes:
+
+    1.- Standalone: No "extra" options are added to configurations. This way, the export
+    job will run as usual. It will create a new persistence object in api database, and it
+    will log its id in order to allow resume.
+
+    2.- Start job from api: This mode is detected when a export_job_id is passed in configuration.
+    It will allow the module to keep that id for api resuming support.
+
+    3.- Resume job from api: This mode is detected when we have proper configuration in export
+    options (resume set to true, and a job_id passed) AND we have apimode passed as true
+    in configuration. This way, job_id from export options will be considered as a export_job_id,
+    and not as the persistence id itself, allowing the module to retrieve the correct
+    position instance.
+    """
+
 
     supported_options = {
         'apikey': {'type': basestring},
