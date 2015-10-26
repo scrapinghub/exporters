@@ -1,5 +1,5 @@
 import unittest
-from mock import patch
+from mock import patch, Mock
 from exporters.exporter_config import ExporterConfig
 from exporters.persistence.alchemy_persistence import MysqlPersistence, PostgresqlPersistence
 from exporters.persistence.base_persistence import BasePersistence
@@ -153,7 +153,8 @@ class MysqlPersistenceTest(unittest.TestCase):
             'writer': {}
         }
         mock_metadata.return_value = True
-        mock_query.return_value.filter.return_value.first.return_value = {}
+        mock_job = Mock(last_position='0')
+        mock_query.return_value.filter.return_value.first.return_value = mock_job
         mock_add.return_value = True
         exporter_config = ExporterConfig(options)
         persistence = MysqlPersistence(exporter_config.persistence_options)
@@ -276,6 +277,7 @@ class MysqlPersistenceTest(unittest.TestCase):
         }
         mock_metadata.return_value = True
         mock_commit.return_value = True
+        mock_query.return_value.filter.return_value.first.return_value.last_position = '0'
         exporter_config = ExporterConfig(options)
         persistence = MysqlPersistence(exporter_config.persistence_options)
         self.assertTrue(persistence.get_last_position() == 0)
@@ -320,6 +322,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
     def test_get_last_position(self,  mock_commit, mock_metadata, mock_query):
         mock_metadata.return_value = True
         mock_commit.return_value = True
+        mock_query.return_value.filter.return_value.first.return_value.last_position = '0'
         exporter_config = ExporterConfig(self.config)
         persistence = PostgresqlPersistence(exporter_config.persistence_options)
         self.assertTrue(persistence.get_last_position() == 0)
@@ -351,7 +354,8 @@ class PostgresqlPersistenceTest(unittest.TestCase):
             'writer': {}
         }
         mock_metadata.return_value = True
-        mock_query.return_value.filter.return_value.first.return_value = {}
+        mock_job = Mock(last_position='0')
+        mock_query.return_value.filter.return_value.first.return_value = mock_job
         mock_add.return_value = True
         exporter_config = ExporterConfig(options)
         persistence = PostgresqlPersistence(exporter_config.persistence_options)

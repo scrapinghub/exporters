@@ -1,6 +1,7 @@
 import datetime
+import json
 import re
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import yaml
@@ -12,11 +13,10 @@ Base = declarative_base()
 class Job(Base):
     __tablename__ = 'job'
     id = Column(Integer, primary_key=True)
-    last_position = Column(String(250), nullable=False)
-    type = Column(String(250), nullable=False)
+    last_position = Column(Text, nullable=False)
     last_committed = Column(DateTime)
     job_finished = Column(Boolean)
-    configuration = Column(String(50000), nullable=False)
+    configuration = Column(Text, nullable=False)
 
 
 class BaseAlchemyPersistence(BasePersistence):
@@ -49,17 +49,14 @@ class BaseAlchemyPersistence(BasePersistence):
         if not self.engine:
             self._db_init()
         job = self.session.query(Job).filter(Job.id == self.persistence_state_id).first()
-        last_position = 0
-        try:
-            exec('last_position = {}({})'.format(job.type, job.last_position))
-        except:
-            pass
+        last_position = json.loads(job.last_position)
         return last_position
 
     def commit_position(self, last_position=None):
         self.last_position = last_position
+
         self.session.query(Job).filter(Job.id == self.persistence_state_id).update(
-            {"last_position": self.last_position, "type": type(self.last_position).__name__,
+            {"last_position": json.dumps(self.last_position),
              "last_committed": datetime.datetime.now()}, synchronize_session='fetch')
         self.session.commit()
         self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: ' + str(self.persistence_state_id))
@@ -67,7 +64,7 @@ class BaseAlchemyPersistence(BasePersistence):
     def generate_new_job(self):
         if not self.engine:
             self._db_init()
-        new_job = Job(last_position='None', type='None', configuration=str(self.configuration))
+        new_job = Job(last_position='None', configuration=str(self.configuration))
         self.session.add(new_job)
         self.session.commit()
         self.persistence_state_id = new_job.id

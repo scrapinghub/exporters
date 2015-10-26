@@ -54,9 +54,11 @@ class FTPWriter(FilebaseBaseWriter):
     def _create_target_dir_if_needed(self, target, depth_limit=20):
         """Creates the directory for the path given, recursively creating
         parent directories when needed"""
+
         if depth_limit <= 0:
             raise FtpCreateDirsException('Depth limit exceeded')
-
+        if not target:
+            return
         target_dir = os.path.dirname(target)
         # target_dir = target
         parent_dir, dir_name = os.path.split(target_dir)
