@@ -48,17 +48,18 @@ class BaseAlchemyPersistence(BasePersistence):
     def get_last_position(self):
         if not self.engine:
             self._db_init()
-        job = self.session.query(Job).filter(Job.id == self.job_id).first()
+        job = self.session.query(Job).filter(Job.id == self.persistence_state_id).first()
         last_position = json.loads(job.last_position)
         return last_position
 
     def commit_position(self, last_position=None):
         self.last_position = last_position
-        self.session.query(Job).filter(Job.id == self.job_id).update(
+
+        self.session.query(Job).filter(Job.id == self.persistence_state_id).update(
             {"last_position": json.dumps(self.last_position),
              "last_committed": datetime.datetime.now()}, synchronize_session='fetch')
         self.session.commit()
-        self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: ' + str(self.job_id))
+        self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: ' + str(self.persistence_state_id))
 
     def generate_new_job(self):
         if not self.engine:
@@ -66,13 +67,13 @@ class BaseAlchemyPersistence(BasePersistence):
         new_job = Job(last_position='None', configuration=str(self.configuration))
         self.session.add(new_job)
         self.session.commit()
-        self.job_id = new_job.id
+        self.persistence_state_id = new_job.id
         self.logger.debug('Created persistence job with id {} in database {}. Using protocol {}.'
                           .format(new_job.id, self.read_option('database'), self.PROTOCOL) + str(new_job.id))
         return new_job.id
 
     def delete_instance(self):
-        self.session.query(Job).filter(Job.id == self.job_id).update(
+        self.session.query(Job).filter(Job.id == self.persistence_state_id).update(
             {"job_finished": True, "last_committed": datetime.datetime.now()}, synchronize_session='fetch')
         self.session.commit()
         self.session.close()
@@ -84,16 +85,16 @@ class BaseAlchemyPersistence(BasePersistence):
         returns a configuration object.
         """
         connection_parameters = re.match(uri_regex, uri).groups()
-        user, password, host, port, database, job_id = connection_parameters
+        user, password, host, port, database, persistence_state_id = connection_parameters
         engine = create_engine(
             '{}://{}:{}@{}:{}/{}'.format(uri.split('://')[0], user, password, host, port, database))
         Base.metadata.create_all(engine)
         Base.metadata.bind = engine
         DBSession = sessionmaker(bind=engine)
         session = DBSession()
-        job = session.query(Job).filter(Job.id == int(job_id)).first()
+        job = session.query(Job).filter(Job.id == int(persistence_state_id)).first()
         configuration = job.configuration
         configuration = yaml.safe_load(configuration)
         configuration['exporter_options']['resume'] = True
-        configuration['exporter_options']['job_id'] = job_id
+        configuration['exporter_options']['persistence_state_id'] = persistence_state_id
         return configuration

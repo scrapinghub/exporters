@@ -49,7 +49,7 @@ class S3Reader(BaseReader):
         self.prefix = self.read_option('prefix')
         self.keys = []
         for key in self.bucket.list(prefix=self.prefix):
-            self.keys.append(key)
+            self.keys.append(key.key)
         self.read_keys = []
         self.current_key = None
         self.last_line = 0
@@ -57,7 +57,7 @@ class S3Reader(BaseReader):
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def get_key(self, file_path):
-        self.current_key.get_contents_to_filename(file_path)
+        self.bucket.get_key(self.current_key).get_contents_to_filename(file_path)
 
     def get_next_batch(self):
         file_path = '{}/ds_dump.gz'.format(self.read_option('tmp_folder'))
@@ -110,7 +110,7 @@ class S3Reader(BaseReader):
                 self.current_key = self.last_position['current_key']
             else:
                 self.current_key = self.keys[0]
-                self.current_key.get_contents_to_filename(file_path)
+                self.bucket.get_key(self.current_key).get_contents_to_filename(file_path)
                 self.last_line = 0
             self.last_line = self.last_position['last_line']
 

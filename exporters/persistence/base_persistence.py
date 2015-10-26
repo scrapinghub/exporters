@@ -1,3 +1,4 @@
+import json
 from exporters.logger.base_logger import PersistenceLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 
@@ -10,16 +11,29 @@ class BasePersistence(BasePipelineItem):
 
     def __init__(self, options):
         super(BasePersistence, self).__init__(options)
-        self.configuration = options.get('configuration', {})
+        self.configuration = json.loads(options.get('configuration', '{}'))
         self.logger = PersistenceLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
+        self._load_persistence_options()
+        self._start_persistence(options)
+
+    def _start_new_job(self):
+        self.persistence_state_id = self.generate_new_job()
+        self.logger.info('Created job with id: ' + str(self.persistence_state_id))
+        self.last_position = None
+
+    def _resume_job(self, options):
+        self.persistence_state_id = options.get('persistence_state_id')
+        self.last_position = self.get_last_position()
+        self.logger.info('Resumed job with id: ' + str(self.persistence_state_id))
+
+    def _load_persistence_options(self):
+        pass
+
+    def _start_persistence(self, options):
         if not options.get('resume'):
-            self.job_id = self.generate_new_job()
-            self.logger.info('Created job with id: ' + str(self.job_id))
-            self.last_position = None
+            self._start_new_job()
         else:
-            self.job_id = options.get('jobid')
-            self.last_position = self.get_last_position()
-            self.logger.info('Resumed job with id: ' + str(self.job_id))
+            self._resume_job(options)
 
     def get_last_position(self):
         """

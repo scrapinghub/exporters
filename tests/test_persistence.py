@@ -1,5 +1,5 @@
 import unittest
-from mock import patch
+from mock import patch, Mock
 from exporters.exporter_config import ExporterConfig
 from exporters.persistence.alchemy_persistence import MysqlPersistence, PostgresqlPersistence
 from exporters.persistence.base_persistence import BasePersistence
@@ -136,7 +136,7 @@ class MysqlPersistenceTest(unittest.TestCase):
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
                 'resume': True,
-                'JOB_ID': '',
+                'persistence_state_id': '',
                 'formatter': {}
             },
             'persistence':{
@@ -153,7 +153,8 @@ class MysqlPersistenceTest(unittest.TestCase):
             'writer': {}
         }
         mock_metadata.return_value = True
-        mock_query.return_value.filter.return_value.first.return_value = {}
+        mock_job = Mock(last_position='0')
+        mock_query.return_value.filter.return_value.first.return_value = mock_job
         mock_add.return_value = True
         exporter_config = ExporterConfig(options)
         persistence = MysqlPersistence(exporter_config.persistence_options)
@@ -336,7 +337,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
                 'resume': True,
-                'JOB_ID': '',
+                'persistence_state_id': '',
                 'formatter': {}
             },
             'persistence':{
@@ -353,7 +354,8 @@ class PostgresqlPersistenceTest(unittest.TestCase):
             'writer': {}
         }
         mock_metadata.return_value = True
-        mock_query.return_value.filter.return_value.first.return_value = {}
+        mock_job = Mock(last_position='0')
+        mock_query.return_value.filter.return_value.first.return_value = mock_job
         mock_add.return_value = True
         exporter_config = ExporterConfig(options)
         persistence = PostgresqlPersistence(exporter_config.persistence_options)
