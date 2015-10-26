@@ -14,13 +14,13 @@ class BasePersistence(BasePipelineItem):
         self.configuration = json.loads(options.get('configuration', '{}'))
         self.logger = PersistenceLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
         if not options.get('resume'):
-            self.job_id = self.generate_new_job()
-            self.logger.info('Created job with id: ' + str(self.job_id))
+            self.persistence_state_id = self.generate_new_job()
+            self.logger.info('Created job with id: ' + str(self.persistence_state_id))
             self.last_position = None
         else:
-            self.job_id = options.get('job_id')
+            self.persistence_state_id = options.get('persistence_state_id')
             self.last_position = self.get_last_position()
-            self.logger.info('Resumed job with id: ' + str(self.job_id))
+            self.logger.info('Resumed job with id: ' + str(self.persistence_state_id))
 
     def get_last_position(self):
         """

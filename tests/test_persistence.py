@@ -136,7 +136,7 @@ class MysqlPersistenceTest(unittest.TestCase):
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
                 'resume': True,
-                'JOB_ID': '',
+                'persistence_state_id': '',
                 'formatter': {}
             },
             'persistence':{
@@ -334,7 +334,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
                 'resume': True,
-                'JOB_ID': '',
+                'persistence_state_id': '',
                 'formatter': {}
             },
             'persistence':{

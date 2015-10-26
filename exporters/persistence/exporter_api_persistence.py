@@ -59,8 +59,8 @@ class ExporterApiPersistence(BasePersistence):
     It will allow the module to keep that id for api resuming support.
 
     3.- Resume job from api: This mode is detected when we have proper configuration in export
-    options (resume set to true, and a job_id passed) AND we have apimode passed as true
-    in configuration. This way, job_id from export options will be considered as a export_job_id,
+    options (resume set to true, and a persistence_state_id passed) AND we have apimode passed as true
+    in configuration. This way, persistence_state_id from export options will be considered as a export_job_id,
     and not as the persistence id itself, allowing the module to retrieve the correct
     position instance.
     """
@@ -90,25 +90,25 @@ class ExporterApiPersistence(BasePersistence):
         self.api_client = ApiClient(api_url, apikey)
         return self.api_client
 
-    def _get_job_id_from_export_id(self):
+    def _get_persistence_state_id_from_export_id(self):
         api_url = self.read_option('api_url')
         apikey = self.read_option('apikey')
         api_client = self._get_api_client(api_url, apikey)
-        position = api_client.position_by_export_id(self.job_id)
+        position = api_client.position_by_export_id(self.persistence_state_id)
         return position['id']
 
     def get_last_position(self):
         if not self.last_position and self.read_option('apimode'):
-            self.job_id = self._get_job_id_from_export_id()
+            self.persistence_state_id = self._get_persistence_state_id_from_export_id()
             api_url = self.read_option('api_url')
             apikey = self.read_option('apikey')
             api_client = self._get_api_client(api_url, apikey)
-            position = api_client.position(self.job_id)
+            position = api_client.position(self.persistence_state_id)
         else:
             api_url = self.read_option('api_url')
             apikey = self.read_option('apikey')
             api_client = self._get_api_client(api_url, apikey)
-            position = api_client.position(self.job_id)
+            position = api_client.position(self.persistence_state_id)
         self.last_position = position.get('last_position')
         if self.last_position == 'null':
             self.last_position = None
@@ -118,8 +118,8 @@ class ExporterApiPersistence(BasePersistence):
 
     def commit_position(self, last_position=None):
         self.last_position = last_position
-        self.api_client.update_position(self.job_id, self.last_position)
-        self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: ' + str(self.job_id))
+        self.api_client.update_position(self.persistence_state_id, self.last_position)
+        self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: ' + str(self.persistence_state_id))
 
     def generate_new_job(self):
         api_url = self.read_option('api_url')
@@ -134,17 +134,17 @@ class ExporterApiPersistence(BasePersistence):
         return persistence_object['id']
 
     def delete_instance(self):
-        self.api_client.update_position(self.job_id, self.last_position, job_finished=True)
+        self.api_client.update_position(self.persistence_state_id, self.last_position, job_finished=True)
 
     @staticmethod
     def configuration_from_uri(uri, uri_regex):
         """
         returns a configuration object.
         """
-        job_id = re.match(uri_regex, uri).groups()[0]
+        persistence_state_id = re.match(uri_regex, uri).groups()[0]
         api_client = ApiClient()
-        position = api_client.position(job_id)
+        position = api_client.position(persistence_state_id)
         configuration = yaml.safe_load(position.get('configuration'))
         configuration['exporter_options']['resume'] = True
-        configuration['exporter_options']['job_id'] = job_id
+        configuration['exporter_options']['persistence_state_id'] = persistence_state_id
         return configuration
