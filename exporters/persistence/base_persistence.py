@@ -11,7 +11,7 @@ class BasePersistence(BasePipelineItem):
 
     def __init__(self, options):
         super(BasePersistence, self).__init__(options)
-        self.configuration = json.loads(options.get('configuration', {}))
+        self.configuration = json.loads(options.get('configuration', '{}'))
         self.logger = PersistenceLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
         if not options.get('resume'):
             self.job_id = self.generate_new_job()
