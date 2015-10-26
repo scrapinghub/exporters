@@ -69,7 +69,7 @@ class ExporterApiPersistence(BasePersistence):
     supported_options = {
         'apikey': {'type': basestring},
         'export_job_id': {'type': basestring, 'default': None},
-        'apimode': {'type': bool, 'default': False},
+        'resume_from_api': {'type': bool, 'default': False},
         'api_url': {'type': basestring, 'default': 'https://datahub-exports-api.scrapinghub.com/exports_persistence/'}
     }
 
@@ -84,14 +84,14 @@ class ExporterApiPersistence(BasePersistence):
         apikey = self.read_option('apikey')
         self.api_client = ApiClient(api_url, apikey)
         self.export_job_id = self.read_option('export_job_id')
-        self.api_mode = self.read_option('apimode')
+        self.resume_from_api = self.read_option('resume_from_api')
 
     def _get_persistence_state_id_from_export_id(self):
         position = self.api_client.position_by_export_id(self.persistence_state_id)
         return position['id']
 
     def get_last_position(self):
-        if not self.last_position and self.api_mode:
+        if not self.last_position and self.resume_from_api:
             self.persistence_state_id = self._get_persistence_state_id_from_export_id()
             position = self.api_client.position(self.persistence_state_id)
         else:

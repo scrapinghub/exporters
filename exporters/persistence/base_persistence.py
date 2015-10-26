@@ -16,12 +16,12 @@ class BasePersistence(BasePipelineItem):
         self._load_persistence_options()
         self._start_persistence(options)
 
-    def _set_up_new_job(self):
+    def _start_new_job(self):
         self.persistence_state_id = self.generate_new_job()
         self.logger.info('Created job with id: ' + str(self.persistence_state_id))
         self.last_position = None
 
-    def _set_up_resume_job(self, options):
+    def _resume_job(self, options):
         self.persistence_state_id = options.get('persistence_state_id')
         self.last_position = self.get_last_position()
         self.logger.info('Resumed job with id: ' + str(self.persistence_state_id))
@@ -31,9 +31,9 @@ class BasePersistence(BasePipelineItem):
 
     def _start_persistence(self, options):
         if not options.get('resume'):
-            self._set_up_new_job()
+            self._start_new_job()
         else:
-            self._set_up_resume_job(options)
+            self._resume_job(options)
 
     def get_last_position(self):
         """
