@@ -78,37 +78,24 @@ class ExporterApiPersistence(BasePersistence):
     def __init__(self, options):
         self.last_position = None
         super(ExporterApiPersistence, self).__init__(options)
+
+    def _load_persistence_options(self):
         api_url = self.read_option('api_url')
         apikey = self.read_option('apikey')
-        self.api_client = self._get_api_client(api_url, apikey)
-        self.export_job_id = self.read_option('export_job_id')
-        self.apimode = self.read_option('apimode')
-
-    def _get_api_client(self, api_url, apikey):
-        if hasattr(self, 'api_client'):
-            return self.api_client
         self.api_client = ApiClient(api_url, apikey)
-        return self.api_client
+        self.export_job_id = self.read_option('export_job_id')
+        self.api_mode = self.read_option('apimode')
 
     def _get_persistence_state_id_from_export_id(self):
-        api_url = self.read_option('api_url')
-        apikey = self.read_option('apikey')
-        api_client = self._get_api_client(api_url, apikey)
-        position = api_client.position_by_export_id(self.persistence_state_id)
+        position = self.api_client.position_by_export_id(self.persistence_state_id)
         return position['id']
 
     def get_last_position(self):
-        if not self.last_position and self.read_option('apimode'):
+        if not self.last_position and self.api_mode:
             self.persistence_state_id = self._get_persistence_state_id_from_export_id()
-            api_url = self.read_option('api_url')
-            apikey = self.read_option('apikey')
-            api_client = self._get_api_client(api_url, apikey)
-            position = api_client.position(self.persistence_state_id)
+            position = self.api_client.position(self.persistence_state_id)
         else:
-            api_url = self.read_option('api_url')
-            apikey = self.read_option('apikey')
-            api_client = self._get_api_client(api_url, apikey)
-            position = api_client.position(self.persistence_state_id)
+            position = self.api_client.position(self.persistence_state_id)
         self.last_position = position.get('last_position')
         if self.last_position == 'null':
             self.last_position = None
@@ -122,14 +109,11 @@ class ExporterApiPersistence(BasePersistence):
         self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: ' + str(self.persistence_state_id))
 
     def generate_new_job(self):
-        api_url = self.read_option('api_url')
-        apikey = self.read_option('apikey')
-        api_client = self._get_api_client(api_url, apikey)
         self.last_position = None
         if 'export_job_id' in self.options:
-            persistence_object = api_client.create_position(None, self.configuration, self.options.get('export_job_id'))
+            persistence_object = self.api_client.create_position(None, self.configuration, self.options.get('export_job_id'))
         else:
-            persistence_object = api_client.create_position(None, self.configuration)
+            persistence_object = self.api_client.create_position(None, self.configuration)
         self.logger.debug('Created persistence export entry in with id {}'.format(persistence_object['id']))
         return persistence_object['id']
 
