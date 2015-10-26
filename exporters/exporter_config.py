@@ -23,7 +23,7 @@ class ExporterConfig(object):
         self.persistence_options = self._merge_options('persistence', DEFAULT_PERSISTENCE_CLASS)
         self.persistence_options['configuration'] = json.dumps(configuration)
         self.persistence_options['resume'] = configuration['exporter_options'].get('resume', False)
-        self.persistence_options['job_id'] = configuration['exporter_options'].get('job_id', None)
+        self.persistence_options['persistence_state_id'] = configuration['exporter_options'].get('persistence_state_id', None)
         self.stats_options = self._merge_options('stats_manager', DEFAULT_STATS_MANAGER_CLASS)
         self.formatter_options = self.configuration['exporter_options'].get('formatter', DEFAULT_FORMATTER_CLASS)
         self.notifiers = self.configuration['exporter_options'].get('notifications', [])
