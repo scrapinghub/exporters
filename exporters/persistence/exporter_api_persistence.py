@@ -30,6 +30,8 @@ class ApiClient(object):
         response = self._get_request(url)
         if response.get('count', 0) == 1:
             return response['results'][0]
+        else:
+            raise ValueError(response)
 
     def update_position(self, position_id, position, **kwargs):
         url = '{}{}'.format(self.url, position_id)
