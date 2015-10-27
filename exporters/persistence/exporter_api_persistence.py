@@ -30,8 +30,6 @@ class ApiClient(object):
         response = self._get_request(url)
         if response.get('count', 0) == 1:
             return response['results'][0]
-        else:
-            raise ValueError('{} --- {}'.format(url, response))
 
     def update_position(self, position_id, position, **kwargs):
         url = '{}{}'.format(self.url, position_id)
@@ -67,7 +65,6 @@ class ExporterApiPersistence(BasePersistence):
     position instance.
     """
 
-
     supported_options = {
         'apikey': {'type': basestring},
         'export_job_id': {'type': basestring, 'default': None},
@@ -87,15 +84,17 @@ class ExporterApiPersistence(BasePersistence):
         self.api_client = ApiClient(api_url, apikey)
         self.export_job_id = self.read_option('export_job_id')
         self.resume_from_api = self.read_option('resume_from_api')
+        self.position_from_api = False
 
     def _get_persistence_state_id_from_export_id(self):
         position = self.api_client.position_by_export_id(self.persistence_state_id)
         return position['id']
 
     def get_last_position(self):
-        if not self.last_position and self.resume_from_api:
+        if not self.last_position and self.resume_from_api and not self.position_from_api:
             self.persistence_state_id = self._get_persistence_state_id_from_export_id()
             position = self.api_client.position(self.persistence_state_id)
+            self.position_from_api = True
         else:
             position = self.api_client.position(self.persistence_state_id)
         self.last_position = position.get('last_position')
