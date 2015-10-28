@@ -1,9 +1,11 @@
-image: bradrydzewski/python:2.7-scrapinghub
+image: scrapinghub
 
 script:
+  - build_docker_image
   - git restore-mtime
   - pip install -U tox coverage shub
   - tox
+  - push_docker_image
 
 deploy:
   bash:
