@@ -2,6 +2,7 @@ import gzip
 import os
 import shutil
 import uuid
+import errno
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 import tempfile
@@ -142,14 +143,15 @@ class BaseWriter(BasePipelineItem):
         self.write(compressed_path, self.grouping_info[key]['membership'])
         self._create_buffer_path_for_key(key)
         self._reset_key(key)
-        self._ensure_remove(path)
-        self._ensure_remove(compressed_path)
+        self._silent_remove(path)
+        self._silent_remove(compressed_path)
 
-    def _ensure_remove(self, path):
+    def _silent_remove(self, filename):
         try:
-            os.remove(path)
-        except:
-            pass
+            os.remove(filename)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
 
     def _reset_key(self, key):
         self.grouping_info[key]['buffered_items'] = 0

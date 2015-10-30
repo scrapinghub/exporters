@@ -1,5 +1,6 @@
 import gzip
 import json
+import os
 import random
 import unittest
 import csv
@@ -36,10 +37,12 @@ class FakeWriter(BaseWriter):
     def __init__(self, *args, **kwargs):
         super(FakeWriter, self).__init__(*args, **kwargs)
         self.custom_output = {}
+        self.fake_files_already_written = []
 
     def write(self, path, key):
         with gzip.open(path) as f:
             self.custom_output[key] = f.read()
+        self.fake_files_already_written.append(path)
 
 
 class CustomWriterTest(unittest.TestCase):
@@ -59,6 +62,9 @@ class CustomWriterTest(unittest.TestCase):
         try:
             writer.write_batch(self.batch)
         finally:
+            for f in writer.fake_files_already_written:
+                self.assertFalse(os.path.exists(f))
+                self.assertFalse(os.path.exists(f+'.gz'))
             writer.close_writer()
 
         # then:
