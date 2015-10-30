@@ -1,5 +1,6 @@
 import gzip
 import json
+import os
 import random
 import unittest
 import csv
@@ -36,10 +37,12 @@ class FakeWriter(BaseWriter):
     def __init__(self, *args, **kwargs):
         super(FakeWriter, self).__init__(*args, **kwargs)
         self.custom_output = {}
+        self.fake_files_already_written = []
 
     def write(self, path, key):
         with gzip.open(path) as f:
             self.custom_output[key] = f.read()
+        self.fake_files_already_written.append(path)
 
 
 class CustomWriterTest(unittest.TestCase):
@@ -66,6 +69,23 @@ class CustomWriterTest(unittest.TestCase):
         self.assertEquals([json.dumps(item) for item in self.batch],
                           output.splitlines())
         self.assertEquals('jl', writer.file_extension)
+
+    def test_write_buffer_removes_files(self):
+        # given:
+        self.batch = list(JsonExportFormatter({}).format(self.batch))
+        writer = FakeWriter({})
+        writer.items_per_buffer_write = 1
+
+        # when:
+        try:
+            writer.write_batch(self.batch)
+            # then
+            self.assertGreater(len(writer.fake_files_already_written), 0)
+            for f in writer.fake_files_already_written:
+                self.assertFalse(os.path.exists(f))
+                self.assertFalse(os.path.exists(f+'.gz'))
+        finally:
+            writer.close_writer()
 
     def test_custom_writer_with_csv_formatter(self):
         # given:
