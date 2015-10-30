@@ -62,9 +62,6 @@ class CustomWriterTest(unittest.TestCase):
         try:
             writer.write_batch(self.batch)
         finally:
-            for f in writer.fake_files_already_written:
-                self.assertFalse(os.path.exists(f))
-                self.assertFalse(os.path.exists(f+'.gz'))
             writer.close_writer()
 
         # then:
@@ -72,6 +69,23 @@ class CustomWriterTest(unittest.TestCase):
         self.assertEquals([json.dumps(item) for item in self.batch],
                           output.splitlines())
         self.assertEquals('jl', writer.file_extension)
+
+    def test_write_buffer_removes_files(self):
+        # given:
+        self.batch = list(JsonExportFormatter({}).format(self.batch))
+        writer = FakeWriter({})
+        writer.items_per_buffer_write = 1
+
+        # when:
+        try:
+            writer.write_batch(self.batch)
+            # then
+            self.assertGreater(len(writer.fake_files_already_written), 0)
+            for f in writer.fake_files_already_written:
+                self.assertFalse(os.path.exists(f))
+                self.assertFalse(os.path.exists(f+'.gz'))
+        finally:
+            writer.close_writer()
 
     def test_custom_writer_with_csv_formatter(self):
         # given:
