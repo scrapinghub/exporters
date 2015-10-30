@@ -142,6 +142,14 @@ class BaseWriter(BasePipelineItem):
         self.write(compressed_path, self.grouping_info[key]['membership'])
         self._create_buffer_path_for_key(key)
         self._reset_key(key)
+        self._ensure_remove(path)
+        self._ensure_remove(compressed_path)
+
+    def _ensure_remove(self, path):
+        try:
+            os.remove(path)
+        except:
+            pass
 
     def _reset_key(self, key):
         self.grouping_info[key]['buffered_items'] = 0
