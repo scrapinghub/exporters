@@ -11,11 +11,6 @@ from exporters.writers.s3_writer import S3Writer
 
 
 class AggregationStatsWriterTest(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
 
     def test_write_aggregated(self):
         # given
@@ -34,9 +29,9 @@ class AggregationStatsWriterTest(unittest.TestCase):
         writer.close_writer()
 
         # then:
-        expected_info = {'birthday': {'ocurrences': 3, 'coverage': 75.0},
-                         'last_login': {'ocurrences': 1, 'coverage': 25.0},
-                         'name': {'ocurrences': 4, 'coverage': 100.0}}
+        expected_info = {'birthday': {'occurrences': 3, 'coverage': 75.0},
+                         'last_login': {'occurrences': 1, 'coverage': 25.0},
+                         'name': {'occurrences': 4, 'coverage': 100.0}}
         self.assertEqual(expected_info, writer._get_aggregated_info())
 
     def get_writer_config(self):
