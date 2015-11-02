@@ -4,7 +4,8 @@ from exporters.writers.base_writer import BaseWriter, ItemsLimitReached
 
 class AggregationStatsWriter(BaseWriter):
     """
-    It is just a writer with testing purposes. It prints every item in console.
+    This writer keeps track of keys occurences in dataset items. It provides information
+    about the number and percentage of every possible key in a dataset.
     """
 
     def __init__(self, options):
