@@ -120,6 +120,9 @@ class CustomWriterTest(unittest.TestCase):
         finally:
             writer.close_writer()
         self.assertEqual(writer.stats['items_count'], 3)
+        for key in writer.stats['written_keys']:
+            self.assertEqual(writer.stats['written_keys'][key]['destination'], None)
+            self.assertEqual(writer.stats['written_keys'][key]['number_of_records'], 3)
 
 
 class ConsoleWriterTest(unittest.TestCase):
