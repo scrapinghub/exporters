@@ -109,6 +109,16 @@ class CustomWriterTest(unittest.TestCase):
             ],
             [l for l in csv.reader(output)])
         self.assertEquals('csv', writer.file_extension)
+
+    def test_writer_stats(self):
+        # given:
+        self.batch = list(JsonExportFormatter({}).format(self.batch))
+        writer = FakeWriter({})
+        # when:
+        try:
+            writer.write_batch(self.batch)
+        finally:
+            writer.close_writer()
         self.assertEqual(writer.stats['items_count'], 3)
 
 
