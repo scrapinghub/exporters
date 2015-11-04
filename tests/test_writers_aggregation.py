@@ -1,13 +1,6 @@
-import re
 import unittest
-
-import boto
-import moto
-import mock
-
 from exporters.records.base_record import BaseRecord
 from exporters.writers.aggregation_stats_writer import AggregationStatsWriter
-from exporters.writers.s3_writer import S3Writer
 
 
 class AggregationStatsWriterTest(unittest.TestCase):

@@ -17,6 +17,7 @@ class BasePipelineItem(object):
     def __init__(self, options):
         self.options = options.get('options', {})
         self.check_options()
+        self.stats = {}
 
     def check_options(self):
         for option_name, option_spec in self.supported_options.iteritems():

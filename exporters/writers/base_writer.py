@@ -1,3 +1,4 @@
+from collections import Counter
 import gzip
 import os
 import shutil
@@ -53,7 +54,7 @@ class BaseWriter(BasePipelineItem):
         self.size_per_buffer_write = self.read_option('size_per_buffer_write')
         self.items_limit = self.read_option('items_limit')
         self.logger = WriterLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
-        self.items_count = 0
+        self.stats['items_count'] = 0
         self.grouping_info = {}
         self.file_extension = None
         self.header_line = None
@@ -98,11 +99,11 @@ class BaseWriter(BasePipelineItem):
         if self._should_write_buffer(key):
             self.logger.debug('Buffer write is needed.')
             self._write_buffer(key)
-        self.items_count += 1
-        if self.items_limit and self.items_limit == self.items_count:
+        self.stats['items_count'] += 1
+        if self.items_limit and self.items_limit == self.stats['items_count']:
             raise ItemsLimitReached(
                 'Finishing job after items_limit reached:'
-                ' {} items written.'.format(self.items_count))
+                ' {} items written.'.format(self.stats['items_count']))
 
     def _get_group_path(self, key):
         if self.grouping_info[key]['group_file']:

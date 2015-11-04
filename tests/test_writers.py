@@ -109,7 +109,7 @@ class CustomWriterTest(unittest.TestCase):
             ],
             [l for l in csv.reader(output)])
         self.assertEquals('csv', writer.file_extension)
-        self.assertEqual(writer.items_count, 3)
+        self.assertEqual(writer.stats['items_count'], 3)
 
 
 class ConsoleWriterTest(unittest.TestCase):
@@ -132,7 +132,7 @@ class ConsoleWriterTest(unittest.TestCase):
             items_to_write.append(item)
 
         self.writer.write_batch(items_to_write)
-        self.assertEqual(self.writer.items_count, 10)
+        self.assertEqual(self.writer.stats['items_count'], 10)
 
 
 class FilebaseBaseWriterTest(unittest.TestCase):

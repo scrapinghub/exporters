@@ -17,9 +17,9 @@ class AggregationStatsWriter(BaseWriter):
         for item in batch:
             for key in item:
                 self.aggregated_info['occurrences'][key] += 1
-            self.items_count += 1
-            if self.items_limit and self.items_limit == self.items_count:
-                raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'.format(self.items_count))
+            self.stats['items_count'] += 1
+            if self.items_limit and self.items_limit == self.stats['items_count']:
+                raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'.format(self.stats['items_count']))
         self.logger.debug('Wrote items')
 
     def _get_aggregated_info(self):
@@ -27,7 +27,7 @@ class AggregationStatsWriter(BaseWriter):
         for key in self.aggregated_info['occurrences']:
             agg_results[key] = {
                 'occurrences': self.aggregated_info['occurrences'].get(key),
-                'coverage': (float(self.aggregated_info['occurrences'].get(key))/float(self.items_count))*100
+                'coverage': (float(self.aggregated_info['occurrences'].get(key))/float(self.stats['items_count']))*100
             }
         return agg_results
 
