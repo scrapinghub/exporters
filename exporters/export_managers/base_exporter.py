@@ -90,6 +90,10 @@ class BaseExporter(object):
         try:
             self.stats_manager.stats['reader'] = self.stats_manager.stats.get('reader', {})
             self.stats_manager.stats['reader'].update(self.reader.stats)
+            self.stats_manager.stats['filter_before'] = self.stats_manager.stats.get('filter_before', {})
+            self.stats_manager.stats['filter_before'].update(self.filter_before.stats)
+            self.stats_manager.stats['filter_after'] = self.stats_manager.stats.get('filter_after', {})
+            self.stats_manager.stats['filter_after'].update(self.filter_after.stats)
             self.stats_manager.stats['writer'] = self.stats_manager.stats.get('writer', {})
             self.stats_manager.stats['writer'].update(self.writer.stats)
             self.stats_manager.populate()
