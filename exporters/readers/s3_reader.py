@@ -81,6 +81,7 @@ class S3Reader(BaseReader):
         for line in lines[self.last_line:last_item]:
             line = line.replace("\n", '')
             item = BaseRecord(json.loads(line))
+            self.stats['read_items'] += 1
             yield item
         dump_file.close()
 

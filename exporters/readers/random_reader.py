@@ -53,6 +53,7 @@ class RandomReader(BaseReader):
                 item['state'] = random.choice(self.states)
                 item['city'] = random.choice(self.cities)
                 item['value'] = random.randint(0, 10000)
+                self.stats['read_items'] += 1
                 yield item
         self.logger.debug('Done reading batch')
         self.last_position += 1

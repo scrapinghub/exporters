@@ -88,6 +88,8 @@ class BaseExporter(object):
 
     def _update_stats(self):
         try:
+            self.stats_manager.stats['reader'] = self.stats_manager.stats.get('reader', {})
+            self.stats_manager.stats['reader'].update(self.reader.stats)
             self.stats_manager.stats['writer'] = self.stats_manager.stats.get('writer', {})
             self.stats_manager.stats['writer'].update(self.writer.stats)
             self.stats_manager.populate()

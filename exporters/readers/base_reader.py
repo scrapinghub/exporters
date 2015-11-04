@@ -12,6 +12,7 @@ class BaseReader(BasePipelineItem):
         self.finished = False
         self.logger = ReaderLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
         self.last_position = 0
+        self.stats['read_items'] = 0
 
     def get_next_batch(self):
         """

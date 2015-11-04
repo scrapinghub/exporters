@@ -48,6 +48,7 @@ class RandomReaderTest(unittest.TestCase):
         self.reader.get_next_batch()
         batch = list(self.reader.get_next_batch())
         self.assertTrue(len(batch) == self.options['reader']['options']['batch_size'])
+        self.assertTrue(self.reader.stats['read_items'] == self.options['reader']['options']['batch_size'])
 
     def test_get_all(self):
         total_items = 0
