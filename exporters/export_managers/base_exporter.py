@@ -88,7 +88,8 @@ class BaseExporter(object):
 
     def _update_stats(self):
         try:
-            self.stats_manager.stats['items_count'] = self.writer.stats['items_count']
+            self.stats_manager.stats['writer'] = self.stats_manager.stats.get('writer', {})
+            self.stats_manager.stats['writer'].update(self.writer.stats)
             self.stats_manager.populate()
         except Exception as e:
             self.logger.error('Stats Manager error: {}'.format(str(e)))

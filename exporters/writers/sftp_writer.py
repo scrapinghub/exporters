@@ -57,3 +57,4 @@ class SFTPWriter(FilebaseBaseWriter):
                 sftp.makedirs(filebase_path)
             sftp.put(dump_path, filebase_path + '/' + filename)
         self.logger.info('Saved {}'.format(dump_path))
+        return dump_path

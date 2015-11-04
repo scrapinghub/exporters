@@ -54,7 +54,7 @@ class BaseWriter(BasePipelineItem):
         self.size_per_buffer_write = self.read_option('size_per_buffer_write')
         self.items_limit = self.read_option('items_limit')
         self.logger = WriterLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
-        self.stats['items_count'] = 0
+        self._init_stats()
         self.grouping_info = {}
         self.file_extension = None
         self.header_line = None
@@ -141,11 +141,16 @@ class BaseWriter(BasePipelineItem):
     def _write_buffer(self, key):
         path = self._get_group_path(key)
         compressed_path = self._compress_file(path)
-        self.write(compressed_path, self.grouping_info[key]['membership'])
+        compressed_size = os.path.getsize(compressed_path)
+        destination = self.write(compressed_path, self.grouping_info[key]['membership'])
+        write_info = {'number_of_records': self.grouping_info[key]['buffered_items'],
+                      'destination': destination,
+                      'size': compressed_size}
         self._create_buffer_path_for_key(key)
         self._reset_key(key)
         self._silent_remove(path)
         self._silent_remove(compressed_path)
+        self.stats['written_keys'][compressed_path] = write_info
 
     def _silent_remove(self, filename):
         try:
@@ -166,3 +171,7 @@ class BaseWriter(BasePipelineItem):
                 self._write_buffer(key)
         finally:
             shutil.rmtree(self.tmp_folder, ignore_errors=True)
+
+    def _init_stats(self):
+        self.stats['items_count'] = 0
+        self.stats['written_keys'] = {}
