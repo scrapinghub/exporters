@@ -86,6 +86,13 @@ class BaseExporter(object):
         self.logger.error(str(exception))
         self.notifiers.notify_failed_job(str(exception), str(traceback.format_exc(exception)), receivers=[TEAM], info=self.stats_manager.stats)
 
+    def _update_stats(self):
+        try:
+            self.stats_manager.stats['items_count'] = self.writer.items_count
+            self.stats_manager.populate()
+        except Exception as e:
+            self.logger.error('Stats Manager error: {}'.format(str(e)))
+
     def _run_pipeline(self):
         while not self.reader.is_finished():
             try:
@@ -94,8 +101,7 @@ class BaseExporter(object):
                 self.logger.info('{!r}'.format(e))
                 break
             else:
-                self.stats_manager.stats['items_count'] = self.writer.items_count
-                self.stats_manager.populate()
+                self._update_stats()
 
     def export(self):
         if not self.bypass():
@@ -103,7 +109,7 @@ class BaseExporter(object):
                 self._init_export_job()
                 self._run_pipeline()
                 self._finish_export_job()
-                self.stats_manager.populate()
+                self._update_stats()
                 self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM], info=self.stats_manager.stats)
             except Exception as e:
                 self._handle_export_exception(e)
