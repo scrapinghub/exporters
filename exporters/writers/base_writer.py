@@ -53,7 +53,8 @@ class BaseWriter(BasePipelineItem):
         self.items_per_buffer_write = self.read_option('items_per_buffer_write')
         self.size_per_buffer_write = self.read_option('size_per_buffer_write')
         self.items_limit = self.read_option('items_limit')
-        self.logger = WriterLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
+        self.logger = WriterLogger({'log_level': options.get('log_level'),
+                                    'logger_name': options.get('logger_name')})
         self._init_stats()
         self.grouping_info = {}
         self.file_extension = None
@@ -81,7 +82,8 @@ class BaseWriter(BasePipelineItem):
         if self.size_per_buffer_write and os.path.getsize(
                 self.grouping_info[key]['group_file'][-1]) >= self.size_per_buffer_write:
             return True
-        return self.grouping_info[key].get('buffered_items', 0) >= self.items_per_buffer_write
+        return self.grouping_info[key].get('buffered_items',
+                                           0) >= self.items_per_buffer_write
 
     def _send_item_to_buffer(self, item):
         """
@@ -100,6 +102,7 @@ class BaseWriter(BasePipelineItem):
             self.logger.debug('Buffer write is needed.')
             self._write_buffer(key)
         self.stats['items_count'] += 1
+        self._update_coverage(item)
         if self.items_limit and self.items_limit == self.stats['items_count']:
             raise ItemsLimitReached(
                 'Finishing job after items_limit reached:'
@@ -136,7 +139,8 @@ class BaseWriter(BasePipelineItem):
         f.close()
 
     def _get_new_path_name(self):
-        return os.path.join(self.tmp_folder, '%s.%s' % (uuid.uuid4(), self.file_extension))
+        return os.path.join(self.tmp_folder,
+                            '%s.%s' % (uuid.uuid4(), self.file_extension))
 
     def _write_buffer(self, key):
         path = self._get_group_path(key)
@@ -150,7 +154,7 @@ class BaseWriter(BasePipelineItem):
         self._reset_key(key)
         self._silent_remove(path)
         self._silent_remove(compressed_path)
-        self.stats['written_keys'][compressed_path] = write_info
+        self.stats['written_keys']['keys'][compressed_path] = write_info
 
     def _silent_remove(self, filename):
         try:
@@ -175,3 +179,13 @@ class BaseWriter(BasePipelineItem):
     def _init_stats(self):
         self.stats['items_count'] = 0
         self.stats['written_keys'] = {}
+        self.stats['written_keys']['keys'] = {}
+        self.stats['written_keys']['occurrences'] = Counter()
+        self.stats['written_keys']['coverage'] = {}
+
+    def _update_coverage(self, item):
+        for key in item:
+            self.stats['written_keys']['occurrences'][key] += 1
+            self.stats['written_keys']['coverage'][key] = (float(
+                self.stats['written_keys']['occurrences'][key]) / float(
+                self.stats['items_count'])) * 100
