@@ -2,6 +2,7 @@ import datetime
 import os
 
 from retrying import retry
+from exporters.writers.base_writer import InconsistentWriteDetected
 
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
@@ -97,7 +98,25 @@ class FTPWriter(FilebaseBaseWriter):
         self.ftp.connect(self.ftp_host, self.ftp_port)
         self.ftp.login(self.ftp_user, self.ftp_password)
         self._create_target_dir_if_needed(filebase_path)
-        self.ftp.storbinary('STOR %s' % (filebase_path + '/' + filename), open(dump_path))
+        destination_path = filebase_path + '/' + filename
+        self.ftp.storbinary('STOR %s' % (destination_path), open(dump_path))
         self.ftp.close()
         self.logger.info('Saved {}'.format(dump_path))
-        return dump_path
+        return destination_path
+
+    def directory_exists_here(self, directory_name):
+        filelist = []
+        self.ftp.retrlines('LIST',filelist.append)
+        for f in filelist:
+            if f.split()[-1] == directory_name:
+                return True
+        return False
+
+    def _check_write_consistency(self):
+        self.ftp.connect(self.ftp_host, self.ftp_port)
+        self.ftp.login(self.ftp_user, self.ftp_password)
+        for key, data in self.stats['written_keys']['keys'].iteritems():
+            file_to_check = self.ftp.nlst(data['destination'])
+            if not file_to_check:
+                raise InconsistentWriteDetected('File {} not found'.format(data['destination']))
+        self.ftp.close()

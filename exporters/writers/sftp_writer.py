@@ -1,4 +1,5 @@
 from retrying import retry
+from exporters.writers.base_writer import InconsistentWriteDetected
 
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
@@ -50,11 +51,22 @@ class SFTPWriter(FilebaseBaseWriter):
         filebase_path, filename = self.create_filebase_name(group_key)
 
         self.logger.info('Start uploading to {}'.format(dump_path))
+        destination_path = filebase_path + '/' + filename
         with pysftp.Connection(self.sftp_host, port=self.sftp_port,
                                username=self.sftp_user,
                                password=self.sftp_password) as sftp:
             if not sftp.exists(filebase_path):
                 sftp.makedirs(filebase_path)
-            sftp.put(dump_path, filebase_path + '/' + filename)
+            sftp.put(dump_path, destination_path)
         self.logger.info('Saved {}'.format(dump_path))
-        return dump_path
+        return destination_path
+
+    def _check_write_consistency(self):
+        import pysftp
+        sftp = pysftp.Connection(self.sftp_host, port=self.sftp_port,
+                                   username=self.sftp_user,
+                                   password=self.sftp_password)
+        for key, data in self.stats['written_keys']['keys'].iteritems():
+                if not sftp.exists(data['destination']):
+                    raise InconsistentWriteDetected('File {} not found'.format(data['destination']))
+        sftp.close()
