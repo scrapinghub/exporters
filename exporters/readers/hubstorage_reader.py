@@ -27,6 +27,9 @@ class HubstorageReader(BaseReader):
 
         - exclude_prefixes (list)
             Exclude records with given key prefixes
+
+        - secondary_collections (list)
+            A list of secondary collections to merge from
     """
 
     # List of options to set up the reader
@@ -38,6 +41,7 @@ class HubstorageReader(BaseReader):
         'count': {'type': int, 'default': 0},
         'prefixes': {'type': list, 'default': []},
         'exclude_prefixes': {'type': list, 'default': []},
+        'secondary_collections': {'type': list, 'default': []},
     }
 
     def __init__(self, options):
@@ -51,6 +55,7 @@ class HubstorageReader(BaseReader):
                                                     count=self.read_option('count'),
                                                     prefix=self.read_option('prefixes'),
                                                     exclude_prefixes=self.read_option('exclude_prefixes'),
+                                                    secondary_collections=self.read_option('secondary_collections'),
                                                     meta=['_key'])
         self.logger.info('HubstorageReader has been initiated. Project id: {}. Collection name: {}'.format(
             self.read_option('project_id'), self.read_option('collection_name')))
