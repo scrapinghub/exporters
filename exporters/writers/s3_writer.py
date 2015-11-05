@@ -1,5 +1,6 @@
 from contextlib import closing
 from retrying import retry
+from exporters.writers.base_writer import InconsistentWriteDetected
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 DEFAULT_BUCKET_REGION = 'us-east-1'
@@ -70,8 +71,14 @@ class S3Writer(FilebaseBaseWriter):
     def write(self, dump_path, group_key=None):
         if group_key is None:
             group_key = []
-
         filebase_path, filename = self.create_filebase_name(group_key)
         key_name = filebase_path + '/' + filename
         self._write_s3_key(dump_path, key_name)
         return key_name
+
+    def _check_write_consistency(self):
+        for key, data in self.stats['written_keys']['keys'].iteritems():
+            try:
+                self.bucket.get_key(data['destination'])
+            except:
+                raise InconsistentWriteDetected('File {} not found'.format(data['destination']))
