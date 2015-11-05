@@ -60,6 +60,7 @@ class BaseAlchemyPersistence(BasePersistence):
              "last_committed": datetime.datetime.now()}, synchronize_session='fetch')
         self.session.commit()
         self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: ' + str(self.persistence_state_id))
+        self.stats['commited_positions'] += 1
 
     def generate_new_job(self):
         if not self.engine:
