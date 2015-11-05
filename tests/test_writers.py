@@ -7,7 +7,7 @@ import csv
 
 from exporters.records.base_record import BaseRecord
 from exporters.writers import FSWriter
-from exporters.writers.base_writer import BaseWriter
+from exporters.writers.base_writer import BaseWriter, InconsistentWriteDetected
 from exporters.writers.console_writer import ConsoleWriter
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
@@ -179,3 +179,35 @@ class FSWriterTest(unittest.TestCase):
         self.assertEqual(path, '/tmp')
         self.assertEqual(file_name, 'exporter_test0000.gz')
         writer.close_writer()
+
+    def test_write_fs(self):
+         # given
+        data = [
+            {'name': 'Roberto', 'birthday': '12/05/1987'},
+            {'name': 'Claudia', 'birthday': '21/12/1985'},
+            {'name': 'Bob', 'birthday': '21/12/1985'},
+            {'name': 'Claude', 'last_login': '21/12/1985'},
+        ]
+        items_to_write = [BaseRecord(d) for d in data]
+        options = self.get_writer_config()
+
+        # when:
+        writer = FSWriter(options)
+        writer.write_batch(items_to_write)
+        writer.close_writer()
+
+        # then:
+        for key, data in writer.stats['written_keys']['keys'].iteritems():
+            self.assertTrue(os.path.exists(data['destination']))
+            self.assertTrue(os.path.getsize(data['destination'])==data['size'])
+            os.remove(data['destination'])
+        with self.assertRaises(InconsistentWriteDetected):
+            writer._check_write_consistency()
+
+    def get_writer_config(self):
+        return {
+            'name': 'exporters.writers.fs_writer.FSWriter',
+            'options': {
+                'filebase': '/tmp/output'
+            }
+        }

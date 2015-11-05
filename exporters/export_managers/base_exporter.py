@@ -32,7 +32,7 @@ class BaseExporter(object):
             'script_name': 'basic_export_manager'
         }
         self.stats_manager = self.module_loader.load_stats_manager(self.config.stats_options)
-        self.stats_manager.stats = job_info
+        self.stats_manager.stats.update(job_info)
 
     def _run_pipeline_iteration(self):
         self.logger.debug('Getting new batch')

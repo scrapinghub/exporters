@@ -4,6 +4,7 @@ import shutil
 import datetime
 import re
 from retrying import retry
+from exporters.writers.base_writer import InconsistentWriteDetected
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
@@ -48,3 +49,10 @@ class FSWriter(FilebaseBaseWriter):
         shutil.move(dump_path, os.path.join(filebase_path, filename))
         self.logger.info('Saved {}'.format(dump_path))
         return os.path.join(filebase_path, filename)
+
+    def _check_write_consistency(self):
+        for key, data in self.stats['written_keys']['keys'].iteritems():
+            if not os.path.exists(data['destination']):
+                raise InconsistentWriteDetected('File {} not found'.format(data['destination']))
+            if os.path.getsize(data['destination']) != data['size']:
+                raise InconsistentWriteDetected('File {} with wrong size'.format(data['destination']))
