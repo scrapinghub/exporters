@@ -20,6 +20,12 @@ class ItemsLimitReached(Exception):
     """
 
 
+class InconsistentWriteDetected(Exception):
+    """
+    This exception is thrown when a write inconsistency is detected in an export job
+    """
+
+
 class NoGroup(object):
     def __call__(self, batch): return {'': batch}
 
@@ -59,6 +65,7 @@ class BaseWriter(BasePipelineItem):
         self.grouping_info = {}
         self.file_extension = None
         self.header_line = None
+        self.items_count = 0
 
     def write(self, path, key):
         """
@@ -102,6 +109,7 @@ class BaseWriter(BasePipelineItem):
             self.logger.debug('Buffer write is needed.')
             self._write_buffer(key)
         self.stats['items_count'] += 1
+        self.items_count += 1
         self._update_coverage(item)
         if self.items_limit and self.items_limit == self.stats['items_count']:
             raise ItemsLimitReached(
@@ -175,6 +183,10 @@ class BaseWriter(BasePipelineItem):
                 self._write_buffer(key)
         finally:
             shutil.rmtree(self.tmp_folder, ignore_errors=True)
+        self._check_write_consistency()
+
+    def _check_write_consistency(self):
+        self.logger.warning('Not checking write consistency')
 
     def _init_stats(self):
         self.stats['items_count'] = 0
