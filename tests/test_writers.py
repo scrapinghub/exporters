@@ -123,8 +123,6 @@ class CustomWriterTest(unittest.TestCase):
         for key in writer.stats['written_keys']['keys']:
             self.assertEqual(writer.stats['written_keys']['keys'][key]['destination'], None)
             self.assertEqual(writer.stats['written_keys']['keys'][key]['number_of_records'], 3)
-        self.assertEqual(writer.stats['written_keys']['coverage']['key1'], 100)
-        self.assertEqual(writer.stats['written_keys']['coverage']['key2'], 100)
 
 
 class ConsoleWriterTest(unittest.TestCase):
