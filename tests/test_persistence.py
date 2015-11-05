@@ -82,7 +82,6 @@ class PicklePersistenceTest(unittest.TestCase):
         persistence = PicklePersistence(exporter_config.persistence_options)
         self.assertEqual(10, persistence.get_last_position())
 
-
     @patch('__builtin__.open', autospec=True)
     @patch('pickle.dump', autospec=True)
     @patch('uuid.uuid4', autospec=True)
@@ -92,7 +91,7 @@ class PicklePersistenceTest(unittest.TestCase):
         exporter_config = ExporterConfig(self.config)
         persistence = PicklePersistence(exporter_config.persistence_options)
         self.assertEqual(None, persistence.commit_position(10))
-
+        self.assertEqual(persistence.stats['commited_positions'], 1)
 
 
 class MysqlPersistenceTest(unittest.TestCase):
@@ -219,6 +218,7 @@ class MysqlPersistenceTest(unittest.TestCase):
         exporter_config = ExporterConfig(options)
         persistence = MysqlPersistence(exporter_config.persistence_options)
         persistence.commit_position(10)
+        self.assertEqual(persistence.stats['commited_positions'], 1)
 
     @patch('sqlalchemy.orm.session.Session.query')
     @patch('sqlalchemy.schema.MetaData.create_all')
@@ -391,6 +391,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
         exporter_config = ExporterConfig(options)
         persistence = PostgresqlPersistence(exporter_config.persistence_options)
         persistence.commit_position(10)
+        self.assertEqual(persistence.stats['commited_positions'], 1)
 
     @patch('sqlalchemy.orm.session.Session.query')
     @patch('sqlalchemy.schema.MetaData.create_all')
