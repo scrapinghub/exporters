@@ -88,21 +88,13 @@ class BaseExporter(object):
 
     def _update_stats(self):
         try:
-            self.stats_manager.stats['reader'] = self.stats_manager.stats.get('reader', {})
             self.stats_manager.stats['reader'].update(self.reader.stats)
-            self.stats_manager.stats['filter_before'] = self.stats_manager.stats.get('filter_before', {})
             self.stats_manager.stats['filter_before'].update(self.filter_before.stats)
-            self.stats_manager.stats['filter_after'] = self.stats_manager.stats.get('filter_after', {})
             self.stats_manager.stats['filter_after'].update(self.filter_after.stats)
-            self.stats_manager.stats['transform'] = self.stats_manager.stats.get('transform', {})
             self.stats_manager.stats['transform'].update(self.transform.stats)
-            self.stats_manager.stats['persistence'] = self.stats_manager.stats.get('persistence', {})
             self.stats_manager.stats['persistence'].update(self.persistence.stats)
-            self.stats_manager.stats['export_formatter'] = self.stats_manager.stats.get('export_formatter', {})
             self.stats_manager.stats['export_formatter'].update(self.export_formatter.stats)
-            self.stats_manager.stats['grouper'] = self.stats_manager.stats.get('grouper', {})
             self.stats_manager.stats['grouper'].update(self.grouper.stats)
-            self.stats_manager.stats['writer'] = self.stats_manager.stats.get('writer', {})
             self.stats_manager.stats['writer'].update(self.writer.stats)
             self.stats_manager.populate()
         except Exception as e:
