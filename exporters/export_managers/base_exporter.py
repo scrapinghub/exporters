@@ -99,19 +99,14 @@ class BaseExporter(object):
                                          receivers=[TEAM], info=self.stats_manager.stats)
 
     def _update_stats(self):
-        try:
-            for m in MODULES:
-                if m not in self.stats_manager.stats:
-                    self.stats_manager.stats[m] = {}
-                self.stats_manager.stats[m].update(getattr(self, m).stats)
-        except Exception as e:
-            self.logger.error('There was a problem updating iteration stats: {}'.format(str(e)))
+        for mod in MODULES:
+            self.stats_manager.update_module_stats(mod, getattr(self, mod).stats)
 
     def _populate_stats(self):
         try:
             self.stats_manager.populate()
         except Exception as e:
-            self.logger.error('There was a problem populating stats: {}'.format(str(e)))
+            self.logger.error('Error populating stats: {}'.format(str(e)))
 
     def _run_pipeline(self):
         while not self.reader.is_finished():

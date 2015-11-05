@@ -10,3 +10,6 @@ class BaseStatsManager(BasePipelineItem):
 
     def populate(self):
         raise NotImplementedError
+
+    def update_module_stats(self, module, mod_stats):
+        self.stats.setdefault(module, {}).update(mod_stats)
