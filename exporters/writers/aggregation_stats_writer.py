@@ -17,8 +17,7 @@ class AggregationStatsWriter(BaseWriter):
         for item in batch:
             for key in item:
                 self.aggregated_info['occurrences'][key] += 1
-            self.stats['items_count'] += 1
-            self.items_count += 1
+            self._increment_written_items()
             if self.items_limit and self.items_limit == self.stats['items_count']:
                 raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'.format(self.stats['items_count']))
         self.logger.debug('Wrote items')

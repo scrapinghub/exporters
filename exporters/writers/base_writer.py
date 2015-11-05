@@ -108,8 +108,7 @@ class BaseWriter(BasePipelineItem):
         if self._should_write_buffer(key):
             self.logger.debug('Buffer write is needed.')
             self._write_buffer(key)
-        self.stats['items_count'] += 1
-        self.items_count += 1
+        self._increment_written_items()
         self._update_coverage(item)
         if self.items_limit and self.items_limit == self.stats['items_count']:
             raise ItemsLimitReached(
@@ -201,3 +200,7 @@ class BaseWriter(BasePipelineItem):
             self.stats['written_keys']['coverage'][key] = (float(
                 self.stats['written_keys']['occurrences'][key]) / float(
                 self.stats['items_count'])) * 100
+
+    def _increment_written_items(self):
+        self.stats['items_count'] += 1
+        self.items_count += 1
