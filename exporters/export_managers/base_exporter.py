@@ -1,6 +1,6 @@
 import datetime
 import traceback
-from exporters.export_managers import modules
+from exporters.export_managers import MODULES
 from exporters.export_managers.bypass import RequisitesNotMet
 from exporters.logger.base_logger import ExportManagerLogger
 from exporters.notifications.notifiers_list import NotifiersList
@@ -100,7 +100,7 @@ class BaseExporter(object):
 
     def _update_stats(self):
         try:
-            for m in modules:
+            for m in MODULES:
                 if m not in self.stats_manager.stats:
                     self.stats_manager.stats[m] = {}
                 self.stats_manager.stats[m].update(getattr(self, m).stats)
