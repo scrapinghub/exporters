@@ -58,7 +58,6 @@ class BaseExporter(object):
         self.reader.set_last_position(last_position)
 
     def _clean_export_job(self):
-        self.persistence.delete_instance()
         self.writer.close_writer()
 
     def _finish_export_job(self):
@@ -133,6 +132,7 @@ class BaseExporter(object):
                 self._finish_export_job()
                 self._update_stats()
                 self._populate_stats()
+                self.persistence.delete_instance()
                 self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM],
                                                     info=self.stats_manager.stats)
             except Exception as e:

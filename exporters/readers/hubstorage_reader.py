@@ -27,6 +27,9 @@ class HubstorageReader(BaseReader):
 
         - exclude_prefixes (list)
             Exclude records with given key prefixes
+
+        - secondary_collections (list)
+            A list of secondary collections to merge from
     """
 
     # List of options to set up the reader
@@ -38,6 +41,7 @@ class HubstorageReader(BaseReader):
         'count': {'type': int, 'default': 0},
         'prefixes': {'type': list, 'default': []},
         'exclude_prefixes': {'type': list, 'default': []},
+        'secondary_collections': {'type': list, 'default': []},
     }
 
     def __init__(self, options):
@@ -51,24 +55,28 @@ class HubstorageReader(BaseReader):
                                                     count=self.read_option('count'),
                                                     prefix=self.read_option('prefixes'),
                                                     exclude_prefixes=self.read_option('exclude_prefixes'),
+                                                    secondary_collections=self.read_option('secondary_collections'),
                                                     meta=['_key'])
         self.logger.info('HubstorageReader has been initiated. Project id: {}. Collection name: {}'.format(
             self.read_option('project_id'), self.read_option('collection_name')))
-        self.last_position = 0
+        self.last_position = ''
 
     def get_next_batch(self):
-        for batch in self.collection_scanner.scan_collection_batches():
+        if self.collection_scanner.is_enabled:
+            batch = self.collection_scanner.get_new_batch()
             for item in batch:
                 base_item = BaseRecord(item)
-                self.last_position += 1
                 self.stats['read_items'] += 1
+                self.last_position = item['_key']
                 yield base_item
             self.logger.debug('Done reading batch')
-        self.logger.debug('No more batches')
-        self.finished = True
+        else:
+            self.logger.debug('No more batches')
+            self.finished = True
 
     def set_last_position(self, last_position):
         if last_position:
             self.last_position = last_position
+            self.collection_scanner.set_startafter(last_position)
         else:
-            self.last_position = 0
+            self.last_position = ''
