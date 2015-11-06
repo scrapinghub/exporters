@@ -51,7 +51,7 @@ class PicklePersistence(BasePersistence):
         return persistence_state_id
 
     def delete_instance(self):
-        os.remove(os.path.join(self.read_option('file_path'), self.persistence_state_id))
+        pass
 
     @staticmethod
     def configuration_from_uri(uri, uri_regex):
