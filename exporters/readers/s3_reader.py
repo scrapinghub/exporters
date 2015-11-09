@@ -2,6 +2,7 @@ import gzip
 import json
 import os
 from retrying import retry
+import tempfile
 
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
@@ -23,9 +24,6 @@ class S3Reader(BaseReader):
         - aws_secret_access_key (str)
             Secret access key to the s3 bucket.
 
-        - tmp_folder (str)
-            Folder to store temp files.
-
         - prefix (str)
             Prefix of s3 keys to be read.
     """
@@ -36,7 +34,6 @@ class S3Reader(BaseReader):
         'bucket': {'type': basestring},
         'aws_access_key_id': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_KEY'},
         'aws_secret_access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_SECRET'},
-        'tmp_folder': {'type': basestring, 'default': '/tmp/'},
         'prefix': {'type': basestring}
     }
 
@@ -54,13 +51,14 @@ class S3Reader(BaseReader):
         self.current_key = None
         self.last_line = 0
         self.logger.info('S3Reader has been initiated')
+        self.tmp_folder = tempfile.mkdtemp()
 
     @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
     def get_key(self, file_path):
         self.bucket.get_key(self.current_key).get_contents_to_filename(file_path)
 
     def get_next_batch(self):
-        file_path = '{}/ds_dump.gz'.format(self.read_option('tmp_folder'))
+        file_path = '{}/ds_dump.gz'.format(self.tmp_folder)
         if not self.current_key:
             self.current_key = self.keys[0]
             self.get_key(file_path)
@@ -105,7 +103,7 @@ class S3Reader(BaseReader):
             self.last_position = last_position
             self.keys = self.last_position['keys']
             self.read_keys = self.last_position['read_keys']
-            file_path = '{}/ds_dump.gz'.format(self.read_option('tmp_folder'))
+            file_path = '{}/ds_dump.gz'.format(self.tmp_folder)
             if self.last_position['current_key']:
                 self.current_key = self.last_position['current_key']
             else:
