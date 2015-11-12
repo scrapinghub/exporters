@@ -19,9 +19,9 @@ class FilebaseBaseWriter(BaseWriter):
 
     def create_filebase_name(self, group_info, extension='gz'):
         normalized = [re.sub('\W', '_', s) for s in group_info]
-
+        filebase = self.read_option('filebase')
         try:
-            filebase = self.read_option('filebase').format(date=datetime.datetime.now(),
+            filebase = filebase.format(date=datetime.datetime.now(),
                                                            groups=normalized)
         except Exception as e:
             print e
