@@ -21,7 +21,10 @@ class FileKeyGrouper(BaseGrouper):
             first_key, rest = key.split('.', 1)
             return self._get_nested_value(item.get(first_key, {}), rest)
         else:
-            return item.get(key, 'unknown')
+            membership = item.get(key, 'unknown')
+            if membership is None:
+                membership = 'unknown'
+            return membership
 
     def group_batch(self, batch):
         for item in batch:
