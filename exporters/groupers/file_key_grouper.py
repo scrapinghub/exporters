@@ -27,10 +27,16 @@ class FileKeyGrouper(BaseGrouper):
             return membership
 
     def group_batch(self, batch):
+        print '************'
+        print self.keys
+        print '************'
         for item in batch:
             item.group_key = self.keys
             membership = []
             for key in self.keys:
                 membership.append(self._get_nested_value(item, key))
+            print '************'
+            print membership
+            print '************'
             item.group_membership = tuple(membership)
             yield item
