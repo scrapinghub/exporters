@@ -95,11 +95,11 @@ class ConfigApi(object):
     def _check_required_config_section(self, option_definition, config_section):
         if option_definition.name not in config_section['options']:
             raise InvalidConfigError(
-                '{} option_definition is missing'.format(option_definition.name))
+                'option "{}" is missing'.format(option_definition.name))
         if not isinstance(config_section['options'][option_definition.name],
                           option_definition.options['type']):
             raise InvalidConfigError(
-                'Wrong type for option {}. Found: {}. Expected {}'.format(
+                'Wrong type for option "{}". Found: {}. Expected {}'.format(
                     option_definition.name, type(
                         config_section['options'][option_definition.name]),
                     option_definition.options['type']))
