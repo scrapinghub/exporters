@@ -136,11 +136,6 @@ def _get_module_supported_options(module_name):
         class_path_list = module_name.split('.')
         mod = import_module('.'.join(class_path_list[0:-1]))
         supported_options = getattr(mod, class_path_list[-1]).supported_options
-        try:
-            getattr(mod, 'FilebaseBaseWriter')
-            supported_options['filebase'] = {'type': basestring}
-        except:
-            pass
         return supported_options
     except Exception as e:
         raise ConfigurationError(
