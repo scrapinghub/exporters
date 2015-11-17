@@ -39,6 +39,7 @@ class BaseWriter(BasePipelineItem):
         'size_per_buffer_write': {'type': int, 'default': SIZE_PER_BUFFER_WRITE},
         'items_limit': {'type': int, 'default': 0},
     }
+
     supported_file_extensions = {
         'csv': 'csv',
         'json': 'jl',

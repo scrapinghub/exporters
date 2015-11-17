@@ -3,14 +3,15 @@ import os
 import re
 import uuid
 from exporters.writers.base_writer import BaseWriter
+import copy
 
 
 class FilebaseBaseWriter(BaseWriter):
+
+    base_supported_options = copy.deepcopy(getattr(BaseWriter, 'base_supported_options'))
+    base_supported_options['filebase'] = {'type': basestring}
+
     def __init__(self, options):
-        supported_options = getattr(self, 'supported_options')
-        if 'filebase' not in supported_options:
-            supported_options['filebase'] = {'type': basestring}
-        self.supported_options = supported_options
         super(FilebaseBaseWriter, self).__init__(options)
         self.filebase = self.read_option('filebase')
 
