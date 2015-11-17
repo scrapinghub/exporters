@@ -1,26 +1,25 @@
 import os
 import unittest
 from decorator import contextmanager
+from exporters.exporter_config import (validate, module_options,
+                                       MODULE_TYPES)
 from exporters.export_managers.bypass import BaseBypass, S3Bypass, RequisitesNotMet
 from exporters.groupers.base_grouper import BaseGrouper
 from exporters.logger.base_logger import CategoryLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
-from exporters.config_api import ConfigApi, InvalidConfigError
 from exporters.exceptions import InvalidExpression, ConfigurationError
 from exporters.module_loader import ModuleLoader
 from exporters.exporter_config import ExporterConfig
 from exporters.python_interpreter import Interpreter
 
+from .utils import VALID_EXPORTER_CONFIG, valid_config_with_updates
+
 
 class BaseLoggerTest(unittest.TestCase):
     def setUp(self):
-        self.options = {
-            'exporter_options': {
-                'log_level': 'DEBUG',
-            },
-            'reader': {},
-            'writer': {}
-        }
+        self.options = valid_config_with_updates({
+            'exporter_options': {'log_level': 'DEBUG'}
+        })
 
     def test_category_warning(self):
         options = ExporterConfig(self.options)
@@ -106,75 +105,21 @@ class BasePipelineItemTest(unittest.TestCase):
             MyPipelineItem({'options': {}})
 
 
-class ConfigApiTest(unittest.TestCase):
-    def setUp(self):
-        self.config_api = ConfigApi()
+class ConfigModuleOptionsTest(unittest.TestCase):
+    def test_module_options(self):
+        options = module_options()
+        self.assertItemsEqual(MODULE_TYPES, options.keys())
+        for modules in options.values():
+            self.assertIsInstance(modules, list)
 
-    def test_get_supported_options(self):
-        for reader in self.config_api.readers:
-            supported_options = self.config_api.get_module_supported_options(reader)
-            print supported_options
-            for requirement_name, requirement_info in supported_options.iteritems():
-                self.assertIsInstance(requirement_info, dict)
-                self.assertIsInstance(requirement_name, basestring)
 
-    def test_get_modules_by_type(self):
-        self.assertIsInstance(self.config_api.writers, list)
-        self.assertIsInstance(self.config_api.readers, list)
-        self.assertIsInstance(self.config_api.persistence, list)
-        self.assertIsInstance(self.config_api.filters, list)
-        self.assertIsInstance(self.config_api.transforms, list)
-        self.assertIsInstance(self.config_api.groupers, list)
-
-    def test_get_wrong_module_name(self):
-        with self.assertRaises(InvalidConfigError):
-            self.config_api.get_module_supported_options('not a valid module name')
-
+class ConfigValidationTest(unittest.TestCase):
     def test_find_missing_sections(self):
-        with self.assertRaises(InvalidConfigError):
-            self.config_api.check_valid_config({})
+        with self.assertRaises(ConfigurationError):
+            validate({})
 
     def test_check_configuration(self):
-        config = {
-            'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
-                'options': {}
-            },
-            'writer': {
-                'name': 'exporters.writers.console_writer.ConsoleWriter',
-                'options': {}
-            },
-            'filter': {
-                'name': 'exporters.filters.no_filter.NoFilter',
-                'options': {}
-            },
-            'filter_before': {
-                'name': 'exporters.filters.no_filter.NoFilter',
-                'options': {}
-            },
-            'filter_after': {
-                'name': 'exporters.filters.no_filter.NoFilter',
-                'options': {}
-            },
-            'transform': {
-                'name': 'exporters.transform.no_transform.NoTransform',
-                'options': {}
-            },
-            'exporter_options': {},
-            'persistence': {
-                'name': 'exporters.persistence.pickle_persistence.PicklePersistence',
-                'options': {
-                    'file_base': '/tmp'
-                }
-            },
-            'grouper': {
-                'name': 'exporters.grouper.no_grouper.NoGrouper',
-                'options': {
-
-                }
-            }
-        }
-        self.assertIs(self.config_api.check_valid_config(config), True)
+        self.assertIs(validate(VALID_EXPORTER_CONFIG), True)
 
     def test_missing_supported_options(self):
         config = {
@@ -202,8 +147,8 @@ class ConfigApiTest(unittest.TestCase):
                 }
             }
         }
-        with self.assertRaises(InvalidConfigError):
-            self.config_api.check_valid_config(config)
+        with self.assertRaises(ConfigurationError):
+            validate(config)
 
     def test_wrong_type_supported_options(self):
         config = {
@@ -233,20 +178,8 @@ class ConfigApiTest(unittest.TestCase):
                 }
             }
         }
-        with self.assertRaises(InvalidConfigError):
-            self.config_api.check_valid_config(config)
-
-    def test_missing_items_in_config_section(self):
-        with self.assertRaises(InvalidConfigError):
-            self.config_api._check_valid_options({})
-
-    def test_check_valid_grouper(self):
-        grouper = {
-            'name': 'exporters.groupers.no_grouper.NoGrouper',
-            'options': {}
-        }
-
-        self.assertIs(self.config_api._check_valid_options(grouper), None)
+        with self.assertRaises(ConfigurationError):
+            validate(config)
 
 
 class ModuleLoaderTest(unittest.TestCase):
@@ -254,7 +187,7 @@ class ModuleLoaderTest(unittest.TestCase):
         self.module_loader = ModuleLoader()
 
     def test_reader_valid_class(self):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
@@ -265,20 +198,18 @@ class ModuleLoaderTest(unittest.TestCase):
                     'number_of_items': 1000,
                     'batch_size': 100
                 }
-            },
-            'writer': {}
-        }
+            }
+        })
         with self.assertRaises(TypeError):
             o = ExporterConfig(options)
             self.module_loader.load_reader(o.reader_options)
 
     def test_writer_valid_class(self):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
             },
-            'reader': {},
             'writer': {
                 'name': 'exporters.readers.random_reader.RandomReader',
                 'options': {
@@ -286,33 +217,31 @@ class ModuleLoaderTest(unittest.TestCase):
                     'batch_size': 100
                 }
             },
-        }
+        })
         with self.assertRaises(TypeError):
             o = ExporterConfig(options)
             self.module_loader.load_writer(o.writer_options)
 
     def test_persistence_valid_class(self):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
             },
-            'reader': {},
-            'writer': {},
             'persistence': {
                 'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100
                 }
-            },
-        }
+            }
+        })
         o = ExporterConfig(options)
         with self.assertRaises(TypeError):
             self.module_loader.load_persistence(o.persistence_options)
 
     def test_formatter_valid_class(self):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline',
@@ -325,14 +254,13 @@ class ModuleLoaderTest(unittest.TestCase):
                     'batch_size': 100
                 }
             },
-            'writer': {}
-        }
+        })
         with self.assertRaises(TypeError):
             o = ExporterConfig(options)
             self.module_loader.load_formatter(o.reader_options)
 
     def test_notifier_valid_class(self):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
@@ -343,16 +271,14 @@ class ModuleLoaderTest(unittest.TestCase):
                     'number_of_items': 1000,
                     'batch_size': 100
                 }
-            },
-            'reader': {},
-            'writer': {}
-        }
+            }
+        })
         with self.assertRaises(TypeError):
             o = ExporterConfig(options)
             self.module_loader.load_notifier(o.notifiers)
 
     def test_grouper_valid_class(self):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
@@ -363,42 +289,18 @@ class ModuleLoaderTest(unittest.TestCase):
                     'number_of_items': 1000,
                     'batch_size': 100
                 }
-            },
-            'reader': {},
-            'writer': {}
-        }
-        with self.assertRaises(TypeError):
-            o = ExporterConfig(options)
-            self.module_loader.load_grouper(o.grouper_options)
-
-    def test_grouper_valid_class(self):
-        options = {
-            'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
-            },
-            'grouper': {
-                'name': 'exporters.transform.no_transform.NoTransform',
-                'options': {
-                    'number_of_items': 1000,
-                    'batch_size': 100
-                }
-            },
-            'reader': {},
-            'writer': {}
-        }
+            }
+        })
         with self.assertRaises(TypeError):
             o = ExporterConfig(options)
             self.module_loader.load_grouper(o.grouper_options)
 
     def test_filter_valid_class(self):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
             },
-            'reader': {},
-            'writer': {},
             'filter': {
                 'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
@@ -406,69 +308,59 @@ class ModuleLoaderTest(unittest.TestCase):
                     'batch_size': 100
                 }
             },
-        }
+        })
         with self.assertRaises(TypeError):
             o = ExporterConfig(options)
             self.module_loader.load_filter(o.filter_before_options)
 
     def test_transform_valid_class(self):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline'
             },
-            'reader': {},
-            'writer': {},
             'transform': {
                 'name': 'exporters.filters.no_filter.NoFilter',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100
                 }
-            },
-        }
+            }
+        })
         with self.assertRaises(TypeError):
             o = ExporterConfig(options)
             self.module_loader.load_transform(o.transform_options)
 
     def test_load_grouper(self):
-        options = {
-            'exporter_options': {
-                'LOG_LEVEL': 'DEBUG',
-                'LOGGER_NAME': 'export-pipeline'
-            },
-            'grouper': {
-                'name': 'exporters.groupers.file_key_grouper.FileKeyGrouper',
-                'options': {
+        grouper = {
+            'name': 'exporters.groupers.file_key_grouper.FileKeyGrouper',
+            'options': {
                     'keys': ['country_code', 'state', 'city']
-                }
-            },
+            }
         }
-        self.assertIsInstance(self.module_loader.load_grouper(options['grouper']),
+        self.assertIsInstance(self.module_loader.load_grouper(grouper),
                               BaseGrouper)
 
 
 class OptionsParserTest(unittest.TestCase):
     def test_curate_options(self):
         options = {}
-        with self.assertRaises(Exception):
+        with self.assertRaises(ConfigurationError):
             ExporterConfig(options)
         options = {'reader': ''}
-        with self.assertRaises(Exception):
+        with self.assertRaises(ConfigurationError):
             ExporterConfig(options)
         options = {'reader': '', 'filter': ''}
-        with self.assertRaises(Exception):
+        with self.assertRaises(ConfigurationError):
             ExporterConfig(options)
         options = {'reader': '', 'filter': '', 'transform': ''}
-        with self.assertRaises(Exception):
+        with self.assertRaises(ConfigurationError):
             ExporterConfig(options)
         options = {'reader': '', 'filter': '', 'transform': '', 'writer': ''}
-        with self.assertRaises(Exception):
+        with self.assertRaises(ConfigurationError):
             ExporterConfig(options)
-        options = {'reader': {}, 'filter': {}, 'transform': {}, 'writer': {},
-                   'persistence': {},
-                   'exporter_options': {'formatter': {}}}
-        self.assertIsInstance(ExporterConfig(options), ExporterConfig)
+        self.assertIsInstance(ExporterConfig(VALID_EXPORTER_CONFIG),
+                              ExporterConfig)
 
 
 class PythonInterpreterTest(unittest.TestCase):
@@ -497,22 +389,26 @@ class BaseByPassTest(unittest.TestCase):
 
 class S3ByPassTest(unittest.TestCase):
     def test_not_meet_supported_options(self):
-        exporter_options = ExporterConfig({
-            'reader': {'name': 'some other reader'},
-            'writer': {'name': 'exporters.writers.s3_writer.S3Writer'},
-            'exporter_options': {'formatter': {}},
-            'persistence': {}
-        })
+        exporter_options = ExporterConfig(
+            valid_config_with_updates({
+                'writer': {'name': 'exporters.writers.s3_writer.S3Writer',
+                           'options': {'bucket': 'mock', 'filebase': 'mock'}},
+                'exporter_options': {'formatter': {}}
+            })
+        )
         bypass = S3Bypass(exporter_options)
         with self.assertRaises(RequisitesNotMet):
             bypass.meets_conditions()
 
     def test_meet_supported_options(self):
-        exporter_options = ExporterConfig({
-            'reader': {'name': 'exporters.readers.s3_reader.S3Reader'},
-            'writer': {'name': 'exporters.writers.s3_writer.S3Writer'},
-            'exporter_options': {'formatter': {}},
-            'persistence': {}
-        })
+        exporter_options = ExporterConfig(
+            valid_config_with_updates({
+                'reader': {'name': 'exporters.readers.s3_reader.S3Reader',
+                           'options': {'prefix': 'mock', 'bucket': 'mock'}},
+                'writer': {'name': 'exporters.writers.s3_writer.S3Writer',
+                           'options': {'bucket': 'mock', 'filebase': 'mock'}},
+                'exporter_options': {'formatter': {}}
+            })
+        )
         bypass_script = S3Bypass(exporter_options)
         bypass_script.meets_conditions()

@@ -2,17 +2,20 @@ import os
 from exporters.exceptions import ConfigurationError
 
 
+class SupportedOptionsMeta(type):
+    def __init__(self, *args):
+        super(SupportedOptionsMeta, self).__init__(*args)
+        options = {}
+        for superclass in reversed(self.__mro__):
+            if 'supported_options' in vars(superclass):
+                options.update(superclass.supported_options)
+        options.update(getattr(self, 'supported_options', {}))
+        self.supported_options = options
+
+
 class BasePipelineItem(object):
-
-    base_supported_options = {}
+    __metaclass__ = SupportedOptionsMeta
     supported_options = {}
-
-    def __new__(cls, options):
-        obj = object.__new__(cls)
-        object.__init__(obj, options)
-        obj.supported_options = cls.base_supported_options.copy()
-        obj.supported_options.update(cls.supported_options)
-        return obj
 
     def __init__(self, options):
         self.options = options.get('options', {})
