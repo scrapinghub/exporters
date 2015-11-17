@@ -1,4 +1,7 @@
+import json
 import os
+import shutil
+import tempfile
 from retrying import retry
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
@@ -18,20 +21,25 @@ class GDriveWriter(FilebaseBaseWriter):
     """
 
     supported_options = {
-        'credentials_path': {'type': basestring, 'default': './gdrive-credentials.json'},
-        'client_secret_path': {'type': basestring},
+        'credentials': {'type': object},
+        'client_secret': {'type': object},
     }
 
     def __init__(self, options):
         super(GDriveWriter, self).__init__(options)
         from pydrive.auth import GoogleAuth
         from pydrive.drive import GoogleDrive
-        if not os.path.exists(self.read_option('credentials_path')):
-            self.logger.error(
-                'A valid credentials file must be provided. Please run python bin/get_gdrive_credentials.py to get it.')
         gauth = GoogleAuth()
-        gauth.LoadClientConfigFile(self.read_option('client_secret_path'))
-        gauth.LoadCredentialsFile(self.read_option('credentials_path'))
+        files_tmp_path = tempfile.mkdtemp()
+        client_secret_file = os.path.join(files_tmp_path, 'secret.json')
+        with open(client_secret_file, 'w') as f:
+            f.write(json.dumps(self.read_option('client_secret')))
+        gauth.LoadClientConfigFile(client_secret_file)
+        credentials_file = os.path.join(files_tmp_path, 'credentials.json')
+        with open(credentials_file, 'w') as f:
+            f.write(json.dumps(self.read_option('credentials')))
+        gauth.LoadCredentialsFile(credentials_file)
+        shutil.rmtree(files_tmp_path)
         self.drive = GoogleDrive(gauth)
         self.logger.info(
             'GDriveWriter has been initiated. Writing to: {}'.format(self.filebase))
@@ -55,8 +63,7 @@ class GDriveWriter(FilebaseBaseWriter):
         folders = filebase_path.split('/')
         parent = {"id": "root"}
         for folder in folders:
-            file_list = self.drive.ListFile({
-                                                'q': "'{}' in parents and trashed=false and title = '{}'".format(
+            file_list = self.drive.ListFile({'q': "'{}' in parents and trashed=false and title = '{}'".format(
                                                     parent['id'], folder)}).GetList()
             if not len(file_list):
                 f = self.drive.CreateFile({'title': folder, 'parents': [parent],
