@@ -1,11 +1,4 @@
-import glob
 import os
-import shutil
-import datetime
-import re
-import tempfile
-import httplib2
-import requests
 from retrying import retry
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
@@ -80,6 +73,7 @@ class GDriveWriter(FilebaseBaseWriter):
             group_key = []
         filebase_path, filename = self.create_filebase_name(group_key)
         parent = self._ensure_folder_path(filebase_path)
-        file1 = self.drive.CreateFile({'title': filename, 'parents': [parent]})
-        file1.Upload()
-        self.logger.info('Uploaded file {}'.format(file1['title']))
+        file = self.drive.CreateFile({'title': filename, 'parents': [parent]})
+        file.SetContentFile(dump_path)
+        file.Upload()
+        self.logger.info('Uploaded file {}'.format(file['title']))
