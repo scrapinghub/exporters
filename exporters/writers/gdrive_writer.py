@@ -25,23 +25,19 @@ class GDriveWriter(FilebaseBaseWriter):
     """
 
     supported_options = {
+        'credentials_path': {'type': basestring, 'default': './gdrive-credentials.json'},
         'client_secret_path': {'type': basestring},
-        'credentials_path': {'type': basestring, 'default': None},
     }
 
     def __init__(self, options):
         super(GDriveWriter, self).__init__(options)
         from pydrive.auth import GoogleAuth
         from pydrive.drive import GoogleDrive
+        if not os.path.exists(self.read_option('credentials_path')):
+            self.logger.error(
+                'A valid credentials file must be provided. Please run python bin/get_gdrive_credentials.py to get it.')
         gauth = GoogleAuth()
         gauth.LoadClientConfigFile(self.read_option('client_secret_path'))
-        if not self.read_option('credentials_path'):
-            gauth.LocalWebserverAuth()
-            tmpidr = tempfile.mkdtemp()
-            credentials_name = os.path.join(tmpidr, 'gdrive-credentials.json')
-            gauth.SaveCredentialsFile(credentials_name)
-            self.logger.info(
-            'GDriveWriter credentials file created in {}'.format(credentials_name))
         gauth.LoadCredentialsFile(self.read_option('credentials_path'))
         self.drive = GoogleDrive(gauth)
         self.logger.info(
@@ -54,7 +50,9 @@ class GDriveWriter(FilebaseBaseWriter):
     def get_file_suffix(self, path, prefix):
         parent = self._ensure_folder_path(path)
 
-        file_list = self.drive.ListFile({'q': "'{}' in parents and trashed=false and title contains '{}'".format(parent['id'], prefix)}).GetList()
+        file_list = self.drive.ListFile({
+                                            'q': "'{}' in parents and trashed=false and title contains '{}'".format(
+                                                parent['id'], prefix)}).GetList()
         try:
             number_of_files = len(file_list)
         except:
@@ -65,9 +63,12 @@ class GDriveWriter(FilebaseBaseWriter):
         folders = filebase_path.split('/')
         parent = {"id": "root"}
         for folder in folders:
-            file_list = self.drive.ListFile({'q': "'{}' in parents and trashed=false and title contains '{}'".format(parent['id'], folder)}).GetList()
+            file_list = self.drive.ListFile({
+                                                'q': "'{}' in parents and trashed=false and title = '{}'".format(
+                                                    parent['id'], folder)}).GetList()
             if not len(file_list):
-                f = self.drive.CreateFile({'title': folder, 'parents': [parent], 'mimeType': 'application/vnd.google-apps.folder'})
+                f = self.drive.CreateFile({'title': folder, 'parents': [parent],
+                                           'mimeType': 'application/vnd.google-apps.folder'})
                 f.Upload()
             else:
                 parent = {"id": file_list[-1]["id"]}
