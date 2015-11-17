@@ -21,6 +21,9 @@ class ApiClient(object):
     def _post_request(self, url, data):
         return json.loads(requests.post(url, data=data, auth=self.auth).text)
 
+    def _patch_request(self, url, data):
+        return json.loads(requests.patch(url, data=data, auth=self.auth).text)
+
     def position(self, position_id):
         url = '{}{}'.format(self.url, position_id)
         return self._get_request(url)
@@ -35,7 +38,7 @@ class ApiClient(object):
         url = '{}{}'.format(self.url, position_id)
         data = kwargs
         data['last_position'] = json.dumps(position)
-        return self._put_request(url, data)
+        return self._patch_request(url, data)
 
     def create_position(self, last_position, configuration, export_id=None):
         data = {
