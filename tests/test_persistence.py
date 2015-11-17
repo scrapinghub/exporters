@@ -5,21 +5,19 @@ from exporters.persistence.alchemy_persistence import MysqlPersistence, Postgres
 from exporters.persistence.base_persistence import BasePersistence
 from exporters.persistence.pickle_persistence import PicklePersistence
 
+from .utils import valid_config_with_updates
 
 class BasePersistenceTest(unittest.TestCase):
 
     def setUp(self):
-        self.config = {
+        self.config = valid_config_with_updates({
             'exporter_options': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
                 'resume': False,
                 'formatter':  {}
-            },
-            'reader': {},
-            'persistence': {},
-            'writer': {}
-        }
+            }
+        })
 
     def test_get_last_position(self):
         exporter_config = ExporterConfig(self.config)
@@ -49,16 +47,14 @@ class BasePersistenceTest(unittest.TestCase):
 class PicklePersistenceTest(unittest.TestCase):
 
     def setUp(self):
-        self.config = {
+        self.config = valid_config_with_updates({
             'exporter_options': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
                 'resume': False,
                 'formatter':  {}
-            },
-            'reader': {},
-            'writer': {}
-        }
+            }
+        })
 
     @patch('pickle.dump')
     @patch('uuid.uuid4')
@@ -100,7 +96,7 @@ class MysqlPersistenceTest(unittest.TestCase):
     @patch('sqlalchemy.schema.MetaData.create_all')
     @patch('sqlalchemy.orm.session.SessionTransaction.commit')
     def test_create_persistence_job(self, mock_commit, mock_metadata):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
@@ -116,10 +112,8 @@ class MysqlPersistenceTest(unittest.TestCase):
                     'port': 3306,
                     'database': 'test_persistence'
                 }
-            },
-            'reader': {},
-            'writer': {}
-        }
+            }
+        })
         mock_metadata.return_value = True
         mock_commit.return_value = True
         exporter_config = ExporterConfig(options)
@@ -131,7 +125,7 @@ class MysqlPersistenceTest(unittest.TestCase):
     @patch('sqlalchemy.schema.MetaData.create_all')
     @patch('sqlalchemy.orm.session.Session.query')
     def test_create_persistence_job_resume(self, mock_query, mock_metadata, mock_job, mock_add):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
@@ -148,10 +142,8 @@ class MysqlPersistenceTest(unittest.TestCase):
                     'port': 3306,
                     'database': 'test_persistence'
                 }
-            },
-            'reader': {},
-            'writer': {}
-        }
+            }
+        })
         mock_metadata.return_value = True
         mock_job = Mock(last_position='0')
         mock_query.return_value.filter.return_value.first.return_value = mock_job
@@ -163,7 +155,7 @@ class MysqlPersistenceTest(unittest.TestCase):
     @patch('sqlalchemy.schema.MetaData.create_all')
     @patch('sqlalchemy.orm.session.SessionTransaction.commit')
     def test_create_persistence_job(self, mock_commit, mock_metadata):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
@@ -179,10 +171,8 @@ class MysqlPersistenceTest(unittest.TestCase):
                     'port': 3306,
                     'database': 'test_persistence'
                 }
-            },
-            'reader': {},
-            'writer': {}
-        }
+            }
+        })
         mock_metadata.return_value = True
         mock_commit.return_value = {}
         exporter_config = ExporterConfig(options)
@@ -193,7 +183,7 @@ class MysqlPersistenceTest(unittest.TestCase):
     @patch('sqlalchemy.schema.MetaData.create_all')
     @patch('sqlalchemy.orm.session.SessionTransaction.commit')
     def test_commit(self, mock_commit, mock_metadata, mock_query):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
@@ -209,10 +199,8 @@ class MysqlPersistenceTest(unittest.TestCase):
                     'port': 3306,
                     'database': 'test_persistence'
                 }
-            },
-            'reader': {},
-            'writer': {}
-        }
+            }
+        })
         mock_metadata.return_value = True
         mock_commit.return_value = {}
         mock_query.return_value.filter.return_value.update.return_value = True
@@ -224,7 +212,7 @@ class MysqlPersistenceTest(unittest.TestCase):
     @patch('sqlalchemy.schema.MetaData.create_all')
     @patch('sqlalchemy.orm.session.SessionTransaction.commit')
     def test_delete(self, mock_commit, mock_metadata, mock_query):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
@@ -240,10 +228,8 @@ class MysqlPersistenceTest(unittest.TestCase):
                     'port': 3306,
                     'database': 'test_persistence'
                 }
-            },
-            'reader': {},
-            'writer': {}
-        }
+            }
+        })
         mock_metadata.return_value = True
         mock_commit.return_value = {}
         mock_query.return_value.filter.return_value.update.return_value = True
@@ -255,7 +241,7 @@ class MysqlPersistenceTest(unittest.TestCase):
     @patch('sqlalchemy.schema.MetaData.create_all')
     @patch('sqlalchemy.orm.session.SessionTransaction.commit')
     def test_get_last_position(self,  mock_commit, mock_metadata, mock_query):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
@@ -271,10 +257,8 @@ class MysqlPersistenceTest(unittest.TestCase):
                     'port': 3306,
                     'database': 'test_persistence'
                 }
-            },
-            'reader': {},
-            'writer': {}
-        }
+            }
+        })
         mock_metadata.return_value = True
         mock_commit.return_value = True
         mock_query.return_value.filter.return_value.first.return_value.last_position = '0'
@@ -286,7 +270,7 @@ class MysqlPersistenceTest(unittest.TestCase):
 class PostgresqlPersistenceTest(unittest.TestCase):
 
     def setUp(self):
-        self.config = {
+        self.config = valid_config_with_updates({
             'exporter_options': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
@@ -302,10 +286,8 @@ class PostgresqlPersistenceTest(unittest.TestCase):
                     'port': 3306,
                     'database': 'test_persistence'
                 }
-            },
-            'reader': {},
-            'writer': {}
-        }
+            }
+        })
 
     @patch('sqlalchemy.schema.MetaData.create_all')
     @patch('sqlalchemy.orm.session.SessionTransaction.commit')
@@ -332,7 +314,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
     @patch('sqlalchemy.schema.MetaData.create_all')
     @patch('sqlalchemy.orm.session.Session.query')
     def test_create_persistence_job_resume(self, mock_query, mock_metadata, mock_job, mock_add):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
@@ -349,10 +331,8 @@ class PostgresqlPersistenceTest(unittest.TestCase):
                     'port': 3306,
                     'database': 'test_persistence'
                 }
-            },
-            'reader': {},
-            'writer': {}
-        }
+            }
+        })
         mock_metadata.return_value = True
         mock_job = Mock(last_position='0')
         mock_query.return_value.filter.return_value.first.return_value = mock_job
@@ -365,7 +345,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
     @patch('sqlalchemy.schema.MetaData.create_all')
     @patch('sqlalchemy.orm.session.SessionTransaction.commit')
     def test_commit(self, mock_commit, mock_metadata, mock_query):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
@@ -381,10 +361,8 @@ class PostgresqlPersistenceTest(unittest.TestCase):
                     'port': 3306,
                     'database': 'test_persistence'
                 }
-            },
-            'reader': {},
-            'writer': {}
-        }
+            }
+        })
         mock_metadata.return_value = True
         mock_commit.return_value = {}
         mock_query.return_value.filter.return_value.update.return_value = True
@@ -396,7 +374,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
     @patch('sqlalchemy.schema.MetaData.create_all')
     @patch('sqlalchemy.orm.session.SessionTransaction.commit')
     def test_delete(self, mock_commit, mock_metadata, mock_query):
-        options = {
+        options = valid_config_with_updates({
             'exporter_options': {
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
@@ -412,10 +390,8 @@ class PostgresqlPersistenceTest(unittest.TestCase):
                     'port': 3306,
                     'database': 'test_persistence'
                 }
-            },
-            'reader': {},
-            'writer': {}
-        }
+            }
+        })
         mock_metadata.return_value = True
         mock_commit.return_value = {}
         mock_query.return_value.filter.return_value.update.return_value = True

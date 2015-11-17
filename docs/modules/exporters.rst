@@ -23,14 +23,6 @@ Subpackages
 Submodules
 ----------
 
-exporters.config_api module
----------------------------
-
-.. automodule:: exporters.config_api
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 exporters.exceptions module
 ---------------------------
 
