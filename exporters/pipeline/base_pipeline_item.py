@@ -1,20 +1,21 @@
 import os
+import six
 from exporters.exceptions import ConfigurationError
 
 
 class SupportedOptionsMeta(type):
-    def __init__(self, *args):
-        super(SupportedOptionsMeta, self).__init__(*args)
+    def __init__(cls, *args):
+        super(SupportedOptionsMeta, cls).__init__(*args)
         options = {}
-        for superclass in reversed(self.__mro__):
+        for superclass in reversed(cls.__mro__):
             if 'supported_options' in vars(superclass):
                 options.update(superclass.supported_options)
-        options.update(getattr(self, 'supported_options', {}))
-        self.supported_options = options
+        options.update(getattr(cls, 'supported_options', {}))
+        cls.supported_options = options
 
 
+@six.add_metaclass(SupportedOptionsMeta)
 class BasePipelineItem(object):
-    __metaclass__ = SupportedOptionsMeta
     supported_options = {}
 
     def __init__(self, options):
