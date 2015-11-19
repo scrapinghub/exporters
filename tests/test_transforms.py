@@ -48,13 +48,13 @@ class NoTransformTest(unittest.TestCase):
         self.transform = NoTransform(self.options)
 
     def test_transform_empty_batch(self):
-        self.assertTrue(self.transform.transform_batch([]) == [])
+        self.assertEquals(self.transform.transform_batch([]), [])
 
     def test_transform_batch(self):
         reader = ModuleLoader().load_reader(self.options['reader'])
         # FIXME inline batch, without a reader
         batch = reader.get_next_batch()
-        self.assertTrue(self.transform.transform_batch(batch) == batch)
+        self.assertEquals(self.transform.transform_batch(batch), batch)
 
 
 class PythonexpTransformTest(unittest.TestCase):
@@ -72,12 +72,12 @@ class PythonexpTransformTest(unittest.TestCase):
             "item.update({'new_field': item.get('country_code')+'-'+item.get('name')})"]}})
 
     def test_transform_empty_batch(self):
-        self.assertTrue(list(self.transform.transform_batch([])) == [])
+        self.assertEqual(list(self.transform.transform_batch([])), [])
 
     def test_transform_batch(self):
         for item in list(self.transform.transform_batch(self.batch)):
             self.assertIn('country_code', item)
             self.assertIn('name', item)
             self.assertIn('new_field', item)
-            self.assertTrue(item['new_field'] == item['country_code']+'-'+item['name'])
+            self.assertEqual(item['new_field'], item['country_code'] + '-' + item['name'])
 
