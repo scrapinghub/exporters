@@ -51,6 +51,20 @@ class PythonMapTransformTest(unittest.TestCase):
         expected = [{"name": "item1 blah"}, {"name": "item2 blah"}]
         self.assertEqual(result, expected)
 
+    def test_transform_augmenting_item(self):
+        # given:
+        batch = self.sample_batch()
+        expr = 'dict(item.items() + dict(upper_name=item["name"].upper()).items())'
+        transform = create_map_transform(expr)
+        # when:
+        result = list(transform.transform_batch(batch))
+        # then:
+        expected = [
+            {"name": "item1", "country": "es", "upper_name": "ITEM1"},
+            {"name": "item2", "country": "uk", "upper_name": "ITEM2"},
+        ]
+        self.assertEqual(result, expected)
+
     def test_transform_using_stdlib_functions(self):
         # given:
         batch = self.sample_batch()

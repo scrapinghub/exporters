@@ -7,6 +7,7 @@ from .exceptions import InvalidExpression
 class Interpreter(object):
 
     ast_allowed_nodes = (
+        'keyword',
         'expr', 'name', 'load', 'call', 'store',
         'str', 'unicode', 'num', 'list', 'dict', 'set', 'tuple',  # Data types
         'unaryop', 'usub',  # Unary arithmetic operators
