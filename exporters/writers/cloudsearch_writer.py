@@ -1,6 +1,9 @@
 import gzip
 import json
+
 import requests
+from exporters.default_retries import retry_short, retry_long
+
 from exporters.writers.base_writer import BaseWriter
 
 
@@ -72,6 +75,7 @@ class CloudSearchWriter(BaseWriter):
         self.secret_key = self.read_option('secret_key')
         self.id_field = self.read_option('id_field')
 
+    @retry_short
     def _post_document_batch(self, batch):
         """Send a batch to Cloudsearch endpoint
 
@@ -81,6 +85,7 @@ class CloudSearchWriter(BaseWriter):
         url = self.endpoint_url + target_batch
         return requests.post(url, data=batch, headers={'Content-type': 'application/json'})
 
+    @retry_long
     def write(self, dump_path, group_key=None):
         with gzip.open(dump_path) as f:
             for batch in create_document_batches(iter(f), self.id_field):

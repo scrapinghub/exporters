@@ -1,5 +1,5 @@
 from contextlib import closing
-from retrying import retry
+from exporters.default_retries import retry_long
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 DEFAULT_BUCKET_REGION = 'us-east-1'
@@ -57,7 +57,7 @@ class S3Writer(FilebaseBaseWriter):
         import boto
         return boto.connect_s3(access_key, secret_key).get_bucket(bucket).get_location() or DEFAULT_BUCKET_REGION
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
+    @retry_long
     def _write_s3_key(self, dump_path, key_name):
         destination = 's3://{}/{}'.format(self.bucket.name, key_name)
         self.logger.info('Start uploading {} to {}'.format(dump_path, destination))

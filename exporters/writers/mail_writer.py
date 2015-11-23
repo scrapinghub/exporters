@@ -2,7 +2,7 @@ import email
 import uuid
 import os
 from exporters.writers.base_writer import BaseWriter
-from retrying import retry
+from exporters.default_retries import retry_short
 
 
 class MaxMailsSent(Exception):
@@ -98,7 +98,7 @@ class MailWriter(BaseWriter):
         else:
             self.logger.debug('Mail not sent. 0 records exported')
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
+    @retry_short
     def send_mail(self, m, destination):
         self.logger.info('Sending email. Sending to: {}'.format(destination))
         self.ses.send_raw_email(source=m['From'], raw_message=m.as_string(), destinations=destination)
