@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Usage: python get_gdrive_credentials.py --client-secret PATH_TO_SECRET_FILE
+Usage: python get_gdrive_credentials.py PATH_TO_SECRET_FILE
 
 The purpose of this script is to create google login credentials to be used by google drive
 writer.
@@ -27,9 +27,11 @@ from pydrive.auth import GoogleAuth
 def parse_args():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--client-secret', help='Client Secret file', required=True)
-    parser.add_argument('--dest', help='Credentials File Destination', default=tempfile.mkdtemp())
+    parser.add_argument('client-secret', help='Client Secret file identifying user')
+    parser.add_argument('--output', help='Path to Credentials File with authorization code')
     args = parser.parse_args()
+    if not args.output:
+        args.output = tempfile.mkdtemp()
     return args
 
 def run(args):
