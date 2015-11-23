@@ -1,5 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Usage: python get_gdrive_credentials.py --client-secret PATH_TO_SECRET_FILE
+
+The purpose of this script is to create google login credentials to be used by google drive
+writer.
+
+Expected workflow is:
+
+1.- Get the client secret file. If you haven't one, please follow this tutorial:
+https://developers.google.com/drive/web/quickstart/python
+
+2.- Execute this script. It will open a browser tab in which you have to login with your
+Google account. It will create a credentials file (file path will be printed).
+
+3.- You can use the info contained in both files to configure a export using google
+drive writer.
+"""
 
 from __future__ import print_function
 import os
