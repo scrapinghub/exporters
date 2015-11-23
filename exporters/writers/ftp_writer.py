@@ -101,4 +101,3 @@ class FTPWriter(FilebaseBaseWriter):
         self.ftp.storbinary('STOR %s' % destination, open(dump_path))
         self.ftp.close()
         self.logger.info('Saved {}'.format(dump_path))
-        return destination

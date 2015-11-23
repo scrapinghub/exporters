@@ -74,4 +74,3 @@ class S3Writer(FilebaseBaseWriter):
         filebase_path, filename = self.create_filebase_name(group_key)
         key_name = filebase_path + '/' + filename
         self._write_s3_key(dump_path, key_name)
-        return key_name

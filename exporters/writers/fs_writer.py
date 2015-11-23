@@ -48,4 +48,3 @@ class FSWriter(FilebaseBaseWriter):
         self._create_path_if_not_exist(filebase_path)
         shutil.move(dump_path, destination)
         self.logger.info('Saved {}'.format(dump_path))
-        return destination

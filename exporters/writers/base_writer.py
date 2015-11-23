@@ -153,9 +153,8 @@ class BaseWriter(BasePipelineItem):
         path = self._get_group_path(key)
         compressed_path = self._compress_file(path)
         compressed_size = os.path.getsize(compressed_path)
-        destination = self.write(compressed_path, self.grouping_info[key]['membership'])
+        self.write(compressed_path, self.grouping_info[key]['membership'])
         write_info = {'number_of_records': self.grouping_info[key]['buffered_items'],
-                      'destination': destination,
                       'size': compressed_size}
         self._create_buffer_path_for_key(key)
         self._reset_key(key)
