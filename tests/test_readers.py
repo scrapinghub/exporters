@@ -42,21 +42,21 @@ class RandomReaderTest(unittest.TestCase):
 
     def test_get_next_batch(self):
         batch = list(self.reader.get_next_batch())
-        self.assertTrue(len(batch) == self.options['reader']['options']['batch_size'])
+        self.assertEqual(len(batch), self.options['reader']['options']['batch_size'])
 
     def test_get_second_batch(self):
         self.reader.get_next_batch()
         batch = list(self.reader.get_next_batch())
-        self.assertTrue(len(batch) == self.options['reader']['options']['batch_size'])
-        self.assertTrue(self.reader.stats['read_items'] == self.options['reader']['options']['batch_size'])
+        self.assertEqual(len(batch), self.options['reader']['options']['batch_size'])
+        self.assertEqual(self.reader.stats['read_items'], self.options['reader']['options']['batch_size'])
 
     def test_get_all(self):
         total_items = 0
         while not self.reader.finished:
             batch = list(self.reader.get_next_batch())
             total_items += len(batch)
-        self.assertTrue(total_items == self.options['reader']['options']['number_of_items'])
+        self.assertEqual(total_items, self.options['reader']['options']['number_of_items'])
 
     def test_set_last_position_none(self):
         self.reader.set_last_position(0)
-        self.assertTrue(0 == self.reader.last_position)
+        self.assertEqual(0, self.reader.last_position)

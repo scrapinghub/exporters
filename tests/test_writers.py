@@ -121,7 +121,6 @@ class CustomWriterTest(unittest.TestCase):
             writer.close_writer()
         self.assertEqual(writer.stats['items_count'], 3)
         for key in writer.stats['written_keys']['keys']:
-            self.assertEqual(writer.stats['written_keys']['keys'][key]['destination'], None)
             self.assertEqual(writer.stats['written_keys']['keys'][key]['number_of_records'], 3)
 
 
