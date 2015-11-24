@@ -1,7 +1,7 @@
 import json
 import logging
 from exporters.notifications.base_notifier import BaseNotifier
-from retrying import retry
+from exporters.default_retries import retry_short
 import datetime
 
 
@@ -63,7 +63,7 @@ class WebhookNotifier(BaseNotifier):
                 logging.log(logging.WARNING, 'There was an error running export webhook to endpoint {}. '
                                              'Exception: {!r}'.format(url, str(e)))
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
+    @retry_short
     def _make_request(self, url, payload):
         import requests
         headers = {'Content-type': 'application/json'}

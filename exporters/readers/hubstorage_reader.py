@@ -1,4 +1,3 @@
-from retrying import retry
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 

@@ -1,4 +1,4 @@
-from retrying import retry
+from exporters.default_retries import retry_long
 
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
@@ -40,8 +40,7 @@ class SFTPWriter(FilebaseBaseWriter):
                 self.sftp_host, self.sftp_port,
                 self.filebase))
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000,
-           stop_max_attempt_number=10)
+    @retry_long
     def write(self, dump_path, group_key=None):
         import pysftp
         if group_key is None:
