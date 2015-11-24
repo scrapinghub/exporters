@@ -48,6 +48,7 @@ class SFTPWriter(FilebaseBaseWriter):
             group_key = []
 
         filebase_path, filename = self.create_filebase_name(group_key)
+        destination = (filebase_path + '/' + filename)
 
         self.logger.info('Start uploading to {}'.format(dump_path))
         with pysftp.Connection(self.sftp_host, port=self.sftp_port,
@@ -55,5 +56,5 @@ class SFTPWriter(FilebaseBaseWriter):
                                password=self.sftp_password) as sftp:
             if not sftp.exists(filebase_path):
                 sftp.makedirs(filebase_path)
-            sftp.put(dump_path, filebase_path + '/' + filename)
+            sftp.put(dump_path, destination)
         self.logger.info('Saved {}'.format(dump_path))

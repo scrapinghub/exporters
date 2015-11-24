@@ -109,7 +109,19 @@ class CustomWriterTest(unittest.TestCase):
             ],
             [l for l in csv.reader(output)])
         self.assertEquals('csv', writer.file_extension)
-        self.assertEqual(writer.items_count, 3)
+
+    def test_writer_stats(self):
+        # given:
+        self.batch = list(JsonExportFormatter({}).format(self.batch))
+        writer = FakeWriter({})
+        # when:
+        try:
+            writer.write_batch(self.batch)
+        finally:
+            writer.close_writer()
+        self.assertEqual(writer.stats['items_count'], 3)
+        for key in writer.stats['written_keys']['keys']:
+            self.assertEqual(writer.stats['written_keys']['keys'][key]['number_of_records'], 3)
 
 
 class ConsoleWriterTest(unittest.TestCase):
@@ -132,7 +144,7 @@ class ConsoleWriterTest(unittest.TestCase):
             items_to_write.append(item)
 
         self.writer.write_batch(items_to_write)
-        self.assertEqual(self.writer.items_count, 10)
+        self.assertEqual(self.writer.stats['items_count'], 10)
 
 
 class FilebaseBaseWriterTest(unittest.TestCase):

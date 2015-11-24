@@ -14,13 +14,13 @@ class BaseFilter(BasePipelineItem):
         self.check_options()
         self.logger = FilterLogger(
             {'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
-        self.filtered_out = 0
+        self.stats['filtered_out'] = 0
         self.total = 0
 
     def _log_progress(self):
         if self.total % self.log_at_every == 0:
             self.logger.info('Filtered out %d records from %d total' %
-                             (self.filtered_out, self.total))
+                             (self.stats['filtered_out'], self.total))
 
     def filter_batch(self, batch):
         """
@@ -30,7 +30,7 @@ class BaseFilter(BasePipelineItem):
             if self.filter(item):
                 yield item
             else:
-                self.filtered_out += 1
+                self.stats['filtered_out'] += 1
 
             self.total += 1
             self._log_progress()

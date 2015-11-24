@@ -111,6 +111,7 @@ class ExporterApiPersistence(BasePersistence):
         self.last_position = last_position
         self.api_client.update_position(self.persistence_state_id, self.last_position)
         self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: ' + str(self.persistence_state_id))
+        self.stats['commited_positions'] += 1
 
     def generate_new_job(self):
         self.last_position = None

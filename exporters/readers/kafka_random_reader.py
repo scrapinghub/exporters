@@ -96,6 +96,7 @@ class KafkaRandomReader(BaseReader):
         if messages:
             for message in messages:
                 item = BaseRecord(message)
+                self.stats['read_items'] += 1
                 yield item
 
         self.logger.debug('Done reading batch')

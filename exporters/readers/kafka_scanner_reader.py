@@ -54,6 +54,7 @@ class KafkaScannerReader(BaseReader):
             batch = self.get_from_kafka()
             for message in batch:
                 item = BaseRecord(message)
+                self.stats['read_items'] += 1
                 yield item
         except:
             self.finished = True

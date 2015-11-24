@@ -66,6 +66,7 @@ class HubstorageReader(BaseReader):
             batch = self.collection_scanner.get_new_batch()
             for item in batch:
                 base_item = BaseRecord(item)
+                self.stats['read_items'] += 1
                 self.last_position = item['_key']
                 yield base_item
             self.logger.debug('Done reading batch')

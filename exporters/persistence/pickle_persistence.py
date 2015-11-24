@@ -40,6 +40,7 @@ class PicklePersistence(BasePersistence):
         pickle.dump(persistence_object, persistence_file)
         persistence_file.close()
         self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: ' + self.persistence_state_id)
+        self.stats['commited_positions'] += 1
 
     def generate_new_job(self):
         persistence_state_id = str(uuid.uuid4())

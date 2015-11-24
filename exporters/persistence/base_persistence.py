@@ -11,6 +11,7 @@ class BasePersistence(BasePipelineItem):
 
     def __init__(self, options):
         super(BasePersistence, self).__init__(options)
+        self.stats['commited_positions'] = 0
         self.configuration = json.loads(options.get('configuration', '{}'))
         self.logger = PersistenceLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
         self._load_persistence_options()

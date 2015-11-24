@@ -8,6 +8,7 @@ class NotifiersList(object):
         self.options = options
         self.module_loader = ModuleLoader()
         self.notifiers = self._populate_notifiers()
+        self.stats = {}
 
     def _populate_notifiers(self):
         notifiers_list = []
