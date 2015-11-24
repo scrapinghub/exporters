@@ -1,6 +1,6 @@
 import datetime
 import logging
-from retrying import retry
+from exporters.default_retries import retry_long
 
 
 class RequisitesNotMet(Exception):
@@ -54,6 +54,6 @@ class S3Bypass(BaseBypass):
             logging.log(logging.INFO,
                         'Copied key {} to dest: s3://{}/{}'.format(key.name, dest_bucket_name, dest_key_name))
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
+    @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket_name, key_name):
         dest_bucket.copy_key(dest_key_name, source_bucket_name, key_name)

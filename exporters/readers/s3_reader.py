@@ -1,11 +1,11 @@
 import gzip
 import json
 import os
-from retrying import retry
 import tempfile
 
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
+from exporters.default_retries import retry_long
 
 
 class S3Reader(BaseReader):
@@ -53,7 +53,7 @@ class S3Reader(BaseReader):
         self.logger.info('S3Reader has been initiated')
         self.tmp_folder = tempfile.mkdtemp()
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
+    @retry_long
     def get_key(self, file_path):
         self.bucket.get_key(self.current_key).get_contents_to_filename(file_path)
 

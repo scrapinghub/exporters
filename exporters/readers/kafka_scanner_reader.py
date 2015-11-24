@@ -1,9 +1,9 @@
 """
 Kafka reader
 """
-from retrying import retry
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
+from exporters.default_retries import retry_short
 
 
 class KafkaScannerReader(BaseReader):
@@ -45,7 +45,7 @@ class KafkaScannerReader(BaseReader):
         self.logger.info('KafkaScannerReader has been initiated. Topic: {}. Group: {}'.format(self.read_option('topic'),
                                                                                              self.read_option('group')))
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
+    @retry_short
     def get_from_kafka(self):
         return self.batches.next()
 

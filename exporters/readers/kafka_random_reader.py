@@ -1,7 +1,7 @@
 """
 Kafka random reader
 """
-from retrying import retry
+from exporters.default_retries import retry_short
 import random
 import zlib
 from exporters.readers.base_reader import BaseReader
@@ -86,7 +86,7 @@ class KafkaRandomReader(BaseReader):
                 index += 1
         return reservoir
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000, stop_max_attempt_number=10)
+    @retry_short
     def get_from_kafka(self):
         batch_size = self.read_option('batch_size')
         return self.processor.process(batch_size)
