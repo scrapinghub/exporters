@@ -20,12 +20,6 @@ class ItemsLimitReached(Exception):
     """
 
 
-class InconsistentWriteDetected(Exception):
-    """
-    This exception is thrown when a write inconsistency is detected in an export job
-    """
-
-
 class NoGroup(object):
     def __call__(self, batch): return {'': batch}
 
@@ -89,8 +83,8 @@ class BaseWriter(BasePipelineItem):
         if self.size_per_buffer_write and os.path.getsize(
                 self.grouping_info[key]['group_file'][-1]) >= self.size_per_buffer_write:
             return True
-        return self.grouping_info[key].get('buffered_items',
-                                           0) >= self.items_per_buffer_write
+        buffered_items = self.grouping_info[key].get('buffered_items', 0)
+        return buffered_items >= self.items_per_buffer_write
 
     def _send_item_to_buffer(self, item):
         """
