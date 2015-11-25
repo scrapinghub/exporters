@@ -1,4 +1,3 @@
-import os
 import unittest
 
 import vcr
@@ -27,12 +26,11 @@ def reduce_function(item, accumulator=None):
     return accumulator + len(item)
         """
         collection_url = "%s/p/10804/collections/s/test_collection" % DASH_URL
-        apikey = os.getenv('SHUB_APIKEY')
         options = {
             "code": reduce_code,
             "collection_url": collection_url,
             "key": "0004",
-            'apikey': apikey
+            'apikey': 'fakeapikey'
         }
         writer = HubstorageReduceWriter({"options": options})
 
