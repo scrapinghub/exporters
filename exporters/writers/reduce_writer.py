@@ -1,11 +1,15 @@
 from .base_writer import BaseWriter
+from exporters.exceptions import ConfigurationError
 
 
 def compile_reduce_function(reduce_code):
-    # XXX: ooops, huge security hole here!
-    # DO NOT merge while this code is still here
+    # XXX: potential security hole -- only use this in contained environments
     exec(reduce_code)
-    return locals()['reduce_function']
+    try:
+        return locals()['reduce_function']
+    except KeyError:
+        raise ConfigurationError(
+            "Missing definition of reduce_function(item, accumulator=None)")
 
 
 class ReduceWriter(BaseWriter):
@@ -19,12 +23,18 @@ class ReduceWriter(BaseWriter):
     def __init__(self, *args, **kwargs):
         super(ReduceWriter, self).__init__(*args, **kwargs)
         code = self.read_option('code')
+        self.logger.warn('ReduceWriter uses Python exec() -- only use it in contained environments')
         self.reduce_function = compile_reduce_function(code)
+        self.logger.info('ReduceWriter configured with code:\n%s\n' % code)
         self._accumulator = None
+        self._count = 0
 
     def write_batch(self, batch):
         for item in batch:
             self._accumulator = self.reduce_function(item, self._accumulator)
+            self._count += 1
+        self.logger.debug('Reduced {} items, accumulator is: {}'.format(self._count,
+                                                                        self._accumulator))
 
     @property
     def reduced_result(self):

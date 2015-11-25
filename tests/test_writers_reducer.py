@@ -22,5 +22,6 @@ def reduce_function(item, accumulator=None):
 """
         writer = ReduceWriter({"options": {"code": reduce_code}})
         writer.write_batch(batch)
-        expected = {'country_code': 2, 'name': 3, 'something': 1}
+        writer.write_batch(batch)
+        expected = {'country_code': 4, 'name': 6, 'something': 2}
         self.assertEquals(expected, dict(writer.reduced_result))
