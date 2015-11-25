@@ -23,7 +23,7 @@ class ReduceWriter(BaseWriter):
     def __init__(self, *args, **kwargs):
         super(ReduceWriter, self).__init__(*args, **kwargs)
         code = self.read_option('code')
-        self.logger.warn('ReduceWriter uses Python exec() -- only use it in contained environments')
+        self.logger.warning('ReduceWriter uses Python exec() -- only use it in contained environments')
         self.reduce_function = compile_reduce_function(code)
         self.logger.info('ReduceWriter configured with code:\n%s\n' % code)
         self._accumulator = None
