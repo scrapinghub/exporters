@@ -12,7 +12,7 @@ class ReduceWriter(BaseWriter):
     supported_options = {
         "code": {
             'type': basestring,
-            'help': "Python code, which should define a reduce_function"
+            'help': "Python code defining a reduce_function(item, accumulator=None)"
         }
     }
 
@@ -20,3 +20,12 @@ class ReduceWriter(BaseWriter):
         super(ReduceWriter, self).__init__(*args, **kwargs)
         code = self.read_option('code')
         self.reduce_function = compile_reduce_function(code)
+        self._accumulator = None
+
+    def write_batch(self, batch):
+        for item in batch:
+            self._accumulator = self.reduce_function(item, self._accumulator)
+
+    @property
+    def reduced_result(self):
+        return self._accumulator

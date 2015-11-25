@@ -9,16 +9,18 @@ class ReduceWriterTest(unittest.TestCase):
         batch = [
             BaseRecord({'name': 'item1', 'country_code': 'es'}),
             BaseRecord({'name': 'item2', 'country_code': 'uk'}),
+            BaseRecord({'name': 'item3', 'something': 'else'}),
         ]
 
         reduce_code = """
 def reduce_function(item, accumulator=None):
     from collections import Counter
-    if accumulator is None:
-        accumulator = Counter()
+    accumulator = accumulator or Counter()
     for key in item:
         accumulator[key] += 1
-    return dict(accumulator)
+    return accumulator
 """
         writer = ReduceWriter({"options": {"code": reduce_code}})
-        self.assertEquals({'country_code': 1, 'name': 1}, writer.reduce_function(batch[0]))
+        writer.write_batch(batch)
+        expected = {'country_code': 2, 'name': 3, 'something': 1}
+        self.assertEquals(expected, dict(writer.reduced_result))
