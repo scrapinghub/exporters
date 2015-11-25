@@ -1,5 +1,5 @@
 from exporters.transform.base_transform import BaseTransform
-from exporters.python_interpreter import Interpreter, DEFAULT_CONTEXT
+from exporters.python_interpreter import Interpreter, create_context
 
 
 class PythonMapTransform(BaseTransform):
@@ -16,7 +16,7 @@ class PythonMapTransform(BaseTransform):
         self.interpreter.check(self.map_expression)
 
     def _map_item(self, it):
-        context = DEFAULT_CONTEXT.copy()
+        context = create_context()
         context.update({'item': it})
         return self.interpreter.eval(expression=self.map_expression, context=context)
 

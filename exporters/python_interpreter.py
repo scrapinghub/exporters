@@ -3,16 +3,15 @@ import ast
 
 from .exceptions import InvalidExpression
 
-import datetime
-import re
-import itertools
 
 
-DEFAULT_CONTEXT = dict(
-    datetime=datetime,
-    re=re,
-    itertools=itertools,
-)
+def create_context():
+    import datetime, re, itertools
+    return dict(
+        datetime=datetime,
+        re=re,
+        itertools=itertools,
+    )
 
 
 class Interpreter(object):

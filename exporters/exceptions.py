@@ -1,5 +1,5 @@
 class InvalidExpression(Exception):
-    pass
+    "Invalid one-liner expression"
 
 
 class WriterNotSupportingGroupedBatch(Exception):
@@ -7,4 +7,4 @@ class WriterNotSupportingGroupedBatch(Exception):
 
 
 class ConfigurationError(ValueError):
-    "Configuration provided isn't valid."
+    "Configuration provided isn't valid"
