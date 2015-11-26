@@ -1,0 +1,38 @@
+interactions:
+- request:
+    body: '{"_key": "0004", "value": 6}'
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['28']
+      User-Agent: [python-hubstorage/0.16.1]
+    method: POST
+    uri: http://storage.scrapinghub.com/collections/10804/s/test_collection
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      access-control-allow-origin: ['*']
+      content-length: ['0']
+      content-type: [text/plain; charset=UTF-8]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-hubstorage/0.16.1]
+    method: GET
+    uri: http://storage.scrapinghub.com/collections/10804/s/test_collection/0004
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKtWKkvMKU1VsjKr5QIADHKqXwwAAAA=
+    headers:
+      access-control-allow-origin: ['*']
+      content-encoding: [gzip]
+      content-length: ['32']
+      content-type: [application/x-jsonlines; charset=UTF-8]
+    status: {code: 200, message: OK}
+version: 1
