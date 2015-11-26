@@ -19,7 +19,7 @@ class AggregationStatsWriterTest(unittest.TestCase):
         # when:
         writer = AggregationStatsWriter(options)
         writer.write_batch(items_to_write)
-        writer.close_writer()
+        writer.close()
 
         # then:
         expected_info = {'birthday': {'occurrences': 3, 'coverage': 75.0},

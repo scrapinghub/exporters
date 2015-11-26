@@ -166,7 +166,7 @@ class BaseWriter(BasePipelineItem):
     def _reset_key(self, key):
         self.grouping_info[key]['buffered_items'] = 0
 
-    def close_writer(self):
+    def close(self):
         """
         Called to clean all possible tmp files created during the process.
         """

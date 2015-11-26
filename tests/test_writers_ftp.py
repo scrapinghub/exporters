@@ -12,7 +12,7 @@ class FTPWriterTest(unittest.TestCase):
             filebase='test/'))
         writer = FTPWriter(options)
         self.assertEquals(21, writer.read_option('port'))
-        writer.close_writer()
+        writer.close()
 
     def test_not_path_filebase(self):
         options = dict(options=dict(
@@ -22,4 +22,4 @@ class FTPWriterTest(unittest.TestCase):
             filebase='test'))
         writer = FTPWriter(options)
         self.assertIs(writer._create_target_dir_if_needed(''), None)
-        writer.close_writer()
+        writer.close()

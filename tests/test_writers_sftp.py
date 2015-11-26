@@ -14,4 +14,4 @@ class SFTPWriterTest(unittest.TestCase):
         }
         writer = SFTPWriter(dict(options=options))
         self.assertEquals(22, writer.read_option('port'))
-        writer.close_writer()
+        writer.close()
