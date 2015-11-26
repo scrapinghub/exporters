@@ -72,7 +72,7 @@ class ExporterApiPersistence(BasePersistence):
         'apikey': {'type': basestring},
         'export_job_id': {'type': basestring, 'default': None},
         'resume_from_api': {'type': bool, 'default': False},
-        'api_url': {'type': basestring, 'default': 'https://datahub-exports-api.scrapinghub.com/exports_persistence/'}
+        'api_url': {'type': basestring, 'default': 'https://datahub-api.scrapinghub.com/exports_persistence/'}
     }
 
     uri_regex = "sh_exporter:(([a-zA-Z\d-]|\/)+)"
