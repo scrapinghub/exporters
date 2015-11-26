@@ -1,4 +1,3 @@
-import hubstorage
 import re
 from .reduce_writer import ReduceWriter
 from exporters.exceptions import ConfigurationError
@@ -46,5 +45,6 @@ class HubstorageReduceWriter(ReduceWriter):
             raise ConfigurationError("Invalid collection_url: %s" % collection_url)
         project, collection_name = match.groups()
 
+        import hubstorage
         client = hubstorage.HubstorageClient(self.read_option('apikey'))
         return client.get_project(project).collections.new_store(collection_name)
