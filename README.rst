@@ -39,7 +39,9 @@ Then, we install the requirements::
 Creating a configuration
 ------------------------
 
-Then, we can create our first configuration object and store it in a file called config.json:
+Then, we can create our first configuration object and store it in a file called config.json.
+ This configuration will read from a s3 bucket and store it in our filesystem, exporting only
+ the which has United States in field country:
 
 .. code-block:: javascript
 
@@ -47,15 +49,26 @@ Then, we can create our first configuration object and store it in a file called
         "exporter_options":{
         },
         "reader": {
-            "name": "exporters.readers.random_reader.RandomReader",
+            "name": "exporters.readers.s3_reader.S3Reader",
             "options": {
-                "number_of_items": 1000,
-                "batch_size": 10
+                "bucket": "YOUR_BUCKET",
+                "aws_access_key_id": "YOUR_ACCESS_KEY",
+                "aws_secret_access_key": "YOUR_SECRET_KEY",
+                "prefix": "exporters-tutorial/sample-dataset"
+            }
+        },
+        "filter": {
+            "name": "exporters.filters.key_value_regex_filter.KeyValueRegexFilter",
+            "options": {
+                "keys": [
+                    {"name": "country", "value": "United States"}
+                ]
             }
         },
         "writer":{
-            "name": "exporters.writers.console_writer.ConsoleWriter",
+            "name": "exporters.writers.fs_writer.FSWriter",
             "options": {
+                "filebase": "/tmp/output/"
             }
         }
    }
