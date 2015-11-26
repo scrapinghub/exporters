@@ -17,7 +17,7 @@ Editing the docs
 
 2. Compile the docs::
 
-    make servedocs
+    make docs
 
 It will compile the docs with sphinx, open the compiled HTML docs in your browser and start watching for changes in the doc files (\*.rst) and recompiling the docs.
 

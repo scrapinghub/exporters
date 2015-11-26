@@ -8,12 +8,12 @@ from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 class GDriveWriter(FilebaseBaseWriter):
     """
-    Writes items to local file system.
+    Writes items to Google Drive account.
 
-        - client_secret_path (str)
+        - client_secret (str)
             Path to secret file.
 
-        - credentials_path (str)
+        - credentials (str)
             Path to credentials file.
 
         - filebase (str)
