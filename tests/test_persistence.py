@@ -1,3 +1,5 @@
+import os
+import shutil
 import unittest
 from mock import patch, Mock
 from exporters.exporter_config import ExporterConfig
@@ -59,12 +61,14 @@ class PicklePersistenceTest(unittest.TestCase):
     @patch('pickle.dump')
     @patch('uuid.uuid4')
     def test_create_persistence_job(self, mock_uuid, mock_pickle):
+        file_name = '1'
         mock_pickle.dump.return_value = True
-        mock_uuid.return_value = 1
+        mock_uuid.return_value = file_name
         exporter_config = ExporterConfig(self.config)
         persistence = PicklePersistence(exporter_config.persistence_options)
         self.assertIsInstance(persistence, PicklePersistence)
         persistence.delete_instance()
+        os.remove(file_name)
 
     @patch('os.path.isfile', autospec=True)
     @patch('__builtin__.open', autospec=True)
