@@ -33,11 +33,9 @@ class HubstorageReduceWriter(ReduceWriter):
     def write_batch(self, batch):
         super(HubstorageReduceWriter, self).write_batch(batch)
 
-        if isinstance(self.reduced_result, MutableMapping):
-            result = dict(self.reduced_result.items())
-        else:
-            result = dict(value=self.reduced_result)
-
+        result = dict(self.reduced_result
+                      if isinstance(self.reduced_result, MutableMapping)
+                      else dict(value=self.reduced_result))
         result['_key'] = self.element_key
         self.collection.set(result)
 
