@@ -1,13 +1,17 @@
 import os
-import shutil
 import unittest
 from mock import patch, Mock
 from exporters.exporter_config import ExporterConfig
 from exporters.persistence.alchemy_persistence import MysqlPersistence, PostgresqlPersistence
 from exporters.persistence.base_persistence import BasePersistence
 from exporters.persistence.pickle_persistence import PicklePersistence
-
 from .utils import valid_config_with_updates
+
+
+def remove_if_exists(file_name):
+    try: os.remove(file_name)
+    except: pass
+
 
 class BasePersistenceTest(unittest.TestCase):
 
@@ -68,7 +72,7 @@ class PicklePersistenceTest(unittest.TestCase):
         persistence = PicklePersistence(exporter_config.persistence_options)
         self.assertIsInstance(persistence, PicklePersistence)
         persistence.delete_instance()
-        os.remove(file_name)
+        remove_if_exists(file_name)
 
     @patch('os.path.isfile', autospec=True)
     @patch('__builtin__.open', autospec=True)
