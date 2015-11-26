@@ -6,6 +6,18 @@ LIB_VERSION := $(shell python setup.py --version)
 LIB_NAME := $(shell python setup.py --name)
 SRC_DIRS := exporters/ bin/
 COVERAGE_VERSION := $(shell coverage --version 2>/dev/null)
+define BROWSER_PYSCRIPT
+import os, webbrowser, sys
+try:
+	from urllib import pathname2url
+except:
+	from urllib.request import pathname2url
+
+webbrowser.open("file://" + pathname2url(os.path.abspath(sys.argv[1])))
+endef
+export BROWSER_PYSCRIPT
+BROWSER := python -c "$$BROWSER_PYSCRIPT"
+
 
 help:
 	@echo clean - clean up previous build
@@ -45,8 +57,6 @@ install-all-deps:
 
 
 build-docs:
-	rm -f docs/dataservices.rst
-	rm -f docs/modules.rst
 	sphinx-apidoc -o docs/modules/ exporters
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html

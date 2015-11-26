@@ -13,7 +13,6 @@ Contents:
 
    readme
    installation
-   usage
    exporters
    docs
    tutorials
