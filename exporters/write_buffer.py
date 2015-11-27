@@ -30,7 +30,7 @@ class WriteBuffer(object):
         self._add_to_buffer(item, key)
         self._update_count(item)
 
-    def get_compressed_path(self, key):
+    def compress_key_path(self, key):
         path = self._get_group_path(key)
         compressed_path = self._compress_file(path)
         compressed_size = os.path.getsize(compressed_path)

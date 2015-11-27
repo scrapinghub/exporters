@@ -37,7 +37,8 @@ class BaseWriter(BasePipelineItem):
         self.items_limit = self.read_option('items_limit')
         self.logger = WriterLogger({'log_level': options.get('log_level'),
                                     'logger_name': options.get('logger_name')})
-        self.write_buffer = WriteBuffer(items_per_buffer_write, size_per_buffer_write, self.items_limit)
+        self.write_buffer = WriteBuffer(items_per_buffer_write, size_per_buffer_write,
+                                        self.items_limit)
         self.items_count = 0
 
     def write(self, path, key):
@@ -52,7 +53,8 @@ class BaseWriter(BasePipelineItem):
         """
         for item in batch:
             if self.write_buffer.file_extension is None:
-                self.write_buffer.file_extension = self.supported_file_extensions[item.format]
+                self.write_buffer.file_extension = self.supported_file_extensions[
+                    item.format]
             if item.header:
                 self.write_buffer.header_line = item.formatted
             else:
@@ -62,12 +64,14 @@ class BaseWriter(BasePipelineItem):
                     self._flush_write_buffer(key)
 
                 self.increment_written_items()
-                if self.items_limit and self.items_limit == self.items_count:
-                    self.stats.update(self.write_buffer.stats)
-                    raise ItemsLimitReached(
-                        'Finishing job after items_limit reached:'
-                        ' {} items written.'.format(self.items_count))
+                self.check_items_limit()
         self.stats.update(self.write_buffer.stats)
+
+    def check_items_limit(self):
+        if self.items_limit and self.items_limit == self.items_count:
+            self.stats.update(self.write_buffer.stats)
+            raise ItemsLimitReached('Finishing job after items_limit reached:'
+                                    ' {} items written.'.format(self.items_count))
 
     def close(self):
         """
@@ -91,6 +95,6 @@ class BaseWriter(BasePipelineItem):
         self.items_count += 1
 
     def _flush_write_buffer(self, key):
-        compressed_path = self.write_buffer.get_compressed_path(key)
+        compressed_path = self.write_buffer.compress_key_path(key)
         self.write(compressed_path, self.write_buffer.grouping_info[key]['membership'])
         self.write_buffer.finish_buffer_write(key, compressed_path)
