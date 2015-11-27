@@ -16,7 +16,7 @@ class WriteBuffer(object):
         self.header_line = None
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
-        self._init_stats()
+        self.stats = {'written_keys': {'keys': {}, 'occurrences': Counter()}}
         self.items_limit = items_limit
 
     def buffer(self, item):
@@ -29,6 +29,13 @@ class WriteBuffer(object):
 
         self._add_to_buffer(item, key)
         self._update_count(item)
+
+    def _create_grouping_info(self, key):
+        self.grouping_info[key] = {}
+        self.grouping_info[key]['membership'] = key
+        self.grouping_info[key]['total_items'] = 0
+        self.grouping_info[key]['buffered_items'] = 0
+        self.grouping_info[key]['group_file'] = []
 
     def compress_key_path(self, key):
         path = self._get_group_path(key)
@@ -45,13 +52,6 @@ class WriteBuffer(object):
         self._reset_key(key)
         self._silent_remove(path)
         self._silent_remove(compressed_path)
-
-    def _create_grouping_info(self, key):
-        self.grouping_info[key] = {}
-        self.grouping_info[key]['membership'] = key
-        self.grouping_info[key]['total_items'] = 0
-        self.grouping_info[key]['buffered_items'] = 0
-        self.grouping_info[key]['group_file'] = []
 
     def should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(
@@ -110,10 +110,3 @@ class WriteBuffer(object):
 
     def close(self):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
-
-    def _init_stats(self):
-        self.stats = {}
-        self.stats['written_keys'] = {}
-        self.stats['written_keys']['keys'] = {}
-        self.stats['written_keys']['occurrences'] = Counter()
-

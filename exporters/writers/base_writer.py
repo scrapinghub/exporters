@@ -53,15 +53,14 @@ class BaseWriter(BasePipelineItem):
         """
         for item in batch:
             if self.write_buffer.file_extension is None:
-                self.write_buffer.file_extension = self.supported_file_extensions[
-                    item.format]
+                self.write_buffer.file_extension = self.supported_file_extensions[item.format]
             if item.header:
                 self.write_buffer.header_line = item.formatted
             else:
                 self.write_buffer.buffer(item)
                 key = tuple(item.group_membership)
                 if self.write_buffer.should_write_buffer(key):
-                    self._flush_write_buffer(key)
+                    self._write(key)
 
                 self.increment_written_items()
                 self.check_items_limit()
@@ -79,7 +78,7 @@ class BaseWriter(BasePipelineItem):
         """
         try:
             for key in self.grouping_info.keys():
-                self._flush_write_buffer(key)
+                self._write(key)
         finally:
             self.write_buffer.close()
         self._check_write_consistency()
@@ -94,7 +93,7 @@ class BaseWriter(BasePipelineItem):
     def increment_written_items(self):
         self.items_count += 1
 
-    def _flush_write_buffer(self, key):
+    def _write(self, key):
         compressed_path = self.write_buffer.compress_key_path(key)
         self.write(compressed_path, self.write_buffer.grouping_info[key]['membership'])
         self.write_buffer.finish_buffer_write(key, compressed_path)
