@@ -1,35 +1,97 @@
+.. _Github repository: https://github.com/scrapinghub/exporters/
+
 Exporters project documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Useful links:**
+Exporters are a project aiming to provide a flexible and
+easy to extend infrastructure to export data from multiple sources to multiple
+destinations, allowing filtering and transforming the data.
 
-- `Main Dash project`_
-- `Github repository`_
-- `Export API`_
-- `#dataservices`_ in Slack
+This `Github repository`_ is used as a central repository.
 
-
-
---------------
 
 Getting Started
 ===============
 
-Exporters are an internal Scrapinghub project aiming to provide a flexible and
-easy to extend infrastructure to export data from multiple sources to multiple
-destinations, allowing filtering and transforming the data.
+Install exporters
+-----------------
 
-This `Github repository`_ is used as a central repository. Exporters are also exposed
-through a REST `Export API`_, currenly deploy in mesos.
+First of all, we recommend to create a virtualenv::
+
+    virtualenv exporters
+    source exporters/bin/activate
+
+..
+
+Exporters can be cloned from its `Github repository`_::
+
+    git clone git@github.com:scrapinghub/exporters.git
+
+..
+
+Then, we install the requirements::
+
+    cd exporters
+    pip install -r requirements.txt
+
+..
+
+Creating a configuration
+------------------------
+
+Then, we can create our first configuration object and store it in a file called config.json.
+ This configuration will read from a s3 bucket and store it in our filesystem, exporting only
+ the which has United States in field country:
+
+.. code-block:: javascript
+
+   {
+        "exporter_options":{
+        },
+        "reader": {
+            "name": "exporters.readers.s3_reader.S3Reader",
+            "options": {
+                "bucket": "YOUR_BUCKET",
+                "aws_access_key_id": "YOUR_ACCESS_KEY",
+                "aws_secret_access_key": "YOUR_SECRET_KEY",
+                "prefix": "exporters-tutorial/sample-dataset"
+            }
+        },
+        "filter": {
+            "name": "exporters.filters.key_value_regex_filter.KeyValueRegexFilter",
+            "options": {
+                "keys": [
+                    {"name": "country", "value": "United States"}
+                ]
+            }
+        },
+        "writer":{
+            "name": "exporters.writers.fs_writer.FSWriter",
+            "options": {
+                "filebase": "/tmp/output/"
+            }
+        }
+   }
 
 
+Export with script
+------------------
 
-.. _Github repository: https://github.com/scrapinghub/exporters/
-.. _Main Dash project: https://staging.scrapinghub.com/dataservices/
-.. _#dataservices: https://scrapinghub.slack.com/messages/dataservices/
-.. _Export API: https://github.com/scrapinghub/ds-export-api/
+We can use the provided script to run this export:
+
+.. code-block:: shell
+
+    python bin/export.py --config config.json
 
 
-Doing an export
----------------
-TODO: Use the tutorial
+Use it as a library
+-------------------
+
+The export can be run using exporters as a library:
+
+.. code-block:: python
+
+    from exporters.export_managers.basic_exporter import BasicExporter
+
+    exporter = BasicExporter.from_file_configuration('config.json')
+    exporter.export()

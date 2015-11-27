@@ -27,7 +27,7 @@ class OdoWriterTest(unittest.TestCase):
     def test_write_csv(self):
         writer = ODOWriter(self.writer_config)
         writer.write(self.batch_path, [])
-        writer.close_writer()
+        writer.close()
         with open(self.tmp_file) as f:
             lines = f.readlines()
         self.assertEqual(lines, ['item\n', 'value1\n', 'value2\n', 'value3\n'])

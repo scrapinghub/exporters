@@ -47,7 +47,7 @@ class BasePersistenceTest(unittest.TestCase):
         exporter_config = ExporterConfig(self.config)
         with self.assertRaises(NotImplementedError):
             persistence = BasePersistence(exporter_config.persistence_options)
-            persistence.delete_instance()
+            persistence.close()
 
 
 class PicklePersistenceTest(unittest.TestCase):
@@ -72,7 +72,7 @@ class PicklePersistenceTest(unittest.TestCase):
         try:
             persistence = PicklePersistence(exporter_config.persistence_options)
             self.assertIsInstance(persistence, PicklePersistence)
-            persistence.delete_instance()
+            persistence.close()
         finally:
             remove_if_exists(file_name)
 
@@ -245,7 +245,7 @@ class MysqlPersistenceTest(unittest.TestCase):
         mock_query.return_value.filter.return_value.update.return_value = True
         exporter_config = ExporterConfig(options)
         persistence = MysqlPersistence(exporter_config.persistence_options)
-        persistence.delete_instance()
+        persistence.close()
 
     @patch('sqlalchemy.orm.session.Session.query')
     @patch('sqlalchemy.schema.MetaData.create_all')
@@ -408,4 +408,4 @@ class PostgresqlPersistenceTest(unittest.TestCase):
         mock_query.return_value.filter.return_value.update.return_value = True
         exporter_config = ExporterConfig(options)
         persistence = PostgresqlPersistence(exporter_config.persistence_options)
-        persistence.delete_instance()
+        persistence.close()

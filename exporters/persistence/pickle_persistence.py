@@ -51,7 +51,7 @@ class PicklePersistence(BasePersistence):
         self.logger.debug('Created persistence pickle file in ' + self.read_option('file_path') + persistence_state_id)
         return persistence_state_id
 
-    def delete_instance(self):
+    def close(self):
         pass
 
     @staticmethod

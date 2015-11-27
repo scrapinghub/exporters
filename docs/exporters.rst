@@ -6,9 +6,9 @@ Exporters description
 What are exporters?
 -------------------
 
-Dumpers has been rethought in order to have a more flexible, scalable and maintainable structure.
-The main idea is to isolate each dumping phase (Reading, Writing, etc) via well-defined interfaces, making it easier
-to mix, match them and extend them. This documentation will follow a json notation to configure the pipeline.
+Exporters is a project aiming to provide a flexible and
+easy to extend infrastructure to export data from multiple sources to multiple
+destinations, allowing filtering and transforming the data.
 
 
 Architecture
@@ -23,74 +23,39 @@ Architecture
 Config file
 -----------
 
-This is an example of a config file using kafka reader and s3 writer.
+Exporters behaviour is defined by what we call a configuration object. This object has the
+following sections:
+
+- exporter_options (mandatory): it contains general export options, including output format.
+- reader (mandatory): defines what reader module the export should use and its options.
+- writer (mandatory): defines what writer module the export should use and its options.
+- filter_before: defines what filter module should be used before transforming and its options.
+- filter_after: defines what filter module should be used after transforming and its options.
+- transform: defines what transform module the export should use and its options.
+- persistence: defines what persistence module the export should use and its options.
+- stats_manager: defines what stats_manager module the export should use and its options.
+- grouper: defines what grouper module the export should use and its options.
+
+This is an example of the simplest config file that can be used.
 
 .. code-block:: javascript
 
     {
-       "exporter_options":{
-           "log_level": "DEBUG",
-           "logger_name": "export-pipeline",
-           "formatter": {
-                "name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter",
-                "options":{}
-           },
-           "notifications":[
-
-           ]
-       },
-       "reader": {
-           "name": "exporters.readers.kafka_reader.KafkaReader",
-           "options": {
-               "batch_size": 10000,
-               "brokers": ["kafka1.dc21.scrapinghub.com:9092", "kafka1.dc21.scrapinghub.com:9092", "kafka1.dc21.scrapinghub.com:9092"],
-               "topic": "indeed-companies-items",
-               "group": "Scrapinghub"
-           }
-       },
-       "filter_before": {
-           "name": "exporters.filters.key_value_regex_filter.KeyValueRegexFilter",
-           "options": {
-               "keys": [
-                   {"name": "state", "value": "val"}
-               ]
-           }
-       },
-       "filter_after": {
-           "name": "exporters.filters.key_value_regex_filter.KeyValueRegexFilter",
-           "options": {
-               "keys": [
-                   {"name": "country_code", "value": "es"}
-               ]
-           }
-       },
-       "transform": {
-           "name": "exporters.transform.no_transform.NoTransform",
-           "options": {
-           }
-       },
-       "writer":{
-           "name": "exporters.writers.s3_writer.S3Writer",
-           "grouper": {
-               "name": "exporters.groupers.file_key_grouper.FileKeyGrouper",
-               "options":{
-                   "keys": ["country_code", "state", "city"]
-               }
-           },
-           "options": {
-               "aws_access_key_id": "AKIAJDGLM4HBWQDMWPOQ",
-               "aws_secret_access_key": "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",
-               "filebase": "tests/export_pipelines/",
-               "predump_folder": "tmp"
-           }
-       },
-       "persistence": {
-           "name": "exporters.persistence.pickle_persistence.PicklePersistence",
-           "options": {
-             "file_path": "/tmp/"
-           }
-       }
-    }
+        "exporter_options":{
+        },
+        "reader": {
+            "name": "exporters.readers.random_reader.RandomReader",
+            "options": {
+                "number_of_items": 1000,
+                "batch_size": 10
+            }
+        },
+        "writer":{
+            "name": "exporters.writers.console_writer.ConsoleWriter",
+            "options": {
+            }
+        }
+   }
 
 
 Modules
@@ -234,6 +199,31 @@ MailWriter
     :show-inheritance:
 
 
+AggregationWriter
+#################
+.. automodule:: exporters.writers.aggregation_writer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+CloudsearchWriter
+#################
+.. automodule:: exporters.writers.cloudsearch_writer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+GDriveWriter
+############
+.. automodule:: exporters.writers.gdrive_writer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+
 Transform
 ~~~~~~~~~
 .. automodule:: exporters.transform.base_transform
@@ -341,7 +331,7 @@ Notifications
 Provided notifications
 **********************
 SESMailNotifier
-##############
+###############
 .. automodule:: exporters.notifications.s3_mail_notifier
     :members:
     :undoc-members:

@@ -55,7 +55,7 @@ class BasePersistence(BasePipelineItem):
         """
         raise NotImplementedError
 
-    def delete_instance(self):
+    def close(self):
         """
         Cleans tmp files, close remote connections...
         """
