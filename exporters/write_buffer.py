@@ -7,8 +7,8 @@ import uuid
 import errno
 
 
-class BufferFileManager(object):
-    def __init__(self, writer, items_per_buffer_write, size_per_buffer_write, items_limit):
+class WriteBuffer(object):
+    def __init__(self, items_per_buffer_write, size_per_buffer_write, items_limit):
         self.tmp_folder = tempfile.mkdtemp()
         self.files = []
         self.grouping_info = {}
@@ -18,27 +18,42 @@ class BufferFileManager(object):
         self.size_per_buffer_write = size_per_buffer_write
         self._init_stats()
         self.items_limit = items_limit
-        self.writer = writer
 
-    def to_buffer(self, item):
+    def buffer(self, item):
         """
         Receive an item and write it.
         """
         key = tuple(item.group_membership)
         if key not in self.grouping_info:
-            self.grouping_info[key] = {}
-            self.grouping_info[key]['membership'] = key
-            self.grouping_info[key]['total_items'] = 0
-            self.grouping_info[key]['buffered_items'] = 0
-            self.grouping_info[key]['group_file'] = []
+            self._create_grouping_info(key)
 
         self._add_to_buffer(item, key)
-        if self._should_write_buffer(key):
-            self._write_buffer(key)
         self._update_count(item)
 
+    def get_compressed_path(self, key):
+        path = self._get_group_path(key)
+        compressed_path = self._compress_file(path)
+        compressed_size = os.path.getsize(compressed_path)
+        write_info = {'number_of_records': self.grouping_info[key]['buffered_items'],
+                      'size': compressed_size}
+        self.stats['written_keys']['keys'][compressed_path] = write_info
+        return compressed_path
 
-    def _should_write_buffer(self, key):
+    def finish_buffer_write(self, key, compressed_path):
+        path = self._get_group_path(key)
+        self._create_buffer_path_for_key(key)
+        self._reset_key(key)
+        self._silent_remove(path)
+        self._silent_remove(compressed_path)
+
+    def _create_grouping_info(self, key):
+        self.grouping_info[key] = {}
+        self.grouping_info[key]['membership'] = key
+        self.grouping_info[key]['total_items'] = 0
+        self.grouping_info[key]['buffered_items'] = 0
+        self.grouping_info[key]['group_file'] = []
+
+    def should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(
                 self.grouping_info[key]['group_file'][-1]) >= self.size_per_buffer_write:
             return True
@@ -55,19 +70,6 @@ class BufferFileManager(object):
                     f.write(self.header_line + '\n')
             self.grouping_info[key]['group_file'].append(path)
         return path
-
-    def _write_buffer(self, key):
-        path = self._get_group_path(key)
-        compressed_path = self._compress_file(path)
-        compressed_size = os.path.getsize(compressed_path)
-        self.writer.write(compressed_path, self.grouping_info[key]['membership'])
-        write_info = {'number_of_records': self.grouping_info[key]['buffered_items'],
-                      'size': compressed_size}
-        self._create_buffer_path_for_key(key)
-        self._reset_key(key)
-        self._silent_remove(path)
-        self._silent_remove(compressed_path)
-        self.stats['written_keys']['keys'][compressed_path] = write_info
 
     def _silent_remove(self, filename):
         try:
@@ -105,10 +107,6 @@ class BufferFileManager(object):
             f.write(item.formatted + '\n')
         self.grouping_info[key]['total_items'] += 1
         self.grouping_info[key]['buffered_items'] += 1
-
-    def flush_buffer(self):
-        for key in self.grouping_info.keys():
-            self._write_buffer(key)
 
     def close(self):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)

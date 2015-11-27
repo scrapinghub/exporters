@@ -1,4 +1,4 @@
-from exporters.buffer_file_manager import BufferFileManager
+from exporters.write_buffer import WriteBuffer
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 
@@ -8,8 +8,6 @@ class ItemsLimitReached(Exception):
     This exception is thrown when the desired items number has been reached
     """
 
-
-TEMP_FILES_NAME = 'temp'
 
 ITEMS_PER_BUFFER_WRITE = 500000
 SIZE_PER_BUFFER_WRITE = 0
@@ -39,7 +37,7 @@ class BaseWriter(BasePipelineItem):
         self.items_limit = self.read_option('items_limit')
         self.logger = WriterLogger({'log_level': options.get('log_level'),
                                     'logger_name': options.get('logger_name')})
-        self.buffer_file_manager = BufferFileManager(self, items_per_buffer_write, size_per_buffer_write, self.items_limit)
+        self.write_buffer = WriteBuffer(items_per_buffer_write, size_per_buffer_write, self.items_limit)
         self.items_count = 0
 
     def write(self, path, key):
@@ -53,36 +51,46 @@ class BaseWriter(BasePipelineItem):
         Receive the batch and write it.
         """
         for item in batch:
-            if self.buffer_file_manager.file_extension is None:
-                self.buffer_file_manager.file_extension = self.supported_file_extensions[item.format]
+            if self.write_buffer.file_extension is None:
+                self.write_buffer.file_extension = self.supported_file_extensions[item.format]
             if item.header:
-                self.buffer_file_manager.header_line = item.formatted
+                self.write_buffer.header_line = item.formatted
             else:
-                self.buffer_file_manager.to_buffer(item)
+                self.write_buffer.buffer(item)
+                key = tuple(item.group_membership)
+                if self.write_buffer.should_write_buffer(key):
+                    self._flush_write_buffer(key)
+
                 self.increment_written_items()
                 if self.items_limit and self.items_limit == self.items_count:
-                    self.stats.update(self.buffer_file_manager.stats)
+                    self.stats.update(self.write_buffer.stats)
                     raise ItemsLimitReached(
                         'Finishing job after items_limit reached:'
                         ' {} items written.'.format(self.items_count))
-        self.stats.update(self.buffer_file_manager.stats)
+        self.stats.update(self.write_buffer.stats)
 
     def close(self):
         """
         Called to clean all possible tmp files created during the process.
         """
         try:
-            self.buffer_file_manager.flush_buffer()
+            for key in self.grouping_info.keys():
+                self._flush_write_buffer(key)
         finally:
-            self.buffer_file_manager.close()
+            self.write_buffer.close()
         self._check_write_consistency()
 
     @property
     def grouping_info(self):
-        return self.buffer_file_manager.grouping_info
+        return self.write_buffer.grouping_info
 
     def _check_write_consistency(self):
         self.logger.warning('Not checking write consistency')
 
     def increment_written_items(self):
         self.items_count += 1
+
+    def _flush_write_buffer(self, key):
+        compressed_path = self.write_buffer.get_compressed_path(key)
+        self.write(compressed_path, self.write_buffer.grouping_info[key]['membership'])
+        self.write_buffer.finish_buffer_write(key, compressed_path)
