@@ -5,7 +5,6 @@ import shutil
 import tempfile
 import uuid
 import errno
-from exporters.exceptions import ItemsLimitReached
 
 
 class BufferFileManager(object):
@@ -18,7 +17,6 @@ class BufferFileManager(object):
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
         self._init_stats()
-        self.items_count = 0
         self.items_limit = items_limit
         self.writer = writer
 
@@ -35,14 +33,10 @@ class BufferFileManager(object):
             self.grouping_info[key]['group_file'] = []
 
         self._add_to_buffer(item, key)
-        self.stats['items_count'] += 1
         if self._should_write_buffer(key):
             self._write_buffer(key)
         self._update_count(item)
-        if self.items_limit and self.items_limit == self.stats['items_count']:
-            raise ItemsLimitReached(
-                'Finishing job after items_limit reached:'
-                ' {} items written.'.format(self.stats['items_count']))
+
 
     def _should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(
@@ -121,7 +115,6 @@ class BufferFileManager(object):
 
     def _init_stats(self):
         self.stats = {}
-        self.stats['items_count'] = 0
         self.stats['written_keys'] = {}
         self.stats['written_keys']['keys'] = {}
         self.stats['written_keys']['occurrences'] = Counter()

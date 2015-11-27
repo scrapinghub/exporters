@@ -1,5 +1,6 @@
 from collections import Counter
 from exporters.buffer_file_manager import BufferFileManager
+from exporters.exceptions import ItemsLimitReached
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 
@@ -54,6 +55,11 @@ class BaseWriter(BasePipelineItem):
             else:
                 self.buffer_file_manager.to_buffer(item)
                 self.increment_written_items()
+                if self.items_limit and self.items_limit == self.items_count:
+                    self.stats.update(self.buffer_file_manager.stats)
+                    raise ItemsLimitReached(
+                        'Finishing job after items_limit reached:'
+                        ' {} items written.'.format(self.items_count))
         self.stats.update(self.buffer_file_manager.stats)
 
     def close_writer(self):
