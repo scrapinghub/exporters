@@ -122,7 +122,7 @@ class ExporterApiPersistence(BasePersistence):
         self.logger.debug('Created persistence export entry in with id {}'.format(persistence_object['id']))
         return persistence_object['id']
 
-    def delete_instance(self):
+    def close(self):
         self.api_client.update_position(self.persistence_state_id, self.last_position, job_finished=True)
 
     @staticmethod

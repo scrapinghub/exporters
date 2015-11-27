@@ -67,7 +67,7 @@ class BaseWriter(BasePipelineItem):
                         ' {} items written.'.format(self.items_count))
         self.stats.update(self.buffer_file_manager.stats)
 
-    def close_writer(self):
+    def close(self):
         """
         Called to clean all possible tmp files created during the process.
         """

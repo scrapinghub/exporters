@@ -49,7 +49,7 @@ class S3WriterTest(unittest.TestCase):
         # when:
         writer = S3Writer(options)
         writer.write_batch(items_to_write)
-        writer.close_writer()
+        writer.close()
 
         # then:
         bucket = self.s3_conn.get_bucket('fake_bucket')
@@ -71,7 +71,7 @@ class S3WriterTest(unittest.TestCase):
 
         # then:
         self.assertEquals('eu-west-1', writer.aws_region)
-        writer.close_writer()
+        writer.close()
 
     def test_connect_to_bucket_location(self):
         # given:
@@ -86,7 +86,7 @@ class S3WriterTest(unittest.TestCase):
 
         # then:
         self.assertEquals('eu-west-1', writer.aws_region)
-        writer.close_writer()
+        writer.close()
 
     def get_writer_config(self):
         return {

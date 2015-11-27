@@ -31,7 +31,7 @@ class AggregationStatsWriter(BaseWriter):
             }
         return agg_results
 
-    def close_writer(self):
+    def close(self):
         agg_results = self._get_aggregated_info()
         self.logger.info('---------------------')
         self.logger.info('DATASET KEYS COVERAGE')
