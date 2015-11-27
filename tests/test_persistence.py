@@ -1,11 +1,17 @@
+import os
 import unittest
 from mock import patch, Mock
 from exporters.exporter_config import ExporterConfig
 from exporters.persistence.alchemy_persistence import MysqlPersistence, PostgresqlPersistence
 from exporters.persistence.base_persistence import BasePersistence
 from exporters.persistence.pickle_persistence import PicklePersistence
-
 from .utils import valid_config_with_updates
+
+
+def remove_if_exists(file_name):
+    try: os.remove(file_name)
+    except: pass
+
 
 class BasePersistenceTest(unittest.TestCase):
 
@@ -59,12 +65,16 @@ class PicklePersistenceTest(unittest.TestCase):
     @patch('pickle.dump')
     @patch('uuid.uuid4')
     def test_create_persistence_job(self, mock_uuid, mock_pickle):
+        file_name = '1'
         mock_pickle.dump.return_value = True
-        mock_uuid.return_value = 1
+        mock_uuid.return_value = file_name
         exporter_config = ExporterConfig(self.config)
-        persistence = PicklePersistence(exporter_config.persistence_options)
-        self.assertIsInstance(persistence, PicklePersistence)
-        persistence.close()
+        try:
+            persistence = PicklePersistence(exporter_config.persistence_options)
+            self.assertIsInstance(persistence, PicklePersistence)
+            persistence.close()
+        finally:
+            remove_if_exists(file_name)
 
     @patch('os.path.isfile', autospec=True)
     @patch('__builtin__.open', autospec=True)
