@@ -1,6 +1,5 @@
 from collections import Counter
-from exporters.exceptions import ItemsLimitReached
-from exporters.writers.base_writer import BaseWriter
+from exporters.writers.base_writer import BaseWriter, ItemsLimitReached
 
 
 class AggregationStatsWriter(BaseWriter):

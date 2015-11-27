@@ -1,6 +1,6 @@
 import datetime
 import traceback
-from exporters.exceptions import ItemsLimitReached
+from exporters.writers.base_writer import ItemsLimitReached
 from exporters.export_managers import MODULES
 from exporters.export_managers.bypass import RequisitesNotMet
 from exporters.logger.base_logger import ExportManagerLogger

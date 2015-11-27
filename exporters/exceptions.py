@@ -8,9 +8,3 @@ class WriterNotSupportingGroupedBatch(Exception):
 
 class ConfigurationError(ValueError):
     "Configuration provided isn't valid."
-
-
-class ItemsLimitReached(Exception):
-    """
-    This exception is thrown when the desired items number has been reached
-    """

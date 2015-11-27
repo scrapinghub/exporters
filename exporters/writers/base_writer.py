@@ -1,8 +1,13 @@
-from collections import Counter
 from exporters.buffer_file_manager import BufferFileManager
-from exporters.exceptions import ItemsLimitReached
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
+
+
+class ItemsLimitReached(Exception):
+    """
+    This exception is thrown when the desired items number has been reached
+    """
+
 
 TEMP_FILES_NAME = 'temp'
 
