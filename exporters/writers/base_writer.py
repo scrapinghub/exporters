@@ -37,8 +37,7 @@ class BaseWriter(BasePipelineItem):
         self.items_limit = self.read_option('items_limit')
         self.logger = WriterLogger({'log_level': options.get('log_level'),
                                     'logger_name': options.get('logger_name')})
-        self.write_buffer = WriteBuffer(items_per_buffer_write, size_per_buffer_write,
-                                        self.items_limit)
+        self.write_buffer = WriteBuffer(items_per_buffer_write, size_per_buffer_write)
         self.items_count = 0
 
     def write(self, path, key):

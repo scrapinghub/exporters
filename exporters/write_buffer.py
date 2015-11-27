@@ -8,7 +8,7 @@ import errno
 
 
 class WriteBuffer(object):
-    def __init__(self, items_per_buffer_write, size_per_buffer_write, items_limit):
+    def __init__(self, items_per_buffer_write, size_per_buffer_write):
         self.tmp_folder = tempfile.mkdtemp()
         self.files = []
         self.grouping_info = {}
@@ -17,7 +17,6 @@ class WriteBuffer(object):
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
         self.stats = {'written_keys': {'keys': {}, 'occurrences': Counter()}}
-        self.items_limit = items_limit
 
     def buffer(self, item):
         """
