@@ -73,7 +73,7 @@ class BaseAlchemyPersistence(BasePersistence):
                           .format(new_job.id, self.read_option('database'), self.PROTOCOL) + str(new_job.id))
         return new_job.id
 
-    def delete_instance(self):
+    def close(self):
         self.session.query(Job).filter(Job.id == self.persistence_state_id).update(
             {"job_finished": True, "last_committed": datetime.datetime.now()}, synchronize_session='fetch')
         self.session.commit()

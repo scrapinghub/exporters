@@ -23,7 +23,7 @@ class BaseWriterTest(unittest.TestCase):
         self.writer = BaseWriter(self.options)
 
     def tearDown(self):
-        self.writer.close_writer()
+        self.writer.close()
 
     def test_write_not_implemented(self):
         with self.assertRaises(NotImplementedError):
@@ -62,7 +62,7 @@ class CustomWriterTest(unittest.TestCase):
         try:
             writer.write_batch(self.batch)
         finally:
-            writer.close_writer()
+            writer.close()
 
         # then:
         output = writer.custom_output[()]
@@ -85,7 +85,7 @@ class CustomWriterTest(unittest.TestCase):
                 self.assertFalse(os.path.exists(f))
                 self.assertFalse(os.path.exists(f+'.gz'))
         finally:
-            writer.close_writer()
+            writer.close()
 
     def test_custom_writer_with_csv_formatter(self):
         # given:
@@ -97,7 +97,7 @@ class CustomWriterTest(unittest.TestCase):
         try:
             writer.write_batch(self.batch)
         finally:
-            writer.close_writer()
+            writer.close()
 
         # then:
         output = writer.custom_output[()].splitlines()
@@ -118,7 +118,7 @@ class CustomWriterTest(unittest.TestCase):
         try:
             writer.write_batch(self.batch)
         finally:
-            writer.close_writer()
+            writer.close()
         self.assertEqual(writer.stats['items_count'], 3)
         for key in writer.stats['written_keys']['keys']:
             self.assertEqual(writer.stats['written_keys']['keys'][key]['number_of_records'], 3)
@@ -133,7 +133,7 @@ class ConsoleWriterTest(unittest.TestCase):
         self.writer = ConsoleWriter(self.options)
 
     def tearDown(self):
-        self.writer.close_writer()
+        self.writer.close()
 
     def test_write_console(self):
         items_to_write = []
@@ -159,7 +159,7 @@ class FilebaseBaseWriterTest(unittest.TestCase):
         self.assertIsInstance(writer.get_file_suffix('', ''), basestring)
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')
-        writer.close_writer()
+        writer.close()
 
 
 class FSWriterTest(unittest.TestCase):
@@ -175,4 +175,4 @@ class FSWriterTest(unittest.TestCase):
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')
         self.assertEqual(file_name, 'exporter_test0000.gz')
-        writer.close_writer()
+        writer.close()
