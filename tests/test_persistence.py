@@ -69,10 +69,12 @@ class PicklePersistenceTest(unittest.TestCase):
         mock_pickle.dump.return_value = True
         mock_uuid.return_value = file_name
         exporter_config = ExporterConfig(self.config)
-        persistence = PicklePersistence(exporter_config.persistence_options)
-        self.assertIsInstance(persistence, PicklePersistence)
-        persistence.delete_instance()
-        remove_if_exists(file_name)
+        try:
+            persistence = PicklePersistence(exporter_config.persistence_options)
+            self.assertIsInstance(persistence, PicklePersistence)
+            persistence.delete_instance()
+        finally:
+            remove_if_exists(file_name)
 
     @patch('os.path.isfile', autospec=True)
     @patch('__builtin__.open', autospec=True)
