@@ -1,13 +1,14 @@
 import os
 import unittest
 from decorator import contextmanager
-from exporters.exporter_config import (validate, module_options,
+from exporters.exporter_config import (check_for_errors, module_options,
                                        MODULE_TYPES)
 from exporters.export_managers.bypass import BaseBypass, S3Bypass, RequisitesNotMet
 from exporters.groupers.base_grouper import BaseGrouper
 from exporters.logger.base_logger import CategoryLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
-from exporters.exceptions import InvalidExpression, ConfigurationError
+from exporters.exceptions import (InvalidExpression, ConfigurationError,
+                                  ConfigCheckError)
 from exporters.module_loader import ModuleLoader
 from exporters.exporter_config import ExporterConfig
 from exporters.python_interpreter import Interpreter
@@ -113,13 +114,53 @@ class ConfigModuleOptionsTest(unittest.TestCase):
             self.assertIsInstance(modules, list)
 
 
+class ConfigCheckErrorTest(unittest.TestCase):
+    def cce_to_str(self, *args, **kwargs):
+        return str(ConfigCheckError(*args, **kwargs))
+
+    def test_just_message(self):
+        self.assertEqual(self.cce_to_str(message='str message'),
+                         'str message')
+
+    def test_section_missing(self):
+        self.assertEqual(self.cce_to_str(message='msg', errors={'sec': 'missing'}),
+                         'msg\nsec: missing')
+
+    def test_many_errors(self):
+        errors = {
+            'sec1': 'missing',
+            'sec2': {'number_of_items': 'bad',
+                     'batch_size': 'very bad'},
+            'sec3': {'single_field': 'invalid'}
+        }
+        def sorted_lines(s):
+            return sorted(s.split())
+        # dicts are not ordered, so we use not quite exact comparison
+        self.assertEqual(sorted_lines(self.cce_to_str(message='msg', errors=errors)),
+                         sorted_lines("""msg
+sec1: missing
+sec2:
+  number_of_items: bad
+  batch_size: very bad
+sec3:
+  single_field: invalid"""))
+
+
 class ConfigValidationTest(unittest.TestCase):
     def test_find_missing_sections(self):
         with self.assertRaises(ConfigurationError):
-            validate({})
+            check_for_errors({})
 
     def test_check_configuration(self):
-        self.assertIs(validate(VALID_EXPORTER_CONFIG), True)
+        try:
+            check_for_errors(VALID_EXPORTER_CONFIG)
+        except Exception:
+            self.fail("check_for_errors() raised Exception unexpectedly!")
+
+    def test_validate_returns_errors(self):
+        errors = check_for_errors({}, raise_exception=False)
+        self.assertIsInstance(errors, dict)
+        self.assertNotEqual(len(errors), 0)
 
     def test_missing_supported_options(self):
         config = {
@@ -143,18 +184,27 @@ class ConfigValidationTest(unittest.TestCase):
             'persistence': {
                 'name': 'exporters.persistence.PicklePersistence',
                 'options': {
-                    'file_base': '/tmp'
+                    'file_path': '/tmp'
                 }
             }
         }
-        with self.assertRaises(ConfigurationError):
-            validate(config)
+        with self.assertRaises(ConfigurationError) as cm:
+            check_for_errors(config)
+
+        exception = cm.exception
+        expected_errors = {
+            'transform': {'jq_filter': 'Option is missing'}
+            }
+        self.assertEqual(expected_errors, exception.errors)
 
     def test_wrong_type_supported_options(self):
         config = {
             'reader': {
                 'name': 'exporters.readers.random_reader.RandomReader',
-                'options': {}
+                'options': {
+                    'number_of_items': {},
+                    'batch_size': []
+                }
             },
             'writer': {
                 'name': 'exporters.writers.console_writer.ConsoleWriter',
@@ -174,12 +224,26 @@ class ConfigValidationTest(unittest.TestCase):
             'persistence': {
                 'name': 'exporters.persistence.PicklePersistence',
                 'options': {
-                    'file_base': '/tmp'
+                    'file_path': 567
                 }
             }
         }
-        with self.assertRaises(ConfigurationError):
-            validate(config)
+        with self.assertRaises(ConfigurationError) as cm:
+            check_for_errors(config)
+
+        exception = cm.exception
+        expected_errors = {
+            'reader': {
+                'number_of_items': 'Wrong type: found <type \'dict\'>, expected <type \'int\'>',
+                'batch_size': 'Wrong type: found <type \'list\'>, expected <type \'int\'>'},
+            'transform': {
+                'jq_filter': 'Wrong type: found <type \'int\'>, expected <type \'basestring\'>'},
+            'persistence': {
+                'file_path': 'Wrong type: found <type \'int\'>, expected <type \'basestring\'>'}
+        }
+        self.assertEqual(expected_errors, exception.errors)
+        self.assertEqual(len(exception.errors), 3)
+        self.assertEqual(len(exception.errors['reader']), 2)
 
 
 class ModuleLoaderTest(unittest.TestCase):
