@@ -1,3 +1,4 @@
+from UserDict import UserDict
 from collections import Counter
 import gzip
 import os
@@ -7,11 +8,35 @@ import uuid
 import errno
 
 
+class GroupingInfo(UserDict):
+
+    def _init_group_info_key(self, key):
+        self[key] = {}
+        self[key]['membership'] = key
+        self[key]['total_items'] = 0
+        self[key]['buffered_items'] = 0
+        self[key]['group_file'] = []
+
+    def ensure_group_info(self, key):
+        if key not in self:
+            self._init_group_info_key(key)
+
+    def add_path_to_group(self, key, path):
+        self[key]['group_file'].append(path)
+
+    def reset_buffered_items(self, key):
+        self[key]['buffered_items'] = 0
+
+    def add_to_group(self, key):
+        self[key]['total_items'] += 1
+        self[key]['buffered_items'] += 1
+
+
 class WriteBuffer(object):
     def __init__(self, items_per_buffer_write, size_per_buffer_write):
         self.tmp_folder = tempfile.mkdtemp()
         self.files = []
-        self.grouping_info = {}
+        self.grouping_info = GroupingInfo()
         self.file_extension = None
         self.header_line = None
         self.items_per_buffer_write = items_per_buffer_write
@@ -23,18 +48,9 @@ class WriteBuffer(object):
         Receive an item and write it.
         """
         key = self.get_key_from_item(item)
-        if key not in self.grouping_info:
-            self._create_grouping_info(key)
-
+        self.grouping_info.ensure_group_info(key)
         self._add_to_buffer(item, key)
         self._update_count(item)
-
-    def _create_grouping_info(self, key):
-        self.grouping_info[key] = {}
-        self.grouping_info[key]['membership'] = key
-        self.grouping_info[key]['total_items'] = 0
-        self.grouping_info[key]['buffered_items'] = 0
-        self.grouping_info[key]['group_file'] = []
 
     def compress_key_path(self, key):
         path = self._get_group_path(key)
@@ -67,7 +83,7 @@ class WriteBuffer(object):
             with open(path, 'w') as f:
                 if self.header_line:
                     f.write(self.header_line + '\n')
-            self.grouping_info[key]['group_file'].append(path)
+            self.grouping_info.add_path_to_group(key, path)
         return path
 
     def _silent_remove(self, filename):
@@ -78,7 +94,7 @@ class WriteBuffer(object):
                 raise
 
     def _reset_key(self, key):
-        self.grouping_info[key]['buffered_items'] = 0
+        self.grouping_info.reset_buffered_items(key)
 
     def _update_count(self, item):
         for key in item:
@@ -92,7 +108,7 @@ class WriteBuffer(object):
 
     def _create_buffer_path_for_key(self, key):
         new_buffer_path = self._get_new_path_name()
-        self.grouping_info[key]['group_file'].append(new_buffer_path)
+        self.grouping_info.add_path_to_group(key, new_buffer_path)
         f = open(new_buffer_path, 'w')
         f.close()
 
@@ -104,8 +120,7 @@ class WriteBuffer(object):
         path = self._get_group_path(key)
         with open(path, 'a') as f:
             f.write(item.formatted + '\n')
-        self.grouping_info[key]['total_items'] += 1
-        self.grouping_info[key]['buffered_items'] += 1
+        self.grouping_info.add_to_group(key)
 
     def close(self):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)

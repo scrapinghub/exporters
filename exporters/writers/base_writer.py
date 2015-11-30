@@ -62,10 +62,10 @@ class BaseWriter(BasePipelineItem):
                     self._write(key)
 
                 self.increment_written_items()
-                self.check_items_limit()
+                self._check_items_limit()
         self.stats.update(self.write_buffer.stats)
 
-    def check_items_limit(self):
+    def _check_items_limit(self):
         if self.items_limit and self.items_limit == self.items_count:
             self.stats.update(self.write_buffer.stats)
             raise ItemsLimitReached('Finishing job after items_limit reached:'
