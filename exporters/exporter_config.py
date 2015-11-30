@@ -2,7 +2,7 @@ import collections
 from importlib import import_module
 from inspect import getmembers, isclass
 import json
-from exporters.exceptions import ConfigurationError
+from exporters.exceptions import ConfigCheckError
 from exporters.defaults import DEFAULT_FILTER_CLASS, DEFAULT_GROUPER_CLASS, DEFAULT_PERSISTENCE_CLASS, \
     DEFAULT_STATS_MANAGER_CLASS, DEFAULT_FORMATTER_CLASS, DEFAULT_LOGGER_LEVEL, DEFAULT_LOGGER_NAME, \
     DEFAULT_TRANSFORM_CLASS
@@ -10,7 +10,7 @@ from exporters.defaults import DEFAULT_FILTER_CLASS, DEFAULT_GROUPER_CLASS, DEFA
 
 class ExporterConfig(object):
     def __init__(self, configuration):
-        validate(configuration)
+        check_for_errors(configuration)
         self.configuration = configuration
         self.exporter_options = self.configuration['exporter_options']
         self.reader_options = self._merge_options('reader')
@@ -70,37 +70,45 @@ REQUIRED_CONFIG_SECTIONS = frozenset(
 Parameter = collections.namedtuple('Parameter', 'name options')
 
 
-def validate(config):
-    missing_sections = REQUIRED_CONFIG_SECTIONS - set(config.keys())
-    if missing_sections:
-        raise ConfigurationError(
-            "Configuration is missing sections: !{}!".format(
-                ', '.join(missing_sections)))
-
+def check_for_errors(config, raise_exception=True):
+    """
+    Returns config validation errors if raise_exception is False,
+    otherwise raises ConfigurationError with those errors in it.
+    Errors are represented as nested dicts (sections & options in them).
+    """
+    errors = {}
     for section in ['reader', 'writer', 'filter', 'filter_before',
                     'filter_after', 'transform', 'persistence']:
         config_section = config.get(section)
-        if config_section is not None:
-            _check_valid_options(config_section, section)
+        if config_section is None:
+            if section in REQUIRED_CONFIG_SECTIONS:
+                errors[section] = "Missing section"
+        else:
+            section_errors = _get_section_errors(config_section)
+            if section_errors:
+                errors[section] = section_errors
 
-    return True
+    if raise_exception and errors:
+        raise ConfigCheckError(errors=errors)
+    else:
+        return errors
 
 
-def _check_valid_options(config_section, section_name):
+def _get_section_errors(config_section):
     if 'name' not in config_section:
-        raise ConfigurationError(
-            'Module name for section "{}" is missing'
-            .format(section_name))
+        return ['Module name is missing']
     module_name = config_section['name']
-    # We only check the required supported_options
-    options = [Parameter(name=name, options=option_spec)
-               for name, option_spec in
-               _get_module_supported_options(module_name).iteritems()
-               if _required_option(option_spec)]
-    config_options = config_section.get('options', {})
-    for option in options:
-        _check_required_config_section(
-            option, config_options, section_name)
+    try:
+        module_options = _get_module_supported_options(module_name)
+        option_errors = {}
+        config_options = config_section.get('options', {})
+        for name, spec in module_options.iteritems():
+            error = _get_option_error(name, spec, config_options)
+            if error:
+                option_errors[name] = error
+        return option_errors
+    except ConfigCheckError as e:
+        return e.message  # in general we should check e.errors also
 
 
 def _required_option(option_spec):
@@ -108,19 +116,21 @@ def _required_option(option_spec):
             'env_fallback' not in option_spec)
 
 
-def _check_required_config_section(option_definition, config_options,
-                                   section_name):
-    if option_definition.name not in config_options:
-        raise ConfigurationError(
-            'option "{}" for section "{}" is missing'
-            .format(option_definition.name, section_name))
-    if not isinstance(config_options[option_definition.name],
-                      option_definition.options['type']):
-        raise ConfigurationError(
-            'Wrong type for option "{}". Found: {}. Expected {}'.format(
-                option_definition.name, type(
-                    config_options[option_definition.name]),
-                option_definition.options['type']))
+class empty:
+    pass
+
+
+def _get_option_error(name, spec, config_options):
+    required = 'default' not in spec and 'env_fallback' not in spec
+
+    if required and name not in config_options:
+        return 'Option is missing'
+    else:
+        value = config_options.get(name, empty)
+        if value is not empty and not isinstance(value, spec['type']):
+            return 'Wrong type: found {}, expected {}'.format(
+                type(value), spec['type'])
+    return None
 
 
 def _get_available_classes(module):
@@ -138,6 +148,6 @@ def _get_module_supported_options(module_name):
         supported_options = getattr(mod, class_path_list[-1]).supported_options
         return supported_options
     except Exception as e:
-        raise ConfigurationError(
-            'There was a problem loading {} class. Exception: {}'
+        raise ConfigCheckError(
+            message='There was a problem loading {} class, exception: {}'
             .format(module_name, e))
