@@ -51,10 +51,10 @@ class BaseWriter(BasePipelineItem):
         Receive the batch and write it.
         """
         for item in batch:
-            if self.write_buffer.file_extension is None:
-                self.write_buffer.file_extension = self.supported_file_extensions[item.format]
+            if self.write_buffer.items_group_files.file_extension is None:
+                self.write_buffer.items_group_files.file_extension = self.supported_file_extensions[item.format]
             if item.header:
-                self.write_buffer.header_line = item.formatted
+                self.write_buffer.items_group_files.header_line = item.formatted
             else:
                 self.write_buffer.buffer(item)
                 key = self.write_buffer.get_key_from_item(item)
@@ -93,6 +93,6 @@ class BaseWriter(BasePipelineItem):
         self.items_count += 1
 
     def _write(self, key):
-        compressed_path = self.write_buffer.compress_key_path(key)
-        self.write(compressed_path, self.write_buffer.grouping_info[key]['membership'])
-        self.write_buffer.finish_buffer_write(key, compressed_path)
+        write_info = self.write_buffer.pack_buffer(key)
+        self.write(write_info.get('compressed_path'), self.write_buffer.grouping_info[key]['membership'])
+        self.write_buffer.finish_buffer_write(key, write_info.get('compressed_path'))

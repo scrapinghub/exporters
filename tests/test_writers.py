@@ -68,7 +68,7 @@ class CustomWriterTest(unittest.TestCase):
         output = writer.custom_output[()]
         self.assertEquals([json.dumps(item) for item in self.batch],
                           output.splitlines())
-        self.assertEquals('jl', writer.write_buffer.file_extension)
+        self.assertEquals('jl', writer.write_buffer.items_group_files.file_extension)
 
     def test_write_buffer_removes_files(self):
         # given:
@@ -109,7 +109,7 @@ class CustomWriterTest(unittest.TestCase):
             ],
             [l for l in csv.reader(output)])
 
-        self.assertEquals('csv', writer.write_buffer.file_extension)
+        self.assertEquals('csv', writer.write_buffer.items_group_files.file_extension)
 
     def test_writer_stats(self):
         # given:
