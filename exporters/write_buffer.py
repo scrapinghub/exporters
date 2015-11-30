@@ -22,7 +22,7 @@ class WriteBuffer(object):
         """
         Receive an item and write it.
         """
-        key = tuple(item.group_membership)
+        key = self.get_key_from_item(item)
         if key not in self.grouping_info:
             self._create_grouping_info(key)
 
@@ -109,3 +109,6 @@ class WriteBuffer(object):
 
     def close(self):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
+
+    def get_key_from_item(self, item):
+        return tuple(item.group_membership)

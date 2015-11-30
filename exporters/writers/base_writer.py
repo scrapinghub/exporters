@@ -57,7 +57,7 @@ class BaseWriter(BasePipelineItem):
                 self.write_buffer.header_line = item.formatted
             else:
                 self.write_buffer.buffer(item)
-                key = tuple(item.group_membership)
+                key = self.write_buffer.get_key_from_item(item)
                 if self.write_buffer.should_write_buffer(key):
                     self._write(key)
 
