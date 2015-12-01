@@ -24,12 +24,12 @@ class GroupingInfo(UserDict):
     def add_path_to_group(self, key, path):
         self[key]['group_file'].append(path)
 
-    def reset_buffered_items(self, key):
-        self[key]['buffered_items'] = 0
-
     def add_to_group(self, key):
         self[key]['total_items'] += 1
         self[key]['buffered_items'] += 1
+
+    def reset_key(self, key):
+        self[key]['buffered_items'] = 0
 
 
 class ItemsGroupFiles(object):
@@ -79,6 +79,18 @@ class ItemsGroupFiles(object):
     def get_grouping_info(self):
         return self.grouping_info
 
+    def _silent_remove(self, filename):
+        try:
+            os.remove(filename)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
+
+    def clean_tmp_files(self, path, compressed_path):
+        self._silent_remove(path)
+        self._silent_remove(compressed_path)
+
+
 
 class WriteBuffer(object):
     def __init__(self, items_per_buffer_write, size_per_buffer_write):
@@ -101,9 +113,8 @@ class WriteBuffer(object):
     def finish_buffer_write(self, key, compressed_path):
         path = self.items_group_files.get_group_path(key)
         self.items_group_files.create_new_buffer_path_for_key(key)
-        self._reset_key(key)
-        self._silent_remove(path)
-        self._silent_remove(compressed_path)
+        self.items_group_files.grouping_info.reset_key(key)
+        self.items_group_files.clean_tmp_files(path, compressed_path)
 
     def pack_buffer(self, key):
         write_info = self.items_group_files.compress_key_path(key)
@@ -116,16 +127,6 @@ class WriteBuffer(object):
             return True
         buffered_items = self.grouping_info[key].get('buffered_items', 0)
         return buffered_items >= self.items_per_buffer_write
-
-    def _silent_remove(self, filename):
-        try:
-            os.remove(filename)
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                raise
-
-    def _reset_key(self, key):
-        self.grouping_info.reset_buffered_items(key)
 
     def _update_count(self, item):
         for key in item:
