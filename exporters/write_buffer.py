@@ -32,13 +32,13 @@ class GroupingInfo(UserDict):
         self[key]['buffered_items'] = 0
 
 
-class ItemsGroupFiles(object):
+class ItemsGroupFilesHandler(object):
 
-    def __init__(self, tmp_folder):
+    def __init__(self):
         self.grouping_info = GroupingInfo()
         self.file_extension = None
         self.header_line = None
-        self.tmp_folder = tmp_folder
+        self.tmp_folder = tempfile.mkdtemp()
 
     def get_group_path(self, key):
         if self.grouping_info[key]['group_file']:
@@ -90,13 +90,27 @@ class ItemsGroupFiles(object):
         self._silent_remove(path)
         self._silent_remove(compressed_path)
 
+    def close(self):
+        shutil.rmtree(self.tmp_folder, ignore_errors=True)
+
+    def add_item_to_file(self, item, key):
+        path = self.get_group_path(key)
+        with open(path, 'a') as f:
+            f.write(item.formatted + '\n')
+        self.grouping_info.add_to_group(key)
+
+    def create_new_buffer_file(self, key, compressed_path):
+        path = self.get_group_path(key)
+        self.create_new_buffer_path_for_key(key)
+        self.grouping_info.reset_key(key)
+        self.clean_tmp_files(path, compressed_path)
 
 
 class WriteBuffer(object):
     def __init__(self, items_per_buffer_write, size_per_buffer_write):
-        self.tmp_folder = tempfile.mkdtemp()
+
         self.files = []
-        self.items_group_files = ItemsGroupFiles(self.tmp_folder)
+        self.items_group_files = ItemsGroupFilesHandler()
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
         self.stats = {'written_keys': {'keys': {}, 'occurrences': Counter()}}
@@ -107,14 +121,11 @@ class WriteBuffer(object):
         """
         key = self.get_key_from_item(item)
         self.grouping_info.ensure_group_info(key)
-        self._add_to_buffer(item, key)
+        self.items_group_files.add_item_to_file(item, key)
         self._update_count(item)
 
     def finish_buffer_write(self, key, compressed_path):
-        path = self.items_group_files.get_group_path(key)
-        self.items_group_files.create_new_buffer_path_for_key(key)
-        self.items_group_files.grouping_info.reset_key(key)
-        self.items_group_files.clean_tmp_files(path, compressed_path)
+        self.items_group_files.create_new_buffer_file(key, compressed_path)
 
     def pack_buffer(self, key):
         write_info = self.items_group_files.compress_key_path(key)
@@ -132,14 +143,8 @@ class WriteBuffer(object):
         for key in item:
             self.stats['written_keys']['occurrences'][key] += 1
 
-    def _add_to_buffer(self, item, key):
-        path = self.items_group_files.get_group_path(key)
-        with open(path, 'a') as f:
-            f.write(item.formatted + '\n')
-        self.grouping_info.add_to_group(key)
-
     def close(self):
-        shutil.rmtree(self.tmp_folder, ignore_errors=True)
+        self.items_group_files.close()
 
     def get_key_from_item(self, item):
         return tuple(item.group_membership)
