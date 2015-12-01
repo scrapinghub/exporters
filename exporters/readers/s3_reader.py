@@ -2,6 +2,7 @@ import gzip
 import json
 import os
 import tempfile
+import re
 
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
@@ -44,14 +45,20 @@ class S3Reader(BaseReader):
         self.connection = boto.connect_s3(self.read_option('aws_access_key_id'), self.read_option('aws_secret_access_key'))
         self.bucket = self.connection.get_bucket(self.read_option('bucket'))
         self.prefix = self.read_option('prefix')
+        self._chekv_valid_prefix()
         self.keys = []
-        for key in self.bucket.list(prefix=self.prefix):
-            self.keys.append(key.key)
+        for key in self.bucket.list():
+            if re.match(self.prefix, key.name):
+                self.keys.append(key.key)
         self.read_keys = []
         self.current_key = None
         self.last_line = 0
         self.logger.info('S3Reader has been initiated')
         self.tmp_folder = tempfile.mkdtemp()
+
+    def _chekv_valid_prefix(self):
+        re.compile(self.prefix)
+
 
     @retry_long
     def get_key(self, file_path):
