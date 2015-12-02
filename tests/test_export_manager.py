@@ -114,47 +114,23 @@ class BasicExportManagerTest(unittest.TestCase):
                     'batch_size': 100
                 }
             },
-            'filter': {
-                'name': 'exporters.filters.no_filter.NoFilter',
-                'options': {
-
-                }
-            },
-            'filter_after': {
-                'name': 'exporters.filters.no_filter.NoFilter',
-                'options': {
-
-                }
-            },
-            'transform': {
-                'name': 'exporters.transform.no_transform.NoTransform',
-                'options': {
-
-                }
-            },
             'writer':{
                 'name': 'exporters.writers.console_writer.ConsoleWriter',
                 'options': {
 
                 }
-            },
-            'persistence': {
-                'name': 'exporters.persistence.pickle_persistence.PicklePersistence',
-                'options': {
-                    'file_path': '/tmp/'
-                }
             }
         }
-        self.exporter = BasicExporter(self.options)
-
-    def tearDown(self):
-        self.exporter._clean_export_job()
-        self.exporter.persistence.delete()
 
     def test_parses_the_options_and_loads_pipeline_items(self):
-        self.assertTrue(isinstance(self.exporter.reader, RandomReader))
-        self.assertTrue(isinstance(self.exporter.writer, ConsoleWriter))
-        self.assertTrue(isinstance(self.exporter.transform, NoTransform))
+        exporter = BasicExporter(self.options)
+        try:
+            self.assertTrue(isinstance(exporter.reader, RandomReader))
+            self.assertTrue(isinstance(exporter.writer, ConsoleWriter))
+            self.assertTrue(isinstance(exporter.transform, NoTransform))
+            exporter._clean_export_job()
+        finally:
+            exporter.persistence.delete()
 
     def test_from_file_configuration(self):
         try:
