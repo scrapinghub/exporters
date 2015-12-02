@@ -5,12 +5,7 @@ from exporters.exporter_config import ExporterConfig
 from exporters.persistence.alchemy_persistence import MysqlPersistence, PostgresqlPersistence
 from exporters.persistence.base_persistence import BasePersistence
 from exporters.persistence.pickle_persistence import PicklePersistence
-from .utils import valid_config_with_updates
-
-
-def remove_if_exists(file_name):
-    try: os.remove(file_name)
-    except: pass
+from .utils import valid_config_with_updates, remove_if_exists
 
 
 class BasePersistenceTest(unittest.TestCase):

@@ -7,7 +7,11 @@ from exporters.exporter_config import ExporterConfig
 from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
 from exporters.writers.console_writer import ConsoleWriter
+from tests.utils import remove_if_exists
 
+
+def get_filename(path, persistence_id):
+    return os.path.join(path, persistence_id)
 
 class BaseExportManagerTest(unittest.TestCase):
     def setUp(self):
@@ -73,8 +77,8 @@ class BaseExportManagerTest(unittest.TestCase):
         exporter = BaseExporter(self.config)
         self.assertIs(exporter._handle_export_exception(Exception()), None)
         self.assertIs(exporter.export(), None)
-        os.remove(os.path.join(exporter.persistence.options['file_path'],
-                               exporter.persistence.persistence_state_id))
+        remove_if_exists(get_filename(exporter.persistence.options['file_path'],
+                                      exporter.persistence.persistence_state_id))
 
     def test_bypass(self):
         exporter = BaseExporter(self.config)
@@ -142,8 +146,13 @@ class BasicExportManagerTest(unittest.TestCase):
 
     def tearDown(self):
         self.exporter._clean_export_job()
+
         os.remove(os.path.join(self.exporter.persistence.options['file_path'],
                                self.exporter.persistence.persistence_state_id))
+
+        filename = os.path.join(self.exporter.persistence.options['file_path'],
+                               self.exporter.persistence.persistence_state_id)
+        remove_if_exists(filename)
 
     def test_parses_the_options_and_loads_pipeline_items(self):
         self.assertTrue(isinstance(self.exporter.reader, RandomReader))
@@ -154,5 +163,6 @@ class BasicExportManagerTest(unittest.TestCase):
         test_manager = BasicExporter.from_file_configuration('./tests/data/basic_config.json')
         self.assertIsInstance(test_manager, BasicExporter)
         test_manager._clean_export_job()
-        os.remove(os.path.join(test_manager.persistence.options['file_path'],
-                               test_manager.persistence.persistence_state_id))
+        remove_if_exists(get_filename(test_manager.persistence.options['file_path'],
+                                      test_manager.persistence.persistence_state_id))
+
