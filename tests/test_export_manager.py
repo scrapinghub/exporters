@@ -1,3 +1,4 @@
+import os
 import unittest
 from exporters.export_managers.base_exporter import BaseExporter
 from exporters.export_managers.basic_exporter import BasicExporter
@@ -60,20 +61,28 @@ class BaseExportManagerTest(unittest.TestCase):
                 }
             }
         }
-        self.exporter = BaseExporter(self.config)
 
     def test_iteration(self):
-        self.assertIs(self.exporter._run_pipeline_iteration(), None)
-        self.exporter._clean_export_job()
+        exporter = BaseExporter(self.config)
+        self.assertIs(exporter._run_pipeline_iteration(), None)
+        exporter._clean_export_job()
+        os.remove(os.path.join(exporter.persistence.options['file_path'],
+                               exporter.persistence.persistence_state_id))
 
     def test_full_export(self):
-        self.assertIs(self.exporter._handle_export_exception(Exception()), None)
-        self.assertIs(self.exporter.export(), None)
+        exporter = BaseExporter(self.config)
+        self.assertIs(exporter._handle_export_exception(Exception()), None)
+        self.assertIs(exporter.export(), None)
+        os.remove(os.path.join(exporter.persistence.options['file_path'],
+                               exporter.persistence.persistence_state_id))
 
     def test_bypass(self):
+        exporter = BaseExporter(self.config)
         with self.assertRaises(NotImplementedError):
-            self.exporter.bypass_exporter(BaseBypass(ExporterConfig(self.config)))
-        self.exporter._clean_export_job()
+            exporter.bypass_exporter(BaseBypass(ExporterConfig(self.config)))
+        exporter._clean_export_job()
+        os.remove(os.path.join(exporter.persistence.options['file_path'],
+                               exporter.persistence.persistence_state_id))
 
 
 class BasicExportManagerTest(unittest.TestCase):
@@ -133,6 +142,8 @@ class BasicExportManagerTest(unittest.TestCase):
 
     def tearDown(self):
         self.exporter._clean_export_job()
+        os.remove(os.path.join(self.exporter.persistence.options['file_path'],
+                               self.exporter.persistence.persistence_state_id))
 
     def test_parses_the_options_and_loads_pipeline_items(self):
         self.assertTrue(isinstance(self.exporter.reader, RandomReader))
@@ -143,3 +154,5 @@ class BasicExportManagerTest(unittest.TestCase):
         test_manager = BasicExporter.from_file_configuration('./tests/data/basic_config.json')
         self.assertIsInstance(test_manager, BasicExporter)
         test_manager._clean_export_job()
+        os.remove(os.path.join(test_manager.persistence.options['file_path'],
+                               test_manager.persistence.persistence_state_id))
