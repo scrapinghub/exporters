@@ -1,3 +1,4 @@
+import shutil
 import unittest
 import mock
 from exporters.readers.s3_reader import S3Reader
@@ -42,6 +43,7 @@ class S3ReaderTest(unittest.TestCase):
         mock_bucket_list.return_value = get_keys_list(NO_KEYS)
         reader = S3Reader(self.options)
         self.assertEqual([], reader.keys)
+        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     @mock.patch('boto.s3.bucket.Bucket.list', autospec=True)
     def test_list_no_keys(self, mock_bucket_list):
@@ -50,3 +52,4 @@ class S3ReaderTest(unittest.TestCase):
         expected = ['test_list/dump_p1_US_a', 'test_list/dump_p1_US_b',
                     'test_list/dump_p2_US_a', 'test_list/dump_p_US_a']
         self.assertEqual(expected, reader.keys)
+        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
