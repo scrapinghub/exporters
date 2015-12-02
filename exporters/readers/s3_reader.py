@@ -35,7 +35,8 @@ class S3Reader(BaseReader):
         'bucket': {'type': basestring},
         'aws_access_key_id': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_KEY'},
         'aws_secret_access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_SECRET'},
-        'prefix': {'type': basestring}
+        'prefix': {'type': basestring, 'default': ''},
+        'pattern': {'type': basestring, 'default': None}
     }
 
     def __init__(self, options):
@@ -45,11 +46,12 @@ class S3Reader(BaseReader):
         self.connection = boto.connect_s3(self.read_option('aws_access_key_id'), self.read_option('aws_secret_access_key'))
         self.bucket = self.connection.get_bucket(self.read_option('bucket'))
         self.prefix = self.read_option('prefix')
-        self._chekv_valid_prefix()
-        non_regex_prefix, regex_prefix = self.get_non_regex_prefix()
+        self.pattern = self.read_option('pattern')
         self.keys = []
-        for key in self.bucket.list(prefix=non_regex_prefix):
-            if re.match(self.prefix, key.name):
+        for key in self.bucket.list(prefix=self.prefix):
+            if self.pattern:
+                self._add_key_if_matches(key)
+            else:
                 self.keys.append(key.key)
         self.read_keys = []
         self.current_key = None
@@ -57,22 +59,9 @@ class S3Reader(BaseReader):
         self.logger.info('S3Reader has been initiated')
         self.tmp_folder = tempfile.mkdtemp()
 
-    def _chekv_valid_prefix(self):
-        re.compile(self.prefix)
-
-    def get_non_regex_prefix(self):
-        prefix_parts = self.prefix.split('/')
-        safe_parts = []
-        for part in prefix_parts:
-            compiled = re.compile(part)
-            if compiled.groups > 0:
-                break
-            else:
-                safe_parts.append(part)
-        regex_parts = list(set(prefix_parts) - set(safe_parts))
-        safe_prefix = '/'.join(safe_parts)
-        regex_prefix = '/'.join(regex_parts)
-        return safe_prefix, regex_prefix
+    def _add_key_if_matches(self, key):
+        if re.match(os.path.join(self.prefix, self.pattern), key.name):
+            self.keys.append(key.key)
 
     @retry_long
     def get_key(self, file_path):
