@@ -1,4 +1,5 @@
 import json
+import os
 import unittest
 
 import mock
@@ -99,11 +100,14 @@ class CloudsearchWriterTest(unittest.TestCase):
             }
         }
 
-        # when:
-        exporter = BasicExporter(config)
-        exporter.export()
+        try:
+            # when:
+            exporter = BasicExporter(config)
+            exporter.export()
 
-        # then:
-        self.assertEqual(1, len(mock_requests.post.mock_calls))
-        url = endpoint_url + '/2013-01-01/documents/batch'
-        mock_requests.post.assert_called_once_with(url, data=mock.ANY, headers=mock.ANY)
+            # then:
+            self.assertEqual(1, len(mock_requests.post.mock_calls))
+            url = endpoint_url + '/2013-01-01/documents/batch'
+            mock_requests.post.assert_called_once_with(url, data=mock.ANY, headers=mock.ANY)
+        finally:
+            exporter.persistence.delete()
