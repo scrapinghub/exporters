@@ -67,29 +67,35 @@ class BaseExportManagerTest(unittest.TestCase):
         }
 
     def test_iteration(self):
-        exporter = BaseExporter(self.config)
-        self.assertIs(exporter._run_pipeline_iteration(), None)
-        exporter._clean_export_job()
-        filename = get_filename(exporter.persistence.options['file_path'],
-                               exporter.persistence.persistence_state_id)
-        remove_if_exists(filename)
+        try:
+            exporter = BaseExporter(self.config)
+            self.assertIs(exporter._run_pipeline_iteration(), None)
+            exporter._clean_export_job()
+        finally:
+            filename = get_filename(exporter.persistence.options['file_path'],
+                                   exporter.persistence.persistence_state_id)
+            remove_if_exists(filename)
 
     def test_full_export(self):
-        exporter = BaseExporter(self.config)
-        self.assertIs(exporter._handle_export_exception(Exception()), None)
-        self.assertIs(exporter.export(), None)
-        filename = get_filename(exporter.persistence.options['file_path'],
-                               exporter.persistence.persistence_state_id)
-        remove_if_exists(filename)
+        try:
+            exporter = BaseExporter(self.config)
+            self.assertIs(exporter._handle_export_exception(Exception()), None)
+            self.assertIs(exporter.export(), None)
+        finally:
+            filename = get_filename(exporter.persistence.options['file_path'],
+                                   exporter.persistence.persistence_state_id)
+            remove_if_exists(filename)
 
     def test_bypass(self):
-        exporter = BaseExporter(self.config)
-        with self.assertRaises(NotImplementedError):
-            exporter.bypass_exporter(BaseBypass(ExporterConfig(self.config)))
-        exporter._clean_export_job()
-        filename = get_filename(exporter.persistence.options['file_path'],
-                               exporter.persistence.persistence_state_id)
-        remove_if_exists(filename)
+        try:
+            exporter = BaseExporter(self.config)
+            with self.assertRaises(NotImplementedError):
+                exporter.bypass_exporter(BaseBypass(ExporterConfig(self.config)))
+            exporter._clean_export_job()
+        finally:
+            filename = get_filename(exporter.persistence.options['file_path'],
+                                   exporter.persistence.persistence_state_id)
+            remove_if_exists(filename)
 
 
 class BasicExportManagerTest(unittest.TestCase):
@@ -159,8 +165,14 @@ class BasicExportManagerTest(unittest.TestCase):
         self.assertTrue(isinstance(self.exporter.transform, NoTransform))
 
     def test_from_file_configuration(self):
-        test_manager = BasicExporter.from_file_configuration('./tests/data/basic_config.json')
-        self.assertIsInstance(test_manager, BasicExporter)
-        test_manager._clean_export_job()
+        try:
+            test_manager = BasicExporter.from_file_configuration('./tests/data/basic_config.json')
+            self.assertIsInstance(test_manager, BasicExporter)
+            test_manager._clean_export_job()
+        finally:
+            filename = get_filename(test_manager.persistence.options['file_path'],
+                                    test_manager.persistence.persistence_state_id)
+            remove_if_exists(filename)
+
 
 
