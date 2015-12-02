@@ -1,4 +1,5 @@
 import json
+import os
 import unittest
 
 import mock
@@ -107,3 +108,5 @@ class CloudsearchWriterTest(unittest.TestCase):
         self.assertEqual(1, len(mock_requests.post.mock_calls))
         url = endpoint_url + '/2013-01-01/documents/batch'
         mock_requests.post.assert_called_once_with(url, data=mock.ANY, headers=mock.ANY)
+        os.remove(os.path.join(exporter.persistence.options['file_path'],
+                               exporter.persistence.persistence_state_id))
