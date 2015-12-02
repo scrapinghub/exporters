@@ -46,8 +46,9 @@ class S3Reader(BaseReader):
         self.bucket = self.connection.get_bucket(self.read_option('bucket'))
         self.prefix = self.read_option('prefix')
         self._chekv_valid_prefix()
+        non_regex_prefix, regex_prefix = self.get_non_regex_prefix()
         self.keys = []
-        for key in self.bucket.list():
+        for key in self.bucket.list(prefix=non_regex_prefix):
             if re.match(self.prefix, key.name):
                 self.keys.append(key.key)
         self.read_keys = []
@@ -59,6 +60,19 @@ class S3Reader(BaseReader):
     def _chekv_valid_prefix(self):
         re.compile(self.prefix)
 
+    def get_non_regex_prefix(self):
+        prefix_parts = self.prefix.split('/')
+        safe_parts = []
+        for part in prefix_parts:
+            compiled = re.compile(part)
+            if compiled.groups > 0:
+                break
+            else:
+                safe_parts.append(part)
+        regex_parts = list(set(prefix_parts) - set(safe_parts))
+        safe_prefix = '/'.join(safe_parts)
+        regex_prefix = '/'.join(regex_parts)
+        return safe_prefix, regex_prefix
 
     @retry_long
     def get_key(self, file_path):
