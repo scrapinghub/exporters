@@ -40,3 +40,4 @@ def reduce_function(item, accumulator=None):
         # then:
         self.assertEqual(6, writer.reduced_result)
         self.assertEqual({'value': 6}, writer.collection.get("0004"))
+        writer.close()
