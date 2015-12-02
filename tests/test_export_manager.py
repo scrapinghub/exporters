@@ -72,9 +72,7 @@ class BaseExportManagerTest(unittest.TestCase):
             self.assertIs(exporter._run_pipeline_iteration(), None)
             exporter._clean_export_job()
         finally:
-            filename = get_filename(exporter.persistence.options['file_path'],
-                                   exporter.persistence.persistence_state_id)
-            remove_if_exists(filename)
+            exporter.persistence.delete()
 
     def test_full_export(self):
         try:
@@ -82,9 +80,7 @@ class BaseExportManagerTest(unittest.TestCase):
             self.assertIs(exporter._handle_export_exception(Exception()), None)
             self.assertIs(exporter.export(), None)
         finally:
-            filename = get_filename(exporter.persistence.options['file_path'],
-                                   exporter.persistence.persistence_state_id)
-            remove_if_exists(filename)
+            exporter.persistence.delete()
 
     def test_bypass(self):
         try:
@@ -93,9 +89,7 @@ class BaseExportManagerTest(unittest.TestCase):
                 exporter.bypass_exporter(BaseBypass(ExporterConfig(self.config)))
             exporter._clean_export_job()
         finally:
-            filename = get_filename(exporter.persistence.options['file_path'],
-                                   exporter.persistence.persistence_state_id)
-            remove_if_exists(filename)
+            exporter.persistence.delete()
 
 
 class BasicExportManagerTest(unittest.TestCase):
@@ -155,9 +149,7 @@ class BasicExportManagerTest(unittest.TestCase):
 
     def tearDown(self):
         self.exporter._clean_export_job()
-        filename = get_filename(self.exporter.persistence.options['file_path'],
-                               self.exporter.persistence.persistence_state_id)
-        remove_if_exists(filename)
+        self.exporter.persistence.delete()
 
     def test_parses_the_options_and_loads_pipeline_items(self):
         self.assertTrue(isinstance(self.exporter.reader, RandomReader))
@@ -170,9 +162,4 @@ class BasicExportManagerTest(unittest.TestCase):
             self.assertIsInstance(test_manager, BasicExporter)
             test_manager._clean_export_job()
         finally:
-            filename = get_filename(test_manager.persistence.options['file_path'],
-                                    test_manager.persistence.persistence_state_id)
-            remove_if_exists(filename)
-
-
-
+            test_manager.persistence.delete()
