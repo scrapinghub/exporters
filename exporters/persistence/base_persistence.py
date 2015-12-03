@@ -67,3 +67,6 @@ class BasePersistence(BasePipelineItem):
         returns a configuration object.
         """
         raise NotImplementedError
+
+    def delete(self):
+        pass

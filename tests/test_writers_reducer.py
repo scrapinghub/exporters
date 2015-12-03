@@ -25,3 +25,4 @@ def reduce_function(item, accumulator=None):
         writer.write_batch(batch)
         expected = {'country_code': 4, 'name': 6, 'something': 2}
         self.assertEquals(expected, dict(writer.reduced_result))
+        writer.close()

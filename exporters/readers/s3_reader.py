@@ -2,6 +2,7 @@ import gzip
 import json
 import os
 import tempfile
+import re
 
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
@@ -34,7 +35,8 @@ class S3Reader(BaseReader):
         'bucket': {'type': basestring},
         'aws_access_key_id': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_KEY'},
         'aws_secret_access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_SECRET'},
-        'prefix': {'type': basestring}
+        'prefix': {'type': basestring, 'default': ''},
+        'pattern': {'type': basestring, 'default': None}
     }
 
     def __init__(self, options):
@@ -44,14 +46,22 @@ class S3Reader(BaseReader):
         self.connection = boto.connect_s3(self.read_option('aws_access_key_id'), self.read_option('aws_secret_access_key'))
         self.bucket = self.connection.get_bucket(self.read_option('bucket'))
         self.prefix = self.read_option('prefix')
+        self.pattern = self.read_option('pattern')
         self.keys = []
         for key in self.bucket.list(prefix=self.prefix):
-            self.keys.append(key.key)
+            if self.pattern:
+                self._add_key_if_matches(key)
+            else:
+                self.keys.append(key.key)
         self.read_keys = []
         self.current_key = None
         self.last_line = 0
         self.logger.info('S3Reader has been initiated')
         self.tmp_folder = tempfile.mkdtemp()
+
+    def _add_key_if_matches(self, key):
+        if re.match(os.path.join(self.prefix, self.pattern), key.name):
+            self.keys.append(key.key)
 
     @retry_long
     def get_key(self, file_path):

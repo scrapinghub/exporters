@@ -38,3 +38,4 @@ class AggregationStatsWriter(BaseWriter):
         self.logger.info('---------------------')
         self.logger.info(repr(agg_results))
         self.logger.info('---------------------')
+        super(AggregationStatsWriter, self).close()
