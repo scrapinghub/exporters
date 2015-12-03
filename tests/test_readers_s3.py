@@ -2,6 +2,7 @@ import shutil
 import unittest
 import mock
 from exporters.readers.s3_reader import S3Reader
+from exporters.exceptions import ConfigurationError
 
 NO_KEYS = ['test_list/test_key_1', 'test_list/test_key_2', 'test_list/test_key_3',
            'test_list/test_key_4', 'test_list/test_key_5', 'test_list/test_key_6',
@@ -16,6 +17,9 @@ class FakeKey(object):
     def __init__(self, name):
         self.name = name
         self.key = name
+
+    def get_contents_as_string(self):
+        return self.name
 
 
 def get_keys_list(key_list):
@@ -58,6 +62,27 @@ class S3ReaderTest(unittest.TestCase):
             }
         }
 
+        self.options_prefix_and_prefix_pointer = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'datasets.scrapinghub.com',
+                'aws_access_key_id': 'AKIAJ6VP76KAK7UOUWEQ',
+                'aws_secret_access_key': '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',
+                'prefix': 'test_list/',
+                'prefix_pointer': 'test_list/LAST'
+            }
+        }
+
+        self.options_prefix_pointer = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'datasets.scrapinghub.com',
+                'aws_access_key_id': 'AKIAJ6VP76KAK7UOUWEQ',
+                'aws_secret_access_key': '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',
+                'prefix_pointer': 'test_list/LAST'
+            }
+        }
+
     @mock.patch('boto.s3.bucket.Bucket.list', autospec=True)
     def test_list_no_keys(self, mock_bucket_list):
         mock_bucket_list.return_value = get_keys_list(NO_KEYS)
@@ -82,10 +107,23 @@ class S3ReaderTest(unittest.TestCase):
         shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     @mock.patch('boto.s3.bucket.Bucket.list', autospec=True)
-    def test_list_keys(self, mock_bucket_list):
+    def test_no_prefix_list_keys(self, mock_bucket_list):
         mock_bucket_list.return_value = get_keys_list(VALID_KEYS)
         reader = S3Reader(self.options_no_prefix)
         expected = ['test_list/dump_p1_US_a', 'test_list/dump_p1_US_b',
                     'test_list/dump_p2_US_a', 'test_list/dump_p_US_a']
         self.assertEqual(expected, reader.keys)
+        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
+
+    @mock.patch('boto.s3.bucket.Bucket.list', autospec=True)
+    def test_prefix_and_prefix_pointer_list_keys(self, mock_bucket_list):
+        mock_bucket_list.return_value = get_keys_list(VALID_KEYS)
+        self.assertRaises(ConfigurationError, S3Reader, self.options_prefix_and_prefix_pointer)
+
+    @mock.patch('boto.s3.bucket.Bucket.get_key', autospec=True)
+    def test_prefix_pointer_list_keys(self, mock_bucket_get_key):
+        expected_prefix_pointer = VALID_KEYS[0]
+        mock_bucket_get_key.return_value = FakeKey(expected_prefix_pointer)
+        reader = S3Reader(self.options_prefix_pointer)
+        self.assertEqual(expected_prefix_pointer, reader.prefix)
         shutil.rmtree(reader.tmp_folder, ignore_errors=True)
