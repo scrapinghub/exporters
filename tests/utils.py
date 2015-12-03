@@ -34,8 +34,3 @@ def valid_config_with_updates(updates):
     config = VALID_EXPORTER_CONFIG.copy()
     config.update(updates)
     return config
-
-
-def remove_if_exists(file_name):
-    try: os.remove(file_name)
-    except: pass
