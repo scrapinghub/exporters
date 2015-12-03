@@ -28,6 +28,6 @@ class ConsoleWriter(BaseWriter):
 
     def _format(self, item):
         try:
-            return json.dumps(json.loads(item), indent=2)
+            return json.dumps(json.loads(item), indent=2, sort_keys=True)
         except:
             return item
