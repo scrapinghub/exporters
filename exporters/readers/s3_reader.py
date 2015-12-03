@@ -7,12 +7,7 @@ import re
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 from exporters.default_retries import retry_long
-
-
-class PrefixAndPointerCollision(Exception):
-    """
-    Exception thrown when prefix and prefix_pointer options are passed together.
-    """
+from exporters.exceptions import ConfigurationError
 
 
 class S3Reader(BaseReader):
@@ -46,7 +41,7 @@ class S3Reader(BaseReader):
         'aws_access_key_id': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_KEY'},
         'aws_secret_access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_SECRET'},
         'prefix': {'type': basestring, 'default': ''},
-        'prefix_pointer': {'type': basestring, 'default': ''},
+        'prefix_pointer': {'type': basestring, 'default': None},
         'pattern': {'type': basestring, 'default': None}
     }
 
@@ -63,7 +58,7 @@ class S3Reader(BaseReader):
         self.pattern = self.read_option('pattern')
 
         if self.prefix and self.prefix_pointer:
-            raise PrefixAndPointerCollision
+            raise ConfigurationError("prefix and prefix_pointer options cannot be used together")
 
         if self.prefix_pointer:
             self.prefix = self._download_pointer(self.prefix_pointer)
@@ -86,7 +81,7 @@ class S3Reader(BaseReader):
 
     @retry_long
     def _download_pointer(self, prefix_pointer):
-        return self.bucket.get_key(prefix_pointer).get_contents_as_string()
+        return self.bucket.get_key(prefix_pointer).get_contents_as_string().strip()
 
     @retry_long
     def get_key(self, file_path):
