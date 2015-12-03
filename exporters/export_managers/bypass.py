@@ -56,7 +56,7 @@ class S3Bypass(BaseBypass):
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
         position = persistence.get_last_position()
         if not position:
-            self._get_kets_from_bucket(source_bucket)
+            self.keys = self._get_keys_from_bucket(source_bucket)
             position = {'pending': self.keys, 'done': []}
             persistence.commit_position(position)
         else:
@@ -74,14 +74,17 @@ class S3Bypass(BaseBypass):
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket_name, key_name):
         dest_bucket.copy_key(dest_key_name, source_bucket_name, key_name)
 
-    def _add_key_if_matches(self, key):
+    def _should_add_key(self, key):
         if re.match(os.path.join(self.prefix, self.pattern), key.name):
-            self.keys.append(key.name)
+            return True
+        return False
 
-    def _get_kets_from_bucket(self, source_bucket):
-        self.keys = []
-        for key in source_bucket.list(prefix=self.prefix):
+    def _get_keys_from_bucket(self, source_bucket, prefix):
+        keys = []
+        for key in source_bucket.list(prefix=prefix):
             if self.pattern:
-                self._add_key_if_matches(key)
+                if self._should_add_key(key):
+                    keys.append(key.name)
             else:
-                self.keys.append(key.name)
+                keys.append(key.name)
+        return keys
