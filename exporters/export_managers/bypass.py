@@ -48,29 +48,33 @@ class S3Bypass(BaseBypass):
         source_connection = boto.connect_s3(reader_options['aws_access_key_id'],reader_options['aws_secret_access_key'])
         source_bucket_name = reader_options['bucket']
         source_bucket = source_connection.get_bucket(source_bucket_name)
-        prefix = reader_options.get('prefix', '')
-        pattern = reader_options.get('pattern', None)
+        self.prefix = reader_options.get('prefix', '')
+        self.pattern = reader_options.get('pattern', None)
         dest_connection = boto.connect_s3(writer_options['aws_access_key_id'], writer_options['aws_secret_access_key'])
         dest_bucket_name = writer_options['bucket']
         dest_bucket = dest_connection.get_bucket(dest_bucket_name)
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
-        self.keys = []
-        for key in source_bucket.list(prefix=prefix):
-            if pattern:
-                self._add_key_if_matches(key)
-            else:
-                self.keys.append(key)
-        position = {'pending': self.keys, 'done': []}
-        persistence.commit_position(position)
+        position = persistence.get_last_position()
+        if not position:
+            self.keys = []
+            for key in source_bucket.list(prefix=self.prefix):
+                if self.pattern:
+                    self._add_key_if_matches(key)
+                else:
+                    self.keys.append(key.name)
+            position = {'pending': self.keys, 'done': []}
+            persistence.commit_position(position)
+        else:
+            self.keys = position['pending']
 
         for key in self.keys:
-            dest_key_name = '{}/{}'.format(dest_filebase, key.name.split('/')[-1])
-            self._copy_key(dest_bucket, dest_key_name, source_bucket_name, key.name)
+            dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
+            self._copy_key(dest_bucket, dest_key_name, source_bucket_name, key)
             position['pending'].remove(key)
             position['done'].append(key)
             persistence.commit_position(position)
             logging.log(logging.INFO,
-                        'Copied key {} to dest: s3://{}/{}'.format(key.name, dest_bucket_name, dest_key_name))
+                        'Copied key {} to dest: s3://{}/{}'.format(key, dest_bucket_name, dest_key_name))
 
     @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket_name, key_name):
@@ -78,4 +82,4 @@ class S3Bypass(BaseBypass):
 
     def _add_key_if_matches(self, key):
         if re.match(os.path.join(self.prefix, self.pattern), key.name):
-            self.keys.append(key)
+            self.keys.append(key.name)
