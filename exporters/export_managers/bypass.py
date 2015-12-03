@@ -1,5 +1,7 @@
 import datetime
 import logging
+import os
+import re
 from exporters.default_retries import retry_long
 from exporters.module_loader import ModuleLoader
 
@@ -40,24 +42,40 @@ class S3Bypass(BaseBypass):
     def bypass(self):
         import boto
         reader_options = self.config.reader_options['options']
-        persistence_options = self.config.persistence_options['options']
         self.module_loader = ModuleLoader()
         persistence = self.module_loader.load_persistence(self.config.persistence_options)
         writer_options = self.config.writer_options['options']
         source_connection = boto.connect_s3(reader_options['aws_access_key_id'],reader_options['aws_secret_access_key'])
         source_bucket_name = reader_options['bucket']
         source_bucket = source_connection.get_bucket(source_bucket_name)
-        prefix = reader_options['prefix']
+        prefix = reader_options.get('prefix', '')
+        pattern = reader_options.get('pattern', None)
         dest_connection = boto.connect_s3(writer_options['aws_access_key_id'], writer_options['aws_secret_access_key'])
         dest_bucket_name = writer_options['bucket']
         dest_bucket = dest_connection.get_bucket(dest_bucket_name)
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
+        self.keys = []
         for key in source_bucket.list(prefix=prefix):
+            if pattern:
+                self._add_key_if_matches(key)
+            else:
+                self.keys.append(key)
+        position = {'pending': self.keys, 'done': []}
+        persistence.commit_position(position)
+
+        for key in self.keys:
             dest_key_name = '{}/{}'.format(dest_filebase, key.name.split('/')[-1])
             self._copy_key(dest_bucket, dest_key_name, source_bucket_name, key.name)
+            position['pending'].remove(key)
+            position['done'].append(key)
+            persistence.commit_position(position)
             logging.log(logging.INFO,
                         'Copied key {} to dest: s3://{}/{}'.format(key.name, dest_bucket_name, dest_key_name))
 
     @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket_name, key_name):
         dest_bucket.copy_key(dest_key_name, source_bucket_name, key_name)
+
+    def _add_key_if_matches(self, key):
+        if re.match(os.path.join(self.prefix, self.pattern), key.name):
+            self.keys.append(key)
