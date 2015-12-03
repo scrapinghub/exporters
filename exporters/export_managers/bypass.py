@@ -1,6 +1,7 @@
 import datetime
 import logging
 from exporters.default_retries import retry_long
+from exporters.module_loader import ModuleLoader
 
 
 class RequisitesNotMet(Exception):
@@ -39,6 +40,9 @@ class S3Bypass(BaseBypass):
     def bypass(self):
         import boto
         reader_options = self.config.reader_options['options']
+        persistence_options = self.config.persistence_options['options']
+        self.module_loader = ModuleLoader()
+        persistence = self.module_loader.load_persistence(self.config.persistence_options)
         writer_options = self.config.writer_options['options']
         source_connection = boto.connect_s3(reader_options['aws_access_key_id'],reader_options['aws_secret_access_key'])
         source_bucket_name = reader_options['bucket']
