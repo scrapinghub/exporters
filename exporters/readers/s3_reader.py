@@ -9,6 +9,12 @@ from exporters.records.base_record import BaseRecord
 from exporters.default_retries import retry_long
 
 
+class PrefixAndPointerCollision(Exception):
+    """
+    Exception thrown when prefix and prefix_pointer options are passed together.
+    """
+
+
 class S3Reader(BaseReader):
     """
     Reads items from s3 keys with a common prefix.
@@ -20,13 +26,17 @@ class S3Reader(BaseReader):
             Name of the bucket to retrieve items from.
 
         - aws_access_key_id (str)
-            Public acces key to the s3 bucket.
+            Public access key to the s3 bucket.
 
         - aws_secret_access_key (str)
             Secret access key to the s3 bucket.
 
         - prefix (str)
             Prefix of s3 keys to be read.
+
+        - prefix_pointer (str)
+            Prefix pointing to the last version of dataset.
+
     """
 
     # List of options to set up the reader
@@ -36,17 +46,28 @@ class S3Reader(BaseReader):
         'aws_access_key_id': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_KEY'},
         'aws_secret_access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_SECRET'},
         'prefix': {'type': basestring, 'default': ''},
+        'prefix_pointer': {'type': basestring, 'default': ''},
         'pattern': {'type': basestring, 'default': None}
     }
 
     def __init__(self, options):
         import boto
+
         super(S3Reader, self).__init__(options)
         self.batch_size = self.read_option('batch_size')
-        self.connection = boto.connect_s3(self.read_option('aws_access_key_id'), self.read_option('aws_secret_access_key'))
+        self.connection = boto.connect_s3(self.read_option('aws_access_key_id'),
+                                          self.read_option('aws_secret_access_key'))
         self.bucket = self.connection.get_bucket(self.read_option('bucket'))
         self.prefix = self.read_option('prefix')
+        self.prefix_pointer = self.read_option('prefix_pointer')
         self.pattern = self.read_option('pattern')
+
+        if self.prefix and self.prefix_pointer:
+            raise PrefixAndPointerCollision
+
+        if self.prefix_pointer:
+            self.prefix = self._download_pointer(self.prefix_pointer)
+
         self.keys = []
         for key in self.bucket.list(prefix=self.prefix):
             if self.pattern:
@@ -64,6 +85,10 @@ class S3Reader(BaseReader):
             self.keys.append(key.key)
 
     @retry_long
+    def _download_pointer(self, prefix_pointer):
+        return self.bucket.get_key(prefix_pointer).get_contents_as_string()
+
+    @retry_long
     def get_key(self, file_path):
         self.bucket.get_key(self.current_key).get_contents_to_filename(file_path)
 
@@ -76,8 +101,8 @@ class S3Reader(BaseReader):
 
         dump_file = gzip.open(file_path, 'r')
         lines = dump_file.readlines()
-        if self.last_line+self.batch_size <= len(lines):
-            last_item = self.last_line+self.batch_size
+        if self.last_line + self.batch_size <= len(lines):
+            last_item = self.last_line + self.batch_size
         else:
             last_item = len(lines)
             self.read_keys.append(self.current_key)
