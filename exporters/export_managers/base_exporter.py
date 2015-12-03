@@ -84,6 +84,8 @@ class BaseExporter(object):
         for bypass_script in self.bypass_cases:
             try:
                 bypass_script.meets_conditions()
+                self.persistence.close()
+                self.persistence.delete()
                 self.bypass_exporter(bypass_script)
                 return True
             except RequisitesNotMet:

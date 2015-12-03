@@ -7,7 +7,6 @@ from exporters.exporter_config import ExporterConfig
 from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
 from exporters.writers.console_writer import ConsoleWriter
-from tests.utils import remove_if_exists
 
 
 def get_filename(path, persistence_id):

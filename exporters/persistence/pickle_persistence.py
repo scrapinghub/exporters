@@ -4,7 +4,7 @@ import yaml
 from exporters.persistence.base_persistence import BasePersistence
 import pickle
 import uuid
-import tests
+from exporters.utils import remove_if_exists
 
 
 class PicklePersistence(BasePersistence):
@@ -70,4 +70,4 @@ class PicklePersistence(BasePersistence):
         return configuration
 
     def delete(self):
-        tests.utils.remove_if_exists(self.persistence_file_name)
+        remove_if_exists(self.persistence_file_name)

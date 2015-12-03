@@ -5,7 +5,8 @@ from exporters.exporter_config import ExporterConfig
 from exporters.persistence.alchemy_persistence import MysqlPersistence, PostgresqlPersistence
 from exporters.persistence.base_persistence import BasePersistence
 from exporters.persistence.pickle_persistence import PicklePersistence
-from .utils import valid_config_with_updates, remove_if_exists
+from exporters.utils import remove_if_exists
+from .utils import valid_config_with_updates
 
 
 class BasePersistenceTest(unittest.TestCase):
