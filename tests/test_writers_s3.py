@@ -47,9 +47,12 @@ class S3WriterTest(unittest.TestCase):
         options = self.get_writer_config()
 
         # when:
-        writer = S3Writer(options)
-        writer.write_batch(items_to_write)
-        writer.close()
+        try:
+            writer = S3Writer(options)
+            writer.write_batch(items_to_write)
+            writer.flush()
+        finally:
+            writer.close()
 
         # then:
         bucket = self.s3_conn.get_bucket('fake_bucket')

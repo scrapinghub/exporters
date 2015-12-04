@@ -61,6 +61,7 @@ class CustomWriterTest(unittest.TestCase):
         # when:
         try:
             writer.write_batch(self.batch)
+            writer.flush()
         finally:
             writer.close()
 
@@ -96,6 +97,7 @@ class CustomWriterTest(unittest.TestCase):
         # when:
         try:
             writer.write_batch(self.batch)
+            writer.flush()
         finally:
             writer.close()
 
@@ -118,6 +120,7 @@ class CustomWriterTest(unittest.TestCase):
         # when:
         try:
             writer.write_batch(self.batch)
+            writer.flush()
         finally:
             writer.close()
         self.assertEqual(writer.items_count, 3)

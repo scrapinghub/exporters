@@ -118,6 +118,7 @@ class BaseExporter(object):
             else:
                 self._update_stats()
                 self._populate_stats()
+        self.writer.flush()
 
     def export(self):
         if not self.bypass():
