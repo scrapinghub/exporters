@@ -54,8 +54,8 @@ class S3ReaderTest(unittest.TestCase):
             'name': 'exporters.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'no_keys_bucket',
-                'aws_access_key_id': 'AKIAJ6VP76KAK7UOUWEQ',
-                'aws_secret_access_key': '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',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
                 'prefix': 'test_list/',
                 'pattern': 'dump_p(.*)_US_(.*)'
             }
@@ -65,8 +65,8 @@ class S3ReaderTest(unittest.TestCase):
             'name': 'exporters.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'valid_keys_bucket',
-                'aws_access_key_id': 'AKIAJ6VP76KAK7UOUWEQ',
-                'aws_secret_access_key': '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',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
                 'prefix': 'test_list/',
                 'pattern': 'dump_p(.*)_US_(.*)'
             }
@@ -76,8 +76,8 @@ class S3ReaderTest(unittest.TestCase):
             'name': 'exporters.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'valid_keys_bucket',
-                'aws_access_key_id': 'AKIAJ6VP76KAK7UOUWEQ',
-                'aws_secret_access_key': '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',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
                 'prefix': 'test_list/'
             }
         }
@@ -86,8 +86,8 @@ class S3ReaderTest(unittest.TestCase):
             'name': 'exporters.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'valid_keys_bucket',
-                'aws_access_key_id': 'AKIAJ6VP76KAK7UOUWEQ',
-                'aws_secret_access_key': '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',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
                 'pattern': '(.*)dump_p(.*)_US_(.*)'
             }
         }
@@ -96,8 +96,8 @@ class S3ReaderTest(unittest.TestCase):
             'name': 'exporters.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'valid_keys_bucket',
-                'aws_access_key_id': 'AKIAJ6VP76KAK7UOUWEQ',
-                'aws_secret_access_key': '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',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
                 'prefix': 'test_list/',
                 'prefix_pointer': 'test_list/LAST'
             }
@@ -107,8 +107,8 @@ class S3ReaderTest(unittest.TestCase):
             'name': 'exporters.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'last_bucket',
-                'aws_access_key_id': 'AKIAJ6VP76KAK7UOUWEQ',
-                'aws_secret_access_key': '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',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
                 'prefix_pointer': 'test_list/LAST'
             }
         }
