@@ -12,7 +12,7 @@ class ExporterConfig(object):
     def __init__(self, configuration):
         check_for_errors(configuration)
         self.configuration = configuration
-        self.exporter_options = self.configuration['exporter_options']
+        self.exporter_options = self.configuration.get('exporter_options', {})
         self.reader_options = self._merge_options('reader')
         if 'filter' in self.configuration:
             self.filter_before_options = self._merge_options('filter')
@@ -63,8 +63,7 @@ def module_options():
     return options
 
 
-REQUIRED_CONFIG_SECTIONS = frozenset(
-    ['reader', 'writer', 'exporter_options'])
+REQUIRED_CONFIG_SECTIONS = frozenset(['reader', 'writer'])
 
 
 Parameter = collections.namedtuple('Parameter', 'name options')
