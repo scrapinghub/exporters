@@ -8,7 +8,7 @@ script:
 deploy:
   bash:
     script:
-      - shub deploy-egg 7389
+      - 'shub deploy-egg 7389 ; shub deploy-egg 28865'
     when:
       branch: master
 
