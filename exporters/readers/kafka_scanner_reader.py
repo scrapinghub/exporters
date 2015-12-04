@@ -19,31 +19,46 @@ class KafkaScannerReader(BaseReader):
         - topic (str)
             Topic to read from.
 
+        - partitions (list)
+            Partitions to read from.
+
         - group (str)
             Reading group for kafka client.
     """
 
-     # List of options to set up the reader
+    # List of options to set up the reader
     supported_options = {
         'batch_size': {'type': int, 'default': 10000},
         'brokers': {'type': list},
         'topic': {'type': basestring},
-        'group': {'type': basestring}
+        'group': {'type': basestring},
+        'partitions': {'type': list, 'default': None}
     }
 
     def __init__(self, options):
-        from kafka_scanner import KafkaScanner
+        from kafka_scanner import KafkaScanner, KafkaScannerSimple
         super(KafkaScannerReader, self).__init__(options)
         brokers = self.read_option('brokers')
         group = self.read_option('group')
         topic = self.read_option('topic')
-        scanner = KafkaScanner(brokers, topic, group,
-                batchsize=self.read_option('batch_size'), keep_offsets=options.get('RESUME'))
+        partitions = self.read_option('partitions')
+        if partitions and len(partitions) == 1:
+            scanner_class = KafkaScannerSimple
+        else:
+            scanner_class = KafkaScanner
+
+        scanner = scanner_class(brokers, topic, group, partitions=partitions,
+                                batchsize=self.read_option('batch_size'),
+                                keep_offsets=options.get('RESUME'))
 
         self.batches = scanner.scan_topic_batches()
 
-        self.logger.info('KafkaScannerReader has been initiated. Topic: {}. Group: {}'.format(self.read_option('topic'),
-                                                                                             self.read_option('group')))
+        if partitions:
+            topic_str = '{} (partitions: {})'.format(topic, partitions)
+        else:
+            topic_str = topic
+        self.logger.info('KafkaScannerReader has been initiated.'
+                         'Topic: {}. Group: {}'.format(topic_str, group))
 
     @retry_short
     def get_from_kafka(self):
