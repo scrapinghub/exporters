@@ -71,15 +71,15 @@ class BaseWriter(BasePipelineItem):
             raise ItemsLimitReached('Finishing job after items_limit reached:'
                                     ' {} items written.'.format(self.items_count))
 
+    def flush(self):
+        for key in self.grouping_info.keys():
+            self._write(key)
+
     def close(self):
         """
         Called to clean all possible tmp files created during the process.
         """
-        try:
-            for key in self.grouping_info.keys():
-                self._write(key)
-        finally:
-            self.write_buffer.close()
+        self.write_buffer.close()
         self._check_write_consistency()
 
     @property
