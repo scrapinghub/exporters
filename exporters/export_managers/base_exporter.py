@@ -38,6 +38,7 @@ class BaseExporter(object):
         self.stats_manager = self.module_loader.load_stats_manager(
             self.config.stats_options)
         self.stats_manager.stats = job_info
+        self.bypass_cases = []
 
     def _run_pipeline_iteration(self):
         self.logger.debug('Getting new batch')
@@ -65,10 +66,6 @@ class BaseExporter(object):
         self.stats_manager.stats['end_time'] = datetime.datetime.now()
         self.stats_manager.stats['elapsed_time'] = self.stats_manager.stats['end_time'] - \
                                                    self.stats_manager.stats['start_time']
-
-    @property
-    def bypass_cases(self):
-        return []
 
     def bypass_exporter(self, bypass_script):
         self.logger.info('Executing bypass {}.'.format(bypass_script.__class__.__name__))
