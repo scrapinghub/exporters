@@ -20,10 +20,10 @@ def fail(*a, **kw):
 
 class FakeBypass(BaseBypass):
     bypass_called = False
-    should_call = True
+    fake_meet_conditions = True
 
     def meets_conditions(self):
-        if not self.should_call:
+        if not self.fake_meet_conditions:
             raise RequisitesNotMet
 
     def bypass(self):
@@ -79,11 +79,25 @@ class BaseExportManagerTest(unittest.TestCase):
         # then:
         self.assertTrue(bypass_instance.bypass_called, "Bypass should have been called")
 
-    def test_bypass_should_not_be_called(self):
+    def test_when_unmet_conditions_bypass_should_not_be_called(self):
         # given:
         self.exporter = exporter = BaseExporter(self.build_config())
         bypass_instance = FakeBypass(exporter.config)
-        bypass_instance.should_call = False
+        bypass_instance.fake_meet_conditions = False
+        exporter.bypass_cases = [bypass_instance]
+
+        # when:
+        exporter.export()
+
+        # then:
+        self.assertFalse(bypass_instance.bypass_called, "Bypass should NOT have been called")
+
+    def test_when_meet_conditions_but_config_prevent_bypass_it_should_not_be_called(self):
+        # given:
+        config = self.build_config()
+        config['exporter_options']['prevent_bypass'] = True
+        self.exporter = exporter = BaseExporter(config)
+        bypass_instance = FakeBypass(exporter.config)
         exporter.bypass_cases = [bypass_instance]
 
         # when:

@@ -78,6 +78,9 @@ class BaseExporter(object):
                                             info=self.stats_manager.stats)
 
     def bypass(self):
+        if self.config.prevent_bypass:
+            return False
+
         for bypass_script in self.bypass_cases:
             try:
                 bypass_script.meets_conditions()

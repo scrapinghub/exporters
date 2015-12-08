@@ -45,6 +45,10 @@ class ExporterConfig(object):
         return {'log_level': self.exporter_options.get('log_level', DEFAULT_LOGGER_LEVEL),
                 'logger_name': self.exporter_options.get('logger_name', DEFAULT_LOGGER_NAME)}
 
+    @property
+    def prevent_bypass(self):
+        return self.exporter_options.get('prevent_bypass', False)
+
 
 MODULE_TYPES = ['readers', 'writers', 'transform', 'groupers',
                 'persistence', 'filters', 'stats_managers']
