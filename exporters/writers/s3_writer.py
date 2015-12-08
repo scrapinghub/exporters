@@ -23,16 +23,21 @@ class S3Writer(FilebaseBaseWriter):
 
         - aws_region (str)
             AWS region to connect to.
+
+        - save_metadata (bool)
+            Save key's items count as metadata. Default: True
     """
     supported_options = {
         'bucket': {'type': basestring},
         'aws_access_key_id': {'type': basestring, 'env_fallback': 'EXPORTERS_S3WRITER_AWS_LOGIN'},
         'aws_secret_access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_S3WRITER_AWS_SECRET'},
         'aws_region': {'type': basestring, 'default': None},
+        'save_metadata': {'type': bool, 'default': True, 'required': False}
     }
 
     def __init__(self, options):
         import boto
+
         super(S3Writer, self).__init__(options)
         access_key = self.read_option('aws_access_key_id')
         secret_key = self.read_option('aws_secret_access_key')
@@ -50,20 +55,24 @@ class S3Writer(FilebaseBaseWriter):
                                               aws_access_key_id=access_key,
                                               aws_secret_access_key=secret_key)
         self.bucket = self.conn.get_bucket(bucket_name)
+        self.save_metadata = self.read_option('save_metadata')
         self.logger.info('S3Writer has been initiated.'
                          'Writing to s3://{}/{}'.format(self.bucket.name, self.filebase))
 
     def _get_bucket_location(self, access_key, secret_key, bucket):
         import boto
+
         return boto.connect_s3(access_key, secret_key).get_bucket(bucket).get_location() or DEFAULT_BUCKET_REGION
 
     @retry_long
     def _write_s3_key(self, dump_path, key_name):
         destination = 's3://{}/{}'.format(self.bucket.name, key_name)
         self.logger.info('Start uploading {} to {}'.format(dump_path, destination))
-
-        with closing(self.bucket.new_key(key_name)) as key, open(dump_path, 'r') as f:
+        key = self.bucket.new_key(key_name)
+        key.set_metadata('total', self.write_buffer.stats['written_keys']['keys'].values()[0]['number_of_records'])
+        with open(dump_path, 'r') as f:
             key.set_contents_from_file(f)
+        key.close()
 
         self.logger.info('Saved {}'.format(destination))
 
