@@ -1,6 +1,5 @@
 from exporters.groupers.base_grouper import BaseGrouper
 from exporters.python_interpreter import Interpreter, DEFAULT_CONTEXT
-import logging
 
 
 class PythonExpGrouper(BaseGrouper):
@@ -26,7 +25,8 @@ class PythonExpGrouper(BaseGrouper):
             context.update({'item': item})
             membership = [self.interpreter.eval(expression, context=context) for expression in self.expressions]
         except Exception as ex:
-            pass
+            self.logger.error(str(ex))
+            raise
         return membership
 
     def group_batch(self, batch):
