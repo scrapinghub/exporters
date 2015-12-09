@@ -1,4 +1,3 @@
-from contextlib import closing
 from exporters.default_retries import retry_long
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
