@@ -1,3 +1,4 @@
+from contextlib import closing
 from exporters.default_retries import retry_long
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
@@ -63,15 +64,17 @@ class S3Writer(FilebaseBaseWriter):
 
         return boto.connect_s3(access_key, secret_key).get_bucket(bucket).get_location() or DEFAULT_BUCKET_REGION
 
+    def _get_total_count(self, dump_path):
+        return self.write_buffer.stats['written_keys']['keys'][dump_path]['number_of_records']
+
     @retry_long
     def _write_s3_key(self, dump_path, key_name):
         destination = 's3://{}/{}'.format(self.bucket.name, key_name)
         self.logger.info('Start uploading {} to {}'.format(dump_path, destination))
-        key = self.bucket.new_key(key_name)
-        key.set_metadata('total', self.write_buffer.stats['written_keys']['keys'].values()[0]['number_of_records'])
-        with open(dump_path, 'r') as f:
+        with closing(self.bucket.new_key(key_name)) as key, open(dump_path, 'r') as f:
+            if self.save_metadata:
+                key.set_metadata('total', self._get_total_count(dump_path))
             key.set_contents_from_file(f)
-        key.close()
 
         self.logger.info('Saved {}'.format(destination))
 
