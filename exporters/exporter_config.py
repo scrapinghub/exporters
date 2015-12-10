@@ -128,7 +128,7 @@ def _get_option_error(name, spec, config_options):
     required = 'default' not in spec and 'env_fallback' not in spec
 
     if required and name not in config_options:
-        return 'Option is missing'
+        return 'Option %s is missing' % name
     else:
         value = config_options.get(name, empty)
         if value is not empty and not isinstance(value, spec['type']):
