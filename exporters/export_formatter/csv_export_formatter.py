@@ -24,7 +24,7 @@ class CSVExportFormatter(BaseExportFormatter):
 
     def _get_fields_from_schema(self):
         schema = self.read_option('schema')
-        return schema.get('required')
+        return schema.get('properties', {}).keys()
 
     def _get_fields(self):
         if self.read_option('fields'):
