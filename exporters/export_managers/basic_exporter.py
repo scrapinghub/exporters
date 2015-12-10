@@ -11,6 +11,9 @@ class BasicExporter(BaseExporter):
 
     def __init__(self, configuration):
         super(BasicExporter, self).__init__(configuration)
+        self.bypass_cases = [
+            S3Bypass(self.config),
+        ]
 
     @staticmethod
     def from_file_configuration(filepath):
@@ -21,7 +24,3 @@ class BasicExporter(BaseExporter):
     def from_persistence_configuration(persistence_uri):
         conf_string = PersistenceConfigDispatcher(persistence_uri).config
         return BasicExporter(conf_string)
-
-    @property
-    def bypass_cases(self):
-        return [S3Bypass(self.config)]

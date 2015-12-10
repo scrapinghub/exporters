@@ -3,8 +3,7 @@ import mock
 import unittest
 from exporters.export_managers.base_exporter import BaseExporter
 from exporters.export_managers.basic_exporter import BasicExporter
-from exporters.export_managers.bypass import BaseBypass
-from exporters.exporter_config import ExporterConfig
+from exporters.export_managers.bypass import BaseBypass, RequisitesNotMet
 from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
 from exporters.writers.console_writer import ConsoleWriter
@@ -17,6 +16,18 @@ def get_filename(path, persistence_id):
 
 def fail(*a, **kw):
     raise ValueError("fail")
+
+
+class FakeBypass(BaseBypass):
+    bypass_called = False
+    fake_meet_conditions = True
+
+    def meets_conditions(self):
+        if not self.fake_meet_conditions:
+            raise RequisitesNotMet
+
+    def bypass(self):
+        self.bypass_called = True
 
 
 class BaseExportManagerTest(unittest.TestCase):
@@ -56,11 +67,44 @@ class BaseExportManagerTest(unittest.TestCase):
         expected_count = 10 + 1  # FIXME: it's currently counting header as an item
         self.assertEquals(expected_count, exporter.writer.items_count)
 
-    def test_bypass(self):
+    def test_bypass_should_be_called(self):
+        # given:
         self.exporter = exporter = BaseExporter(self.build_config())
-        with self.assertRaises(NotImplementedError):
-            exporter.bypass_exporter(BaseBypass(ExporterConfig(self.build_config())))
-        exporter._clean_export_job()
+        bypass_instance = FakeBypass(exporter.config)
+        exporter.bypass_cases = [bypass_instance]
+
+        # when:
+        exporter.export()
+
+        # then:
+        self.assertTrue(bypass_instance.bypass_called, "Bypass should have been called")
+
+    def test_when_unmet_conditions_bypass_should_not_be_called(self):
+        # given:
+        self.exporter = exporter = BaseExporter(self.build_config())
+        bypass_instance = FakeBypass(exporter.config)
+        bypass_instance.fake_meet_conditions = False
+        exporter.bypass_cases = [bypass_instance]
+
+        # when:
+        exporter.export()
+
+        # then:
+        self.assertFalse(bypass_instance.bypass_called, "Bypass should NOT have been called")
+
+    def test_when_meet_conditions_but_config_prevent_bypass_it_should_not_be_called(self):
+        # given:
+        config = self.build_config()
+        config['exporter_options']['prevent_bypass'] = True
+        self.exporter = exporter = BaseExporter(config)
+        bypass_instance = FakeBypass(exporter.config)
+        exporter.bypass_cases = [bypass_instance]
+
+        # when:
+        exporter.export()
+
+        # then:
+        self.assertFalse(bypass_instance.bypass_called, "Bypass should NOT have been called")
 
     @mock.patch('exporters.writers.ftp_writer.FTPWriter.write', new=fail)
     @mock.patch('exporters.export_managers.base_exporter.NotifiersList')
