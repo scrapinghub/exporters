@@ -118,8 +118,14 @@ class CSVFormatterTest(unittest.TestCase):
         # when:
         items = list(formatter.format(self.batch))
 
+        # print [i.formatted for i in items]
+        #
         # then:
         self.assertEqual([True] + [False] * 5, [i.header for i in items])
-        self.assertEqual(['"key1","key2"'] + ['"value1","value2"'] * 5,
-                         [i.formatted for i in items])
+        expected_titles = set(['"key1"','"key2"'])
+        given_titles = set(items[0].formatted.split(','))
+        items.pop(0)
+        self.assertEqual(expected_titles, given_titles)
+        for i in range(5):
+            self.assertEqual(set(['"value1"', '"value2"']), set(items[i].formatted.split(',')))
         self.assertEqual(set(['csv']), set(i.format for i in items))
