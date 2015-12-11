@@ -68,19 +68,26 @@ class S3Bypass(BaseBypass):
             if self.tmp_folder:
                 shutil.rmtree(self.tmp_folder)
 
+    def _copy_with_permissions(self, dest_bucket, dest_key_name, source_bucket, key_name):
+        try:
+            dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
+        except S3ResponseError:
+            logging.log(logging.WARNING, 'No direct copy supported.')
+            self.copy_mode = False
+            self.tmp_folder = tempfile.mkdtemp()
+
+    def _copy_without_permissions(self, dest_bucket, dest_key_name, source_bucket, key_name):
+        key = source_bucket.get_key(key_name)
+        tmp_filename = os.path.join(self.tmp_folder, str(uuid.uuid4()))
+        key.get_contents_to_filename(tmp_filename)
+        dest_key = dest_bucket.new_key(dest_key_name)
+        dest_key.set_contents_from_filename(tmp_filename)
+        os.remove(tmp_filename)
+
     @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):
         if self.copy_mode:
-            try:
-                dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
-            except S3ResponseError:
-                logging.log(logging.WARNING, 'No direct copy supported.')
-                self.copy_mode = False
-                self.tmp_folder = tempfile.mkdtemp()
+            self._copy_with_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
         if not self.copy_mode:
-            key = source_bucket.get_key(key_name)
-            tmp_filename = os.path.join(self.tmp_folder, str(uuid.uuid4()))
-            key.get_contents_to_filename(tmp_filename)
-            dest_key = dest_bucket.new_key(dest_key_name)
-            dest_key.set_contents_from_filename(tmp_filename)
-            os.remove(tmp_filename)
+            self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
+
