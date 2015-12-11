@@ -106,8 +106,8 @@ class CSVFormatterTest(unittest.TestCase):
                         }
                     },
                     'required': [
-                        'key2',
-                        'key1'
+                        'key1',
+                        'key2'
                     ],
                     'type': 'object'
                 }
@@ -120,6 +120,7 @@ class CSVFormatterTest(unittest.TestCase):
 
         # then:
         self.assertEqual([True] + [False] * 5, [i.header for i in items])
-        self.assertEqual(['"key2","key1"'] + ['"value2","value1"'] * 5,
+        self.assertEqual(['"key1","key2"'] + ['"value1","value2"'] * 5,
                          [i.formatted for i in items])
         self.assertEqual(set(['csv']), set(i.format for i in items))
+
