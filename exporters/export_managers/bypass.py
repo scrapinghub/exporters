@@ -68,13 +68,13 @@ class S3Bypass(BaseBypass):
             if self.tmp_folder:
                 shutil.rmtree(self.tmp_folder)
 
-    @retry_long
+    # @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):
         if self.copy_mode:
             try:
                 dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
             except S3ResponseError:
-                logging.warning('No direct copy supported.')
+                logging.log(logging.WARNING, 'No direct copy supported.')
                 self.copy_mode = False
                 self.tmp_folder = tempfile.mkdtemp()
         if not self.copy_mode:
