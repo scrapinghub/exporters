@@ -1,5 +1,5 @@
 from exporters.filters.base_filter import BaseFilter
-from exporters.python_interpreter import Interpreter, DEFAULT_CONTEXT
+from exporters.python_interpreter import Interpreter, create_context
 
 
 class PythonexpFilter(BaseFilter):
@@ -22,8 +22,7 @@ class PythonexpFilter(BaseFilter):
 
     def filter(self, item):
         try:
-            context = DEFAULT_CONTEXT.copy()
-            context.update({'item': item})
+            context = create_context(item=item)
             return self.interpreter.eval(self.expression, context=context)
         except Exception as ex:
             self.logger.error(str(ex))

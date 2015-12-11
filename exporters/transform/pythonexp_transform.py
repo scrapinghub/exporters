@@ -1,5 +1,5 @@
 from exporters.transform.base_transform import BaseTransform
-from exporters.python_interpreter import Interpreter, DEFAULT_CONTEXT
+from exporters.python_interpreter import Interpreter, create_context
 
 
 class PythonexpTransform(BaseTransform):
@@ -24,8 +24,7 @@ class PythonexpTransform(BaseTransform):
 
     def transform_batch(self, batch):
         for item in batch:
-            context = DEFAULT_CONTEXT.copy()
-            context.update({'item': item})
+            context = create_context(item=item)
             for expression in self.python_expressions:
                 self.interpreter.eval(expression, context=context)
             yield item
