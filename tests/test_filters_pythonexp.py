@@ -29,4 +29,23 @@ class PythonexpFilterFilterTest(unittest.TestCase):
         expr = "item.get('updated') and item['updated'] >= str(datetime.datetime.now() - datetime.timedelta(days=1))[:10]"
         python_filter = PythonexpFilter({'options': {'python_expression': expr}})
         result = list(python_filter.filter_batch(batch))
-        self.assertEqual(['item2', 'item3'], [d['name'] for d in result])
+        self.assertEqual(['item2', 'item3'],
+                         [d['name'] for d in result])
+
+    def test_filter_with_fuzzywuzzy(self):
+        batch = [
+            BaseRecord({'name': 'Bilbao Falcons', 'country_code': 'es'}),
+            BaseRecord({'name': 'New York Jets', 'country_code': 'us'}),
+            BaseRecord({'name': 'Madrid Cabbaleros', 'country_code': 'es'}),
+            BaseRecord({'name': 'New York Giants', 'country_code': 'us'}),
+        ]
+        expr = "fuzz.ratio('New York', item.get('name')) > 50"
+        python_filter = PythonexpFilter({
+            'options': {
+                'python_expression': expr,
+                'imports': {'fuzz': 'fuzzywuzzy.fuzz'},
+            }
+        })
+        result = list(python_filter.filter_batch(batch))
+        self.assertEqual(['New York Jets', 'New York Giants'],
+                         [d['name'] for d in result])
