@@ -68,7 +68,7 @@ class S3Bypass(BaseBypass):
             if self.tmp_folder:
                 shutil.rmtree(self.tmp_folder)
 
-    # @retry_long
+    @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):
         if self.copy_mode:
             try:
