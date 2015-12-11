@@ -8,12 +8,14 @@ def create_context(**kwargs):
     import datetime
     import re
     import itertools
-    context = dict(
-        datetime=datetime,
-        re=re,
-        itertools=itertools,
+    context = dict(kwargs)
+    context.update(
+        dict(
+            datetime=datetime,
+            re=re,
+            itertools=itertools,
+        ),
     )
-    context.update(kwargs)
     return context
 
 
