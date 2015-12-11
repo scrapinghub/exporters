@@ -106,8 +106,8 @@ class CSVFormatterTest(unittest.TestCase):
                         }
                     },
                     'required': [
-                        'key2',
-                        'key1'
+                        'key1',
+                        'key2'
                     ],
                     'type': 'object'
                 }
