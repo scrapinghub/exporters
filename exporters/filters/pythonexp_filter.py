@@ -1,5 +1,11 @@
 from exporters.filters.base_filter import BaseFilter
-from exporters.python_interpreter import Interpreter, DEFAULT_CONTEXT
+from exporters.python_interpreter import Interpreter, create_context
+from importlib import import_module
+
+
+def load_imports(imports):
+    # XXX: should we blacklist (or whitelist?) imports here?
+    return {name: import_module(mod) for name, mod in imports.items()}
 
 
 class PythonexpFilter(BaseFilter):
@@ -11,19 +17,23 @@ class PythonexpFilter(BaseFilter):
     """
     # List of options
     supported_options = {
-        'python_expression': {'type': basestring}
+        'python_expression': {'type': basestring},
+        'imports': {'type': dict, 'default': {}},
     }
 
     def __init__(self, options):
         super(PythonexpFilter, self).__init__(options)
+        self.logger.warning('PythonexpFilter can import insecure code'
+                            ' -- only use it in contained environments')
         self.expression = self.read_option('python_expression')
+        self.imports = load_imports(self.read_option('imports'))
         self.interpreter = Interpreter()
-        self.logger.info('PythonexpFilter has been initiated. Expression: {!r}'.format(self.expression))
+        self.logger.info('PythonexpFilter has been initiated.'
+                         ' Expression: {!r}'.format(self.expression))
 
     def filter(self, item):
         try:
-            context = DEFAULT_CONTEXT.copy()
-            context.update({'item': item})
+            context = create_context(item=item, **self.imports)
             return self.interpreter.eval(self.expression, context=context)
         except Exception as ex:
             self.logger.error(str(ex))

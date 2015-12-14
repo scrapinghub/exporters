@@ -13,7 +13,6 @@ class FakeMailWriter(MailWriter):
         self.send_called_number += 1
 
 
-
 class MailWriterTest(unittest.TestCase):
 
     def setUp(self):
@@ -32,7 +31,7 @@ class MailWriterTest(unittest.TestCase):
         writer = FakeMailWriter(self.writer_config)
         writer.write(self.batch_path, [])
         self.assertEqual(writer.send_called_number, 0)
-        writer.stats['items_count'] = 1
+        writer.items_count = 1
         writer.write(self.batch_path, [])
         self.assertEqual(writer.send_called_number, 1)
         writer.close()

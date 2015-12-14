@@ -12,7 +12,8 @@ class ExporterConfig(object):
     def __init__(self, configuration):
         check_for_errors(configuration)
         self.configuration = configuration
-        self.exporter_options = self.configuration['exporter_options']
+        exporter_options = self.configuration.get('exporter_options', {})
+        self.exporter_options = exporter_options
         self.reader_options = self._merge_options('reader')
         if 'filter' in self.configuration:
             self.filter_before_options = self._merge_options('filter')
@@ -25,11 +26,11 @@ class ExporterConfig(object):
         # Persistence module needs to know about the full configuration, in order to retrieve it if needed
         self.persistence_options = self._merge_options('persistence', DEFAULT_PERSISTENCE_CLASS)
         self.persistence_options['configuration'] = json.dumps(configuration)
-        self.persistence_options['resume'] = configuration['exporter_options'].get('resume', False)
-        self.persistence_options['persistence_state_id'] = configuration['exporter_options'].get('persistence_state_id', None)
+        self.persistence_options['resume'] = exporter_options.get('resume', False)
+        self.persistence_options['persistence_state_id'] = exporter_options.get('persistence_state_id', None)
         self.stats_options = self._merge_options('stats_manager', DEFAULT_STATS_MANAGER_CLASS)
-        self.formatter_options = self.configuration['exporter_options'].get('formatter', DEFAULT_FORMATTER_CLASS)
-        self.notifiers = self.configuration['exporter_options'].get('notifications', [])
+        self.formatter_options = exporter_options.get('formatter', DEFAULT_FORMATTER_CLASS)
+        self.notifiers = exporter_options.get('notifications', [])
 
     def __str__(self):
         return json.dumps(self.configuration)
@@ -43,6 +44,10 @@ class ExporterConfig(object):
     def log_options(self):
         return {'log_level': self.exporter_options.get('log_level', DEFAULT_LOGGER_LEVEL),
                 'logger_name': self.exporter_options.get('logger_name', DEFAULT_LOGGER_NAME)}
+
+    @property
+    def prevent_bypass(self):
+        return self.exporter_options.get('prevent_bypass', False)
 
 
 MODULE_TYPES = ['readers', 'writers', 'transform', 'groupers',
@@ -63,8 +68,7 @@ def module_options():
     return options
 
 
-REQUIRED_CONFIG_SECTIONS = frozenset(
-    ['reader', 'writer', 'exporter_options'])
+REQUIRED_CONFIG_SECTIONS = frozenset(['reader', 'writer'])
 
 
 Parameter = collections.namedtuple('Parameter', 'name options')
@@ -124,7 +128,7 @@ def _get_option_error(name, spec, config_options):
     required = 'default' not in spec and 'env_fallback' not in spec
 
     if required and name not in config_options:
-        return 'Option is missing'
+        return 'Option %s is missing' % name
     else:
         value = config_options.get(name, empty)
         if value is not empty and not isinstance(value, spec['type']):

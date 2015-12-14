@@ -61,6 +61,7 @@ class CustomWriterTest(unittest.TestCase):
         # when:
         try:
             writer.write_batch(self.batch)
+            writer.flush()
         finally:
             writer.close()
 
@@ -68,13 +69,13 @@ class CustomWriterTest(unittest.TestCase):
         output = writer.custom_output[()]
         self.assertEquals([json.dumps(item) for item in self.batch],
                           output.splitlines())
-        self.assertEquals('jl', writer.file_extension)
+        self.assertEquals('jl', writer.write_buffer.items_group_files.file_extension)
 
     def test_write_buffer_removes_files(self):
         # given:
         self.batch = list(JsonExportFormatter({}).format(self.batch))
         writer = FakeWriter({})
-        writer.items_per_buffer_write = 1
+        writer.write_buffer.items_per_buffer_write = 1
 
         # when:
         try:
@@ -96,6 +97,7 @@ class CustomWriterTest(unittest.TestCase):
         # when:
         try:
             writer.write_batch(self.batch)
+            writer.flush()
         finally:
             writer.close()
 
@@ -108,7 +110,8 @@ class CustomWriterTest(unittest.TestCase):
                 ['value13', 'value23'],
             ],
             [l for l in csv.reader(output)])
-        self.assertEquals('csv', writer.file_extension)
+
+        self.assertEquals('csv', writer.write_buffer.items_group_files.file_extension)
 
     def test_writer_stats(self):
         # given:
@@ -117,9 +120,10 @@ class CustomWriterTest(unittest.TestCase):
         # when:
         try:
             writer.write_batch(self.batch)
+            writer.flush()
         finally:
             writer.close()
-        self.assertEqual(writer.stats['items_count'], 3)
+        self.assertEqual(writer.items_count, 3)
         for key in writer.stats['written_keys']['keys']:
             self.assertEqual(writer.stats['written_keys']['keys'][key]['number_of_records'], 3)
 
@@ -144,7 +148,7 @@ class ConsoleWriterTest(unittest.TestCase):
             items_to_write.append(item)
 
         self.writer.write_batch(items_to_write)
-        self.assertEqual(self.writer.stats['items_count'], 10)
+        self.assertEqual(self.writer.items_count, 10)
 
 
 class FilebaseBaseWriterTest(unittest.TestCase):

@@ -193,7 +193,7 @@ class ConfigValidationTest(unittest.TestCase):
 
         exception = cm.exception
         expected_errors = {
-            'transform': {'jq_filter': 'Option is missing'}
+            'transform': {'jq_filter': 'Option jq_filter is missing'}
             }
         self.assertEqual(expected_errors, exception.errors)
 

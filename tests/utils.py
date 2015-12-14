@@ -1,4 +1,5 @@
-import os
+from copy import deepcopy
+
 
 VALID_EXPORTER_CONFIG = {
     'reader': {
@@ -25,12 +26,12 @@ VALID_EXPORTER_CONFIG = {
         'options': {'file_base': '/tmp'}
     },
     'grouper': {
-        'name': 'exporters.grouper.no_grouper.NoGrouper',
+        'name': 'exporters.groupers.no_grouper.NoGrouper',
     }
 }
 
 
 def valid_config_with_updates(updates):
-    config = VALID_EXPORTER_CONFIG.copy()
+    config = deepcopy(VALID_EXPORTER_CONFIG)
     config.update(updates)
     return config
