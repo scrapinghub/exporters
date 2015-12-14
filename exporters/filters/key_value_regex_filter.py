@@ -1,6 +1,7 @@
 from exporters.filters.base_filter import BaseFilter
 import re
 
+
 class KeyValueRegexFilter(BaseFilter):
     """
     Filter items depending on keys and values.
@@ -21,5 +22,5 @@ class KeyValueRegexFilter(BaseFilter):
         self.logger.info('KeyValueRegexFilter has been initiated. Keys: {}'.format(self.keys))
 
     def filter(self, item):
-        return all(kv['name'] in item and re.match(kv['value'], str(item[kv['name']]))
+        return all(kv['name'] in item and re.match(kv['value'], u'%s' % item[kv['name']])
                    for kv in self.keys)
