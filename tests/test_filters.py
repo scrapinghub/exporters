@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import unittest
 from exporters.filters.base_filter import BaseFilter
 from exporters.filters.key_value_filter import KeyValueFilter
@@ -84,26 +86,21 @@ class KeyValueFilterTest(unittest.TestCase):
 
 class KeyValueRegexFilterTest(unittest.TestCase):
 
-    def setUp(self):
-        self.options = {
-            'exporter_options': {
-                'log_level': 'DEBUG',
-                'logger_name': 'export-pipeline'
-            }
-        }
-        self.keys = [
-            {'name': 'country_code', 'value': 'e'}
-            ]
-
-        items = [{'name': 'item1', 'country_code': 'es'}, {'name': 'item2', 'country_code': 'uk'}]
-        self.batch = []
-        for item in items:
-            record = BaseRecord(item)
-            self.batch.append(record)
-        self.filter = KeyValueRegexFilter({'options': {'keys': self.keys}})
-
     def test_filter_batch_with_key_value_regex(self):
-        batch = self.filter.filter_batch(self.batch)
-        batch = list(batch)
-        self.assertEqual(1, len(batch))
-        self.assertIn('e', dict(batch[0])['country_code'])
+        # given:
+        items = [
+            {'name': 'item1', 'country': u'es'},
+            {'name': 'item2', 'country': u'egypt'},
+            {'name': 'item3', 'country': u'uk'},
+            {'name': 'item4', 'country': u'españa'},
+        ]
+        batch = [BaseRecord(it) for it in items]
+
+        keys = [{'name': 'country', 'value': 'e[sg]'}]
+        regex_filter = KeyValueRegexFilter({'options': {'keys': keys}})
+
+        # when:
+        result = list(regex_filter.filter_batch(batch))
+
+        # then:
+        self.assertEqual(['es', 'egypt', u'españa'], [d['country'] for d in result])
