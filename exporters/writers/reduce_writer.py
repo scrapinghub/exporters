@@ -27,14 +27,13 @@ class ReduceWriter(BaseWriter):
         self.reduce_function = compile_reduce_function(code)
         self.logger.info('ReduceWriter configured with code:\n%s\n' % code)
         self._accumulator = None
-        self._count = 0
 
     def write_batch(self, batch):
         for item in batch:
             self._accumulator = self.reduce_function(item, self._accumulator)
-            self._count += 1
-        self.logger.info('Reduced {} items, accumulator is: {}'.format(self._count,
-                                                                        self._accumulator))
+            self.increment_written_items()
+        self.logger.info('Reduced {} items, accumulator is: {}'.format(self.items_count,
+                                                                       self._accumulator))
 
     @property
     def reduced_result(self):

@@ -15,6 +15,4 @@ except ImportError:
 
 from .pickle_persistence import PicklePersistence
 PERSISTENCE_LIST.append(PicklePersistence)
-from exporters.persistence.exporter_api_persistence import ExporterApiPersistence
-PERSISTENCE_LIST.append(ExporterApiPersistence)
 

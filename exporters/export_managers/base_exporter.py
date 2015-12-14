@@ -1,5 +1,6 @@
 import datetime
 import traceback
+from exporters.writers.base_writer import ItemsLimitReached
 from exporters.export_managers import MODULES
 from exporters.export_managers.bypass import RequisitesNotMet
 from exporters.logger.base_logger import ExportManagerLogger
@@ -7,7 +8,6 @@ from exporters.notifications.notifiers_list import NotifiersList
 from exporters.module_loader import ModuleLoader
 from exporters.exporter_config import ExporterConfig
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
-from exporters.writers.base_writer import ItemsLimitReached
 
 
 class BaseExporter(object):
@@ -38,6 +38,7 @@ class BaseExporter(object):
         self.stats_manager = self.module_loader.load_stats_manager(
             self.config.stats_options)
         self.stats_manager.stats = job_info
+        self.bypass_cases = []
 
     def _run_pipeline_iteration(self):
         self.logger.debug('Getting new batch')
@@ -66,10 +67,6 @@ class BaseExporter(object):
         self.stats_manager.stats['elapsed_time'] = self.stats_manager.stats['end_time'] - \
                                                    self.stats_manager.stats['start_time']
 
-    @property
-    def bypass_cases(self):
-        return []
-
     def bypass_exporter(self, bypass_script):
         self.logger.info('Executing bypass {}.'.format(bypass_script.__class__.__name__))
         self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM],
@@ -81,6 +78,9 @@ class BaseExporter(object):
                                             info=self.stats_manager.stats)
 
     def bypass(self):
+        if self.config.prevent_bypass:
+            return False
+
         for bypass_script in self.bypass_cases:
             try:
                 bypass_script.meets_conditions()
@@ -120,6 +120,7 @@ class BaseExporter(object):
             else:
                 self._update_stats()
                 self._populate_stats()
+        self.writer.flush()
 
     def export(self):
         if not self.bypass():
