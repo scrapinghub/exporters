@@ -27,6 +27,46 @@ class BaseBypass(object):
         raise NotImplementedError
 
 
+class S3BypassResume(object):
+
+    def __init__(self, config, source_bucket, prefix, pattern):
+        self.prefix = prefix
+        self.pattern = pattern
+        module_loader = ModuleLoader()
+        self.persistence = module_loader.load_persistence(config)
+        self.position = self.persistence.get_last_position()
+        self.keys = self._retrieve_keys(source_bucket)
+
+    def _retrieve_keys(self, source_bucket):
+        if not self.position:
+            keys = self._get_keys_from_bucket(source_bucket)
+            self.position = {'pending': keys, 'done': []}
+            self.persistence.commit_position(self.position)
+        else:
+            keys = self.position['pending']
+        return keys
+
+    def _get_keys_from_bucket(self, source_bucket):
+        keys = []
+        for key in source_bucket.list(prefix=self.prefix):
+            if self.pattern:
+                if self._should_add_key(key):
+                    keys.append(key.name)
+            else:
+                keys.append(key.name)
+        return keys
+
+    def _should_add_key(self, key):
+        if re.match(os.path.join(self.prefix, self.pattern), key.name):
+            return True
+        return False
+
+    def key_copied(self, key):
+        self.position['pending'].remove(key)
+        self.position['done'].append(key)
+        self.persistence.commit_position(self.position)
+
+
 class S3Bypass(BaseBypass):
     """
     Bypass executed when data source and data destination are S3 buckets.
@@ -51,8 +91,6 @@ class S3Bypass(BaseBypass):
     def bypass(self):
         import boto
         reader_options = self.config.reader_options['options']
-        self.module_loader = ModuleLoader()
-        persistence = self.module_loader.load_persistence(self.config.persistence_options)
         writer_options = self.config.writer_options['options']
         source_connection = boto.connect_s3(reader_options['aws_access_key_id'],reader_options['aws_secret_access_key'])
         source_bucket_name = reader_options['bucket']
@@ -63,42 +101,18 @@ class S3Bypass(BaseBypass):
         dest_bucket_name = writer_options['bucket']
         dest_bucket = dest_connection.get_bucket(dest_bucket_name)
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
-
-        position = persistence.get_last_position()
-        if not position:
-            self.keys = self._get_keys_from_bucket(source_bucket)
-            position = {'pending': self.keys, 'done': []}
-            persistence.commit_position(position)
-        else:
-            self.keys = position['pending']
+        s3_persistence = S3BypassResume(self.config.persistence_options, source_bucket_name, self.prefix, self.pattern)
 
         try:
-            for key in self.keys:
+            for key in s3_persistence.keys:
                 dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
                 self._copy_key(dest_bucket, dest_key_name, source_bucket, key)
-                position['pending'].remove(key)
-                position['done'].append(key)
-                persistence.commit_position(position)
+                s3_persistence.key_copied(key)
                 logging.log(logging.INFO,
                             'Copied key {} to dest: s3://{}/{}'.format(key, dest_bucket_name, dest_key_name))
         finally:
             if self.tmp_folder:
                 shutil.rmtree(self.tmp_folder)
-
-    def _should_add_key(self, key):
-        if re.match(os.path.join(self.prefix, self.pattern), key.name):
-            return True
-        return False
-
-    def _get_keys_from_bucket(self, source_bucket):
-        keys = []
-        for key in source_bucket.list(prefix=self.prefix):
-            if self.pattern:
-                if self._should_add_key(key):
-                    keys.append(key.name)
-            else:
-                keys.append(key.name)
-        return keys
 
     def _copy_with_permissions(self, dest_bucket, dest_key_name, source_bucket, key_name):
         try:
