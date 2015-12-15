@@ -28,9 +28,9 @@ class PicklePersistence(BasePersistence):
         return os.path.join(self.read_option('file_path'), self.persistence_state_id)
 
     def get_last_position(self):
-        if not os.path.isfile(os.path.join(self.read_option('file_path'), self.persistence_state_id)):
+        if not os.path.isfile(self._get_persistence_file_name()):
             raise ValueError('Trying to resume job {}, but path {} does not exist or is a directory.'
-                             .format(self.persistence_state_id, os.path.join(self.read_option('file_path'), self.persistence_state_id)))
+                             .format(self.persistence_state_id, self._get_persistence_file_name()))
         persistence_file = open(self._get_persistence_file_name(), 'r')
         persistence_object = pickle.load(persistence_file)
         persistence_file.close()
@@ -39,21 +39,30 @@ class PicklePersistence(BasePersistence):
 
     def commit_position(self, last_position=None):
         self.last_position = last_position
-        persistence_object = {'persistence_state_id': self.persistence_state_id, 'last_position': self.last_position, 'configuration': str(self.configuration)}
-        persistence_file = open(os.path.join(self.read_option('file_path'), self.persistence_state_id), 'w')
-        pickle.dump(persistence_object, persistence_file)
-        persistence_file.close()
-        self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: ' + self.persistence_state_id)
+        persistence_object = {
+            'persistence_state_id': self.persistence_state_id,
+            'last_position': self.last_position,
+            'configuration': str(self.configuration)
+        }
+        with open(self._get_persistence_file_name(), 'w') as persistence_file:
+            pickle.dump(persistence_object, persistence_file)
+        self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: '
+                          + self.persistence_state_id)
         self.stats['commited_positions'] += 1
 
     def generate_new_job(self):
-        persistence_state_id = str(uuid.uuid4())
-        persistence_object = {'persistence_state_id': persistence_state_id, 'last_position': None, 'configuration': str(self.configuration)}
-        persistence_file = open(os.path.join(self.read_option('file_path'), persistence_state_id), 'w')
-        pickle.dump(persistence_object, persistence_file)
-        persistence_file.close()
-        self.logger.debug('Created persistence pickle file in ' + self.read_option('file_path') + persistence_state_id)
-        return persistence_state_id
+        self.persistence_state_id = str(uuid.uuid4())
+        persistence_object = {
+            'persistence_state_id': self.persistence_state_id,
+            'last_position': None,
+            'configuration': str(self.configuration)
+        }
+        with open(self._get_persistence_file_name(), 'w') as persistence_file:
+            pickle.dump(persistence_object, persistence_file)
+
+        self.logger.debug('Created persistence pickle file in ' +
+                          self.read_option('file_path') + self.persistence_state_id)
+        return self.persistence_state_id
 
     def close(self):
         pass
