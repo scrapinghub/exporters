@@ -7,14 +7,14 @@ class FSReaderTest(unittest.TestCase):
         self.options = {
             'name': 'exporters.readers.fs_reader.FSReader',
             'options': {
-                'path': './data/fs_reader_test',
+                'path': './tests/data/fs_reader_test',
             }
         }
 
         self.options_pointer = {
             'name': 'exporters.readers.fs_reader.FSReader',
             'options': {
-                'path_pointer': './data/fs_reader_pointer',
+                'path_pointer': './tests/data/fs_reader_pointer',
             }
         }
 
