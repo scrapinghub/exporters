@@ -71,6 +71,9 @@ class BaseExporter(object):
         self.logger.info('Executing bypass {}.'.format(bypass_script.__class__.__name__))
         self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM],
                                          info=self.stats_manager.stats)
+        if not self.config.exporter_options.get('resume'):
+            self.persistence.close()
+            self.persistence.delete()
         bypass_script.bypass()
         self.logger.info(
             'Finished executing bypass {}.'.format(bypass_script.__class__.__name__))
@@ -84,9 +87,6 @@ class BaseExporter(object):
         for bypass_script in self.bypass_cases:
             try:
                 bypass_script.meets_conditions()
-                if not self.config.exporter_options.get('resume'):
-                    self.persistence.close()
-                    self.persistence.delete()
                 self.bypass_exporter(bypass_script)
                 return True
             except RequisitesNotMet:
