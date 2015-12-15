@@ -4,8 +4,6 @@ from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 
 class JsonExportFormatter(BaseExportFormatter):
 
-    format_name = 'csv'
-
     supported_options = {
         'show_titles': {'type': bool, 'default': False}
     }
