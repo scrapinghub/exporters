@@ -7,44 +7,20 @@ import tempfile
 import uuid
 from boto.exception import S3ResponseError
 from exporters.default_retries import retry_long
+from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
 
 
-class RequisitesNotMet(Exception):
-    """
-    Exception thrown when bypass requisites are note meet.
-    """
-
-
-class BaseBypass(object):
+class S3Keys(object):
     def __init__(self, config):
-        self.config = config
-
-    def meets_conditions(self):
-        raise NotImplementedError
-
-    def bypass(self):
-        raise NotImplementedError
-
-
-class S3BypassResume(object):
-
-    def __init__(self, config, source_bucket, prefix, pattern):
-        self.prefix = prefix
-        self.pattern = pattern
-        module_loader = ModuleLoader()
-        self.persistence = module_loader.load_persistence(config)
-        self.position = self.persistence.get_last_position()
-        self.keys = self._retrieve_keys(source_bucket)
-
-    def _retrieve_keys(self, source_bucket):
-        if not self.position:
-            keys = self._get_keys_from_bucket(source_bucket)
-            self.position = {'pending': keys, 'done': []}
-            self.persistence.commit_position(self.position)
-        else:
-            keys = self.position['pending']
-        return keys
+        import boto
+        reader_options = config.reader_options['options']
+        source_connection = boto.connect_s3(reader_options['aws_access_key_id'], reader_options['aws_secret_access_key'])
+        source_bucket_name = reader_options['bucket']
+        source_bucket = source_connection.get_bucket(source_bucket_name)
+        self.prefix = reader_options.get('prefix', '')
+        self.pattern = reader_options.get('pattern', None)
+        self.keys = self._get_keys_from_bucket(source_bucket)
 
     def _get_keys_from_bucket(self, source_bucket):
         keys = []
@@ -60,6 +36,25 @@ class S3BypassResume(object):
         if re.match(os.path.join(self.prefix, self.pattern), key.name):
             return True
         return False
+
+
+class S3BypassResume(object):
+
+    def __init__(self, config):
+        self.config = config
+        module_loader = ModuleLoader()
+        self.persistence = module_loader.load_persistence(config.persistence_options)
+        self.position = self.persistence.get_last_position()
+        self._retrieve_keys()
+
+    def _retrieve_keys(self):
+        if not self.position:
+            self.s3_keys = S3Keys(self.config)
+            self.keys = self.s3_keys.keys
+            self.position = {'pending': self.keys, 'done': []}
+            self.persistence.commit_position(self.position)
+        else:
+            self.keys = self.position['pending']
 
     def key_copied(self, key):
         self.position['pending'].remove(key)
@@ -92,16 +87,14 @@ class S3Bypass(BaseBypass):
         import boto
         reader_options = self.config.reader_options['options']
         writer_options = self.config.writer_options['options']
-        source_connection = boto.connect_s3(reader_options['aws_access_key_id'],reader_options['aws_secret_access_key'])
-        source_bucket_name = reader_options['bucket']
-        source_bucket = source_connection.get_bucket(source_bucket_name)
-        self.prefix = reader_options.get('prefix', '')
-        self.pattern = reader_options.get('pattern', None)
         dest_connection = boto.connect_s3(writer_options['aws_access_key_id'], writer_options['aws_secret_access_key'])
         dest_bucket_name = writer_options['bucket']
         dest_bucket = dest_connection.get_bucket(dest_bucket_name)
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
-        s3_persistence = S3BypassResume(self.config.persistence_options, source_bucket, self.prefix, self.pattern)
+        s3_persistence = S3BypassResume(self.config)
+        source_connection = boto.connect_s3(reader_options['aws_access_key_id'], reader_options['aws_secret_access_key'])
+        source_bucket_name = reader_options['bucket']
+        source_bucket = source_connection.get_bucket(source_bucket_name)
 
         try:
             for key in s3_persistence.keys:
@@ -136,5 +129,3 @@ class S3Bypass(BaseBypass):
             self._copy_with_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
         if not self.copy_mode:
             self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
-
-

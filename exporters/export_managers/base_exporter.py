@@ -2,7 +2,7 @@ import datetime
 import traceback
 from exporters.writers.base_writer import ItemsLimitReached
 from exporters.export_managers import MODULES
-from exporters.export_managers.bypass import RequisitesNotMet
+from exporters.export_managers.base_bypass import RequisitesNotMet
 from exporters.logger.base_logger import ExportManagerLogger
 from exporters.notifications.notifiers_list import NotifiersList
 from exporters.module_loader import ModuleLoader

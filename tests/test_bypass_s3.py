@@ -6,7 +6,7 @@ import unittest
 import boto
 import moto
 import mock
-from exporters.export_managers.bypass import S3Bypass
+from exporters.export_managers.s3_to_s3_bypass import S3Bypass
 from exporters.exporter_config import ExporterConfig
 
 from exporters.records.base_record import BaseRecord

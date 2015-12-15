@@ -3,7 +3,8 @@ import mock
 import unittest
 from exporters.export_managers.base_exporter import BaseExporter
 from exporters.export_managers.basic_exporter import BasicExporter
-from exporters.export_managers.bypass import BaseBypass, RequisitesNotMet
+from exporters.export_managers.s3_to_s3_bypass import BaseBypass
+from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
 from exporters.writers.console_writer import ConsoleWriter
