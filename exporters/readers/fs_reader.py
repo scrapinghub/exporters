@@ -78,24 +78,24 @@ class FSReader(BaseReader):
             self.current_file = self.files[0]
             self.last_line = 0
 
-        dump_file = gzip.open(self.current_file, 'r')
-        lines = dump_file.readlines()
-        if self.last_line + self.batch_size <= len(lines):
-            last_item = self.last_line + self.batch_size
-        else:
-            last_item = len(lines)
-            self.read_files.append(self.current_file)
-            self.files.remove(self.current_file)
-            self.current_file = None
-            if len(self.files) == 0:
-                self.finished = True
+        with gzip.open(self.current_file, 'r') as dump_file:
+            lines = dump_file.readlines()
+            if self.last_line + self.batch_size <= len(lines):
+                last_item = self.last_line + self.batch_size
+            else:
+                last_item = len(lines)
+                self.read_files.append(self.current_file)
+                self.files.remove(self.current_file)
+                self.current_file = None
+                if len(self.files) == 0:
+                    self.finished = True
 
-        for line in lines[self.last_line:last_item]:
-            line = line.replace("\n", '')
-            item = BaseRecord(json.loads(line))
-            self.stats['read_items'] += 1
-            yield item
-        dump_file.close()
+            for line in lines[self.last_line:last_item]:
+                line = line.replace("\n", '')
+                item = BaseRecord(json.loads(line))
+                self.stats['read_items'] += 1
+                yield item
+
         self.last_line += self.batch_size
         self.last_position['files'] = self.files
         self.last_position['read_files'] = self.read_files
