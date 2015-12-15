@@ -101,7 +101,7 @@ class S3Bypass(BaseBypass):
         dest_bucket_name = writer_options['bucket']
         dest_bucket = dest_connection.get_bucket(dest_bucket_name)
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
-        s3_persistence = S3BypassResume(self.config.persistence_options, source_bucket_name, self.prefix, self.pattern)
+        s3_persistence = S3BypassResume(self.config.persistence_options, source_bucket, self.prefix, self.pattern)
 
         try:
             for key in s3_persistence.keys:
