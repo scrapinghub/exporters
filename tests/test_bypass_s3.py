@@ -1,16 +1,12 @@
 import json
-import re
 import tempfile
 import unittest
 
 import boto
 import moto
 import mock
-from exporters.export_managers.bypass import S3Bypass
+from exporters.export_managers.bypass import S3Bypass, RequisitesNotMet
 from exporters.exporter_config import ExporterConfig
-
-from exporters.records.base_record import BaseRecord
-from exporters.writers.s3_writer import S3Writer
 
 
 def create_fake_key():
@@ -30,6 +26,65 @@ def create_fake_connection():
     return connection
 
 
+def get_config(**kwargs):
+    config = {
+        'reader': {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'source_bucket',
+                'aws_access_key_id': 'a',
+                'aws_secret_access_key': 'a',
+                'prefix': 'some_prefix/'
+            }
+        },
+        'writer': {
+            'name': 'exporters.writers.s3_writer.S3Writer',
+            'options': {
+                'bucket': 'dest_bucket',
+                'aws_access_key_id': 'b',
+                'aws_secret_access_key': 'b',
+                'filebase': 'some_prefix/'
+            }
+        }
+    }
+    config.update(kwargs)
+    return ExporterConfig(config)
+
+
+class S3BypassConditionsTest(unittest.TestCase):
+    def test_should_meet_conditions(self):
+        bypass = S3Bypass(get_config())
+        # shouldn't raise any exception
+        bypass.meets_conditions()
+
+    def test_custom_filter_should_not_meet_conditions(self):
+        # given:
+        config = get_config(filter={
+            'name': 'exporters.filters.PythonexpFilter',
+            'options': {'python_expression': 'None'}
+        })
+
+        # when:
+        bypass = S3Bypass(config)
+
+        # then:
+        with self.assertRaises(RequisitesNotMet):
+            bypass.meets_conditions()
+
+    def test_custom_grouper_should_not_meet_conditions(self):
+        # given:
+        config = get_config(grouper={
+            'name': 'whatever.Grouper',
+        })
+
+        # when:
+        bypass = S3Bypass(config)
+
+        # then:
+        with self.assertRaises(RequisitesNotMet):
+            bypass.meets_conditions()
+
+
 class S3BypassTest(unittest.TestCase):
 
     def setUp(self):
@@ -46,14 +101,13 @@ class S3BypassTest(unittest.TestCase):
         key = self.source_bucket.new_key('some_prefix/test_key')
         key.set_contents_from_string(json.dumps(self.data))
 
-
     def tearDown(self):
         self.mock_s3.stop()
 
     def test_copy_bypass_s3(self):
         # given
         self.s3_conn.create_bucket('dest_bucket')
-        options = self.get_config()
+        options = get_config()
 
         # when:
         bypass = S3Bypass(options)
@@ -61,18 +115,14 @@ class S3BypassTest(unittest.TestCase):
 
         # then:
         bucket = self.s3_conn.get_bucket('dest_bucket')
-        keys = list(bucket.list('some_prefix/'))
-        self.assertEquals('some_prefix/test_key', keys[0].name)
-        contents = json.loads(keys[0].get_contents_as_string())
-        for item in contents:
-            self.assertIn('name', item.keys())
-            self.assertIn('birthday', item.keys())
+        key = next(iter(bucket.list('some_prefix/')))
+        self.assertEquals('some_prefix/test_key', key.name)
+        self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
 
-
-    def test_upload_download_bypass_s3(self):
+    def test_copy_mode_bypass(self):
         # given
-        self.s3_conn.create_bucket('dest_ud_bucket')
-        options = self.get_ud_config()
+        self.s3_conn.create_bucket('dest_bucket')
+        options = get_config()
 
         # when:
         bypass = S3Bypass(options)
@@ -81,55 +131,7 @@ class S3BypassTest(unittest.TestCase):
         bypass.bypass()
 
         # then:
-        bucket = self.s3_conn.get_bucket('dest_ud_bucket')
-        keys = list(bucket.list('some_prefix/'))
-        self.assertEquals('some_prefix/test_key', keys[0].name)
-        contents = json.loads(keys[0].get_contents_as_string())
-        for item in contents:
-            self.assertIn('name', item.keys())
-            self.assertIn('birthday', item.keys())
-
-
-    def get_config(self):
-        return ExporterConfig({
-            'reader': {
-                'name': 'exporters.readers.s3_reader.S3Reader',
-                'options': {
-                    'bucket': 'source_bucket',
-                    'aws_access_key_id': 'a',
-                    'aws_secret_access_key': 'a',
-                    'prefix': 'some_prefix/'
-                }
-            },
-            'writer': {
-                'name': 'exporters.writers.s3_writer.S3Writer',
-                'options': {
-                    'bucket': 'dest_bucket',
-                    'aws_access_key_id': 'b',
-                    'aws_secret_access_key': 'b',
-                    'filebase': 'some_prefix/'
-                }
-            }
-        })
-
-    def get_ud_config(self):
-        return ExporterConfig({
-            'reader': {
-                'name': 'exporters.readers.s3_reader.S3Reader',
-                'options': {
-                    'bucket': 'source_bucket',
-                    'aws_access_key_id': 'a',
-                    'aws_secret_access_key': 'a',
-                    'prefix': 'some_prefix/'
-                }
-            },
-            'writer': {
-                'name': 'exporters.writers.s3_writer.S3Writer',
-                'options': {
-                    'bucket': 'dest_ud_bucket',
-                    'aws_access_key_id': 'b',
-                    'aws_secret_access_key': 'b',
-                    'filebase': 'some_prefix/'
-                }
-            }
-        })
+        bucket = self.s3_conn.get_bucket('dest_bucket')
+        key = next(iter(bucket.list('some_prefix/')))
+        self.assertEquals('some_prefix/test_key', key.name)
+        self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
