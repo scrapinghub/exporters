@@ -39,6 +39,7 @@ class FSReader(BaseReader):
         self.path = self.read_option('path')
         self.path_pointer = self.read_option('path_pointer')
         self.pattern = self.read_option('pattern')
+        self.lines_reader = self.read_lines_from_files()
 
         if self.path and self.path_pointer:
             raise ConfigurationError("path and path_pointer options cannot be used together")
@@ -58,6 +59,25 @@ class FSReader(BaseReader):
         self.last_line = 0
         self.logger.info('FSReader has been initiated')
 
+    def read_lines_from_files(self):
+        for fpath in self.files:
+            with gzip.open(fpath) as f:
+                for line in f:
+                    self.last_line += 1
+                    line = line.replace("\n", '')
+                    item = BaseRecord(json.loads(line))
+                    yield item
+
+            self.read_files.append(fpath)
+            self.files.remove(fpath)
+            self.current_file = None
+            if len(self.files) == 0:
+                self.finished = True
+            self.last_position['files'] = self.files
+            self.last_position['read_files'] = self.read_files
+            self.last_position['current_file'] = self.current_file
+            self.last_position['last_line'] = self.last_line
+
     def _get_pointer(self, path_pointer):
         with open(path_pointer) as f:
             return f.read().strip()
@@ -74,33 +94,10 @@ class FSReader(BaseReader):
             self.files.append(file)
 
     def get_next_batch(self):
-        if not self.current_file:
-            self.current_file = self.files[0]
-            self.last_line = 0
-
-        with gzip.open(self.current_file, 'r') as dump_file:
-            lines = dump_file.readlines()
-            if self.last_line + self.batch_size <= len(lines):
-                last_item = self.last_line + self.batch_size
-            else:
-                last_item = len(lines)
-                self.read_files.append(self.current_file)
-                self.files.remove(self.current_file)
-                self.current_file = None
-                if len(self.files) == 0:
-                    self.finished = True
-
-            for line in lines[self.last_line:last_item]:
-                line = line.replace("\n", '')
-                item = BaseRecord(json.loads(line))
-                self.stats['read_items'] += 1
-                yield item
-
-        self.last_line += self.batch_size
-        self.last_position['files'] = self.files
-        self.last_position['read_files'] = self.read_files
-        self.last_position['current_file'] = self.current_file
-        self.last_position['last_line'] = self.last_line
+        count = 0
+        while count < self.batch_size:
+            count += 1
+            yield next(self.lines_reader)
         self.logger.debug('Done reading batch')
 
     def set_last_position(self, last_position):
