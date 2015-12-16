@@ -42,6 +42,9 @@ class S3Keys(object):
             return True
         return False
 
+    def pending_keys(self):
+        return self.keys
+
 
 class S3BypassResume(object):
 
@@ -55,7 +58,7 @@ class S3BypassResume(object):
     def _retrieve_keys(self):
         if not self.position:
             self.s3_keys = S3Keys(self.config)
-            self.keys = self.s3_keys.keys
+            self.keys = self.s3_keys.pending_keys()
             self.position = {'pending': self.keys, 'done': []}
             self.state.commit_position(self.position)
         else:
@@ -65,6 +68,9 @@ class S3BypassResume(object):
         self.position['pending'].remove(key)
         self.position['done'].append(key)
         self.state.commit_position(self.position)
+
+    def pending_keys(self):
+        return self.keys
 
 
 class S3Bypass(BaseBypass):
@@ -99,7 +105,7 @@ class S3Bypass(BaseBypass):
                                    reader_options['aws_secret_access_key'], reader_options['bucket'])
 
         try:
-            for key in s3_persistence.keys:
+            for key in s3_persistence.pending_keys():
                 dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
                 self._copy_key(dest_bucket, dest_key_name, source_bucket, key)
                 s3_persistence.key_copied(key)
