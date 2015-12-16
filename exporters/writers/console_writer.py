@@ -1,3 +1,5 @@
+import json
+
 from exporters.writers.base_writer import BaseWriter, ItemsLimitReached
 
 
@@ -9,6 +11,7 @@ class ConsoleWriter(BaseWriter):
     def __init__(self, options):
         super(ConsoleWriter, self).__init__(options)
         self.logger.info('ConsoleWriter has been initiated')
+        self.pretty_print = self.options.get('pretty_print', False)
 
     def write_batch(self, batch):
         for item in batch:

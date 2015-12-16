@@ -81,10 +81,12 @@ class S3Reader(BaseReader):
 
     @retry_long
     def _download_pointer(self, prefix_pointer):
+        self.logger.info('Downloading prefix pointer from key: %s' % prefix_pointer)
         return self.bucket.get_key(prefix_pointer).get_contents_as_string().strip()
 
     @retry_long
     def get_key(self, file_path):
+        self.logger.info('Downloading key: %s' % self.current_key)
         self.bucket.get_key(self.current_key).get_contents_to_filename(file_path)
 
     def get_next_batch(self):

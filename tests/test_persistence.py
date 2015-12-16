@@ -1,4 +1,3 @@
-import os
 import unittest
 from mock import patch, Mock
 from exporters.exporter_config import ExporterConfig

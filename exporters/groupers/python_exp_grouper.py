@@ -1,5 +1,5 @@
 from exporters.groupers.base_grouper import BaseGrouper
-from exporters.python_interpreter import Interpreter, DEFAULT_CONTEXT
+from exporters.python_interpreter import Interpreter, create_context
 
 
 class PythonExpGrouper(BaseGrouper):
@@ -21,8 +21,7 @@ class PythonExpGrouper(BaseGrouper):
     def _get_membership(self, item):
         membership = []
         try:
-            context = DEFAULT_CONTEXT.copy()
-            context.update({'item': item})
+            context = create_context(item=item)
             membership = [self.interpreter.eval(expression, context=context) for expression in self.expressions]
         except Exception as ex:
             self.logger.error(str(ex))
