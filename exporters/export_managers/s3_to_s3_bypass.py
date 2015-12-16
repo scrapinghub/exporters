@@ -48,8 +48,8 @@ class S3BypassResume(object):
     def __init__(self, config):
         self.config = config
         module_loader = ModuleLoader()
-        self.persistence = module_loader.load_persistence(config.persistence_options)
-        self.position = self.persistence.get_last_position()
+        self.state = module_loader.load_persistence(config.persistence_options)
+        self.position = self.state.get_last_position()
         self._retrieve_keys()
 
     def _retrieve_keys(self):
@@ -57,14 +57,14 @@ class S3BypassResume(object):
             self.s3_keys = S3Keys(self.config)
             self.keys = self.s3_keys.keys
             self.position = {'pending': self.keys, 'done': []}
-            self.persistence.commit_position(self.position)
+            self.state.commit_position(self.position)
         else:
             self.keys = self.position['pending']
 
     def key_copied(self, key):
         self.position['pending'].remove(key)
         self.position['done'].append(key)
-        self.persistence.commit_position(self.position)
+        self.state.commit_position(self.position)
 
 
 class S3Bypass(BaseBypass):
