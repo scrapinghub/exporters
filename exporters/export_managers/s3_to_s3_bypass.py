@@ -19,7 +19,6 @@ def get_bucket(aws_key, aws_secret, bucket_name):
 
 class S3Keys(object):
     def __init__(self, config):
-        import boto
         reader_options = config.reader_options['options']
         source_bucket = get_bucket(reader_options['aws_access_key_id'],
                                    reader_options['aws_secret_access_key'], reader_options['bucket'])
