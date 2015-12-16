@@ -1,3 +1,6 @@
+import json
+
+
 class BaseRecord(dict):
     """
     This class represents the basic item that the exporters pipeline works with.
@@ -12,3 +15,10 @@ class BaseRecord(dict):
     formatted = ''
     format = 'json'
     header = False
+
+    def __init__(self, *args, **kwargs):
+        super(BaseRecord, self).__init__(*args, **kwargs)
+        self.formatted = self._default_format()
+
+    def _default_format(self):
+        return json.dumps(self)
