@@ -84,7 +84,6 @@ class S3Bypass(BaseBypass):
         self.tmp_folder = None
 
     def meets_conditions(self):
-        self.config.reader_options['name'].endswith('S3Reader')
         if not self.config.reader_options['name'].endswith('S3Reader') or not self.config.writer_options['name'].endswith('S3Writer'):
             raise RequisitesNotMet
         if not self.config.filter_before_options['name'].endswith('NoFilter'):
@@ -92,6 +91,8 @@ class S3Bypass(BaseBypass):
         if not self.config.filter_after_options['name'].endswith('NoFilter'):
             raise RequisitesNotMet
         if not self.config.transform_options['name'].endswith('NoTransform'):
+            raise RequisitesNotMet
+        if not self.config.grouper_options['name'].endswith('NoGrouper'):
             raise RequisitesNotMet
 
     def bypass(self):

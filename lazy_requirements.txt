@@ -20,3 +20,5 @@ odo==0.3.4
 pandas==0.16.2
 
 PyDrive
+
+gcloud==0.8.0
