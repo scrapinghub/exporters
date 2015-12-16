@@ -64,7 +64,7 @@ class S3BypassResume(object):
         else:
             self.keys = self.position['pending']
 
-    def key_copied(self, key):
+    def commit_copied_key(self, key):
         self.position['pending'].remove(key)
         self.position['done'].append(key)
         self.state.commit_position(self.position)
@@ -108,7 +108,7 @@ class S3Bypass(BaseBypass):
             for key in s3_persistence.pending_keys():
                 dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
                 self._copy_key(dest_bucket, dest_key_name, source_bucket, key)
-                s3_persistence.key_copied(key)
+                s3_persistence.commit_copied_key(key)
                 logging.log(logging.INFO,
                             'Copied key {} to dest: s3://{}/{}'.format(key, dest_bucket.name, dest_key_name))
         finally:
