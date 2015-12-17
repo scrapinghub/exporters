@@ -4,8 +4,10 @@ import unittest
 import boto
 import moto
 import mock
-from exporters.export_managers.s3_to_s3_bypass import S3Bypass, RequisitesNotMet
+from exporters.export_managers.s3_to_s3_bypass import S3Bypass, RequisitesNotMet, \
+    S3BypassResume
 from exporters.exporter_config import ExporterConfig
+from exporters.persistence.base_persistence import BasePersistence
 
 
 def create_fake_key():
@@ -134,3 +136,38 @@ class S3BypassTest(unittest.TestCase):
         key = next(iter(bucket.list('some_prefix/')))
         self.assertEquals('some_prefix/test_key', key.name)
         self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
+
+
+class FakePersistence(BasePersistence):
+
+    def get_last_position(self):
+        return {'pending': ['key2', 'key3', 'key4'], 'done': ['key1']}
+
+    def generate_new_job(self):
+        pass
+
+    def close(self):
+        pass
+
+
+class FakeS3BypassResume(S3BypassResume):
+
+    def __init__(self, config):
+        self.config = config
+        self.state = FakePersistence(config.persistence_options)
+        self.position = self.state.get_last_position()
+        self._retrieve_keys()
+
+
+class S3BypassResumeTest(unittest.TestCase):
+
+    def test_bypass_resume(self):
+        # given
+        expected_keys = ['key2', 'key3', 'key4']
+        config = get_config()
+
+        # when:
+        bypass_resume = FakeS3BypassResume(config)
+
+        # then:
+        self.assertEqual(bypass_resume.keys, expected_keys)

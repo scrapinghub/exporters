@@ -9,6 +9,7 @@ from boto.exception import S3ResponseError
 from exporters.default_retries import retry_long
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
+from exporters.persistence.base_persistence import BasePersistence
 
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
