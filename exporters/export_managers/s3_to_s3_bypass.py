@@ -9,7 +9,6 @@ from boto.exception import S3ResponseError
 from exporters.default_retries import retry_long
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
-from exporters.persistence.base_persistence import BasePersistence
 
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
@@ -99,6 +98,7 @@ class S3Bypass(BaseBypass):
         writer_options = self.config.writer_options['options']
         dest_bucket = get_bucket(**writer_options)
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
+        dest_filebase = datetime.datetime.now().strftime(dest_filebase)
         s3_persistence = S3BypassResume(self.config)
         source_bucket = get_bucket(**reader_options)
 
