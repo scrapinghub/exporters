@@ -11,17 +11,16 @@ from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
 
 
-def get_bucket(aws_key, aws_secret, bucket_name):
+def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
     import boto
-    connection = boto.connect_s3(aws_key, aws_secret)
-    return connection.get_bucket(bucket_name)
+    connection = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
+    return connection.get_bucket(bucket)
 
 
 class S3Keys(object):
     def __init__(self, config):
         reader_options = config.reader_options['options']
-        self.source_bucket = get_bucket(reader_options['aws_access_key_id'],
-                                   reader_options['aws_secret_access_key'], reader_options['bucket'])
+        self.source_bucket = get_bucket(**reader_options)
         self.prefix = reader_options.get('prefix', '')
         self.pattern = reader_options.get('pattern', None)
         self.keys = self._get_keys_from_bucket()
@@ -97,12 +96,10 @@ class S3Bypass(BaseBypass):
     def bypass(self):
         reader_options = self.config.reader_options['options']
         writer_options = self.config.writer_options['options']
-        dest_bucket = get_bucket(writer_options['aws_access_key_id'],
-                                 writer_options['aws_secret_access_key'], writer_options['bucket'])
+        dest_bucket = get_bucket(**writer_options)
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
         s3_persistence = S3BypassResume(self.config)
-        source_bucket = get_bucket(reader_options['aws_access_key_id'],
-                                   reader_options['aws_secret_access_key'], reader_options['bucket'])
+        source_bucket = get_bucket(**reader_options)
 
         try:
             for key in s3_persistence.pending_keys():
