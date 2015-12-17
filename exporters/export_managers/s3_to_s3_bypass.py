@@ -20,15 +20,15 @@ def get_bucket(aws_key, aws_secret, bucket_name):
 class S3Keys(object):
     def __init__(self, config):
         reader_options = config.reader_options['options']
-        source_bucket = get_bucket(reader_options['aws_access_key_id'],
+        self.source_bucket = get_bucket(reader_options['aws_access_key_id'],
                                    reader_options['aws_secret_access_key'], reader_options['bucket'])
         self.prefix = reader_options.get('prefix', '')
         self.pattern = reader_options.get('pattern', None)
-        self.keys = self._get_keys_from_bucket(source_bucket)
+        self.keys = self._get_keys_from_bucket()
 
-    def _get_keys_from_bucket(self, source_bucket):
+    def _get_keys_from_bucket(self):
         keys = []
-        for key in source_bucket.list(prefix=self.prefix):
+        for key in self.source_bucket.list(prefix=self.prefix):
             if self.pattern:
                 if self._should_add_key(key):
                     keys.append(key.name)
@@ -42,7 +42,7 @@ class S3Keys(object):
         return False
 
     def pending_keys(self):
-        return self.keys
+        return self._get_keys_from_bucket()
 
 
 class S3BypassResume(object):
