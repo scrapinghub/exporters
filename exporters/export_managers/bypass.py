@@ -59,6 +59,7 @@ class S3Bypass(BaseBypass):
         dest_bucket_name = writer_options['bucket']
         dest_bucket = dest_connection.get_bucket(dest_bucket_name)
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
+        dest_filebase = datetime.datetime.now().strftime(dest_filebase)
         try:
             for key in source_bucket.list(prefix=prefix):
                 dest_key_name = '{}/{}'.format(dest_filebase, key.name.split('/')[-1])
