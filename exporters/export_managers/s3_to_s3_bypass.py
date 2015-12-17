@@ -93,12 +93,16 @@ class S3Bypass(BaseBypass):
         if not self.config.grouper_options['name'].endswith('NoGrouper'):
             raise RequisitesNotMet
 
+    def _get_filebase(self, writer_options):
+        dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
+        dest_filebase = datetime.datetime.now().strftime(dest_filebase)
+        return dest_filebase
+
     def bypass(self):
         reader_options = self.config.reader_options['options']
         writer_options = self.config.writer_options['options']
         dest_bucket = get_bucket(**writer_options)
-        dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
-        dest_filebase = datetime.datetime.now().strftime(dest_filebase)
+        dest_filebase = self._get_filebase(writer_options)
         s3_persistence = S3BypassResume(self.config)
         source_bucket = get_bucket(**reader_options)
 

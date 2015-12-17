@@ -2,6 +2,7 @@ import json
 import tempfile
 import unittest
 import boto
+import datetime
 import moto
 import mock
 from exporters.export_managers.s3_to_s3_bypass import S3Bypass, RequisitesNotMet, \
@@ -136,6 +137,30 @@ class S3BypassTest(unittest.TestCase):
         key = next(iter(bucket.list('some_prefix/')))
         self.assertEquals('some_prefix/test_key', key.name)
         self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
+
+    def test_filebase_format_bypass(self):
+        # given
+
+        writer = {
+              'name': 'exporters.writers.s3_writer.S3Writer',
+              'options': {
+                'bucket': 'a',
+                'aws_access_key_id': 'a',
+                'aws_secret_access_key': 'a',
+                'filebase': 'some_path/%Y-%m-%d/'
+              }
+        }
+
+        expected = 'some_path/%Y-%m-%d/'.format(datetime.datetime.now())
+        expected = datetime.datetime.now().strftime(expected)
+        options = get_config(writer=writer)
+
+        # when:
+        bypass = S3Bypass(options)
+
+        # then:
+        filebase = bypass._get_filebase(options.writer_options['options'])
+        self.assertEqual(expected, filebase)
 
 
 class FakePersistence(BasePersistence):
