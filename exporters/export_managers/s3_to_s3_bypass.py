@@ -110,6 +110,7 @@ class S3Bypass(BaseBypass):
         s3_persistence = S3BypassState(self.config)
         source_bucket = get_bucket(**reader_options)
         pending_keys = deepcopy(s3_persistence.pending_keys())
+        #TODO: replace this with a context manager
         try:
             for key in pending_keys:
                 dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
