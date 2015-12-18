@@ -134,7 +134,7 @@ class S3Bypass(BaseBypass):
         dest_key.set_contents_from_filename(tmp_filename)
         os.remove(tmp_filename)
 
-    # @retry_long
+    @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):
         if self.copy_mode:
             self._copy_with_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
