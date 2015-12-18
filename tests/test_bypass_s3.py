@@ -154,12 +154,10 @@ class S3BypassTest(unittest.TestCase):
             {'name': 'Roberto', 'birthday': '12/05/1987'},
             {'name': 'Claudia', 'birthday': '21/12/1985'},
         ]
-        key = source_bucket.new_key('some_prefix/key1')
-        key.set_contents_from_string(json.dumps(data))
-        key = source_bucket.new_key('some_prefix/key2')
-        key.set_contents_from_string(json.dumps(data))
-        key = source_bucket.new_key('some_prefix/key3')
-        key.set_contents_from_string(json.dumps(data))
+        for i in range(1, 4):
+            key = source_bucket.new_key('some_prefix/key{}'.format(i))
+            key.set_contents_from_string(json.dumps(data))
+        
         dest_bucket = self.s3_conn.get_bucket('resume_bucket')
         key = dest_bucket.new_key('some_prefix/key1')
         key.set_contents_from_string('not overwritten')
@@ -168,7 +166,6 @@ class S3BypassTest(unittest.TestCase):
         # given
         options = create_s3_bypass_simple_config()
         self._set_resume_prevstate(options)
-
         expected_final_keys = ['some_prefix/key1', 'some_prefix/key2', 'some_prefix/key3']
 
         # when:
