@@ -44,7 +44,7 @@ class S3Keys(object):
         return self._get_keys_from_bucket()
 
 
-class S3BypassResume(object):
+class S3BypassState(object):
 
     def __init__(self, config):
         self.config = config
@@ -104,7 +104,7 @@ class S3Bypass(BaseBypass):
         writer_options = self.config.writer_options['options']
         dest_bucket = get_bucket(**writer_options)
         dest_filebase = self._get_filebase(writer_options)
-        s3_persistence = S3BypassResume(self.config)
+        s3_persistence = S3BypassState(self.config)
         source_bucket = get_bucket(**reader_options)
         pending_keys = deepcopy(s3_persistence.pending_keys())
         try:
