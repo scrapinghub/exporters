@@ -23,7 +23,6 @@ class S3BucketKeysHelper(object):
         self.source_bucket = get_bucket(**reader_options)
         self.prefix = reader_options.get('prefix', '')
         self.pattern = reader_options.get('pattern', None)
-        self.keys = self._get_keys_from_bucket()
 
     def _get_keys_from_bucket(self):
         keys = []
@@ -50,25 +49,29 @@ class S3BypassState(object):
         self.config = config
         module_loader = ModuleLoader()
         self.state = module_loader.load_persistence(config.persistence_options)
-        self.position = self.state.get_last_position()
-        self._retrieve_keys()
-
-    def _retrieve_keys(self):
-        if not self.position:
+        self.state_position = self.state.get_last_position()
+        if not self.state_position:
             self.s3_keys = S3BucketKeysHelper(self.config)
-            self.keys = self.s3_keys.pending_keys()
-            self.position = {'pending': self.keys, 'done': []}
-            self.state.commit_position(self.position)
+            self.pending = self.s3_keys.pending_keys()
+            self.done = []
+            self.skipped = []
+            self.state.commit_position(self._get_state())
         else:
-            self.keys = self.position['pending']
+            self.pending = self.state_position['pending']
+            self.done = []
+            self.skipped = self.state_position['done']
+            self.keys = self.pending
+
+    def _get_state(self):
+        return {'pending': self.pending, 'done': self.done, 'skipped': self.skipped}
 
     def commit_copied_key(self, key):
-        self.position['pending'].remove(key)
-        self.position['done'].append(key)
-        self.state.commit_position(self.position)
+        self.pending.remove(key)
+        self.done.append(key)
+        self.state.commit_position(self._get_state())
 
     def pending_keys(self):
-        return self.keys
+        return self.pending
 
 
 class S3Bypass(BaseBypass):
