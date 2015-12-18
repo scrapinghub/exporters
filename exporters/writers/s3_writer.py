@@ -81,7 +81,6 @@ class S3Writer(FilebaseBaseWriter):
     def write(self, dump_path, group_key=None):
         if group_key is None:
             group_key = []
-
         filebase_path, filename = self.create_filebase_name(group_key)
         key_name = filebase_path + '/' + filename
         self._write_s3_key(dump_path, key_name)

@@ -2,7 +2,7 @@ import datetime
 import traceback
 from exporters.writers.base_writer import ItemsLimitReached
 from exporters.export_managers import MODULES
-from exporters.export_managers.bypass import RequisitesNotMet
+from exporters.export_managers.base_bypass import RequisitesNotMet
 from exporters.logger.base_logger import ExportManagerLogger
 from exporters.notifications.notifiers_list import NotifiersList
 from exporters.module_loader import ModuleLoader
@@ -71,6 +71,9 @@ class BaseExporter(object):
         self.logger.info('Executing bypass {}.'.format(bypass_script.__class__.__name__))
         self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM],
                                          info=self.stats_manager.stats)
+        if not self.config.exporter_options.get('resume'):
+            self.persistence.close()
+            self.persistence.delete()
         bypass_script.bypass()
         self.logger.info(
             'Finished executing bypass {}.'.format(bypass_script.__class__.__name__))

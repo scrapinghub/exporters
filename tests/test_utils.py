@@ -3,7 +3,8 @@ import unittest
 from decorator import contextmanager
 from exporters.exporter_config import (check_for_errors, module_options,
                                        MODULE_TYPES)
-from exporters.export_managers.bypass import BaseBypass, S3Bypass, RequisitesNotMet
+from exporters.export_managers.s3_to_s3_bypass import BaseBypass, S3Bypass
+from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.groupers.base_grouper import BaseGrouper
 from exporters.logger.base_logger import CategoryLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem

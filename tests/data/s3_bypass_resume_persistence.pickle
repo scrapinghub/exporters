@@ -1,0 +1,17 @@
+(dp0
+S'last_position'
+p1
+(dp2
+S'done'
+p3
+(lp4
+S'some_prefix/key1'
+p5
+asS'pending'
+p6
+(lp7
+S'some_prefix/key2'
+p8
+aS'some_prefix/key3'
+p9
+ass.

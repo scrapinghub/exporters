@@ -1,6 +1,5 @@
 import random
 import unittest
-from copy import deepcopy
 from exporters.groupers.base_grouper import BaseGrouper
 from exporters.groupers.file_key_grouper import FileKeyGrouper
 from exporters.groupers.python_exp_grouper import PythonExpGrouper

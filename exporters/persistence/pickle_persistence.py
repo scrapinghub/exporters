@@ -31,6 +31,7 @@ class PicklePersistence(BasePersistence):
         if not os.path.isfile(self._get_persistence_file_name()):
             raise ValueError('Trying to resume job {}, but path {} does not exist or is a directory.'
                              .format(self.persistence_state_id, self._get_persistence_file_name()))
+
         persistence_file = open(self._get_persistence_file_name(), 'r')
         persistence_object = pickle.load(persistence_file)
         persistence_file.close()
