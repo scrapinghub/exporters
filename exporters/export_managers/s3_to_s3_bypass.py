@@ -17,7 +17,7 @@ def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
     return connection.get_bucket(bucket)
 
 
-class S3Keys(object):
+class S3BucketKeysHelper(object):
     def __init__(self, config):
         reader_options = config.reader_options['options']
         self.source_bucket = get_bucket(**reader_options)
@@ -55,7 +55,7 @@ class S3BypassState(object):
 
     def _retrieve_keys(self):
         if not self.position:
-            self.s3_keys = S3Keys(self.config)
+            self.s3_keys = S3BucketKeysHelper(self.config)
             self.keys = self.s3_keys.pending_keys()
             self.position = {'pending': self.keys, 'done': []}
             self.state.commit_position(self.position)
