@@ -168,6 +168,9 @@ class S3BypassTest(unittest.TestCase):
         # given
         options = create_s3_bypass_simple_config()
         self._inject_resume_options(options)
+        # Initial state is:
+        # copied = ['some_prefix/key1']
+        # pending = ['some_prefix/key2', 'some_prefix/key3']
         self._set_resume_prevstate(options)
         expected_final_keys = ['some_prefix/key1', 'some_prefix/key2', 'some_prefix/key3']
 
