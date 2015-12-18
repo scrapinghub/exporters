@@ -144,10 +144,9 @@ class S3BypassTest(unittest.TestCase):
         self.assertEquals('some_prefix/test_key', key.name)
         self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
 
-    def test_resume_bypass(self):
-        # given
+
+    def _set_resume_prevstate(self, options):
         self.s3_conn.create_bucket('resume_dest_bucket')
-        options = create_s3_bypass_simple_config()
         options.reader_options['options']['bucket'] = 'resume_bucket'
         options.writer_options['options']['bucket'] = 'resume_dest_bucket'
         options.persistence_options['resume'] = True
@@ -165,10 +164,16 @@ class S3BypassTest(unittest.TestCase):
         key.set_contents_from_string(json.dumps(data))
         key = source_bucket.new_key('some_prefix/key3')
         key.set_contents_from_string(json.dumps(data))
-
         dest_bucket = self.s3_conn.get_bucket('resume_bucket')
         key = dest_bucket.new_key('some_prefix/key1')
         key.set_contents_from_string('not overwritten')
+
+
+    def test_resume_bypass(self):
+        # given
+        options = create_s3_bypass_simple_config()
+        self._set_resume_prevstate(options)
+
         expected_final_keys = ['some_prefix/key1', 'some_prefix/key2', 'some_prefix/key3']
 
         # when:
@@ -176,6 +181,7 @@ class S3BypassTest(unittest.TestCase):
         bypass.bypass()
 
         # then:
+        dest_bucket = self.s3_conn.get_bucket('resume_bucket')
         key1 = dest_bucket.get_key('some_prefix/key1')
         self.assertEqual(key1.get_contents_as_string(), 'not overwritten')
         bucket_keynames = [k.name for k in list(dest_bucket.list('some_prefix/'))]
