@@ -99,15 +99,16 @@ class S3Bypass(BaseBypass):
         return dest_filebase
 
     def bypass(self):
+        from copy import deepcopy
         reader_options = self.config.reader_options['options']
         writer_options = self.config.writer_options['options']
         dest_bucket = get_bucket(**writer_options)
         dest_filebase = self._get_filebase(writer_options)
         s3_persistence = S3BypassResume(self.config)
         source_bucket = get_bucket(**reader_options)
-
+        pending_keys = deepcopy(s3_persistence.pending_keys())
         try:
-            for key in s3_persistence.pending_keys():
+            for key in pending_keys:
                 dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
                 self._copy_key(dest_bucket, dest_key_name, source_bucket, key)
                 s3_persistence.commit_copied_key(key)
@@ -133,7 +134,7 @@ class S3Bypass(BaseBypass):
         dest_key.set_contents_from_filename(tmp_filename)
         os.remove(tmp_filename)
 
-    @retry_long
+    # @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):
         if self.copy_mode:
             self._copy_with_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
