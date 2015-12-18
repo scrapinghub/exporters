@@ -1,5 +1,4 @@
 import json
-import os
 import shutil
 import tempfile
 import unittest
@@ -7,10 +6,8 @@ import boto
 import datetime
 import moto
 import mock
-from exporters.export_managers.s3_to_s3_bypass import S3Bypass, RequisitesNotMet, \
-    S3BypassResume
+from exporters.export_managers.s3_to_s3_bypass import S3Bypass, RequisitesNotMet
 from exporters.exporter_config import ExporterConfig
-from exporters.persistence.base_persistence import BasePersistence
 from exporters.utils import remove_if_exists
 
 
@@ -144,7 +141,6 @@ class S3BypassTest(unittest.TestCase):
         self.assertEquals('some_prefix/test_key', key.name)
         self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
 
-
     def _set_resume_prevstate(self, options):
         self.s3_conn.create_bucket('resume_dest_bucket')
         options.reader_options['options']['bucket'] = 'resume_bucket'
@@ -167,7 +163,6 @@ class S3BypassTest(unittest.TestCase):
         dest_bucket = self.s3_conn.get_bucket('resume_bucket')
         key = dest_bucket.new_key('some_prefix/key1')
         key.set_contents_from_string('not overwritten')
-
 
     def test_resume_bypass(self):
         # given
