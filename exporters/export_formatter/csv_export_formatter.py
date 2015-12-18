@@ -13,12 +13,14 @@ class CSVExportFormatter(BaseExportFormatter):
     supported_options = {
         'show_titles': {'type': bool, 'default': True},
         'fields': {'type': list, 'default': []},
-        'schema': {'type': dict, 'default': {}}
+        'schema': {'type': dict, 'default': {}},
+        'delimiter': {'type': basestring, 'default': ','},
     }
 
     def __init__(self, options):
         super(CSVExportFormatter, self).__init__(options)
         self.show_titles = self.read_option('show_titles')
+        self.delimiter = self.read_option('delimiter')
         self.titles_already_shown = False
         self.fields = self._get_fields()
 
@@ -60,6 +62,7 @@ class CSVExportFormatter(BaseExportFormatter):
     def _create_csv_writer(self, outputf):
         return csv.DictWriter(outputf, fieldnames=self.fields,
                               quoting=csv.QUOTE_NONNUMERIC,
+                              delimiter=self.delimiter,
                               extrasaction='ignore')
 
     def _item_to_csv(self, item):
