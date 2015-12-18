@@ -102,8 +102,8 @@ class S3BypassTest(unittest.TestCase):
         ]
         key = self.source_bucket.new_key('some_prefix/test_key')
         key.set_contents_from_string(json.dumps(self.data))
-        self.tmp_bypass_resume_file = 'tests/data/tmp_s3_bypass_resume_persistence'
-        shutil.copyfile('tests/data/s3_bypass_resume_persistence', self.tmp_bypass_resume_file)
+        self.tmp_bypass_resume_file = 'tests/data/tmp_s3_bypass_resume_persistence.pickle'
+        shutil.copyfile('tests/data/s3_bypass_resume_persistence.pickle', self.tmp_bypass_resume_file)
 
     def tearDown(self):
         self.mock_s3.stop()
@@ -158,7 +158,7 @@ class S3BypassTest(unittest.TestCase):
         options.reader_options['options']['bucket'] = 'resume_bucket'
         options.writer_options['options']['bucket'] = 'resume_dest_bucket'
         options.persistence_options['resume'] = True
-        options.persistence_options['persistence_state_id'] = 'tmp_s3_bypass_resume_persistence'
+        options.persistence_options['persistence_state_id'] = 'tmp_s3_bypass_resume_persistence.pickle'
         options.persistence_options['options']['file_path'] = 'tests/data/'
         # Initial state is:
         # copied = ['some_prefix/key1']
