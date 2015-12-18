@@ -51,8 +51,7 @@ class S3BypassState(object):
         self.state = module_loader.load_persistence(config.persistence_options)
         self.state_position = self.state.get_last_position()
         if not self.state_position:
-            self.s3_keys = S3BucketKeysFetcher(self.config)
-            self.pending = self.s3_keys.pending_keys()
+            self.pending = S3BucketKeysFetcher(self.config).pending_keys()
             self.done = []
             self.skipped = []
             self.state.commit_position(self._get_state())
