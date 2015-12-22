@@ -1,5 +1,6 @@
 import datetime
 import traceback
+from collections import OrderedDict
 from exporters.writers.base_writer import ItemsLimitReached
 from exporters.export_managers import MODULES
 from exporters.export_managers.base_bypass import RequisitesNotMet
@@ -41,16 +42,36 @@ class BaseExporter(object):
         self.bypass_cases = []
 
     def _run_pipeline_iteration(self):
+        times = OrderedDict([('started', datetime.datetime.now())])
         self.logger.debug('Getting new batch')
-        next_batch = self.reader.get_next_batch()
+        if self.config.exporter_options.get('forced_reads'):
+            next_batch = list(self.reader.get_next_batch())
+        else:
+            next_batch = self.reader.get_next_batch()
+        times.update(read=datetime.datetime.now())
         last_position = self.reader.get_last_position()
         next_batch = self.filter_before.filter_batch(next_batch)
+        times.update(filtered=datetime.datetime.now())
         next_batch = self.transform.transform_batch(next_batch)
+        times.update(transformed=datetime.datetime.now())
         next_batch = self.filter_after.filter_batch(next_batch)
+        times.update(filtered_after=datetime.datetime.now())
         next_batch = self.grouper.group_batch(next_batch)
+        times.update(grouped=datetime.datetime.now())
         next_batch = self.export_formatter.format(next_batch)
-        self.writer.write_batch(batch=next_batch)
-        self.persistence.commit_position(last_position)
+        times.update(formatted=datetime.datetime.now())
+        try:
+            self.writer.write_batch(batch=next_batch)
+            times.update(written=datetime.datetime.now())
+            self.persistence.commit_position(last_position)
+            times.update(persisted=datetime.datetime.now())
+        except ItemsLimitReached:
+            # we have written some amount of records up to the limit
+            times.update(written=datetime.datetime.now())
+            self.stats_manager.iteration_times(times)
+            raise
+        else:
+            self.stats_manager.iteration_times(times)
 
     def _init_export_job(self):
         self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM],
