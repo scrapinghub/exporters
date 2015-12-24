@@ -68,10 +68,10 @@ class BaseExporter(object):
         except ItemsLimitReached:
             # we have written some amount of records up to the limit
             times.update(written=datetime.datetime.now())
-            self.stats_manager.iteration_times(times)
+            self._iteration_stats_report(times)
             raise
         else:
-            self.stats_manager.iteration_times(times)
+            self._iteration_stats_report(times)
 
     def _init_export_job(self):
         self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM],
@@ -122,15 +122,24 @@ class BaseExporter(object):
                                          str(traceback.format_exc(exception)),
                                          receivers=[TEAM], info=self.stats_manager.stats)
 
-    def _update_stats(self):
-        for mod in MODULES:
-            self.stats_manager.update_module_stats(mod, getattr(self, mod).stats)
+    def _collect_stats(self):
+        return {mod: getattr(self, mod).stats for mod in MODULES}
 
-    def _populate_stats(self):
+    def _iteration_stats_report(self, times):
         try:
-            self.stats_manager.populate()
+            stats = self._collect_stats()
+            self.stats_manager.iteration_report(times, stats)
         except Exception as e:
-            self.logger.error('Error populating stats: {}'.format(str(e)))
+            import traceback
+            traceback.print_exc()
+            self.logger.error('Error making stats report: {}'.format(str(e)))
+
+    def _final_stats_report(self):
+        try:
+            stats = self._collect_stats()
+            self.stats_manager.final_report(stats)
+        except Exception as e:
+            self.logger.error('Error making final stats report: {}'.format(str(e)))
 
     def _run_pipeline(self):
         while not self.reader.is_finished():
@@ -139,9 +148,6 @@ class BaseExporter(object):
             except ItemsLimitReached as e:
                 self.logger.info('{!r}'.format(e))
                 break
-            else:
-                self._update_stats()
-                self._populate_stats()
         self.writer.flush()
 
     def export(self):
@@ -150,8 +156,7 @@ class BaseExporter(object):
                 self._init_export_job()
                 self._run_pipeline()
                 self._finish_export_job()
-                self._update_stats()
-                self._populate_stats()
+                self._final_stats_report()
                 self.persistence.close()
                 self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM],
                                                     info=self.stats_manager.stats)
