@@ -9,6 +9,7 @@ from boto.exception import S3ResponseError
 from exporters.default_retries import retry_long
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
+from exporters.progress_callback import BotoProgress
 
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
@@ -82,6 +83,8 @@ class S3Bypass(BaseBypass):
         super(S3Bypass, self).__init__(config)
         self.copy_mode = True
         self.tmp_folder = None
+        self.logger = logging.getLogger('bypass_logger')
+        self.logger.setLevel(logging.INFO)
 
     def meets_conditions(self):
         if not self.config.reader_options['name'].endswith('S3Reader') or not self.config.writer_options['name'].endswith('S3Writer'):
@@ -115,8 +118,7 @@ class S3Bypass(BaseBypass):
                 dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
                 self._copy_key(dest_bucket, dest_key_name, source_bucket, key)
                 s3_persistence.commit_copied_key(key)
-                logging.log(logging.INFO,
-                            'Copied key {} to dest: s3://{}/{}'.format(key, dest_bucket.name, dest_key_name))
+                self.logger.info('Copied key {} to dest: s3://{}/{}'.format(key, dest_bucket.name, dest_key_name))
         finally:
             if self.tmp_folder:
                 shutil.rmtree(self.tmp_folder)
@@ -125,7 +127,7 @@ class S3Bypass(BaseBypass):
         try:
             dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
         except S3ResponseError:
-            logging.log(logging.WARNING, 'No direct copy supported.')
+            self.logger.warning('No direct copy supported.')
             self.copy_mode = False
             self.tmp_folder = tempfile.mkdtemp()
 
@@ -134,7 +136,8 @@ class S3Bypass(BaseBypass):
         tmp_filename = os.path.join(self.tmp_folder, str(uuid.uuid4()))
         key.get_contents_to_filename(tmp_filename)
         dest_key = dest_bucket.new_key(dest_key_name)
-        dest_key.set_contents_from_filename(tmp_filename)
+        progress = BotoProgress(self.logger, is_upload=True)
+        dest_key.set_contents_from_filename(tmp_filename, cb=progress)
         os.remove(tmp_filename)
 
     @retry_long
