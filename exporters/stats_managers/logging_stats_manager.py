@@ -5,7 +5,7 @@ from exporters.stats_managers.basic_stats_manager import BasicStatsManager
 
 class LoggingStatsManager(BasicStatsManager):
 
-    def iteration_times(self, times):
+    def iteration_report(self, times, stats):
         prev = times['started']
         times.pop('started')
         data = OrderedDict()
