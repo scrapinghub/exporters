@@ -78,7 +78,7 @@ class BotoProgress(BaseProgressCallback):
 
 class SftpProgress(BaseProgressCallback):
     """Progress logging callback for Pysftp's put"""
-    def __call__(self, transferred, total_size, _):
+    def __call__(self, transferred, total_size):
         self.log_transfer_progress(transferred, total_size=total_size)
 
 
