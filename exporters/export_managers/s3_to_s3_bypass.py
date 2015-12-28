@@ -99,7 +99,7 @@ class S3Bypass(BaseBypass):
         super(S3Bypass, self).__init__(config)
         self.copy_mode = True
         self.tmp_folder = None
-        self.s3_persistence = None
+        self.bypass_state = None
         self.logger = logging.getLogger('bypass_logger')
         self.logger.setLevel(logging.INFO)
 
@@ -127,15 +127,14 @@ class S3Bypass(BaseBypass):
         writer_options = self.config.writer_options['options']
         dest_bucket = get_bucket(**writer_options)
         dest_filebase = self._get_filebase(writer_options)
-        self.s3_persistence = S3BypassState(self.config)
+        self.bypass_state = S3BypassState(self.config)
         source_bucket = get_bucket(**reader_options)
-        pending_keys = deepcopy(self.s3_persistence.pending_keys())
-        #TODO: replace this with a context manager
+        pending_keys = deepcopy(self.bypass_state.pending_keys())
         try:
             for key in pending_keys:
                 dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
                 self._copy_key(dest_bucket, dest_key_name, source_bucket, key)
-                self.s3_persistence.commit_copied_key(key)
+                self.bypass_state.commit_copied_key(key)
                 logging.log(logging.INFO,
                             'Copied key {} to dest: s3://{}/{}'.format(key, dest_bucket.name, dest_key_name))
             if writer_options.get('save_pointer'):
@@ -180,4 +179,4 @@ class S3Bypass(BaseBypass):
             self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
 
     def close(self):
-        self.s3_persistence.delete()
+        self.bypass_state.delete()
