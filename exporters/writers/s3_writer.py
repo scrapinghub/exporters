@@ -1,4 +1,5 @@
 from contextlib import closing
+import datetime
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
@@ -33,6 +34,7 @@ class S3Writer(FilebaseBaseWriter):
         'aws_access_key_id': {'type': basestring, 'env_fallback': 'EXPORTERS_S3WRITER_AWS_LOGIN'},
         'aws_secret_access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_S3WRITER_AWS_SECRET'},
         'aws_region': {'type': basestring, 'default': None},
+        'save_pointer': {'type': basestring, 'default': None},
         'save_metadata': {'type': bool, 'default': True, 'required': False}
     }
 
@@ -62,7 +64,6 @@ class S3Writer(FilebaseBaseWriter):
 
     def _get_bucket_location(self, access_key, secret_key, bucket):
         import boto
-
         return boto.connect_s3(access_key, secret_key).get_bucket(bucket).get_location() or DEFAULT_BUCKET_REGION
 
     def _get_total_count(self, dump_path):
@@ -85,3 +86,24 @@ class S3Writer(FilebaseBaseWriter):
         filebase_path, filename = self.create_filebase_name(group_key)
         key_name = filebase_path + '/' + filename
         self._write_s3_key(dump_path, key_name)
+
+    @retry_long
+    def _write_s3_pointer(self, save_pointer, filebase):
+        with closing(self.bucket.new_key(save_pointer)) as key:
+            key.set_contents_from_string(filebase)
+
+    def _update_last_pointer(self):
+        save_pointer = self.read_option('save_pointer')
+        filebase = self.read_option('filebase')
+        filebase = filebase.format(date=datetime.datetime.now())
+        filebase = datetime.datetime.now().strftime(filebase)
+        self._write_s3_pointer(save_pointer, filebase)
+
+    def close(self):
+        """
+        Called to clean all possible tmp files created during the process.
+        """
+        self.write_buffer.close()
+        self._check_write_consistency()
+        if self.read_option('save_pointer'):
+            self._update_last_pointer()
