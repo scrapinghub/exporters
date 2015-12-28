@@ -8,11 +8,8 @@ class BaseStatsManager(BasePipelineItem):
         self.logger = StatsManagerLogger({'log_level': options.get('log_level'),
                                           'logger_name': options.get('logger_name')})
 
-    def iteration_times(self, times):
+    def iteration_report(self, times, stats):
         raise NotImplementedError
 
-    def populate(self):
+    def final_report(self, stats):
         raise NotImplementedError
-
-    def update_module_stats(self, module, mod_stats):
-        self.stats.setdefault(module, {}).update(mod_stats)
