@@ -9,6 +9,7 @@ from boto.exception import S3ResponseError
 from exporters.default_retries import retry_long
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
+from contextlib import closing
 
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
@@ -72,6 +73,8 @@ class S3BypassState(object):
     def pending_keys(self):
         return self.pending
 
+    def delete(self):
+        self.state.delete()
 
 class S3Bypass(BaseBypass):
     """
@@ -82,6 +85,7 @@ class S3Bypass(BaseBypass):
         super(S3Bypass, self).__init__(config)
         self.copy_mode = True
         self.tmp_folder = None
+        self.s3_persistence = None
 
     def meets_conditions(self):
         if not self.config.reader_options['name'].endswith('S3Reader') or not self.config.writer_options['name'].endswith('S3Writer'):
@@ -106,20 +110,32 @@ class S3Bypass(BaseBypass):
         writer_options = self.config.writer_options['options']
         dest_bucket = get_bucket(**writer_options)
         dest_filebase = self._get_filebase(writer_options)
-        s3_persistence = S3BypassState(self.config)
+        self.s3_persistence = S3BypassState(self.config)
         source_bucket = get_bucket(**reader_options)
-        pending_keys = deepcopy(s3_persistence.pending_keys())
+        pending_keys = deepcopy(self.s3_persistence.pending_keys())
         #TODO: replace this with a context manager
         try:
             for key in pending_keys:
                 dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
                 self._copy_key(dest_bucket, dest_key_name, source_bucket, key)
-                s3_persistence.commit_copied_key(key)
+                self.s3_persistence.commit_copied_key(key)
                 logging.log(logging.INFO,
                             'Copied key {} to dest: s3://{}/{}'.format(key, dest_bucket.name, dest_key_name))
+            if writer_options.get('save_pointer'):
+                self._update_last_pointer(dest_bucket, writer_options.get('save_pointer'), writer_options.get('filebase'))
         finally:
             if self.tmp_folder:
                 shutil.rmtree(self.tmp_folder)
+
+    @retry_long
+    def _write_s3_pointer(self, dest_bucket, save_pointer, filebase):
+        with closing(dest_bucket.new_key(save_pointer)) as key:
+            key.set_contents_from_string(filebase)
+
+    def _update_last_pointer(self, dest_bucket, save_pointer, filebase):
+        filebase = filebase.format(date=datetime.datetime.now())
+        filebase = datetime.datetime.now().strftime(filebase)
+        self._write_s3_pointer(dest_bucket, save_pointer, filebase)
 
     def _copy_with_permissions(self, dest_bucket, dest_key_name, source_bucket, key_name):
         try:
@@ -143,3 +159,6 @@ class S3Bypass(BaseBypass):
             self._copy_with_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
         if not self.copy_mode:
             self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
+
+    def close(self):
+        self.s3_persistence.delete()

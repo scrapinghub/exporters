@@ -37,13 +37,17 @@ class S3WriterTest(unittest.TestCase):
     def tearDown(self):
         self.mock_s3.stop()
 
-    def test_write_s3(self):
-        # given
+    def get_batch(self):
         data = [
             {'name': 'Roberto', 'birthday': '12/05/1987'},
             {'name': 'Claudia', 'birthday': '21/12/1985'},
         ]
-        items_to_write = [BaseRecord(d) for d in data]
+        return [BaseRecord(d) for d in data]
+
+
+    def test_write_s3(self):
+        # given
+        items_to_write = self.get_batch()
         options = self.get_writer_config()
 
         # when:
@@ -75,6 +79,33 @@ class S3WriterTest(unittest.TestCase):
         # then:
         self.assertEquals('eu-west-1', writer.aws_region)
         writer.close()
+
+    def test_write_pointer(self):
+        # given:
+        conn = boto.connect_s3()
+        conn.create_bucket('pointer_fake_bucket')
+
+        options = self.get_writer_config()
+        options['options']['save_pointer'] = 'pointer/LAST'
+        options['options']['bucket'] = 'pointer_fake_bucket'
+
+        items_to_write = self.get_batch()
+
+        # when:
+        try:
+            writer = S3Writer(options)
+            writer.write_batch(items_to_write)
+            writer.flush()
+        finally:
+            writer.close()
+
+        # then:
+        bucket = self.s3_conn.get_bucket('pointer_fake_bucket')
+        saved_keys = [k for k in bucket.list('pointer/')]
+        self.assertEquals(1, len(saved_keys))
+        key = saved_keys[0]
+        self.assertEqual('tests/', key.get_contents_as_string())
+
 
     def test_connect_to_bucket_location(self):
         # given:
