@@ -205,3 +205,51 @@ class S3BypassTest(unittest.TestCase):
         # then:
         filebase = bypass._get_filebase(options.writer_options['options'])
         self.assertEqual(expected, filebase)
+
+    def test_prefix_pointer_list_keys(self):
+        #given
+
+        reader = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'source_pointer_bucket',
+                'aws_access_key_id': 'a',
+                'aws_secret_access_key': 'a',
+                'prefix_pointer': 'test_pointer/LAST'
+            }
+        }
+
+        writer = {
+            'name': 'exporters.writers.s3_writer.S3Writer',
+            'options': {
+                'bucket': 'dest_pointer_bucket',
+                'aws_access_key_id': 'b',
+                'aws_secret_access_key': 'b',
+                'filebase': 'some_prefix/'
+            }
+        }
+
+
+        self._create_and_populate_bucket('source_pointer_bucket')
+        bucket = self.s3_conn.get_bucket('source_pointer_bucket')
+
+        expected_prefix_pointer = 'some_prefix/'
+        key = bucket.new_key('test_pointer/LAST')
+        key.set_contents_from_string(expected_prefix_pointer)
+        key.close()
+
+        self.s3_conn.create_bucket('dest_pointer_bucket')
+        options = create_s3_bypass_simple_config(reader=reader, writer=writer)
+        expected_keys = ['some_prefix/key1', 'some_prefix/key2', 'some_prefix/key3']
+
+        #when
+        bypass = S3Bypass(options)
+        bypass.bypass()
+
+        # then
+        dest_bucket = self.s3_conn.get_bucket('dest_pointer_bucket')
+        keys = dest_bucket.list(prefix='some_prefix/')
+        keys_list = []
+        for key in keys:
+            keys_list.append(key.name)
+        self.assertEqual(expected_keys, keys_list)

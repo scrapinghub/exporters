@@ -7,6 +7,7 @@ import tempfile
 import uuid
 from boto.exception import S3ResponseError
 from exporters.default_retries import retry_long
+from exporters.exceptions import ConfigurationError
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
 
@@ -21,8 +22,20 @@ class S3BucketKeysFetcher(object):
     def __init__(self, config):
         reader_options = config.reader_options['options']
         self.source_bucket = get_bucket(**reader_options)
-        self.prefix = reader_options.get('prefix', '')
         self.pattern = reader_options.get('pattern', None)
+
+        self.prefix = reader_options.get('prefix', '')
+        self.prefix_pointer = reader_options.get('prefix_pointer', '')
+
+        if self.prefix and self.prefix_pointer:
+            raise ConfigurationError("prefix and prefix_pointer options cannot be used together")
+
+        if self.prefix_pointer:
+            self.prefix = self._download_pointer(self.prefix_pointer)
+
+    @retry_long
+    def _download_pointer(self, prefix_pointer):
+        return self.source_bucket.get_key(prefix_pointer).get_contents_as_string().strip()
 
     def _get_keys_from_bucket(self):
         keys = []
