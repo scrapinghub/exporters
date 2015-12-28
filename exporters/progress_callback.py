@@ -50,7 +50,7 @@ def format_log_progress_mesg(speed, transmitted_bytes, total_transfer_time, is_u
 class BaseProgressCallback(object):
     """Base class for building progress log callbacks
     """
-    def __init__(self, logger, log_interval=1, is_upload=False):
+    def __init__(self, logger, log_interval=60, is_upload=False):
         self.start_ts = time.time()
         self.is_upload = is_upload
         self.lastlog_ts = self.start_ts
