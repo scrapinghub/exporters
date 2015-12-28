@@ -43,8 +43,7 @@ def render_eta_template(speed, transmitted_bytes, total_transfer_time, is_upload
 def format_log_progress_mesg(speed, transmitted_bytes, total_transfer_time, is_upload, total_size):
     if total_size:
         return render_eta_template(speed, transmitted_bytes, total_transfer_time, is_upload, total_size)
-    else:
-        return render_simple_template(speed, transmitted_bytes, total_transfer_time, is_upload)
+    return render_simple_template(speed, transmitted_bytes, total_transfer_time, is_upload)
 
 
 class BaseProgressCallback(object):
