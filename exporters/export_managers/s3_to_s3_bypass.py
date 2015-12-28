@@ -11,6 +11,7 @@ from exporters.exceptions import ConfigurationError
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
 from contextlib import closing
+from exporters.progress_callback import BotoUploadProgress
 
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
@@ -99,6 +100,9 @@ class S3Bypass(BaseBypass):
         self.copy_mode = True
         self.tmp_folder = None
         self.s3_persistence = None
+        self.logger = logging.getLogger('bypass_logger')
+        self.logger.setLevel(logging.INFO)
+
 
     def meets_conditions(self):
         if not self.config.reader_options['name'].endswith('S3Reader') or not self.config.writer_options['name'].endswith('S3Writer'):
@@ -136,6 +140,7 @@ class S3Bypass(BaseBypass):
                             'Copied key {} to dest: s3://{}/{}'.format(key, dest_bucket.name, dest_key_name))
             if writer_options.get('save_pointer'):
                 self._update_last_pointer(dest_bucket, writer_options.get('save_pointer'), writer_options.get('filebase'))
+
         finally:
             if self.tmp_folder:
                 shutil.rmtree(self.tmp_folder)
@@ -154,7 +159,7 @@ class S3Bypass(BaseBypass):
         try:
             dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
         except S3ResponseError:
-            logging.log(logging.WARNING, 'No direct copy supported.')
+            self.logger.warning('No direct copy supported.')
             self.copy_mode = False
             self.tmp_folder = tempfile.mkdtemp()
 
@@ -163,7 +168,8 @@ class S3Bypass(BaseBypass):
         tmp_filename = os.path.join(self.tmp_folder, str(uuid.uuid4()))
         key.get_contents_to_filename(tmp_filename)
         dest_key = dest_bucket.new_key(dest_key_name)
-        dest_key.set_contents_from_filename(tmp_filename)
+        progress = BotoUploadProgress(self.logger)
+        dest_key.set_contents_from_filename(tmp_filename, cb=progress)
         os.remove(tmp_filename)
 
     @retry_long

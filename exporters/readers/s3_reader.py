@@ -3,6 +3,7 @@ import json
 import os
 import tempfile
 import re
+from exporters.progress_callback import BotoDownloadProgress
 
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
@@ -85,15 +86,16 @@ class S3Reader(BaseReader):
         return self.bucket.get_key(prefix_pointer).get_contents_as_string().strip()
 
     @retry_long
-    def get_key(self, file_path):
+    def get_key(self, file_path, progress):
         self.logger.info('Downloading key: %s' % self.current_key)
-        self.bucket.get_key(self.current_key).get_contents_to_filename(file_path)
+        self.bucket.get_key(self.current_key).get_contents_to_filename(file_path, cb=progress)
 
     def get_next_batch(self):
         file_path = '{}/ds_dump.gz'.format(self.tmp_folder)
         if not self.current_key:
+            progress = BotoDownloadProgress(self.logger)
             self.current_key = self.keys[0]
-            self.get_key(file_path)
+            self.get_key(file_path, progress)
             self.last_line = 0
 
         dump_file = gzip.open(file_path, 'r')
@@ -121,9 +123,7 @@ class S3Reader(BaseReader):
         self.last_position['read_keys'] = self.read_keys
         self.last_position['current_key'] = self.current_key
         self.last_position['last_line'] = self.last_line
-
         self.logger.debug('Done reading batch')
-
 
     def set_last_position(self, last_position):
         if last_position is None:
@@ -144,4 +144,3 @@ class S3Reader(BaseReader):
                 self.bucket.get_key(self.current_key).get_contents_to_filename(file_path)
                 self.last_line = 0
             self.last_line = self.last_position['last_line']
-

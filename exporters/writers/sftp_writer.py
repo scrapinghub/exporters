@@ -1,4 +1,5 @@
 from exporters.default_retries import retry_long
+from exporters.progress_callback import SftpUploadProgress
 
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
@@ -55,5 +56,6 @@ class SFTPWriter(FilebaseBaseWriter):
                                password=self.sftp_password) as sftp:
             if not sftp.exists(filebase_path):
                 sftp.makedirs(filebase_path)
-            sftp.put(dump_path, destination)
+            progress = SftpUploadProgress(self.logger)
+            sftp.put(dump_path, destination, callback=progress)
         self.logger.info('Saved {}'.format(dump_path))
