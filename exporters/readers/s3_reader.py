@@ -3,7 +3,7 @@ import json
 import os
 import tempfile
 import re
-from exporters.progress_callback import BotoProgress
+from exporters.progress_callback import BotoDownloadProgress
 
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
@@ -93,7 +93,7 @@ class S3Reader(BaseReader):
     def get_next_batch(self):
         file_path = '{}/ds_dump.gz'.format(self.tmp_folder)
         if not self.current_key:
-            progress = BotoProgress(self.logger)
+            progress = BotoDownloadProgress(self.logger)
             self.current_key = self.keys[0]
             self.get_key(file_path, progress)
             self.last_line = 0

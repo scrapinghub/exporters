@@ -49,14 +49,13 @@ def format_log_progress_mesg(speed, transmitted_bytes, total_transfer_time, is_u
 class BaseProgressCallback(object):
     """Base class for building progress log callbacks
     """
-    def __init__(self, logger, log_interval=60, is_upload=False):
+    def __init__(self, logger, log_interval=60):
         self.start_ts = time.time()
-        self.is_upload = is_upload
         self.lastlog_ts = self.start_ts
         self.log_interval = log_interval
         self.logger = logger
 
-    def log_transfer_progress(self, transmitted_bytes, total_size=None):
+    def log_transfer_progress(self, transmitted_bytes, total_size=None, is_upload=False):
         now = time.time()
 
         total_transfer_time = now - self.start_ts
@@ -66,25 +65,48 @@ class BaseProgressCallback(object):
         if reached_log_interval_limit:
             self.lastlog_ts = now
             self.logger.info(format_log_progress_mesg(speed, transmitted_bytes,
-                                              total_transfer_time, self.is_upload, total_size))
+                                              total_transfer_time, is_upload, total_size))
 
 
-class BotoProgress(BaseProgressCallback):
+class BotoUploadProgress(BaseProgressCallback):
+    """Progress logging callback for boto"""
+    def __call__(self, transmitted_bytes, total_size):
+        self.log_transfer_progress(transmitted_bytes, total_size=total_size, is_upload=True)
+
+
+class BotoDownloadProgress(BaseProgressCallback):
     """Progress logging callback for boto"""
     def __call__(self, transmitted_bytes, total_size):
         self.log_transfer_progress(transmitted_bytes, total_size=total_size)
 
 
-class SftpProgress(BaseProgressCallback):
+class SftpUploadProgress(BaseProgressCallback):
+    """Progress logging callback for Pysftp's put"""
+    def __call__(self, transferred, total_size):
+        self.log_transfer_progress(transferred, total_size=total_size, is_upload=True)
+
+
+class SftpDownloadProgress(BaseProgressCallback):
     """Progress logging callback for Pysftp's put"""
     def __call__(self, transferred, total_size):
         self.log_transfer_progress(transferred, total_size=total_size)
 
 
-class FtpProgress(BaseProgressCallback):
+class FtpUploadProgress(BaseProgressCallback):
     """Progress logging callback for ftplib"""
     def __init__(self, *args, **kwargs):
-        super(FtpProgress, self).__init__(*args, **kwargs)
+        super(FtpUploadProgress, self).__init__(*args, **kwargs)
+        self.transmitted_bytes = 0
+
+    def __call__(self, block):
+        self.transmitted_bytes += len(block)
+        self.log_transfer_progress(self.transmitted_bytes, is_upload=True)
+
+
+class FtpDownloadProgress(BaseProgressCallback):
+    """Progress logging callback for ftplib"""
+    def __init__(self, *args, **kwargs):
+        super(FtpDownloadProgress, self).__init__(*args, **kwargs)
         self.transmitted_bytes = 0
 
     def __call__(self, block):

@@ -2,7 +2,7 @@ import datetime
 import os
 
 from exporters.default_retries import retry_long
-from exporters.progress_callback import FtpProgress
+from exporters.progress_callback import FtpUploadProgress
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
@@ -97,7 +97,7 @@ class FTPWriter(FilebaseBaseWriter):
         self.ftp.login(self.ftp_user, self.ftp_password)
         self._create_target_dir_if_needed(filebase_path)
         destination = (filebase_path + '/' + filename)
-        progress = FtpProgress(self.logger, is_upload=True)
+        progress = FtpUploadProgress(self.logger)
         self.ftp.storbinary('STOR %s' % destination, open(dump_path), callback=progress)
         self.ftp.close()
         self.logger.info('Saved {}'.format(dump_path))

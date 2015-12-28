@@ -9,7 +9,7 @@ from boto.exception import S3ResponseError
 from exporters.default_retries import retry_long
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
-from exporters.progress_callback import BotoProgress
+from exporters.progress_callback import BotoUploadProgress
 
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
@@ -136,7 +136,7 @@ class S3Bypass(BaseBypass):
         tmp_filename = os.path.join(self.tmp_folder, str(uuid.uuid4()))
         key.get_contents_to_filename(tmp_filename)
         dest_key = dest_bucket.new_key(dest_key_name)
-        progress = BotoProgress(self.logger, is_upload=True)
+        progress = BotoUploadProgress(self.logger)
         dest_key.set_contents_from_filename(tmp_filename, cb=progress)
         os.remove(tmp_filename)
 
