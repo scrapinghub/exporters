@@ -8,27 +8,15 @@ def get_transmission_names(is_upload):
         return 'download', 'downloaded'
 
 
-def render_simple_template(speed, transmitted_bytes, total_transfer_time, is_upload):
-
+def format_log_progress_mesg(speed, transmitted_bytes, total_transfer_time, is_upload, total_size=None):
     transmission_type, transmitted = get_transmission_names(is_upload)
-    template = ('Average {transmission_type} speed: {speed:.2f} bytes/sec '
-                '(total bytes {transmitted}: {transmitted_bytes:.2f},'
-                ' total {transmission_type} time: {transfer_time:.2f} sec)')
-    return template.format(
-        speed=speed,
-        transmitted_bytes=transmitted_bytes,
-        transfer_time=total_transfer_time,
-        transmission_type=transmission_type,
-        transmitted=transmitted,
-    )
-
-
-def render_eta_template(speed, transmitted_bytes, total_transfer_time, is_upload, total_size):
-    transmission_type, transmitted = get_transmission_names(is_upload)
-    eta = (total_size-transmitted_bytes) / speed
+    eta_string = ''
+    if total_size:
+        eta = (total_size-transmitted_bytes) / speed
+        eta_string = '[ETA: {eta:.1f}s]'.format(eta=eta)
     template = ('Average {transmission_type} speed: {speed:.2f} bytes/sec '
                 '(total bytes {transmitted}: {transmitted_bytes:.2f} of {total_size:.2f},'
-                ' total {transmission_type} time: {transfer_time:.2f} sec) [ETA: {eta:.1f}s]')
+                ' total {transmission_type} time: {transfer_time:.2f} sec) {eta_string}')
     return template.format(
         speed=speed,
         transmitted_bytes=transmitted_bytes,
@@ -36,14 +24,8 @@ def render_eta_template(speed, transmitted_bytes, total_transfer_time, is_upload
         transmission_type=transmission_type,
         transmitted=transmitted,
         total_size=total_size,
-        eta=eta,
+        eta_string=eta_string,
     )
-
-
-def format_log_progress_mesg(speed, transmitted_bytes, total_transfer_time, is_upload, total_size):
-    if total_size:
-        return render_eta_template(speed, transmitted_bytes, total_transfer_time, is_upload, total_size)
-    return render_simple_template(speed, transmitted_bytes, total_transfer_time, is_upload)
 
 
 class BaseProgressCallback(object):
