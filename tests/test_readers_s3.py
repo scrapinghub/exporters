@@ -17,6 +17,11 @@ VALID_KEYS = ['test_list/dump_p1_US_a', 'test_list/dump_p1_UK_a', 'test_list/dum
               'test_list/dump_p_US_a']
 
 
+POINTER_KEYS = ['pointer1/dump_p1_US_a', 'pointer1/dump_p1_UK_a', 'pointer1/dump_p1_US_b',
+                'pointer2/dump_p2_US_a', 'pointer2/dump_p1_ES_a', 'pointer2/dump_p1_FR_a',
+                'pointer3/dump_p_US_a']
+
+
 class FakeKey(object):
     def __init__(self, name):
         self.name = name
@@ -165,6 +170,14 @@ class TestS3BucketKeysFetcher(unittest.TestCase):
         key.set_contents_from_string('\n'.join(self.pointers))
         key.close()
 
+        for key_name in POINTER_KEYS:
+            key = bucket.new_key(key_name)
+            out = StringIO.StringIO()
+            with gzip.GzipFile(fileobj=out, mode='w') as f:
+                f.write(json.dumps({'name': key_name}))
+            key.set_contents_from_string(out.getvalue())
+            key.close()
+
         self.options_prefix_pointer = {
             'bucket': 'last_bucket',
             'aws_access_key_id': 'KEY',
@@ -176,3 +189,7 @@ class TestS3BucketKeysFetcher(unittest.TestCase):
         self.s3_conn.create_bucket('last_bucket')
         fetcher = S3BucketKeysFetcher(self.options_prefix_pointer)
         self.assertEqual(self.pointers, fetcher.prefixes)
+
+    def test_prefix_pointer_keys_list(self):
+        fetcher = S3BucketKeysFetcher(self.options_prefix_pointer)
+        self.assertEqual(set(POINTER_KEYS), set(fetcher.pending_keys()))
