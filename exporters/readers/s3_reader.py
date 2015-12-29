@@ -79,7 +79,7 @@ class S3Reader(BaseReader):
         self.tmp_folder = tempfile.mkdtemp()
 
     def _add_key_if_matches(self, key, prefix):
-        if re.match(os.path.join(prefix, self.pattern), key.name):
+        if bool(re.findall(self.pattern, key.name)):
             self.keys.append(key.key)
 
     @retry_long

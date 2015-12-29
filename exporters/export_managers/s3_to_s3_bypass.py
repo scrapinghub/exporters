@@ -52,9 +52,7 @@ class S3BucketKeysFetcher(object):
         return keys
 
     def _should_add_key(self, key, prefix):
-        if re.match(os.path.join(prefix, self.pattern), key.name):
-            return True
-        return False
+        return bool(re.findall(self.pattern, key.name))
 
     def pending_keys(self):
         return self._get_keys_from_bucket()
