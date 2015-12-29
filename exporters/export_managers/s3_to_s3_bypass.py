@@ -112,18 +112,19 @@ class S3Bypass(BaseBypass):
         if not self.config.reader_options['name'].endswith('S3Reader') or not self.config.writer_options['name'].endswith('S3Writer'):
             raise RequisitesNotMet
         if not self.config.filter_before_options['name'].endswith('NoFilter'):
-            self._raise_conditions_not_met('setting a filter')
+            self._raise_conditions_not_met('custom filter configured')
         if not self.config.filter_after_options['name'].endswith('NoFilter'):
-            self._raise_conditions_not_met('setting a filter')
+            self._raise_conditions_not_met('custom filter configured')
         if not self.config.transform_options['name'].endswith('NoTransform'):
-            self._raise_conditions_not_met('setting a transformation')
+            self._raise_conditions_not_met('custom transform configured')
         if not self.config.grouper_options['name'].endswith('NoGrouper'):
-            self._raise_conditions_not_met('setting a grouper')
+            self._raise_conditions_not_met('custom grouper configured')
         if self.config.writer_options['options'].get('items_limit'):
-            self._raise_conditions_not_met('setting items limit')
-        if self.config.writer_options['options'].get('items_per_buffer_write') or \
-                self.config.writer_options['options'].get('size_per_buffer_write'):
-            self._raise_conditions_not_met('setting buffer limits')
+            self._raise_conditions_not_met('items limit configuration (items_limit)')
+        if self.config.writer_options['options'].get('items_per_buffer_write'):
+            self._raise_conditions_not_met('buffer limit configuration (items_per_buffer_write)')
+        if self.config.writer_options['options'].get('size_per_buffer_write'):
+            self._raise_conditions_not_met('buffer limit configuration (size_per_buffer_write)')
 
     def _get_filebase(self, writer_options):
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
