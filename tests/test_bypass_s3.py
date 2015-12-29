@@ -87,6 +87,19 @@ class S3BypassConditionsTest(unittest.TestCase):
             bypass.meets_conditions()
 
 
+    def test_itesm_limit_should_not_meet_conditions(self):
+        # given:
+        config = create_s3_bypass_simple_config()
+        config.writer_options['options']['items_limit'] = 10
+
+        # when:
+        bypass = S3Bypass(config)
+
+        # then:
+        with self.assertRaises(RequisitesNotMet):
+            bypass.meets_conditions()
+
+
 class S3BypassTest(unittest.TestCase):
 
     def setUp(self):
