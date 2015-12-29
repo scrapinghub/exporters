@@ -156,5 +156,16 @@ class S3ReaderTest(unittest.TestCase):
         key.close()
         expected_prefix_pointer = VALID_KEYS[0]
         reader = S3Reader(self.options_prefix_pointer)
-        self.assertEqual(expected_prefix_pointer, reader.prefix)
+        self.assertEqual(expected_prefix_pointer, reader.prefixes[0])
+        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
+
+    def test_prefix_pointer_list(self):
+        self.s3_conn.create_bucket('last_bucket')
+        bucket = self.s3_conn.get_bucket('last_bucket')
+        key = bucket.new_key('test_list/LAST')
+        pointers = ['pointer1', 'pointer2', 'pointer3']
+        key.set_contents_from_string('\n'.join(pointers))
+        key.close()
+        reader = S3Reader(self.options_prefix_pointer)
+        self.assertEqual(pointers, reader.prefixes)
         shutil.rmtree(reader.tmp_folder, ignore_errors=True)

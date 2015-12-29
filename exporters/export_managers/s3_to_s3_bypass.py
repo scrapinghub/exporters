@@ -26,31 +26,33 @@ class S3BucketKeysFetcher(object):
         self.source_bucket = get_bucket(**reader_options)
         self.pattern = reader_options.get('pattern', None)
 
-        self.prefix = reader_options.get('prefix', '')
+        single_prefix = reader_options.get('prefix', '')
         self.prefix_pointer = reader_options.get('prefix_pointer', '')
 
-        if self.prefix and self.prefix_pointer:
+        if single_prefix and self.prefix_pointer:
             raise ConfigurationError("prefix and prefix_pointer options cannot be used together")
 
+        self.prefixes = [single_prefix]
         if self.prefix_pointer:
-            self.prefix = self._download_pointer(self.prefix_pointer)
+            self.prefixes = self._download_pointer(self.prefix_pointer)
 
     @retry_long
     def _download_pointer(self, prefix_pointer):
-        return self.source_bucket.get_key(prefix_pointer).get_contents_as_string().strip()
+        return self.source_bucket.get_key(prefix_pointer).get_contents_as_string().split('\n')
 
     def _get_keys_from_bucket(self):
         keys = []
-        for key in self.source_bucket.list(prefix=self.prefix):
-            if self.pattern:
-                if self._should_add_key(key):
+        for prefix in self.prefixes:
+            for key in self.source_bucket.list(prefix=prefix):
+                if self.pattern:
+                    if self._should_add_key(key, prefix):
+                        keys.append(key.name)
+                else:
                     keys.append(key.name)
-            else:
-                keys.append(key.name)
         return keys
 
-    def _should_add_key(self, key):
-        if re.match(os.path.join(self.prefix, self.pattern), key.name):
+    def _should_add_key(self, key, prefix):
+        if re.match(os.path.join(prefix, self.pattern), key.name):
             return True
         return False
 

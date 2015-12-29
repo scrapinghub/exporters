@@ -54,36 +54,38 @@ class S3Reader(BaseReader):
         self.connection = boto.connect_s3(self.read_option('aws_access_key_id'),
                                           self.read_option('aws_secret_access_key'))
         self.bucket = self.connection.get_bucket(self.read_option('bucket'))
-        self.prefix = self.read_option('prefix')
+        single_prefix = self.read_option('prefix')
         self.prefix_pointer = self.read_option('prefix_pointer')
         self.pattern = self.read_option('pattern')
 
-        if self.prefix and self.prefix_pointer:
+        if single_prefix and self.prefix_pointer:
             raise ConfigurationError("prefix and prefix_pointer options cannot be used together")
 
+        self.prefixes = [single_prefix]
         if self.prefix_pointer:
-            self.prefix = self._download_pointer(self.prefix_pointer)
+            self.prefixes = self._download_pointer(self.prefix_pointer)
 
         self.keys = []
-        for key in self.bucket.list(prefix=self.prefix):
-            if self.pattern:
-                self._add_key_if_matches(key)
-            else:
-                self.keys.append(key.key)
+        for prefix in self.prefixes:
+            for key in self.bucket.list(prefix=prefix):
+                if self.pattern:
+                    self._add_key_if_matches(key, prefix)
+                else:
+                    self.keys.append(key.key)
         self.read_keys = []
         self.current_key = None
         self.last_line = 0
         self.logger.info('S3Reader has been initiated')
         self.tmp_folder = tempfile.mkdtemp()
 
-    def _add_key_if_matches(self, key):
-        if re.match(os.path.join(self.prefix, self.pattern), key.name):
+    def _add_key_if_matches(self, key, prefix):
+        if re.match(os.path.join(prefix, self.pattern), key.name):
             self.keys.append(key.key)
 
     @retry_long
     def _download_pointer(self, prefix_pointer):
         self.logger.info('Downloading prefix pointer from key: %s' % prefix_pointer)
-        return self.bucket.get_key(prefix_pointer).get_contents_as_string().strip()
+        return self.bucket.get_key(prefix_pointer).get_contents_as_string().split('\n')
 
     @retry_long
     def get_key(self, file_path, progress):
