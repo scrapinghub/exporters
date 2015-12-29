@@ -4,11 +4,50 @@ import os
 import tempfile
 import re
 from exporters.progress_callback import BotoDownloadProgress
-
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 from exporters.default_retries import retry_long
 from exporters.exceptions import ConfigurationError
+
+
+def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
+    import boto
+    connection = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
+    return connection.get_bucket(bucket)
+
+
+class S3BucketKeysFetcher(object):
+    def __init__(self, reader_options):
+        self.source_bucket = get_bucket(**reader_options)
+        self.pattern = reader_options.get('pattern', None)
+        single_prefix = reader_options.get('prefix', '')
+        self.prefix_pointer = reader_options.get('prefix_pointer', '')
+        if single_prefix and self.prefix_pointer:
+            raise ConfigurationError("prefix and prefix_pointer options cannot be used together")
+        self.prefixes = [single_prefix]
+        if self.prefix_pointer:
+            self.prefixes = self._download_pointer(self.prefix_pointer)
+
+    @retry_long
+    def _download_pointer(self, prefix_pointer):
+        return self.source_bucket.get_key(prefix_pointer).get_contents_as_string().split('\n')
+
+    def _get_keys_from_bucket(self):
+        keys = []
+        for prefix in self.prefixes:
+            for key in self.source_bucket.list(prefix=prefix):
+                if self.pattern:
+                    if self._should_add_key(key, prefix):
+                        keys.append(key.name)
+                else:
+                    keys.append(key.name)
+        return keys
+
+    def _should_add_key(self, key, prefix):
+        return bool(re.findall(self.pattern, key.name))
+
+    def pending_keys(self):
+        return self._get_keys_from_bucket()
 
 
 class S3Reader(BaseReader):
@@ -32,6 +71,9 @@ class S3Reader(BaseReader):
 
         - prefix_pointer (str)
             Prefix pointing to the last version of dataset.
+
+        - pattern (str)
+            Regex pattern that keys should meet.
 
     """
 
@@ -61,22 +103,17 @@ class S3Reader(BaseReader):
         if single_prefix and self.prefix_pointer:
             raise ConfigurationError("prefix and prefix_pointer options cannot be used together")
 
-        self.prefixes = [single_prefix]
-        if self.prefix_pointer:
-            self.prefixes = self._download_pointer(self.prefix_pointer)
-
-        self.keys = []
-        for prefix in self.prefixes:
-            for key in self.bucket.list(prefix=prefix):
-                if self.pattern:
-                    self._add_key_if_matches(key, prefix)
-                else:
-                    self.keys.append(key.key)
+        self.keys_fetcher = S3BucketKeysFetcher(options['options'])
+        self.keys = self.keys_fetcher.pending_keys()
         self.read_keys = []
         self.current_key = None
         self.last_line = 0
         self.logger.info('S3Reader has been initiated')
         self.tmp_folder = tempfile.mkdtemp()
+
+    @property
+    def prefixes(self):
+        return self.keys_fetcher.prefixes
 
     def _add_key_if_matches(self, key, prefix):
         if bool(re.findall(self.pattern, key.name)):

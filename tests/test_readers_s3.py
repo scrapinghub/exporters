@@ -1,7 +1,6 @@
 import shutil
 import unittest
 import boto
-import mock
 import moto
 from exporters.readers.s3_reader import S3Reader
 from exporters.exceptions import ConfigurationError
