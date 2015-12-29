@@ -115,6 +115,8 @@ class S3Bypass(BaseBypass):
             raise RequisitesNotMet
         if not self.config.grouper_options['name'].endswith('NoGrouper'):
             raise RequisitesNotMet
+        if self.config.reader_options['options'].get('items_limit'):
+            raise RequisitesNotMet
 
     def _get_filebase(self, writer_options):
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
