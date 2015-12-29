@@ -111,10 +111,6 @@ class S3Reader(BaseReader):
         self.logger.info('S3Reader has been initiated')
         self.tmp_folder = tempfile.mkdtemp()
 
-    @property
-    def prefixes(self):
-        return self.keys_fetcher.prefixes
-
     @retry_long
     def _download_pointer(self, prefix_pointer):
         self.logger.info('Downloading prefix pointer from key: %s' % prefix_pointer)
