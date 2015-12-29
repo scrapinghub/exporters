@@ -1,61 +1,18 @@
 import datetime
 import logging
 import os
-import re
 import shutil
 import tempfile
 import uuid
+from contextlib import closing
+
 from boto.exception import S3ResponseError
+
 from exporters.default_retries import retry_long
-from exporters.exceptions import ConfigurationError
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
-from contextlib import closing
 from exporters.progress_callback import BotoUploadProgress
-
-
-def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
-    import boto
-    connection = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
-    return connection.get_bucket(bucket)
-
-
-class S3BucketKeysFetcher(object):
-    def __init__(self, config):
-        reader_options = config.reader_options['options']
-        self.source_bucket = get_bucket(**reader_options)
-        self.pattern = reader_options.get('pattern', None)
-
-        self.prefix = reader_options.get('prefix', '')
-        self.prefix_pointer = reader_options.get('prefix_pointer', '')
-
-        if self.prefix and self.prefix_pointer:
-            raise ConfigurationError("prefix and prefix_pointer options cannot be used together")
-
-        if self.prefix_pointer:
-            self.prefix = self._download_pointer(self.prefix_pointer)
-
-    @retry_long
-    def _download_pointer(self, prefix_pointer):
-        return self.source_bucket.get_key(prefix_pointer).get_contents_as_string().strip()
-
-    def _get_keys_from_bucket(self):
-        keys = []
-        for key in self.source_bucket.list(prefix=self.prefix):
-            if self.pattern:
-                if self._should_add_key(key):
-                    keys.append(key.name)
-            else:
-                keys.append(key.name)
-        return keys
-
-    def _should_add_key(self, key):
-        if re.match(os.path.join(self.prefix, self.pattern), key.name):
-            return True
-        return False
-
-    def pending_keys(self):
-        return self._get_keys_from_bucket()
+from exporters.readers.s3_reader import S3BucketKeysFetcher, get_bucket
 
 
 class S3BypassState(object):
@@ -66,7 +23,7 @@ class S3BypassState(object):
         self.state = module_loader.load_persistence(config.persistence_options)
         self.state_position = self.state.get_last_position()
         if not self.state_position:
-            self.pending = S3BucketKeysFetcher(self.config).pending_keys()
+            self.pending = S3BucketKeysFetcher(self.config.reader_options['options']).pending_keys()
             self.done = []
             self.skipped = []
             self.state.commit_position(self._get_state())
