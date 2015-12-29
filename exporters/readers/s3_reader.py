@@ -26,11 +26,14 @@ class S3BucketKeysFetcher(object):
             raise ConfigurationError("prefix and prefix_pointer options cannot be used together")
         self.prefixes = [single_prefix]
         if self.prefix_pointer:
-            self.prefixes = self._download_pointer(self.prefix_pointer)
+            self.prefixes = self._fetch_prefixes_from_pointer(self.prefix_pointer)
 
     @retry_long
     def _download_pointer(self, prefix_pointer):
-        return self.source_bucket.get_key(prefix_pointer).get_contents_as_string().split('\n')
+        return self.source_bucket.get_key(prefix_pointer).get_contents_as_string()
+
+    def _fetch_prefixes_from_pointer(self, prefix_pointer):
+        return self._download_pointer(prefix_pointer).split('\n')
 
     def _get_keys_from_bucket(self):
         keys = []
@@ -110,11 +113,6 @@ class S3Reader(BaseReader):
         self.last_line = 0
         self.logger.info('S3Reader has been initiated')
         self.tmp_folder = tempfile.mkdtemp()
-
-    @retry_long
-    def _download_pointer(self, prefix_pointer):
-        self.logger.info('Downloading prefix pointer from key: %s' % prefix_pointer)
-        return self.bucket.get_key(prefix_pointer).get_contents_as_string().split('\n')
 
     @retry_long
     def get_key(self, file_path, progress):
