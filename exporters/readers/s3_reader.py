@@ -115,10 +115,6 @@ class S3Reader(BaseReader):
     def prefixes(self):
         return self.keys_fetcher.prefixes
 
-    def _add_key_if_matches(self, key, prefix):
-        if bool(re.findall(self.pattern, key.name)):
-            self.keys.append(key.key)
-
     @retry_long
     def _download_pointer(self, prefix_pointer):
         self.logger.info('Downloading prefix pointer from key: %s' % prefix_pointer)
