@@ -132,6 +132,9 @@ class S3Bypass(BaseBypass):
         self.bypass_state = S3BypassState(self.config)
         source_bucket = get_bucket(**reader_options)
         pending_keys = deepcopy(self.bypass_state.pending_keys())
+        if writer_options.get('items_per_buffer_write') or writer_options.get('size_per_buffer_write'):
+            self.logger.warning('Executing S3 bypass. If you want to set buffer limits '
+                                'please use the prevent_bypass option in exporter_options.')
         try:
             for key in pending_keys:
                 dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
