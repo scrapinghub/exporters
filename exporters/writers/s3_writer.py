@@ -46,6 +46,7 @@ class S3Writer(FilebaseBaseWriter):
         secret_key = self.read_option('aws_secret_access_key')
         self.aws_region = self.read_option('aws_region')
         bucket_name = self.read_option('bucket')
+        self.logger.info('Starting S3Writer for bucket: %s' % bucket_name)
 
         if self.aws_region is None:
             try:

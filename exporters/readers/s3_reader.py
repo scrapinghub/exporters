@@ -8,10 +8,16 @@ from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 from exporters.default_retries import retry_long
 from exporters.exceptions import ConfigurationError
+import logging
 
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
     import boto
+
+    if len(aws_access_key_id) > len(aws_secret_access_key):
+        logging.warn("The AWS credential keys aren't in the usual size,"
+                     " are you using the correct ones?")
+
     connection = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
     return connection.get_bucket(bucket)
 
@@ -92,16 +98,15 @@ class S3Reader(BaseReader):
     }
 
     def __init__(self, options):
-        import boto
-
         super(S3Reader, self).__init__(options)
         self.batch_size = self.read_option('batch_size')
-        self.connection = boto.connect_s3(self.read_option('aws_access_key_id'),
-                                          self.read_option('aws_secret_access_key'))
         bucket_name = self.read_option('bucket')
-        self.logger.info('Initiating S3Reader with bucket: %s' % bucket_name)
+        self.logger.info('Starting S3Reader for bucket: %s' % bucket_name)
 
-        self.bucket = self.connection.get_bucket(bucket_name)
+        self.bucket = get_bucket(bucket_name,
+                                 self.read_option('aws_access_key_id'),
+                                 self.read_option('aws_secret_access_key'))
+
         single_prefix = self.read_option('prefix')
         self.prefix_pointer = self.read_option('prefix_pointer')
         self.pattern = self.read_option('pattern')
