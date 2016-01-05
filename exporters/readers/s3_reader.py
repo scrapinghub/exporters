@@ -98,7 +98,10 @@ class S3Reader(BaseReader):
         self.batch_size = self.read_option('batch_size')
         self.connection = boto.connect_s3(self.read_option('aws_access_key_id'),
                                           self.read_option('aws_secret_access_key'))
-        self.bucket = self.connection.get_bucket(self.read_option('bucket'))
+        bucket_name = self.read_option('bucket')
+        self.logger.info('Initiating S3Reader with bucket: %s' % bucket_name)
+
+        self.bucket = self.connection.get_bucket(bucket_name)
         single_prefix = self.read_option('prefix')
         self.prefix_pointer = self.read_option('prefix_pointer')
         self.pattern = self.read_option('pattern')
