@@ -39,7 +39,7 @@ class S3BucketKeysFetcher(object):
         return self.source_bucket.get_key(prefix_pointer).get_contents_as_string()
 
     def _fetch_prefixes_from_pointer(self, prefix_pointer):
-        return self._download_pointer(prefix_pointer).split('\n')
+        return [pointer for pointer in self._download_pointer(prefix_pointer).split('\n') if pointer]
 
     def _get_keys_from_bucket(self):
         keys = []
