@@ -166,7 +166,7 @@ class TestS3BucketKeysFetcher(unittest.TestCase):
         self.s3_conn.create_bucket('last_bucket')
         bucket = self.s3_conn.get_bucket('last_bucket')
         key = bucket.new_key('test_list/LAST')
-        self.pointers = ['pointer1', 'pointer2', 'pointer3']
+        self.pointers = ['pointer1', 'pointer2', 'pointer3', '']
         key.set_contents_from_string('\n'.join(self.pointers))
         key.close()
 
@@ -187,8 +187,9 @@ class TestS3BucketKeysFetcher(unittest.TestCase):
 
     def test_prefix_pointer_list(self):
         self.s3_conn.create_bucket('last_bucket')
+        expected_pointers = ['pointer1', 'pointer2', 'pointer3']
         fetcher = S3BucketKeysFetcher(self.options_prefix_pointer)
-        self.assertEqual(self.pointers, fetcher.prefixes)
+        self.assertEqual(expected_pointers, fetcher.prefixes)
 
     def test_prefix_pointer_keys_list(self):
         fetcher = S3BucketKeysFetcher(self.options_prefix_pointer)
