@@ -14,6 +14,8 @@ Contents:
    readme
    installation
    exporters
+   modules
+   contributing
    docs
    tutorials
 
