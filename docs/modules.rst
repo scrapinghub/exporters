@@ -246,6 +246,13 @@ OdoWriter
 
 Transform
 ~~~~~~~~~
+Transformations to items can be made in an export job. Using this modules, read items can
+be modified or cleaned before being written. To add new transform modules, this methods must
+be overwritten:
+
+    - transform_batch(batch)
+         Receives the batch, transforms its items and yields them,
+
 .. automodule:: exporters.transform.base_transform
     :members:
     :undoc-members:
@@ -277,6 +284,12 @@ PythonexpTransform
 
 Filter
 ~~~~~~
+This module receives a batch, filter it according to some parameters, and returns it.
+It must implement the following methods:
+
+- filter(item)
+    It receives an item and returns True if the filter must be included, or False if not
+
 .. automodule:: exporters.filters.base_filter
     :members:
     :undoc-members:
@@ -316,6 +329,29 @@ PythonExpeRegex
 
 Persistence
 ~~~~~~~~~~~
+This module is in charge of resuming support. It must be able to persist the current
+state of read and written items, and inform of that state on demand. It is usually called
+from an export manager, and it must implement the following methods:
+
+    - get_last_position()
+        Returns the last commited position
+
+    - commit_position(last_position)
+        Commits a position that has been through all the pipeline. Position can be any serializable object. This support both
+        usual position abstractions (number of batch) of specific abstractions such as offsets in Kafka (which are a dict)
+
+    - generate_new_job()
+        Creates and instantiates all that is needed to keep persistence (tmp files, remote connections...)
+
+    - close()
+        Cleans tmp files, close remote connections...
+
+    - configuration_from_uri(uri, regex)
+        returns a configuration object
+
+It must also define a `uri_regex`, which is a regex that must help the module to find
+an already created resume abstraction
+
 .. automodule:: exporters.persistence.base_persistence
     :members:
     :undoc-members:
@@ -342,6 +378,10 @@ AlchemyPersistence
 
 Notifications
 ~~~~~~~~~~~~~
+Exporters project supports notification of main export job events, like starting an export, ending or failing.
+This events can be notified to multiple destinations by adding proper modules to an export configuration.
+
+
 .. automodule:: exporters.notifications.base_notifier
     :members:
     :undoc-members:

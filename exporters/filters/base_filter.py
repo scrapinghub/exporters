@@ -5,10 +5,6 @@ from exporters.pipeline.base_pipeline_item import BasePipelineItem
 class BaseFilter(BasePipelineItem):
     """
     This module receives a batch, filter it according to some parameters, and returns it.
-    It must implement the following methods:
-
-    - filter(item)
-        It receives an item and returns True if the filter must be included, or False if not
     """
     log_at_every = 1000
 
