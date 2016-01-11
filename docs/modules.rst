@@ -164,15 +164,6 @@ FTPWriter
     :undoc-members:
     :show-inheritance:
 
-
-HubstorageWriter
-################
-.. automodule:: exporters.writers.hubstorage_writer
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 FSWriter
 ########
 .. automodule:: exporters.writers.fs_writer

@@ -7,6 +7,24 @@ from exporters.utils import TemporaryDirectory
 
 
 class GStorageWriter(FilebaseBaseWriter):
+
+    """
+    Writes items to Google Storage buckets. It is a File Based writer, so it has filebase
+    option available
+
+        - filebase (str)
+            Path to store the exported files
+
+        - project (str)
+            Valid project name
+
+        - bucket (str)
+            Google Storage bucket name
+
+        - credentials (dict)
+            Object with valid google credentials
+    """
+
     supported_options = {
         'project': {'type': basestring},
         'bucket': {'type': basestring},

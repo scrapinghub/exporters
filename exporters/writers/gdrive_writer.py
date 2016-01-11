@@ -2,22 +2,22 @@ import json
 import os
 import shutil
 import tempfile
-from retrying import retry
+from exporters.default_retries import retry_long
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
 class GDriveWriter(FilebaseBaseWriter):
     """
-    Writes items to Google Drive account.
+    Writes items to Google Drive account. It is a File Based writer, so it has filebase
 
         - client_secret (str)
-            Path to secret file.
+            Path to secret file
 
         - credentials (str)
-            Path to credentials file.
+            Path to credentials file
 
         - filebase (str)
-            Final path of items file.
+            Path to store the exported files
     """
 
     supported_options = {
@@ -44,11 +44,11 @@ class GDriveWriter(FilebaseBaseWriter):
         self.logger.info(
             'GDriveWriter has been initiated. Writing to: {}'.format(self.filebase))
 
-    def _create_path_if_not_exist(self, path):
-        if not os.path.exists(path):
-            os.makedirs(path)
 
     def get_file_suffix(self, path, prefix):
+        """
+        Gets a valid filename
+        """
         parent = self._ensure_folder_path(path)
 
         file_list = self.drive.ListFile({'q': "'{}' in parents and trashed=false and title contains '{}'".format(
@@ -60,6 +60,8 @@ class GDriveWriter(FilebaseBaseWriter):
         return '{0:04}'.format(number_of_files)
 
     def _ensure_folder_path(self, filebase_path):
+        """Creates the directory for the path given, recursively creating
+        parent directories when needed"""
         folders = filebase_path.split('/')
         parent = {"id": "root"}
         for folder in folders:
@@ -73,8 +75,7 @@ class GDriveWriter(FilebaseBaseWriter):
                 parent = {"id": file_list[-1]["id"]}
         return parent
 
-    @retry(wait_exponential_multiplier=500, wait_exponential_max=10000,
-           stop_max_attempt_number=10)
+    @retry_long
     def write(self, dump_path, group_key=None):
         if group_key is None:
             group_key = []

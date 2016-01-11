@@ -12,7 +12,8 @@ class FtpCreateDirsException(Exception):
 
 class FTPWriter(FilebaseBaseWriter):
     """
-    Writes items to FTP server.
+    Writes items to FTP server. It is a File Based writer, so it has filebase
+    option available
 
         - host (str)
             Ftp server ip
@@ -27,7 +28,7 @@ class FTPWriter(FilebaseBaseWriter):
             Ftp password
 
         - filebase (str)
-            Base path to store the items in.
+            Path to store the exported files
     """
     supported_options = {
         'host': {'type': basestring},

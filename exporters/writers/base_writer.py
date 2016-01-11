@@ -47,7 +47,7 @@ class BaseWriter(BasePipelineItem):
 
     def write_batch(self, batch):
         """
-        Receive the batch and write it.
+        Receives the batch and writes it. This method is usually called from a manager.
         """
         for item in batch:
             if self.write_buffer.items_group_files.file_extension is None:
@@ -65,12 +65,19 @@ class BaseWriter(BasePipelineItem):
         self.stats.update(self.write_buffer.stats)
 
     def _check_items_limit(self):
+        """
+        Check if a writer has reached the items limit. If so, it raises an ItemsLimitReached
+        exception
+        """
         if self.items_limit and self.items_limit == self.items_count:
             self.stats.update(self.write_buffer.stats)
             raise ItemsLimitReached('Finishing job after items_limit reached:'
                                     ' {} items written.'.format(self.items_count))
 
     def flush(self):
+        """
+        This method trigers a key write.
+        """
         for key in self.grouping_info.keys():
             self._write(key)
 
@@ -86,6 +93,9 @@ class BaseWriter(BasePipelineItem):
         return self.write_buffer.grouping_info
 
     def _check_write_consistency(self):
+        """
+        This should be overwridden if a write consistency check is needed
+        """
         self.logger.warning('Not checking write consistency')
 
     def increment_written_items(self):
