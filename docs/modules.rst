@@ -465,14 +465,14 @@ Provided Stats Managers
 
 BasicStatsManager
 #################
-.. automodule:: exporters.stats_managers.basic_stats_managers
+.. automodule:: exporters.stats_managers.basic_stats_manager
     :members:
     :undoc-members:
     :show-inheritance:
 
 LoggingStatsManager
 ###################
-.. automodule:: exporters.stats_managers.logging_stats_managers
+.. automodule:: exporters.stats_managers.logging_stats_manager
     :members:
     :undoc-members:
     :show-inheritance:
@@ -498,14 +498,14 @@ Provided Export Formatters
 
 JsonExportFormatter
 ###################
-.. automodule:: exporters.export_formatters.json_export_formatter
+.. automodule:: exporters.export_formatter.json_export_formatter
     :members:
     :undoc-members:
     :show-inheritance:
 
 CSVExportFormatter
 ##################
-.. automodule:: exporters.export_formatters.csv_export_formatter
+.. automodule:: exporters.export_formatter.csv_export_formatter
     :members:
     :undoc-members:
     :show-inheritance:
