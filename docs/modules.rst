@@ -113,7 +113,7 @@ HubstorageReader
 Writer
 ~~~~~~
 Writers are in charge of writing batches of items to final destination. All writers are subclasses of
- BaseWriter class, and must implement:
+BaseWriter class, and must implement:
 
     - write(dump_path, group_key=None)
         This method is called from the manager. It gets a dump_path, which is the path of an
@@ -164,6 +164,13 @@ FTPWriter
     :undoc-members:
     :show-inheritance:
 
+SFTPWriter
+##########
+.. automodule:: exporters.writers.sftp_writer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 FSWriter
 ########
 .. automodule:: exporters.writers.fs_writer
@@ -199,6 +206,38 @@ CloudsearchWriter
 GDriveWriter
 ############
 .. automodule:: exporters.writers.gdrive_writer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+GStorageWriter
+##############
+.. automodule:: exporters.writers.gstorage_writer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+HubstorageReduceWriter
+######################
+.. automodule:: exporters.writers.hs_reduce_writer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+ReduceWriter
+############
+.. automodule:: exporters.writers.reduce_writer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+OdoWriter
+#########
+.. automodule:: exporters.writers.odo_writer
     :members:
     :undoc-members:
     :show-inheritance:
