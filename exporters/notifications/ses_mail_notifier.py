@@ -16,7 +16,7 @@ class InvalidMailProvided(Exception):
 
 class SESMailNotifier(BaseNotifier):
     """
-    Sends emails using aws mail service
+    Sends email notifications using aws mail service
 
         - team_mails (list)
             List of the mails from the team members

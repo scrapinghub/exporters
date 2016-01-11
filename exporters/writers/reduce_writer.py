@@ -13,6 +13,13 @@ def compile_reduce_function(reduce_code):
 
 
 class ReduceWriter(BaseWriter):
+    """
+    This writer allow exporters to make aggregation of items data and print the results
+
+        - code (str)
+            Python code defining a reduce_function(item, accumulator=None)
+    """
+
     supported_options = {
         "code": {
             'type': basestring,

@@ -10,7 +10,7 @@ from exporters.records.base_record import BaseRecord
 
 class KafkaRandomReader(BaseReader):
     """
-    Reads a random subset of items from kafka brokers.
+    This reader retrieves a random subset of items from kafka brokers.
 
         - record_count (int)
             Number of items to be returned in total
@@ -88,10 +88,17 @@ class KafkaRandomReader(BaseReader):
 
     @retry_short
     def get_from_kafka(self):
+        """
+        Method called to get and process a batch
+        """
         batch_size = self.read_option('batch_size')
         return self.processor.process(batch_size)
 
     def get_next_batch(self):
+        """
+        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        When it has nothing else to read, it must set class variable "finished" to True.
+        """
         messages = self.get_from_kafka()
         if messages:
             for message in messages:
@@ -140,6 +147,10 @@ class KafkaRandomReader(BaseReader):
             yield record
 
     def set_last_position(self, last_position):
+        """
+        Called from the manager, it is in charge of updating the last position of data commited by the writer, in order to
+        have resume support
+        """
         if last_position is None:
             self.last_position = {}
             for partition in self.partitions:

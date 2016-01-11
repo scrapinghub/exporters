@@ -8,7 +8,7 @@ from exporters.default_retries import retry_short
 
 class KafkaScannerReader(BaseReader):
     """
-    Reads items from kafka brokers.
+    This reader retrieves items from kafka brokers.
 
         - batch_size (int)
             Number of items to be returned in each batch
@@ -65,6 +65,10 @@ class KafkaScannerReader(BaseReader):
         return self.batches.next()
 
     def get_next_batch(self):
+        """
+        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        When it has nothing else to read, it must set class variable "finished" to True.
+        """
         try:
             batch = self.get_from_kafka()
             for message in batch:
@@ -76,6 +80,10 @@ class KafkaScannerReader(BaseReader):
         self.logger.debug('Done reading batch')
 
     def set_last_position(self, last_position):
+        """
+        Called from the manager, it is in charge of updating the last position of data commited by the writer, in order to
+        have resume support
+        """
         if last_position is None:
             self.last_position = {}
         else:

@@ -6,7 +6,8 @@ from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 class SFTPWriter(FilebaseBaseWriter):
     """
-    Writes items to SFTP server.
+    Writes items to SFTP server. It is a File Based writer, so it has filebase
+    option available
 
         - host (str)
             SFtp server ip
@@ -21,7 +22,7 @@ class SFTPWriter(FilebaseBaseWriter):
             SFtp password
 
         - filebase (str)
-            Base path to store the items in.
+            Path to store the exported files
     """
     supported_options = {
         'host': {'type': basestring},

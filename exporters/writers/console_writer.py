@@ -6,6 +6,8 @@ from exporters.writers.base_writer import BaseWriter, ItemsLimitReached
 class ConsoleWriter(BaseWriter):
     """
     It is just a writer with testing purposes. It prints every item in console.
+
+    It has no other options.
     """
 
     def __init__(self, options):
