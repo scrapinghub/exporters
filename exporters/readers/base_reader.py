@@ -16,8 +16,8 @@ class BaseReader(BasePipelineItem):
 
     def get_next_batch(self):
         """
-        This method is called from the manager. It must return a list of BaseRecord objects. When it has nothing else to read,
-        it must set class variable "finished" to True.
+        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        When it has nothing else to read, it must set class variable "finished" to True.
         """
         raise NotImplementedError
 

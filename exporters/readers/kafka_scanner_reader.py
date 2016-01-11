@@ -8,7 +8,7 @@ from exporters.default_retries import retry_short
 
 class KafkaScannerReader(BaseReader):
     """
-    Reads items from kafka brokers.
+    This reader retrieves items from kafka brokers.
 
         - batch_size (int)
             Number of items to be returned in each batch

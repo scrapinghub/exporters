@@ -10,7 +10,7 @@ from exporters.records.base_record import BaseRecord
 
 class KafkaRandomReader(BaseReader):
     """
-    Reads a random subset of items from kafka brokers.
+    This reader retrieves a random subset of items from kafka brokers.
 
         - record_count (int)
             Number of items to be returned in total

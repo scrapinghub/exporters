@@ -4,31 +4,31 @@ from exporters.records.base_record import BaseRecord
 
 class HubstorageReader(BaseReader):
     """
-    Reads items from Hubstorage collections.
+    This reader retrieves items from Scrapinghub Hubstorage collections.
 
         - batch_size (int)
             Number of items to be returned in each batch
 
         - apikey (str)
-            API key with access to the project.
+            API key with access to the project where the items are being generated.
 
         - project_id (str)
             Id of the project.
 
         - collection_name (str)
-            Name of the collection.
+            Name of the collection of items.
 
         - count (int)
-            number of records to read from collection
+            Number of records to read from collection.
 
         - prefixes (list)
-            Only include records with given key prefixes
+            Only include records with given key prefixes.
 
         - exclude_prefixes (list)
-            Exclude records with given key prefixes
+            Exclude records with given key prefixes.
 
         - secondary_collections (list)
-            A list of secondary collections to merge from
+            A list of secondary collections to merge from.
     """
 
     # List of options to set up the reader

@@ -61,7 +61,7 @@ class S3BucketKeysFetcher(object):
 
 class S3Reader(BaseReader):
     """
-    Reads items from s3 keys with a common prefix.
+    Reads items from keys located in S3 buckets and compressed with gzip with a common path.
 
         - batch_size (int)
             Number of items to be returned in each batch
@@ -79,10 +79,16 @@ class S3Reader(BaseReader):
             Prefix of s3 keys to be read.
 
         - prefix_pointer (str)
-            Prefix pointing to the last version of dataset.
+            Prefix pointing to the last version of dataset. This adds support for regular exports.
+            For example:
+                We have a weekly export set with CRON. If we wanted to point to a new data
+                prefix every week, we should keep updating the export configuration. With a pointer,
+                we can set the reader to read from that key, which contains one or several
+                lines with valid prefixes to datasets, so only that pointer file should be updated.
 
         - pattern (str)
-            Regex pattern that keys should meet.
+            S3 key name pattern (REGEX). All files that don't match this regex string will be
+            discarded by the reader.
 
     """
 

@@ -10,13 +10,14 @@ from exporters.records.base_record import BaseRecord
 
 class RandomReader(BaseReader):
     """
-    It is just a reader with testing purposes. It generates random data in a quantity that is set in its config section.
+    It is just a reader with testing purposes. It generates random data in a quantity that
+    is set in its config section.
 
         - number_of_items (int)
             Number of total items that must be returned by the reader before finishing.
 
         - batch_size (int)
-            Number of items to be returned in each batch
+            Number of items to be returned in each batch.
     """
 
     supported_options = {

@@ -6,8 +6,9 @@ Modules
 
 Export Manager
 ~~~~~~~~~~~~~~
-This module is in charge of the pipeline iteration, and it is the one executed to start it. It must call the reader to
-get a batch, call the transform module, and finally write and commit the batch. It is also in charge of notifications
+This module is in charge of the pipeline iteration, and it is the one executed to start it.
+A pipeline iteration usually consists on calling the reader to get a batch, filter it, transform it,
+filter it again, write it and commit the read batch. It should also be  in charge of notifications
 and retries management.
 
 Provided exporters
@@ -15,14 +16,14 @@ Provided exporters
 
 BasicExporter
 #############
-.. automodule:: exporters.export_managers.basic_export_manager
+.. automodule:: exporters.export_managers.basic_exporter
     :members:
     :undoc-members:
     :show-inheritance:
 
 
 Bypass support
-**************
+~~~~~~~~~~~~~~
 Exporters arqchitecture provides support to bypass the pipeline. A usage example of that is the case in which both reader
 and writer aim S3 buckets. If no transforms or filtering are needed, keys can be copied directly without downloading them.
 
@@ -32,15 +33,32 @@ All bypass classes are subclasses of BaseBypass class, and must implement two me
             Checks if provided export configuration meets the requirements to use the bypass. If not, a RequisitesNotMet
             exception must be thrown.
 
-    - run()
-        Executes the bypass script
+    - bypass()
+        Executes the bypass script.
+
+    - close()
+        Perform all needed actions to leave a clean system after the bypass execution.
 
 Provided Bypass scripts
 ***********************
-    - S3Bypass
+S3Bypass
+########
+.. automodule:: exporters.export_managers.s3_to_s3_bypass
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Reader
 ~~~~~~
+
+Readers are in charge of providing batches of items to the pipeline. All readers are subclasses of
+ BaseReader class, and must implement:
+
+    - get_next_batch()
+        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        When it has nothing else to read, it must set class variable "finished" to True.
+
+
 .. automodule:: exporters.readers.base_reader
     :members:
     :undoc-members:
@@ -52,6 +70,13 @@ Provided readers
 RandomReader
 ############
 .. automodule:: exporters.readers.random_reader
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+FSReader
+############
+.. automodule:: exporters.readers.fs_reader
     :members:
     :undoc-members:
     :show-inheritance:

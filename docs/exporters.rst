@@ -26,9 +26,9 @@ Config file
 Exporters behaviour is defined by what we call a configuration object. This object has the
 following sections:
 
-- exporter_options (mandatory): it contains general export options, including output format.
 - reader (mandatory): defines what reader module the export should use and its options.
 - writer (mandatory): defines what writer module the export should use and its options.
+- exporter_options: it contains general export options, including output format.
 - filter_before: defines what filter module should be used before transforming and its options.
 - filter_after: defines what filter module should be used after transforming and its options.
 - transform: defines what transform module the export should use and its options.
@@ -41,8 +41,7 @@ This is an example of the simplest config file that can be used.
 .. code-block:: javascript
 
     {
-        "exporter_options":{
-        },
+
         "reader": {
             "name": "exporters.readers.random_reader.RandomReader",
             "options": {

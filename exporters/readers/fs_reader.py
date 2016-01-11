@@ -9,20 +9,25 @@ from exporters.exceptions import ConfigurationError
 
 class FSReader(BaseReader):
     """
-    Reads items from s3 files with a common path.
+    Reads items from files located in filesystem and compressed with gzip with a common path.
 
         - batch_size (int)
             Number of items to be returned in each batch
 
         - path (str)
-            Files path to be read.
+            Files path to be read. This reader will read recusively inside this path.
 
         - path_pointer (str)
-            Path pointing to the last version of dataset.
+            Path pointing to the last version of dataset. This adds support for regular exports.
+            For example:
+                We have a weekly export set with CRON. If we wanted to point to a new data
+                path every week, we should keep updating the export configuration. With a pointer,
+                we can set the reader to read from that file, which contains one or several
+                lines with valid paths to datasets, so only that pointer file should be updated.
 
         - pattern (str)
-            File name pattern (REGEX).
-
+            File name pattern (REGEX). All files that don't match this regex string will be
+            discarded by the reader.
     """
 
     # List of options to set up the reader
