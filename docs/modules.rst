@@ -455,6 +455,11 @@ the following methods:
     - final_report(stats)
         Usually called at the end of an export job
 
+.. automodule:: exporters.stats_managers.base_stats_managers
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Provided Stats Managers
 ***********************
 
@@ -468,6 +473,39 @@ BasicStatsManager
 LoggingStatsManager
 ###################
 .. automodule:: exporters.stats_managers.logging_stats_managers
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Export Formatters
+~~~~~~~~~~~~~~~~~
+Exporters project support exporting to different formats. This formatting is handled by
+export formatters modules. An export formatter must implement the following method:
+
+    - format(batch)
+        It adds formatting info to all the items from a batch. Every item, which is a BaseRecord,
+        has a formatted attribute that should be updated by this method before yielding it
+
+.. automodule:: exporters.export_formatters.base_export_formatter
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Provided Export Formatters
+**************************
+
+JsonExportFormatter
+###################
+.. automodule:: exporters.export_formatters.json_export_formatter
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+CSVExportFormatter
+##################
+.. automodule:: exporters.export_formatters.csv_export_formatter
     :members:
     :undoc-members:
     :show-inheritance:

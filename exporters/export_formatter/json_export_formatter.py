@@ -3,6 +3,10 @@ from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 
 
 class JsonExportFormatter(BaseExportFormatter):
+    """
+    This export formatter provides a way of exporting items in JSON format. This one is the
+    default formatter
+    """
 
     supported_options = {
         'show_titles': {'type': bool, 'default': False}
