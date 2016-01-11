@@ -397,9 +397,22 @@ SESMailNotifier
     :undoc-members:
     :show-inheritance:
 
+WebhookNotifier
+###############
+.. automodule:: exporters.notifications.webhook_notifier
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Grouping
 ~~~~~~~~
+This module adds support to grouping items. It must implement the following methods:
+
+    - group_batch(batch)
+        It adds grouping info to all the items from a batch. Every item, which is a BaseRecord,
+        has a group_membership attribute that should be updated by this method before yielding it
+
 .. automodule:: exporters.groupers.base_grouper
     :members:
     :undoc-members:
@@ -411,6 +424,50 @@ Provided Groupers
 KeyFileGrouper
 ##############
 .. automodule:: exporters.groupers.file_key_grouper
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+NoGrouper
+#########
+.. automodule:: exporters.groupers.no_grouper
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+PythonExpGrouper
+################
+.. automodule:: exporters.groupers.python_exp_grouper
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Stats Managers
+~~~~~~~~~~~~~~
+This module provides support for keeping track of export stats. A Stats Manager must implement
+the following methods:
+
+    - iteration_report(times, stats)
+        It recieves the spent times in every step of the export pipeline iteration, and
+        the aggregated stats
+
+    - final_report(stats)
+        Usually called at the end of an export job
+
+Provided Stats Managers
+***********************
+
+BasicStatsManager
+#################
+.. automodule:: exporters.stats_managers.basic_stats_managers
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+LoggingStatsManager
+###################
+.. automodule:: exporters.stats_managers.logging_stats_managers
     :members:
     :undoc-members:
     :show-inheritance:

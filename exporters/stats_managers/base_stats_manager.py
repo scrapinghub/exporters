@@ -3,6 +3,10 @@ from exporters.pipeline.base_pipeline_item import BasePipelineItem
 
 
 class BaseStatsManager(BasePipelineItem):
+    """
+    Base class for stats managers
+    """
+
     def __init__(self, options):
         super(BaseStatsManager, self).__init__(options)
         self.logger = StatsManagerLogger({'log_level': options.get('log_level'),
