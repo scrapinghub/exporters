@@ -50,7 +50,6 @@ S3Bypass
 
 Reader
 ~~~~~~
-
 Readers are in charge of providing batches of items to the pipeline. All readers are subclasses of
  BaseReader class, and must implement:
 
@@ -113,6 +112,28 @@ HubstorageReader
 
 Writer
 ~~~~~~
+Writers are in charge of writing batches of items to final destination. All writers are subclasses of
+ BaseWriter class, and must implement:
+
+    - write(dump_path, group_key=None)
+        This method is called from the manager. It gets a dump_path, which is the path of an
+        items buffer file compressed with gzip. It also has an optional group_key, which provides
+        information regarding the group membership of the items contained in that file.
+
+
+All writers have also the following common options:
+
+    - items_per_buffer_write
+        Number of items before a buffer flush takes place.
+
+    - size_per_buffer_write
+        Size of buffer files before being flushed.
+
+    - items_limit
+        Number of items to be written before ending the export process. This is useful for
+        testing exports.
+
+
 .. automodule:: exporters.writers.base_writer
     :members:
     :undoc-members:

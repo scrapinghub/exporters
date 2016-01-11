@@ -61,6 +61,10 @@ class HubstorageReader(BaseReader):
         self.last_position = ''
 
     def get_next_batch(self):
+        """
+        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        When it has nothing else to read, it must set class variable "finished" to True.
+        """
         if self.collection_scanner.is_enabled:
             batch = self.collection_scanner.get_new_batch()
             for item in batch:
@@ -74,6 +78,10 @@ class HubstorageReader(BaseReader):
             self.finished = True
 
     def set_last_position(self, last_position):
+        """
+        Called from the manager, it is in charge of updating the last position of data commited by the writer, in order to
+        have resume support
+        """
         if last_position:
             self.last_position = last_position
             self.collection_scanner.set_startafter(last_position)

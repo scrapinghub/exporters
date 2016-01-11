@@ -4,7 +4,7 @@ from exporters.pipeline.base_pipeline_item import BasePipelineItem
 
 class BaseReader(BasePipelineItem):
     """
-    This module reads and creates a batch to pass them to the pipeline. It can implement the following methods:
+    This module reads and creates a batch to pass them to the pipeline
     """
 
     def __init__(self, options):

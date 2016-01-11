@@ -22,8 +22,8 @@ class FSReader(BaseReader):
             For example:
                 We have a weekly export set with CRON. If we wanted to point to a new data
                 path every week, we should keep updating the export configuration. With a pointer,
-                we can set the reader to read from that file, which contains one or several
-                lines with valid paths to datasets, so only that pointer file should be updated.
+                we can set the reader to read from that file, which contains one line with
+                a valid path to datasets, so only that pointer file should be updated.
 
         - pattern (str)
             File name pattern (REGEX). All files that don't match this regex string will be
@@ -65,6 +65,10 @@ class FSReader(BaseReader):
         self.logger.info('FSReader has been initiated')
 
     def read_lines_from_files(self):
+        """
+        Open and reads files from self.files variable, and yields the items extracted from them.
+
+        """
         for fpath in self.files:
             with gzip.open(fpath) as f:
                 for line in f:
@@ -84,10 +88,16 @@ class FSReader(BaseReader):
             self.last_position['last_line'] = self.last_line
 
     def _get_pointer(self, path_pointer):
+        """
+        Given a pointer path extracts the path to read the datasets from
+        """
         with open(path_pointer) as f:
             return f.read().strip()
 
     def _get_all_files_from_tree(self):
+        """
+        Returns a list of files under a given path
+        """
         all_files = []
         for root, directories, filenames in os.walk(self.path):
             for filename in filenames:
@@ -95,10 +105,17 @@ class FSReader(BaseReader):
         return all_files
 
     def _add_file_if_matches(self, file):
+        """
+        Checks if a filename matches the provided regex pattern
+        """
         if re.match(os.path.join(self.path, self.pattern), file):
             self.files.append(file)
 
     def get_next_batch(self):
+        """
+        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        When it has nothing else to read, it must set class variable "finished" to True.
+        """
         count = 0
         while count < self.batch_size:
             count += 1
@@ -106,6 +123,10 @@ class FSReader(BaseReader):
         self.logger.debug('Done reading batch')
 
     def set_last_position(self, last_position):
+        """
+        Called from the manager, it is in charge of updating the last position of data commited by the writer, in order to
+        have resume support
+        """
         if last_position is None:
             self.last_position = {}
             self.last_position['files'] = self.files

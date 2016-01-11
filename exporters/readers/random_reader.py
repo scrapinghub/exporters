@@ -40,8 +40,11 @@ class RandomReader(BaseReader):
         self.batch_size = self.read_option('batch_size')
 
     def get_next_batch(self):
+        """
+        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        When it has nothing else to read, it must set class variable "finished" to True.
+        """
         number_of_items = self.read_option('number_of_items')
-
         for i in range(0, self.batch_size):
             if self.last_key >= number_of_items:
                 self.finished = True
@@ -60,6 +63,10 @@ class RandomReader(BaseReader):
         self.last_position += 1
 
     def set_last_position(self, last_position):
+        """
+        Called from the manager, it is in charge of updating the last position of data commited by the writer, in order to
+        have resume support
+        """
         self.last_position = last_position
         if last_position:
             self.last_key = self.last_position * self.read_option('batch_size')

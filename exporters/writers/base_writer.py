@@ -15,8 +15,7 @@ SIZE_PER_BUFFER_WRITE = 0
 
 class BaseWriter(BasePipelineItem):
     """
-    This module receives a batch and writes it where needed. It adds an optionsl items_limit parameter to allow
-     to limit the number of exported items. If set to 0, there is no limit.
+    This module receives a batch and writes it where needed.
     """
     supported_options = {
         'items_per_buffer_write': {'type': int, 'default': ITEMS_PER_BUFFER_WRITE},

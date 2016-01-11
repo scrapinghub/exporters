@@ -130,10 +130,17 @@ class S3Reader(BaseReader):
 
     @retry_long
     def get_key(self, file_path, progress):
+        """
+        Downloads and stores an s3 key
+        """
         self.logger.info('Downloading key: %s' % self.current_key)
         self.bucket.get_key(self.current_key).get_contents_to_filename(file_path, cb=progress)
 
     def get_next_batch(self):
+        """
+        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        When it has nothing else to read, it must set class variable "finished" to True.
+        """
         file_path = '{}/ds_dump.gz'.format(self.tmp_folder)
         if not self.current_key:
             progress = BotoDownloadProgress(self.logger)
@@ -169,6 +176,10 @@ class S3Reader(BaseReader):
         self.logger.debug('Done reading batch')
 
     def set_last_position(self, last_position):
+        """
+        Called from the manager, it is in charge of updating the last position of data commited by the writer, in order to
+        have resume support
+        """
         if last_position is None:
             self.last_position = {}
             self.last_position['keys'] = self.keys
