@@ -3,7 +3,7 @@ from exporters.filters.base_filter import BaseFilter
 
 class KeyValueFilter(BaseFilter):
     """
-    Filter items depending on keys and values.
+    Filter items depending on keys and values
 
         - keys (list)
             It is a list of dicts with the following structure: {"key": "value"}.

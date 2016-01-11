@@ -3,11 +3,14 @@ from exporters.pipeline.base_pipeline_item import BasePipelineItem
 
 
 class BaseFilter(BasePipelineItem):
-    log_at_every = 1000
     """
     This module receives a batch, filter it according to some parameters, and returns it.
     It must implement the following methods:
+
+    - filter(item)
+        It receives an item and returns True if the filter must be included, or False if not
     """
+    log_at_every = 1000
 
     def __init__(self, options):
         super(BaseFilter, self).__init__(options)
@@ -37,6 +40,6 @@ class BaseFilter(BasePipelineItem):
 
     def filter(self, item):
         """
-        Return True if item should be included.
+        It receives an item and returns True if the filter must be included, or False if not
         """
         raise NotImplementedError
