@@ -6,9 +6,10 @@ Contributing
 There are many ways to contribute to Exporters project. Here are some of them:
 
     - Report bugs and request features in the issue tracker, trying to follow the guidelines
-    detailed in Reporting bugs below.
-    - Submit patches for new functionality and/or bug fixes. Please read Writing patches
-    and Submitting patches below for details on how to write and submit a patch.
+      detailed in Reporting bugs below.
+
+    - Submit patches for new functionality and/or bug fixes. Please read :ref:`writing-patches`
+      and :ref:`submitting-patches` below for details on how to write and submit a patch.
 
 
 Reporting bugs
@@ -17,12 +18,15 @@ Reporting bugs
 Well-written bug reports are very helpful, so keep in mind the following guidelines when reporting a new bug.
 
     - check the open issues to see if it has already been reported. If it has, don’t dismiss
-    the report but check the ticket history and comments, you may find additional useful information to contribute.
+      the report but check the ticket history and comments, you may find additional useful
+      information to contribute.
+
     - write complete, reproducible, specific bug reports. The smaller the test case, the
-    better. Remember that other developers won’t have your project to reproduce the bug,
-    so please include all relevant files required to reproduce it.
+      better. Remember that other developers won’t have your project to reproduce the bug,
+      so please include all relevant files required to reproduce it.
 
 
+.. _writing-patches:
 
 Writing patches
 ~~~~~~~~~~~~~~~
@@ -32,15 +36,20 @@ The better written a patch is, the higher chance that it’ll get accepted and t
 Well-written patches should:
 
     - contain the minimum amount of code required for the specific change. Small patches
-    are easier to review and merge. So, if you’re doing more than one change (or bug fix),
-    please consider submitting one patch per change. Do not collapse multiple changes into
-    a single patch. For big changes consider using a patch queue.
-    - pass all unit-tests. See Running tests below.
-    - include one (or more) test cases that check the bug fixed or the new functionality
-    added. See Writing tests below.
-    - if you’re adding or changing a public (documented) API, please include the documentation
-    changes in the same patch. See Documentation policies below.
+      are easier to review and merge. So, if you’re doing more than one change (or bug fix),
+      please consider submitting one patch per change. Do not collapse multiple changes into
+      a single patch. For big changes consider using a patch queue.
 
+    - pass all unit-tests. See :ref:`running-tests` below.
+
+    - include one (or more) test cases that check the bug fixed or the new functionality
+      added. See :ref:`writing-tests` below.
+
+    - if you’re adding or changing a public (documented) API, please include the documentation
+      changes in the same patch. See Documentation policies below.
+
+
+.. _submitting-patches:
 
 Submitting patches
 ~~~~~~~~~~~~~~~~~~
@@ -70,12 +79,14 @@ Please follow these coding conventions when writing code for inclusion in Export
     - Unless otherwise specified, follow PEP 8.
     - It’s OK to use lines longer than 80 chars if it improves the code readability.
     - Don’t put your name in the code you contribute. Our policy is to keep the contributor’s
-    name in the AUTHORS file distributed with Exporters.
+      name in the AUTHORS file distributed with Exporters.
 
 
 Tests
 ~~~~~
 Running tests requires tox.
+
+.. _running-tests:
 
 Running tests
 *************
@@ -112,6 +123,7 @@ To see coverage report install coverage (pip install coverage) and run:
 
 see output of coverage --help for more options like html or xml report.
 
+.. _writing-tests:
 
 Writing tests
 *************
