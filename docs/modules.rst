@@ -24,7 +24,7 @@ BasicExporter
 
 Bypass support
 ~~~~~~~~~~~~~~
-Exporters arqchitecture provides support to bypass the pipeline. A usage example of that is the case in which both reader
+Exporters architecture provides support for bypassing the pipeline. An example of using that is the case in which both reader
 and writer aim S3 buckets. If no transforms or filtering are needed, keys can be copied directly without downloading them.
 
 All bypass classes are subclasses of BaseBypass class, and must implement two methods:
@@ -124,7 +124,7 @@ BaseWriter class, and must implement:
 All writers have also the following common options:
 
     - items_per_buffer_write
-        Number of items before a buffer flush takes place.
+        Number of items to be written before a buffer flush takes place.
 
     - size_per_buffer_write
         Size of buffer files before being flushed.
@@ -246,8 +246,8 @@ OdoWriter
 
 Transform
 ~~~~~~~~~
-Transformations to items can be made in an export job. Using this modules, read items can
-be modified or cleaned before being written. To add new transform modules, this methods must
+Some transformation to items can be applied as a part of an export job. Using this module read items can
+be modified or cleaned before being written. To add a new transform module, the following method must
 be overwritten:
 
     - transform_batch(batch)
@@ -284,11 +284,11 @@ PythonexpTransform
 
 Filter
 ~~~~~~
-This module receives a batch, filter it according to some parameters, and returns it.
-It must implement the following methods:
+This module receives a batch, filters it according to some parameters, and returns it.
+It must implement the following method:
 
 - filter(item)
-    It receives an item and returns True if the filter must be included, or False if not
+    It receives an item and returns True if the item must be included, or False otherwise
 
 .. automodule:: exporters.filters.base_filter
     :members:
@@ -330,21 +330,21 @@ PythonExpeRegex
 Persistence
 ~~~~~~~~~~~
 This module is in charge of resuming support. It must be able to persist the current
-state of read and written items, and inform of that state on demand. It is usually called
+state of the read and written items, and inform of that state on demand. It is usually called
 from an export manager, and it must implement the following methods:
 
     - get_last_position()
         Returns the last commited position
 
     - commit_position(last_position)
-        Commits a position that has been through all the pipeline. Position can be any serializable object. This support both
-        usual position abstractions (number of batch) of specific abstractions such as offsets in Kafka (which are a dict)
+        Commits a position that has been through all the pipeline. Position can be any serializable object. This supports both
+        usual position abstractions (number of batch) or specific abstractions such as offsets in Kafka (which are dicts)
 
     - generate_new_job()
         Creates and instantiates all that is needed to keep persistence (tmp files, remote connections...)
 
     - close()
-        Cleans tmp files, close remote connections...
+        Cleans tmp files, closes remote connections...
 
     - configuration_from_uri(uri, regex)
         returns a configuration object
@@ -379,7 +379,7 @@ AlchemyPersistence
 Notifications
 ~~~~~~~~~~~~~
 Exporters project supports notification of main export job events, like starting an export, ending or failing.
-This events can be notified to multiple destinations by adding proper modules to an export configuration.
+These events can be sent to multiple destinations by adding proper modules to an export configuration.
 
 
 .. automodule:: exporters.notifications.base_notifier
@@ -407,7 +407,7 @@ WebhookNotifier
 
 Grouping
 ~~~~~~~~
-This module adds support to grouping items. It must implement the following methods:
+This module adds support for grouping items. It must implement the following methods:
 
     - group_batch(batch)
         It adds grouping info to all the items from a batch. Every item, which is a BaseRecord,
@@ -445,11 +445,11 @@ PythonExpGrouper
 
 Stats Managers
 ~~~~~~~~~~~~~~
-This module provides support for keeping track of export stats. A Stats Manager must implement
+This module provides support for keeping track of export statistics. A Stats Manager must implement
 the following methods:
 
     - iteration_report(times, stats)
-        It recieves the spent times in every step of the export pipeline iteration, and
+        It recieves the times spent in every step of the export pipeline iteration, and
         the aggregated stats
 
     - final_report(stats)
@@ -480,7 +480,7 @@ LoggingStatsManager
 
 Export Formatters
 ~~~~~~~~~~~~~~~~~
-Exporters project support exporting to different formats. This formatting is handled by
+Exporters project support exporting using different formats. This formatting is handled by
 export formatters modules. An export formatter must implement the following method:
 
     - format(batch)
