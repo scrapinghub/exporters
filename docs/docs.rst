@@ -8,6 +8,15 @@ Documentation uses `Sphinx`_.
 
 .. _Sphinx: http://sphinx-doc.org/tutorial.html
 
+
+Policies
+--------
+
+Don’t use docstrings for documenting classes, or methods which are already documented in
+the official documentation.
+Do use docstrings for documenting functions not present in the official documentation.
+
+
 Editing the docs
 ----------------
 
