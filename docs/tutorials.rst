@@ -96,7 +96,7 @@ Now, for every delivery:
 
 .. image:: _images/shared.png
    :scale: 60 %
-   :alt: Exporters architecture
+   :alt: Shared with me screen
    :align: center
 
 Go there, right click on the shared folder, and click on "Add to my drive".
@@ -110,7 +110,7 @@ This will add the folder the client shared with us in our `My Drive
 
 .. image:: _images/add_to.png
    :scale: 60 %
-   :alt: Exporters architecture
+   :alt: Add to screen
    :align: center
 
 5. Configure writer filepath to point the client's folder. For example, if client shared
