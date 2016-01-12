@@ -3,7 +3,7 @@
 Exporters project documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Exporters are a project aiming to provide a flexible and
+Exporters is a project aiming to provide a flexible and
 easy to extend infrastructure to export data from multiple sources to multiple
 destinations, allowing filtering and transforming the data.
 
@@ -46,8 +46,6 @@ Then, we can create our first configuration object and store it in a file called
 .. code-block:: javascript
 
    {
-        "exporter_options":{
-        },
         "reader": {
             "name": "exporters.readers.s3_reader.S3Reader",
             "options": {
