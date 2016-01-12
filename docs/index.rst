@@ -12,7 +12,6 @@ Contents:
    :maxdepth: 2
 
    readme
-   installation
    exporters
    modules
    contributing
