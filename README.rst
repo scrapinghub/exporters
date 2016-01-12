@@ -93,3 +93,14 @@ The export can be run using exporters as a library:
 
     exporter = BasicExporter.from_file_configuration('config.json')
     exporter.export()
+
+
+Resuming an export job
+----------------------
+
+Let's suppose we have a pickle file with a previously failed export job. If we want to resume it
+we must run the export script:
+
+.. code-block:: shell
+
+    python bin/export.py --resume pickle-file.pickle
