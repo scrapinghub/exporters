@@ -66,7 +66,6 @@ Features
     - Easy to extend and flexible architecture
     - Different output formats
     - Notifications and webhooks support
-    - Retry policies
     - Export stats gathering
     - Grouping support
     - Filter and transform exported items
