@@ -40,8 +40,8 @@ Creating a configuration
 ------------------------
 
 Then, we can create our first configuration object and store it in a file called config.json.
- This configuration will read from a s3 bucket and store it in our filesystem, exporting only
- the which has United States in field country:
+ This configuration will read from an s3 bucket and store it in our filesystem, exporting only
+ the records which have United States in field country:
 
 .. code-block:: javascript
 
