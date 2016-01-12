@@ -129,3 +129,38 @@ First two steps will only have to be done once:
      .. code-block:: python
 
         python export.py --config CONFIGPATH
+
+
+Resume export tutorial
+~~~~~~~~~~~~~~~~~~~~~~
+
+Let's assume we have a failed export job, that was using this configuration:
+
+.. code-block:: javascript
+
+    {
+        "reader": {
+            "name": "exporters.readers.random_reader.RandomReader",
+            "options": {
+            }
+        },
+        "writer": {
+            "name": "exporters.writers.console_writer.ConsoleWriter",
+            "options": {
+
+            }
+        },
+        "persistence":{
+            "name": "exporters.persistence.pickle_persistence.PicklePersistence",
+            "options": {
+                "file_path": "job_state.pickle"
+            }
+        }
+    }
+
+
+To resume the export, you must run:
+
+     .. code-block:: python
+
+        python export.py --resume pickle://job_state.pickle
