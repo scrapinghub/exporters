@@ -82,23 +82,33 @@ Running tests
 
 Make sure you have a recent enough tox installation:
 
-`tox --version`
+.. code-block:: shell
+
+    tox --version
 
 If your version is older than 1.7.0, please update it first:
 
-`pip install -U tox`
+.. code-block:: shell
+
+    pip install -U tox
 
 To run all tests go to the root directory of Scrapy source code and run:
 
-`tox`
+.. code-block:: shell
+
+    tox
 
 To run a specific test (say tests/test_filters.py) use:
 
-`tox -- tests/test_filters.py`
+.. code-block:: shell
+
+    tox -- tests/test_filters.py
 
 To see coverage report install coverage (pip install coverage) and run:
 
-`coverage report`
+.. code-block:: shell
+
+    coverage report
 
 see output of coverage --help for more options like html or xml report.
 

@@ -103,4 +103,4 @@ we must run the export script:
 
 .. code-block:: shell
 
-    python bin/export.py --resume pickle-file.pickle
+    python bin/export.py --resume pickle://pickle-file.pickle
