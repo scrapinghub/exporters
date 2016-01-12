@@ -55,3 +55,18 @@ This is an example of the simplest config file that can be used.
             }
         }
    }
+
+
+Features
+--------
+
+    - Multiple readers and writers
+    - Resume support using different technologies as a backend (mysql, postgres, pickle...)
+    - Bypass support to improved speed exports
+    - Easy to extend and flexible architecture
+    - Different output formats
+    - Notifications and webhooks support
+    - Retry policies
+    - Export stats gathering
+    - Grouping support
+    - Filter and transform exported items
