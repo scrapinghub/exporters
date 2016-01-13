@@ -33,6 +33,9 @@ class S3BucketKeysFetcher(object):
         self.prefixes = [single_prefix]
         if self.prefix_pointer:
             self.prefixes = self._fetch_prefixes_from_pointer(self.prefix_pointer)
+        self.logger = logging.getLogger('s3-reader')
+        self.logger.setLevel(logging.INFO)
+
 
     @retry_long
     def _download_pointer(self, prefix_pointer):
@@ -46,13 +49,17 @@ class S3BucketKeysFetcher(object):
         for prefix in self.prefixes:
             for key in self.source_bucket.list(prefix=prefix):
                 if self.pattern:
-                    if self._should_add_key(key, prefix):
+                    if self._should_add_key(key):
                         keys.append(key.name)
+                    else:
+                        self.logger.info('Skipping S3 key {}. No match with pattern'.format(key.name))
                 else:
                     keys.append(key.name)
+        if self.pattern and not keys:
+            self.logger.warn('No S3 keys found that match provided pattern: {}'.format(self.pattern))
         return keys
 
-    def _should_add_key(self, key, prefix):
+    def _should_add_key(self, key):
         return bool(re.findall(self.pattern, key.name))
 
     def pending_keys(self):
@@ -141,6 +148,9 @@ class S3Reader(BaseReader):
         This method is called from the manager. It must return a list or a generator of BaseRecord objects.
         When it has nothing else to read, it must set class variable "finished" to True.
         """
+        if not self.keys:
+            self.finished = True
+            return
         file_path = '{}/ds_dump.gz'.format(self.tmp_folder)
         if not self.current_key:
             progress = BotoDownloadProgress(self.logger)
