@@ -6,6 +6,8 @@ class AggregationStatsWriter(BaseWriter):
     """
     This writer keeps track of keys occurences in dataset items. It provides information
     about the number and percentage of every possible key in a dataset.
+
+    It has no other options.
     """
 
     def __init__(self, options):
@@ -14,6 +16,9 @@ class AggregationStatsWriter(BaseWriter):
         self.logger.info('AggregationStatsWriter has been initiated')
 
     def write_batch(self, batch):
+        """
+        Receives the batch and writes it. This method is usually called from a manager.
+        """
         for item in batch:
             for key in item:
                 self.aggregated_info['occurrences'][key] += 1
@@ -23,6 +28,9 @@ class AggregationStatsWriter(BaseWriter):
         self.logger.debug('Wrote items')
 
     def _get_aggregated_info(self):
+        """
+        Keeps track of aggregated info in a dictionary called self.aggregated_info
+        """
         agg_results = {}
         for key in self.aggregated_info['occurrences']:
             agg_results[key] = {

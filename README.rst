@@ -3,7 +3,7 @@
 Exporters project documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Exporters are a project aiming to provide a flexible and
+Exporters is a project aiming to provide a flexible and
 easy to extend infrastructure to export data from multiple sources to multiple
 destinations, allowing filtering and transforming the data.
 
@@ -40,14 +40,12 @@ Creating a configuration
 ------------------------
 
 Then, we can create our first configuration object and store it in a file called config.json.
- This configuration will read from a s3 bucket and store it in our filesystem, exporting only
- the which has United States in field country:
+ This configuration will read from an s3 bucket and store it in our filesystem, exporting only
+ the records which have United States in field country:
 
 .. code-block:: javascript
 
    {
-        "exporter_options":{
-        },
         "reader": {
             "name": "exporters.readers.s3_reader.S3Reader",
             "options": {
@@ -95,3 +93,14 @@ The export can be run using exporters as a library:
 
     exporter = BasicExporter.from_file_configuration('config.json')
     exporter.export()
+
+
+Resuming an export job
+----------------------
+
+Let's suppose we have a pickle file with a previously failed export job. If we want to resume it
+we must run the export script:
+
+.. code-block:: shell
+
+    python bin/export.py --resume pickle://pickle-file.pickle

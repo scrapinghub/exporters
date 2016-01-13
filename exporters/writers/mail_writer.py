@@ -13,19 +13,19 @@ class MaxMailsSent(Exception):
 
 class MailWriter(BaseWriter):
     """
-    Writes items for email delivery.
+    Send emails with items files attached
 
         - email (str)
-            Email address where data will be sent.
+            Email address where data will be sent
 
         - subject (str)
-            Subject of the email.
+            Subject of the email
 
         - from (str)
-            Sender of the email.
+            Sender of the email
 
         - max_mails_sent (str)
-            maximum amount of emails that would be sent.
+            maximum amount of emails that will be sent
     """
 
     supported_options = {

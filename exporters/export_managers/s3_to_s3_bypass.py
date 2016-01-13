@@ -10,47 +10,26 @@ from boto.exception import S3ResponseError
 
 from exporters.default_retries import retry_long
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
-from exporters.module_loader import ModuleLoader
 from exporters.progress_callback import BotoUploadProgress
-from exporters.readers.s3_reader import S3BucketKeysFetcher, get_bucket
-
-
-class S3BypassState(object):
-
-    def __init__(self, config):
-        self.config = config
-        module_loader = ModuleLoader()
-        self.state = module_loader.load_persistence(config.persistence_options)
-        self.state_position = self.state.get_last_position()
-        if not self.state_position:
-            self.pending = S3BucketKeysFetcher(self.config.reader_options['options']).pending_keys()
-            self.done = []
-            self.skipped = []
-            self.state.commit_position(self._get_state())
-        else:
-            self.pending = self.state_position['pending']
-            self.done = []
-            self.skipped = self.state_position['done']
-            self.keys = self.pending
-
-    def _get_state(self):
-        return {'pending': self.pending, 'done': self.done, 'skipped': self.skipped}
-
-    def commit_copied_key(self, key):
-        self.pending.remove(key)
-        self.done.append(key)
-        self.state.commit_position(self._get_state())
-
-    def pending_keys(self):
-        return self.pending
-
-    def delete(self):
-        self.state.delete()
+from exporters.readers.s3_reader import get_bucket
+from exporters.utils import S3BypassState
 
 
 class S3Bypass(BaseBypass):
     """
-    Bypass executed when data source and data destination are S3 buckets.
+    Bypass executed by default when data source and data destination are S3 buckets. It should be
+    transparent to user. Conditions are:
+
+        - S3Reader and S3Writer are used on configuration.
+        - No filter modules are set up.
+        - No transform module is set up.
+        - No grouper module is set up.
+        - S3 Writer has not a items_limit set in configuration.
+        - S3 Writer has default items_per_buffer_write and size_per_buffer_write per default.
+
+    This bypass tries to directly copy the S3 keys between the read and write buckets. If
+    is is not possible due to permission issues, it will download the key from the read bucket
+    and directly upload it to the write bucket.
     """
 
     def __init__(self, config):

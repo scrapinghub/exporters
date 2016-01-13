@@ -8,6 +8,24 @@ COLLECTION_REGEX = '.*[.]scrapinghub[.]com/p/(\d+)/collections/s/([^/]+)/?$'
 
 
 class HubstorageReduceWriter(ReduceWriter):
+
+    """
+    This writer allow exporters to make aggregation of items data and push results into
+    Scrapinghub Hubstorage collections
+
+        - code (str)
+            Python code defining a reduce_function(item, accumulator=None)
+
+        - collection_url (str)
+            Hubstorage Collection URL
+
+        - key (str)
+            Element key where to push the accumulated result
+
+        - apikey (dict)
+            Hubstorage API key
+    """
+
     supported_options = {
         "collection_url": {
             'type': basestring,

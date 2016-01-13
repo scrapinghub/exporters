@@ -45,6 +45,22 @@ def create_document_batches(jsonlines, id_field, max_batch_size=CLOUDSEARCH_MAX_
 
 
 class CloudSearchWriter(BaseWriter):
+    """
+    This writer stores items in CloudSearch Amazon Web Services service (https://aws.amazon.com/es/cloudsearch/)
+
+    - endpoint_url
+        Document Endpoint (e.g.: http://doc-movies-123456789012.us-east-1.cloudsearch.amazonaws.com)
+
+    - id_field
+        Field to use as identifier
+
+    - access_key
+        Public acces key to the s3 bucket.
+
+    - secret_key
+        Secret access key to the s3 bucket.
+    """
+
     supported_options = {
         'endpoint_url': {
             'type': basestring,

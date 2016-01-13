@@ -10,13 +10,14 @@ from exporters.records.base_record import BaseRecord
 
 class RandomReader(BaseReader):
     """
-    It is just a reader with testing purposes. It generates random data in a quantity that is set in its config section.
+    It is just a reader with testing purposes. It generates random data in a quantity that
+    is set in its config section.
 
         - number_of_items (int)
             Number of total items that must be returned by the reader before finishing.
 
         - batch_size (int)
-            Number of items to be returned in each batch
+            Number of items to be returned in each batch.
     """
 
     supported_options = {
@@ -39,8 +40,11 @@ class RandomReader(BaseReader):
         self.batch_size = self.read_option('batch_size')
 
     def get_next_batch(self):
+        """
+        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        When it has nothing else to read, it must set class variable "finished" to True.
+        """
         number_of_items = self.read_option('number_of_items')
-
         for i in range(0, self.batch_size):
             if self.last_key >= number_of_items:
                 self.finished = True
@@ -59,6 +63,10 @@ class RandomReader(BaseReader):
         self.last_position += 1
 
     def set_last_position(self, last_position):
+        """
+        Called from the manager, it is in charge of updating the last position of data commited by the writer, in order to
+        have resume support
+        """
         self.last_position = last_position
         if last_position:
             self.last_key = self.last_position * self.read_option('batch_size')

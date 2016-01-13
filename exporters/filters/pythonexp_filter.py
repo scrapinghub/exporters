@@ -10,10 +10,14 @@ def load_imports(imports):
 
 class PythonexpFilter(BaseFilter):
     """
-    Filter items depending on python expression.
+    Filter items depending on python expression. This is NOT sure, so make sure you only use
+    it in contained environments
 
         - python_expression (str)
-            Python expression to filter by.
+            Python expression to filter by
+
+        - imports(dict)
+            An object with neede imports for expressions
     """
     # List of options
     supported_options = {

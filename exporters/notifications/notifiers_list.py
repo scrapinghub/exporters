@@ -3,6 +3,9 @@ from exporters.default_retries import retry_short
 
 
 class NotifiersList(object):
+    """
+    This class is only used to support a list of notifications modules.
+    """
 
     def __init__(self, options):
         self.options = options

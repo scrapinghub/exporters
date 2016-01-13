@@ -9,7 +9,8 @@ DEFAULT_BUCKET_REGION = 'us-east-1'
 
 class S3Writer(FilebaseBaseWriter):
     """
-    Writes items to S3 bucket.
+    Writes items to S3 bucket. It is a File Based writer, so it has filebase
+    option available
 
         - bucket (str)
             Name of the bucket to write the items to.
@@ -28,6 +29,9 @@ class S3Writer(FilebaseBaseWriter):
 
         - save_metadata (bool)
             Save key's items count as metadata. Default: True
+
+        - filebase
+            Path to store the exported files
     """
     supported_options = {
         'bucket': {'type': basestring},

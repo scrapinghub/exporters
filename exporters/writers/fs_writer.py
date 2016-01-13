@@ -6,13 +6,11 @@ from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 class FSWriter(FilebaseBaseWriter):
     """
-    Writes items to local file system.
-
-        - tmp_folder (str)
-            Path to store temp files.
+    Writes items to local file system files. It is a File Based writer, so it has filebase
+    option available
 
         - filebase (str)
-            Final path of items file.
+            Path to store the exported files
     """
 
     supported_options = {
@@ -25,10 +23,16 @@ class FSWriter(FilebaseBaseWriter):
             'FSWriter has been initiated. Writing to: {}'.format(self.filebase))
 
     def _create_path_if_not_exist(self, path):
+        """
+        Creates a folders path if it doesn't exist
+        """
         if not os.path.exists(path):
             os.makedirs(path)
 
     def get_file_suffix(self, path, prefix):
+        """
+        Gets a valid filename
+        """
         try:
             number_of_files = len(glob.glob(os.path.join(path, prefix) + '*'))
         except:

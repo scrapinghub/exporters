@@ -7,7 +7,22 @@ from exporters.records.base_record import BaseRecord
 
 
 class CSVExportFormatter(BaseExportFormatter):
+    """
+    This export formatter provides a way of exporting items in CSV format. This are the
+    supported options:
 
+        - show_titles(bool)
+            If set to True, first lines of exported files will have a row of column names
+
+        - fields(list)
+            List of item fields to be exported
+
+        - schema(dict)
+            Valid json schema of dataset items
+
+        - delimiter(str)
+            field delimiter character for csv rows
+    """
     format_name = 'csv'
 
     supported_options = {

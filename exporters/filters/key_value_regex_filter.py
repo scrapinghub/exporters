@@ -4,7 +4,7 @@ import re
 
 class KeyValueRegexFilter(BaseFilter):
     """
-    Filter items depending on keys and values.
+    Filter items depending on keys and values using regular expressions
 
         - keys (list)
             It is a list of dicts with the following structure: {"key": "regex"}.

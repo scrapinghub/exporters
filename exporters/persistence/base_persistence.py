@@ -5,8 +5,7 @@ from exporters.pipeline.base_pipeline_item import BasePipelineItem
 
 class BasePersistence(BasePipelineItem):
     """
-    This module is in charge of resume support. It must be able to persist the current state of read and written items, and
-    inform of that state on demand. It can implement the following methods:
+    Base module for persistence modules
     """
 
     def __init__(self, options):

@@ -4,7 +4,7 @@ from exporters.pipeline.base_pipeline_item import BasePipelineItem
 
 class BaseReader(BasePipelineItem):
     """
-    This module reads and creates a batch to pass them to the pipeline. It can implement the following methods:
+    This module reads and creates a batch to pass them to the pipeline
     """
 
     def __init__(self, options):
@@ -16,8 +16,8 @@ class BaseReader(BasePipelineItem):
 
     def get_next_batch(self):
         """
-        This method is called from the manager. It must return a list of BaseRecord objects. When it has nothing else to read,
-        it must set class variable "finished" to True.
+        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        When it has nothing else to read, it must set class variable "finished" to True.
         """
         raise NotImplementedError
 

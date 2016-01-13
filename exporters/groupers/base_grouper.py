@@ -4,7 +4,7 @@ from exporters.logger.base_logger import FilterLogger
 
 class BaseGrouper(BasePipelineItem):
     """
-    This module adds support to grouping items. It must implement the following methods:
+    Base class fro groupers
     """
 
     def __init__(self, configuration):
@@ -14,6 +14,6 @@ class BaseGrouper(BasePipelineItem):
 
     def group_batch(self, batch):
         """
-        Returns the grouped batch.
+        Yields items with group_membership attribute filled
         """
         raise NotImplementedError

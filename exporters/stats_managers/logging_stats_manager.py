@@ -4,6 +4,10 @@ from exporters.stats_managers.basic_stats_manager import BasicStatsManager
 
 
 class LoggingStatsManager(BasicStatsManager):
+    """
+    This stats manager prints a log message with useful stats and times for every
+    pipeline iteration.
+    """
 
     def iteration_report(self, times, stats):
         prev = times['started']
