@@ -39,13 +39,12 @@ class FTPWriter(FilebaseBaseWriter):
 
     def __init__(self, options):
         super(FTPWriter, self).__init__(options)
-        import ftplib
+
         self.ftp_host = self.read_option('host')
         self.ftp_port = self.read_option('port')
         self.ftp_user = self.read_option('ftp_user')
         self.ftp_password = self.read_option('ftp_password')
         self.filebase = self.read_option('filebase').format(datetime.datetime.now())
-        self.ftp = ftplib.FTP()
         self.logger.info(
             'FTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(
                 self.ftp_host, self.ftp_port,
@@ -90,10 +89,12 @@ class FTPWriter(FilebaseBaseWriter):
 
     @retry_long
     def write(self, dump_path, group_key=None):
+        import ftplib
         if group_key is None:
             group_key = []
         filebase_path, filename = self.create_filebase_name(group_key)
         self.logger.info('Start uploading to {}'.format(dump_path))
+        self.ftp = ftplib.FTP()
         self.ftp.connect(self.ftp_host, self.ftp_port)
         self.ftp.login(self.ftp_user, self.ftp_password)
         self._create_target_dir_if_needed(filebase_path)
