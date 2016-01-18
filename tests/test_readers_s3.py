@@ -4,6 +4,7 @@ import shutil
 import unittest
 import StringIO
 import boto
+import datetime
 import moto
 from exporters.readers.s3_reader import S3Reader, S3BucketKeysFetcher
 from exporters.exceptions import ConfigurationError
@@ -114,6 +115,16 @@ class S3ReaderTest(unittest.TestCase):
             }
         }
 
+        self.options_date_prefix = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'valid_keys_bucket',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
+                'prefix': 'test_prefix/%Y-%m-%d'
+            }
+        }
+
     def tearDown(self):
         self.mock_s3.stop()
 
@@ -155,6 +166,12 @@ class S3ReaderTest(unittest.TestCase):
         batch = list(reader.get_next_batch())
         expected_batch = [{u'name': u'test_list/dump_p1_ES_a'}]
         self.assertEqual(batch, expected_batch)
+
+    def test_date_prefix(self):
+        reader = S3Reader(self.options_date_prefix)
+        expected = [datetime.datetime.now().strftime('test_prefix/%Y-%m-%d')]
+        self.assertEqual(expected, reader.keys_fetcher.prefixes)
+        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
 
 class TestS3BucketKeysFetcher(unittest.TestCase):
