@@ -3,6 +3,7 @@ import json
 import os
 import tempfile
 import re
+import datetime
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
@@ -33,9 +34,9 @@ class S3BucketKeysFetcher(object):
         self.prefixes = [single_prefix]
         if self.prefix_pointer:
             self.prefixes = self._fetch_prefixes_from_pointer(self.prefix_pointer)
+        self.prefixes = self._format_prefixes()
         self.logger = logging.getLogger('s3-reader')
         self.logger.setLevel(logging.INFO)
-
 
     @retry_long
     def _download_pointer(self, prefix_pointer):
@@ -43,6 +44,14 @@ class S3BucketKeysFetcher(object):
 
     def _fetch_prefixes_from_pointer(self, prefix_pointer):
         return [pointer for pointer in self._download_pointer(prefix_pointer).split('\n') if pointer]
+
+    def _format_prefixes(self):
+        formatted_prefixes = []
+        for prefix in self.prefixes:
+            formatted_prefix = prefix.format(date=datetime.datetime.now())
+            formatted_prefix = datetime.datetime.now().strftime(formatted_prefix)
+            formatted_prefixes.append(formatted_prefix)
+        return formatted_prefixes
 
     def _get_keys_from_bucket(self):
         keys = []
