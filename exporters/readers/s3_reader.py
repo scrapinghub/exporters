@@ -23,6 +23,11 @@ def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
     return connection.get_bucket(bucket)
 
 
+def format_prefixes(prefixes):
+    now = datetime.datetime.now()
+    return [now.strftime(p) for p in prefixes]
+
+
 class S3BucketKeysFetcher(object):
     def __init__(self, reader_options):
         self.source_bucket = get_bucket(**reader_options)
@@ -34,7 +39,7 @@ class S3BucketKeysFetcher(object):
         self.prefixes = [single_prefix]
         if self.prefix_pointer:
             self.prefixes = self._fetch_prefixes_from_pointer(self.prefix_pointer)
-        self.prefixes = self._format_prefixes()
+        self.prefixes = format_prefixes(self.prefixes)
         self.logger = logging.getLogger('s3-reader')
         self.logger.setLevel(logging.INFO)
 
@@ -44,13 +49,6 @@ class S3BucketKeysFetcher(object):
 
     def _fetch_prefixes_from_pointer(self, prefix_pointer):
         return [pointer for pointer in self._download_pointer(prefix_pointer).split('\n') if pointer]
-
-    def _format_prefixes(self):
-        formatted_prefixes = []
-        for prefix in self.prefixes:
-            formatted_prefix = datetime.datetime.now().strftime(prefix)
-            formatted_prefixes.append(formatted_prefix)
-        return formatted_prefixes
 
     def _get_keys_from_bucket(self):
         keys = []
