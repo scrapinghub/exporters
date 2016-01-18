@@ -48,7 +48,7 @@ class S3BucketKeysFetcher(object):
     def _format_prefixes(self):
         formatted_prefixes = []
         for prefix in self.prefixes:
-            formatted_prefix = datetime.datetime.now().strftime(formatted_prefix)
+            formatted_prefix = datetime.datetime.now().strftime(prefix)
             formatted_prefixes.append(formatted_prefix)
         return formatted_prefixes
 
