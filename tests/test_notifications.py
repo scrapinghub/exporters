@@ -140,7 +140,7 @@ class SESMailNotifierTest(unittest.TestCase):
             writer='somewriter',
             total=0,
         )
-        self.assertEqual(self.notifier._generate_complete_dump_body(self.job_info), expected_body)
+        self.assertEqual(self.notifier._generate_complete_dump_body(self.job_info, True), expected_body)
 
     @patch('boto.connect_ses')
     def test_failed_dump(self, mock_connect):

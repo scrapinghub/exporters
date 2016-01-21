@@ -100,7 +100,8 @@ class BaseExporter(object):
         self.logger.info(
             'Finished executing bypass {}.'.format(bypass_script.__class__.__name__))
         self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM],
-                                            info=self.stats_manager.stats)
+                                            info=self.stats_manager.stats,
+                                            show_total=bypass_script.valid_items_info)
 
     def bypass(self):
         if self.config.prevent_bypass:

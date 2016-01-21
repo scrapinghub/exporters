@@ -154,7 +154,8 @@ class S3Bypass(BaseBypass):
     @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):
         akey = source_bucket.get_key(key_name)
-        if (akey.get_metadata('total')):
+        if akey.get_metadata('total'):
+            self.valid_items_info = True
             self.increment_items(int(akey.get_metadata('total')))
         if self.copy_mode:
             self._copy_with_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
