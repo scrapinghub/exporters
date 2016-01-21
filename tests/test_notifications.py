@@ -132,13 +132,11 @@ class SESMailNotifierTest(unittest.TestCase):
     def test_generate_complete_body(self):
         expected_body = "{name} dump finished with following parameters:\n\n"
         expected_body += 'Used writer: {writer}\n'
-        expected_body += 'Total records dumped: {total}\n\n'
         expected_body += 'If you have any questions or concerns about the data you have received, ' \
                 'please email us at help@scrapinghub.com.\n'
         expected_body = expected_body.format(
             name='basic_export_manager',
             writer='somewriter',
-            total=0,
         )
         self.assertEqual(self.notifier._generate_complete_dump_body(self.job_info), expected_body)
 
