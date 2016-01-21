@@ -96,6 +96,7 @@ class BaseExporter(object):
             self.persistence.close()
             self.persistence.delete()
         bypass_script.bypass()
+        self.stats_manager.stats['items_count'] += bypass_script.total_items
         self.logger.info(
             'Finished executing bypass {}.'.format(bypass_script.__class__.__name__))
         self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM],
