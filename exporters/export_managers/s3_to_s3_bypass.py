@@ -125,7 +125,6 @@ class S3Bypass(BaseBypass):
         finally:
             if self.tmp_folder:
                 shutil.rmtree(self.tmp_folder)
-        raise NotValidTotalInfo()
         if not self.valid_total_count:
             raise NotValidTotalInfo()
 
