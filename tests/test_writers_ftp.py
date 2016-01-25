@@ -1,4 +1,7 @@
+import mock
+import tempfile
 import unittest
+from contextlib import closing
 from exporters.writers import FTPWriter
 
 
@@ -10,16 +13,45 @@ class FTPWriterTest(unittest.TestCase):
             ftp_password='password',
             host='ftp.example.com',
             filebase='test/'))
-        writer = FTPWriter(options)
-        self.assertEquals(21, writer.read_option('port'))
-        writer.close()
+        with closing(FTPWriter(options)) as writer:
+            self.assertEquals(21, writer.read_option('port'))
 
-    def test_not_path_filebase(self):
+    @mock.patch('exporters.writers.FTPWriter.build_ftp_instance')
+    def test_create_parent_dirs_in_right_order(self, mock_ftp):
+        filebase = 'some/long/dir/tree/'
         options = dict(options=dict(
             ftp_user='user',
             ftp_password='password',
             host='ftp.example.com',
-            filebase='test'))
-        writer = FTPWriter(options)
-        self.assertIs(writer._create_target_dir_if_needed(''), None)
-        writer.close()
+            filebase=filebase))
+        with tempfile.NamedTemporaryFile() as tmp:
+            with closing(FTPWriter(options)) as writer:
+                writer.write(tmp.name)
+
+        mock_mkd = mock_ftp.return_value.mkd
+        self.assertEquals([
+            mock.call('some'),
+            mock.call('some/long'),
+            mock.call('some/long/dir'),
+            mock.call('some/long/dir/tree'),
+        ], mock_mkd.mock_calls)
+
+    @mock.patch('exporters.writers.FTPWriter.build_ftp_instance')
+    def test_create_parent_dirs_with_filebase_prefix(self, mock_ftp):
+        filebase = 'some/long/dir/with/prefix'
+        options = dict(options=dict(
+            ftp_user='user',
+            ftp_password='password',
+            host='ftp.example.com',
+            filebase=filebase))
+        with tempfile.NamedTemporaryFile() as tmp:
+            with closing(FTPWriter(options)) as writer:
+                writer.write(tmp.name)
+
+        mock_mkd = mock_ftp.return_value.mkd
+        self.assertEquals([
+            mock.call('some'),
+            mock.call('some/long'),
+            mock.call('some/long/dir'),
+            mock.call('some/long/dir/with'),
+        ], mock_mkd.mock_calls)

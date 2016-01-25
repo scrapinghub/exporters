@@ -50,7 +50,6 @@ class FTPWriter(FilebaseBaseWriter):
                 self.ftp_host, self.ftp_port,
                 self.filebase))
 
-    # TODO: Refactor recursivity
     def _create_target_dir_if_needed(self, target, depth_limit=20):
         """Creates the directory for the path given, recursively creating
         parent directories when needed"""
@@ -60,7 +59,6 @@ class FTPWriter(FilebaseBaseWriter):
         if not target:
             return
         target_dir = os.path.dirname(target)
-        # target_dir = target
         parent_dir, dir_name = os.path.split(target_dir)
 
         parent_dir_ls = []
@@ -75,30 +73,25 @@ class FTPWriter(FilebaseBaseWriter):
         if dir_name not in parent_dir_files:
             if parent_dir and target_dir != '/':
                 self._create_target_dir_if_needed(target_dir, depth_limit=depth_limit - 1)
-                self.logger.info('Will create dir: %s' % target)
-                self.ftp.mkd(target)
-            else:
-                self.logger.info('Will create dir: %s' % target)
-                self.ftp.mkd(target)
-        else:
-            try:
-                self.logger.info('Will create dir: %s' % target)
-                self.ftp.mkd(target)
-            except:
-                pass
+
+            self.logger.info('Will create dir: %s' % target)
+            self.ftp.mkd(target_dir)
+
+    def build_ftp_instance(self):
+        import ftplib
+        return ftplib.FTP()
 
     @retry_long
     def write(self, dump_path, group_key=None):
-        import ftplib
         if group_key is None:
             group_key = []
         filebase_path, filename = self.create_filebase_name(group_key)
         self.logger.info('Start uploading to {}'.format(dump_path))
-        self.ftp = ftplib.FTP()
+        self.ftp = self.build_ftp_instance()
         self.ftp.connect(self.ftp_host, self.ftp_port)
         self.ftp.login(self.ftp_user, self.ftp_password)
-        self._create_target_dir_if_needed(filebase_path)
         destination = (filebase_path + '/' + filename)
+        self._create_target_dir_if_needed(destination)
         progress = FtpUploadProgress(self.logger)
         self.ftp.storbinary('STOR %s' % destination, open(dump_path), callback=progress)
         self.ftp.close()
