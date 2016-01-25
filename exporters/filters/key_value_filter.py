@@ -21,5 +21,11 @@ class KeyValueFilter(BaseFilter):
         self.logger.info('KeyValueFilter has been initiated. Keys: {}'.format(self.keys))
 
     def filter(self, item):
-        return all(kv['name'] in item and item[kv['name']] == kv['value']
-                   for kv in self.keys)
+        for kv in self.keys:
+            if kv['name'] not in item:
+                return False
+            elif isinstance(kv['value'], list) and not(item[kv['name']] in kv['value']):
+                return False
+            elif not(isinstance(kv['value'], list)) and item[kv['name']] != kv['value']:
+                return False
+        return True
