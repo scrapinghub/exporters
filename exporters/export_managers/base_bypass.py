@@ -8,6 +8,7 @@ class BaseBypass(object):
     def __init__(self, config):
         self.config = config
         self.total_items = 0
+        self.valid_total_count = True
 
     def meets_conditions(self):
         raise NotImplementedError

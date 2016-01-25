@@ -11,10 +11,6 @@ from exporters.exporter_config import ExporterConfig
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
 
 
-class NotValidTotalInfo(Exception):
-    pass
-
-
 class BaseExporter(object):
     def __init__(self, configuration):
         self.config = ExporterConfig(configuration)
@@ -99,9 +95,8 @@ class BaseExporter(object):
         if not self.config.exporter_options.get('resume'):
             self.persistence.close()
             self.persistence.delete()
-        try:
-            bypass_script.bypass()
-        except NotValidTotalInfo:
+        bypass_script.bypass()
+        if not bypass_script.valid_total_count:
             self.stats_manager.stats.pop('items_count')
             self.logger.warning('No accurate items count info can be retrieved')
         if self.stats_manager.stats.get('items_count') is not None:

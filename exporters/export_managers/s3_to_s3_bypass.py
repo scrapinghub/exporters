@@ -73,7 +73,6 @@ class S3Bypass(BaseBypass):
         self.bypass_state = None
         self.logger = logging.getLogger('bypass_logger')
         self.logger.setLevel(logging.INFO)
-        self.valid_total_count = True
 
     def _raise_conditions_not_met(self, reason):
         self.logger.warning('Skipping S3 file copy optimization bypass because of %s' % reason)
@@ -125,8 +124,6 @@ class S3Bypass(BaseBypass):
         finally:
             if self.tmp_folder:
                 shutil.rmtree(self.tmp_folder)
-        if not self.valid_total_count:
-            raise NotValidTotalInfo()
 
     @retry_long
     def _write_s3_pointer(self, dest_bucket, save_pointer, filebase):
