@@ -10,7 +10,6 @@ from boto.exception import S3ResponseError
 
 from exporters.default_retries import retry_long
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
-from exporters.export_managers.base_exporter import NotValidTotalInfo
 from exporters.module_loader import ModuleLoader
 from exporters.progress_callback import BotoUploadProgress
 from exporters.readers.s3_reader import get_bucket, S3BucketKeysFetcher

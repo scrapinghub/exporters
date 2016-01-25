@@ -99,7 +99,7 @@ class BaseExporter(object):
         if not bypass_script.valid_total_count:
             self.stats_manager.stats.pop('items_count')
             self.logger.warning('No accurate items count info can be retrieved')
-        if self.stats_manager.stats.get('items_count') is not None:
+        else:
             self.stats_manager.stats['items_count'] += bypass_script.total_items
         self.logger.info(
             'Finished executing bypass {}.'.format(bypass_script.__class__.__name__))
