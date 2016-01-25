@@ -33,6 +33,7 @@ class BaseExporter(object):
         job_info = {
             'configuration': configuration,
             'items_count': 0,
+            'accurate_items_count': True,
             'start_time': datetime.datetime.now(),
             'script_name': 'basic_export_manager'
         }
@@ -96,10 +97,13 @@ class BaseExporter(object):
             self.persistence.close()
             self.persistence.delete()
         bypass_script.bypass()
+        if not bypass_script.valid_total_count:
+            self.stats_manager.stats['accurate_items_count'] = False
+            self.logger.warning('No accurate items count info can be retrieved')
+        self.stats_manager.stats['items_count'] += bypass_script.total_items
         self.logger.info(
             'Finished executing bypass {}.'.format(bypass_script.__class__.__name__))
-        self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM],
-                                            info=self.stats_manager.stats)
+        self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM], info=self.stats_manager.stats)
 
     def bypass(self):
         if self.config.prevent_bypass:

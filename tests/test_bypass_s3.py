@@ -114,6 +114,7 @@ class S3BypassTest(unittest.TestCase):
             {'name': 'Claudia', 'birthday': '21/12/1985'},
         ]
         key = self.source_bucket.new_key('some_prefix/test_key')
+        key.metadata = {'total': 2}
         key.set_contents_from_string(json.dumps(self.data))
         self.tmp_bypass_resume_file = 'tests/data/tmp_s3_bypass_resume_persistence.pickle'
         shutil.copyfile('tests/data/s3_bypass_resume_persistence.pickle', self.tmp_bypass_resume_file)
@@ -136,6 +137,7 @@ class S3BypassTest(unittest.TestCase):
         key = next(iter(bucket.list('some_prefix/')))
         self.assertEquals('some_prefix/test_key', key.name)
         self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
+        self.assertEqual(bypass.total_items, 2, 'Bypass got an incorrect number of total items')
 
     def test_copy_mode_bypass(self):
         # given
@@ -163,6 +165,7 @@ class S3BypassTest(unittest.TestCase):
         ]
         for i in range(1, number_of_items+1):
             key = source_bucket.new_key('some_prefix/key{}'.format(i))
+            key.metadata = {'total': 2}
             key.set_contents_from_string(json.dumps(data))
 
     def test_resume_bypass(self):
