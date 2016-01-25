@@ -63,13 +63,13 @@ class SESMailNotifier(BaseNotifier):
         mails = self._get_mails(receivers)
         self._notify_start_dump(mails, info)
 
-    def notify_complete_dump(self, receivers=None, info=None, show_total=False):
+    def notify_complete_dump(self, receivers=None, info=None):
         if receivers is None:
             receivers = []
         if info is None:
             info = {}
         mails = self._get_mails(receivers)
-        self._notify_complete_dump(mails, info, show_total)
+        self._notify_complete_dump(mails, info)
 
     def notify_failed_job(self, msg, stack_trace, receivers=None, info=None):
         if receivers is None:
@@ -110,24 +110,24 @@ class SESMailNotifier(BaseNotifier):
         subject = 'Started {client} {name} dump'.format(client=self.client_name, name=info.get('script_name', 'dump_job'))
         self._send_email(mails, subject, body)
 
-    def _generate_complete_dump_body(self, info, show_total):
+    def _generate_complete_dump_body(self, info):
         body = "{name} dump finished with following parameters:\n\n"
         body += 'Used writer: {writer}\n'
-        if show_total:
+        if info.get('items_count'):
             body += 'Total records dumped: {total}\n\n'
         body += 'If you have any questions or concerns about the data you have received, ' \
                 'please email us at help@scrapinghub.com.\n'
         body = body.format(
             name=info.get('script_name', 'dump_job'),
             writer=info['configuration']['writer']['name'],
-            total=info.get('items_count', 0),
+            total=info.get('items_count'),
         )
         return body
 
-    def _notify_complete_dump(self, mails, info=None, show_total=False):
+    def _notify_complete_dump(self, mails, info=None):
         if info is None:
             info = {}
-        body = self._generate_complete_dump_body(info, show_total)
+        body = self._generate_complete_dump_body(info)
         subject = '{client} {name} dump completed'.format(client=self.client_name, name=info.get('script_name', 'dump_job'))
         self._send_email(mails, subject, body)
 

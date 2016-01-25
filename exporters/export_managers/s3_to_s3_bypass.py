@@ -10,6 +10,7 @@ from boto.exception import S3ResponseError
 
 from exporters.default_retries import retry_long
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
+from exporters.export_managers.base_exporter import NotValidTotalInfo
 from exporters.module_loader import ModuleLoader
 from exporters.progress_callback import BotoUploadProgress
 from exporters.readers.s3_reader import get_bucket, S3BucketKeysFetcher
@@ -72,6 +73,7 @@ class S3Bypass(BaseBypass):
         self.bypass_state = None
         self.logger = logging.getLogger('bypass_logger')
         self.logger.setLevel(logging.INFO)
+        self.valid_total_count = True
 
     def _raise_conditions_not_met(self, reason):
         self.logger.warning('Skipping S3 file copy optimization bypass because of %s' % reason)
@@ -123,6 +125,9 @@ class S3Bypass(BaseBypass):
         finally:
             if self.tmp_folder:
                 shutil.rmtree(self.tmp_folder)
+        raise NotValidTotalInfo()
+        if not self.valid_total_count:
+            raise NotValidTotalInfo()
 
     @retry_long
     def _write_s3_pointer(self, dest_bucket, save_pointer, filebase):
@@ -155,8 +160,9 @@ class S3Bypass(BaseBypass):
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):
         akey = source_bucket.get_key(key_name)
         if akey.get_metadata('total'):
-            self.valid_items_info = True
             self.increment_items(int(akey.get_metadata('total')))
+        else:
+            self.valid_total_count = False
         if self.copy_mode:
             self._copy_with_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
         if not self.copy_mode:

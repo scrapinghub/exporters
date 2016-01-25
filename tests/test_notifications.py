@@ -100,7 +100,7 @@ class SESMailNotifierTest(unittest.TestCase):
         }
         self.job_info = {
             'configuration': self.options,
-            'items_count': 0,
+            'items_count': 2,
             'start_time': datetime.datetime.now(),
             'script_name': 'basic_export_manager'
         }
@@ -138,9 +138,9 @@ class SESMailNotifierTest(unittest.TestCase):
         expected_body = expected_body.format(
             name='basic_export_manager',
             writer='somewriter',
-            total=0,
+            total=2,
         )
-        self.assertEqual(self.notifier._generate_complete_dump_body(self.job_info, True), expected_body)
+        self.assertEqual(self.notifier._generate_complete_dump_body(self.job_info), expected_body)
 
     @patch('boto.connect_ses')
     def test_failed_dump(self, mock_connect):
