@@ -27,7 +27,7 @@ class RandomReader(BaseReader):
 
     def __init__(self, options):
         super(RandomReader, self).__init__(options)
-        self.last_key = self.last_position * self.read_option('batch_size')
+        self.last_key = self.last_position.get('last_key', 0) * self.read_option('batch_size')
         self.logger.info('RandomReader has been initiated')
         self.country_codes = [u'es', u'uk', u'us']
         self.states = [u'valéncia', u'madrid', u'barcelona']
@@ -60,7 +60,7 @@ class RandomReader(BaseReader):
                 self.stats['read_items'] += 1
                 yield item
         self.logger.debug('Done reading batch')
-        self.last_position += 1
+        self.last_position['last_key'] += 1
 
     def set_last_position(self, last_position):
         """
@@ -68,8 +68,10 @@ class RandomReader(BaseReader):
         have resume support
         """
         self.last_position = last_position
-        if last_position:
-            self.last_key = self.last_position * self.read_option('batch_size')
+        if last_position is not None and last_position.get('last_key') is not None:
+            self.last_key = last_position.get('last_key', 0) * self.read_option('batch_size')
         else:
             self.last_key = 0
-            self.last_position = 0
+            self.last_position = {
+                'last_key': 0
+            }

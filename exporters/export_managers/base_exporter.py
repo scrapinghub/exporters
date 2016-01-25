@@ -63,6 +63,8 @@ class BaseExporter(object):
         try:
             self.writer.write_batch(batch=next_batch)
             times.update(written=datetime.datetime.now())
+            self.stats_manager.stats['items_count'] = self.writer.items_count
+            last_position['stats'] = self.stats_manager.stats
             self.persistence.commit_position(last_position)
             times.update(persisted=datetime.datetime.now())
         except ItemsLimitReached:
@@ -77,6 +79,9 @@ class BaseExporter(object):
         self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM],
                                          info=self.stats_manager.stats)
         last_position = self.persistence.get_last_position()
+        if last_position is not None:
+            self.stats_manager.stats = last_position.get('stats', {})
+            self.writer.items_count = self.stats_manager.stats.get('items_count', 0)
         self.reader.set_last_position(last_position)
 
     def _clean_export_job(self):
