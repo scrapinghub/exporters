@@ -34,7 +34,7 @@ class SESMailNotifier(BaseNotifier):
             'client_mails': {'type': list, 'default': []},
             'access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_MAIL_AWS_ACCESS_KEY'},
             'secret_key': {'type': basestring, 'env_fallback': 'EXPORTERS_MAIL_AWS_SECRET_KEY'},
-            'client_name': {'type': basestring, 'default': 'Customer'}
+            'client_name': {'type': basestring, 'default': 'Customer'},
         }
 
         super(SESMailNotifier, self).__init__(options)
@@ -113,7 +113,7 @@ class SESMailNotifier(BaseNotifier):
     def _generate_complete_dump_body(self, info):
         body = "{name} dump finished with following parameters:\n\n"
         body += 'Used writer: {writer}\n'
-        if info.get('items_count'):
+        if info.get('accurate_items_count'):
             body += 'Total records dumped: {total}\n\n'
         body += 'If you have any questions or concerns about the data you have received, ' \
                 'please email us at help@scrapinghub.com.\n'

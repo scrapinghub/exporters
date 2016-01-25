@@ -1,3 +1,4 @@
+import copy
 import json
 import unittest
 import datetime
@@ -101,6 +102,7 @@ class SESMailNotifierTest(unittest.TestCase):
         self.job_info = {
             'configuration': self.options,
             'items_count': 2,
+            'accurate_items_count': True,
             'start_time': datetime.datetime.now(),
             'script_name': 'basic_export_manager'
         }
@@ -141,6 +143,20 @@ class SESMailNotifierTest(unittest.TestCase):
             total=2,
         )
         self.assertEqual(self.notifier._generate_complete_dump_body(self.job_info), expected_body)
+
+    def test_generate_complete_body_no_total(self):
+        expected_body = "{name} dump finished with following parameters:\n\n"
+        expected_body += 'Used writer: {writer}\n'
+        expected_body += 'If you have any questions or concerns about the data you have received, ' \
+                'please email us at help@scrapinghub.com.\n'
+        expected_body = expected_body.format(
+            name='basic_export_manager',
+            writer='somewriter',
+            total=2,
+        )
+        job_info = copy.deepcopy(self.job_info)
+        job_info['accurate_items_count'] = False
+        self.assertEqual(self.notifier._generate_complete_dump_body(job_info), expected_body)
 
     @patch('boto.connect_ses')
     def test_failed_dump(self, mock_connect):
