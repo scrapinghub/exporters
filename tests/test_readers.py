@@ -9,10 +9,6 @@ from exporters.readers.kafka_scanner_reader import KafkaScannerReader
 class BaseReaderTest(unittest.TestCase):
 
     def setUp(self):
-        exporter_options =  {
-            'log_level': 'DEBUG',
-            'logger_name': 'export-pipeline'
-        }
         self.reader = BaseReader({})
 
     def test_get_next_batch_not_implemented(self):
@@ -20,8 +16,8 @@ class BaseReaderTest(unittest.TestCase):
             self.reader.get_next_batch()
 
     def test_set_last_position(self):
-        self.reader.set_last_position(5)
-        self.assertEqual(self.reader.last_position, 5)
+        self.reader.set_last_position(dict(position=5))
+        self.assertEqual(self.reader.last_position, dict(position=5))
 
 
 class RandomReaderTest(unittest.TestCase):
