@@ -1,5 +1,7 @@
+import contextlib
 import datetime
 import json
+import os
 import unittest
 
 import mock
@@ -8,6 +10,17 @@ from exporters.notifications.ses_mail_notifier import (DEFAULT_MAIN_FROM,
                                                        InvalidMailProvided,
                                                        SESMailNotifier)
 from exporters.notifications.webhook_notifier import WebhookNotifier
+from exporters.notifications.receiver_groups import CLIENTS, TEAM
+
+
+@contextlib.contextmanager
+def environment(env):
+    old_env = os.environ
+    try:
+        os.environ = env
+        yield
+    finally:
+        os.environ = old_env
 
 
 class BaseNotifierTest(unittest.TestCase):
@@ -85,8 +98,8 @@ class SESMailNotifierTest(unittest.TestCase):
                         'name': 'exporters.notifications.s3_mail_notifier.SESMailNotifier',
                         'options':
                             {
-                                'team_mails': ['test@test.com'],
-                                'client_mails': ['test@test.com'],
+                                'team_mails': ['team@example.com'],
+                                'client_mails': ['client@example.com'],
                                 'access_key': 'somelogin',
                                 'secret_key': 'somekey'
                             }
@@ -115,25 +128,36 @@ class SESMailNotifierTest(unittest.TestCase):
 
     @mock.patch('boto.connect_ses')
     def test_start_dump(self, mock_ses):
-        self.notifier.notify_start_dump(['test@test.com'], self._create_stats())
+        self.notifier.notify_start_dump([CLIENTS, TEAM], self._create_stats())
         expected_send_email = mock.call.send_email(
             DEFAULT_MAIN_FROM,
             'Started Customer export job',
             u'\nExport job started with following parameters:\n\n\nUsing: somewriter',
-            mock.ANY
+            ['client@example.com', 'team@example.com']
+        )
+        self.assertEquals([expected_send_email], mock_ses.return_value.mock_calls)
+
+    @mock.patch('boto.connect_ses')
+    def test_notify_with_custom_emails(self, mock_ses):
+        self.notifier.notify_start_dump(['test@test.com'], self._create_stats())
+        expected_send_email = mock.call.send_email(
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+            ['test@test.com']
         )
         self.assertEquals([expected_send_email], mock_ses.return_value.mock_calls)
 
     @mock.patch('boto.connect_ses')
     def test_complete_dump(self, mock_ses):
-        self.notifier.notify_complete_dump(['test@test.com'], self._create_stats())
+        self.notifier.notify_complete_dump([CLIENTS, TEAM], self._create_stats())
 
         mock_ses.return_value.send_email.assert_called_once_with(
             DEFAULT_MAIN_FROM,
             'Customer export job finished',
             u'\nExport job finished successfully\n\n\nTotal records exported: 2\n\n'
             'If you have any questions or concerns about the data you have received, email us at help@scrapinghub.com.\n',
-            mock.ANY
+            ['client@example.com', 'team@example.com']
         )
 
     @mock.patch('boto.connect_ses')
@@ -151,8 +175,6 @@ class SESMailNotifierTest(unittest.TestCase):
 
     @mock.patch('boto.connect_ses')
     def test_failed_dump(self, mock_ses):
-        # TODO: check where is sending to
-        # TODO: check job key
         self.notifier.notify_failed_job('REASON', 'STACKTRACE', ['test@test.com'], self._create_stats())
         mock_ses.return_value.send_email.assert_called_once_with(
             DEFAULT_MAIN_FROM,
@@ -161,63 +183,25 @@ class SESMailNotifierTest(unittest.TestCase):
             u'REASON\n\n'
             u'Stacktrace:\nSTACKTRACE\n\n'
             u'Configuration:\n' + json.dumps(self.options),
-            mock.ANY
+            ['test@test.com']
         )
 
     @mock.patch('boto.connect_ses')
-    def test_failed_dump(self, mock_ses):
-        # TODO: check where is sending to
-        # TODO: check job key
-        self.notifier.notify_failed_job('REASON', 'STACKTRACE', ['test@test.com'], self._create_stats())
+    def test_failed_dump_in_scrapy_cloud(self, mock_ses):
+        with environment(dict(SHUB_JOBKEY='10804/1/12')):
+            self.notifier.notify_failed_job('REASON', 'STACKTRACE', ['test@test.com'], self._create_stats())
+
         mock_ses.return_value.send_email.assert_called_once_with(
             DEFAULT_MAIN_FROM,
             'Failed export job for Customer',
             u'\nExport job failed with following error:\n\n'
             u'REASON\n\n'
+            u'Job key: 10804/1/12\n'
+            u'Job: https://dash.scrapinghub.com/p/10804/job/1/12\n\n'
             u'Stacktrace:\nSTACKTRACE\n\n'
             u'Configuration:\n' + json.dumps(self.options),
             mock.ANY
         )
-
-    @mock.patch('boto.connect_ses')
-    def test_notify_team(self, mock_connect):
-        send_mail_mock = mock.Mock()
-        send_mail_mock.send_email.return_value = True
-        mock_connect.return_value = send_mail_mock
-        self.notifier.notify_team('Test mail')
-
-    @mock.patch('boto.connect_ses')
-    def test_notify_clients(self, mock_connect):
-        send_mail_mock = mock.Mock()
-        send_mail_mock.send_email.return_value = True
-        mock_connect.return_value = send_mail_mock
-        self.notifier.notify_clients('Test mail')
-
-    @mock.patch('boto.connect_ses')
-    def test_notify_daily(self, mock_connect):
-        self.notifier.daily = True
-        send_mail_mock = mock.Mock()
-        send_mail_mock.send_email.return_value = True
-        mock_connect.return_value = send_mail_mock
-        self.notifier.notify_complete_dump(['test@test.com'], self.job_info)
-
-    @mock.patch('boto.connect_ses')
-    def test_notify_copy_key(self, mock_connect):
-        self.notifier.copy_key = 'some copy key'
-        send_mail_mock = mock.Mock()
-        send_mail_mock.send_email.return_value = True
-        mock_connect.return_value = send_mail_mock
-        self.notifier.notify_complete_dump(['test@test.com'], self.job_info)
-
-    @mock.patch('os.environ')
-    @mock.patch('boto.connect_ses')
-    def test_notify_shub_jobkey(self, mock_connect, mock_env):
-        mock_env.return_value = {'SHUB_JOBKEY': 'somekey'}
-        self.notifier.copy_key = 'some copy key'
-        send_mail_mock = mock.Mock()
-        send_mail_mock.send_email.return_value = True
-        mock_connect.return_value = send_mail_mock
-        self.notifier.notify_failed_job('Test fail reason', '', ['test@test.com'], self.job_info)
 
     def test_invalid_mails(self):
         options = {
@@ -282,15 +266,15 @@ class WebhookNotifierTest(unittest.TestCase):
 
     @mock.patch('requests.post')
     def test_start_dump(self, mock_request):
-        mock_request.return_value = True
+        # TODO: make this test actually test something
         self.notifier.notify_start_dump([], self.job_info)
 
     @mock.patch('requests.post')
     def test_completed_dump(self, mock_request):
-        mock_request.return_value = True
+        # TODO: make this test actually test something
         self.notifier.notify_complete_dump([], self.job_info)
 
     @mock.patch('requests.post')
     def test_failed_dump(self, mock_request):
-        mock_request.return_value = True
+        # TODO: make this test actually test something
         self.notifier.notify_failed_job('', '', info=self.job_info)

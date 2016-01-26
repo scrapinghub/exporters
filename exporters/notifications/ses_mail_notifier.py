@@ -9,9 +9,17 @@ from jinja2 import Template
 DEFAULT_MAIN_FROM = 'Scrapinghub data services <dataservices@scrapinghub.com>'
 
 
+def get_scrapy_cloud_link(jobkey):
+    if not jobkey:
+        return ''
+    proj_id, remainder = jobkey.split('/', 1)
+    return 'https://dash.scrapinghub.com/p/%s/job/%s' % (proj_id, remainder)
+
+
 def render(template_text, **data):
     template = Template(template_text)
     template.globals['as_json'] = json.dumps
+    template.globals['job_link'] = get_scrapy_cloud_link
     return template.render(**data)
 
 
@@ -46,7 +54,10 @@ def _render_failed_job_email(**data):
 Export job failed with following error:
 
 {{ reason }}
-
+{% if jobkey %}
+Job key: {{ jobkey }}
+Job: {{ job_link(jobkey) }}
+{%endif %}
 Stacktrace:
 {{ stacktrace }}
 
@@ -97,25 +108,16 @@ class SESMailNotifier(BaseNotifier):
             if not re.match('.+@.+', mail):
                 raise InvalidMailProvided()
 
-    def notify_team(self, msg):
-        self._send_email(self.team_mails, 'Notification', msg)
-
-    def notify_clients(self, msg):
-        self._send_email(self.client_mails, 'Notification', msg)
-
     def notify_start_dump(self, receivers=None, info=None):
-        if receivers is None:
-            receivers = []
+        receivers = receivers or []
         info = info or None
         mails = self._get_mails(receivers)
         subject, body = _render_start_dump_email(client=self.client_name, **info)
         self._send_email(mails, subject, body)
 
     def notify_complete_dump(self, receivers=None, info=None):
-        if receivers is None:
-            receivers = []
-        if info is None:
-            info = {}
+        receivers = receivers or []
+        info = info or {}
         mails = self._get_mails(receivers)
         subject, body = _render_complete_dump_email(client=self.client_name, **info)
         self._send_email(mails, subject, body)
@@ -124,11 +126,11 @@ class SESMailNotifier(BaseNotifier):
         receivers = receivers or []
         info = info or {}
         mails = self._get_mails(receivers)
-        body = self._generate_failed_job_body(msg, stack_trace, info)
         subject, body = _render_failed_job_email(
             client=self.client_name,
             reason=msg,
             stacktrace=stack_trace,
+            jobkey=os.getenv('SHUB_JOBKEY'),
             **info
         )
         self._send_email(mails, subject, body)
@@ -145,17 +147,6 @@ class SESMailNotifier(BaseNotifier):
                 mails.extend(self.client_mails)
             elif receiver == TEAM:
                 mails.extend(self.team_mails)
+            else:
+                mails.append(receiver)
         return mails
-
-    def _generate_failed_job_body(self, msg, stack_trace, info):
-        body = '{} dump failed with following error:\n\n'.format(info.get('script_name', 'dump_job'))
-        if 'SHUB_JOBKEY' in os.environ:
-            pid, jobid = os.environ['SHUB_JOBKEY'].split('/', 1)
-            msg = 'Job ID: <a href="https://dash.scrapinghub.com/p/{pid}/job/{jobid}">{jobkey}</a>\n\n'.format(
-                pid=pid, jobid=jobid,
-                jobkey=os.environ['SHUB_JOBKEY']
-            ) + msg
-        msg += '\n\nStacktrace: \n' + stack_trace
-        msg += '\n\nConfiguration: \n' + json.dumps(info.get('configuration'))
-        body = body + msg
-        return body
