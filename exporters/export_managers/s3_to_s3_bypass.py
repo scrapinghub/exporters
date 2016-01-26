@@ -1,18 +1,32 @@
 import datetime
 import logging
-import os
 import shutil
-import tempfile
-import uuid
-from contextlib import closing
-
-from boto.exception import S3ResponseError
-
+from contextlib import closing, contextmanager
 from exporters.default_retries import retry_long
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
-from exporters.progress_callback import BotoUploadProgress
 from exporters.readers.s3_reader import get_bucket, S3BucketKeysFetcher
+
+
+def _add_permissions(user_id, key):
+    key.add_user_grant('READ', user_id)
+
+
+def _clean_permissions(user_id, key):
+    policy = key.get_acl()
+    policy.acl.grants = [x for x in policy.acl.grants if not x.id == user_id]
+    key.set_acl(policy)
+
+
+@contextmanager
+def key_permissions(user_id, key, permissions_handling):
+    if permissions_handling:
+        _add_permissions(user_id, key)
+    try:
+        yield
+    finally:
+        if permissions_handling:
+            _clean_permissions(user_id, key)
 
 
 class S3BypassState(object):
@@ -141,22 +155,11 @@ class S3Bypass(BaseBypass):
                 return True
         return False
 
-    def _add_permissions(self, user_id, key):
-        key.add_user_grant('READ', user_id)
-
-    def _clean_permissions(self, user_id, key):
-        policy = key.get_acl()
-        policy.acl.grants = [x for x in policy.acl.grants if not x.id == user_id]
-        key.set_acl(policy)
-
     def _ensure_copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name, user_id):
         key = source_bucket.get_key(key_name)
         permissions_handling = not self._key_has_permissions(user_id, key)
-        if permissions_handling:
-            self._add_permissions(user_id, key)
-        dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
-        if permissions_handling:
-            self._clean_permissions(user_id, key)
+        with key_permissions(user_id, key, permissions_handling):
+            dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
 
     @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name, user_id):
