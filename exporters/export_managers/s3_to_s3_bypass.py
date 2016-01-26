@@ -18,8 +18,17 @@ def _clean_permissions(user_id, key):
     key.set_acl(policy)
 
 
+def _key_has_permissions(user_id, key):
+    policy = key.get_acl()
+    for grant in policy.acl.grants:
+        if grant.id == user_id:
+            return True
+    return False
+
+
 @contextmanager
 def key_permissions(user_id, key, permissions_handling):
+    permissions_handling = not _key_has_permissions(user_id, key)
     if permissions_handling:
         _add_permissions(user_id, key)
     try:
@@ -148,17 +157,10 @@ class S3Bypass(BaseBypass):
         filebase = datetime.datetime.now().strftime(filebase)
         self._write_s3_pointer(dest_bucket, save_pointer, filebase)
 
-    def _key_has_permissions(self, user_id, key):
-        policy = key.get_acl()
-        for grant in policy.acl.grants:
-            if grant.id == user_id:
-                return True
-        return False
-
     def _ensure_copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name, user_id):
         key = source_bucket.get_key(key_name)
-        permissions_handling = not self._key_has_permissions(user_id, key)
-        with key_permissions(user_id, key, permissions_handling):
+
+        with key_permissions(user_id, key):
             dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
 
     @retry_long
