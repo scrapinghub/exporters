@@ -27,7 +27,7 @@ def _key_has_permissions(user_id, key):
 
 
 @contextmanager
-def key_permissions(user_id, key, permissions_handling):
+def key_permissions(user_id, key):
     permissions_handling = not _key_has_permissions(user_id, key)
     if permissions_handling:
         _add_permissions(user_id, key)

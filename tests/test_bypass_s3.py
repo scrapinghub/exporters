@@ -123,7 +123,7 @@ class S3BypassTest(unittest.TestCase):
         self.mock_s3.stop()
         remove_if_exists(self.tmp_bypass_resume_file)
 
-    @mock.patch('exporters.export_managers.s3_to_s3_bypass.S3Bypass._key_has_permissions', autospec=True)
+    @mock.patch('exporters.export_managers.s3_to_s3_bypass._key_has_permissions', autospec=True)
     def test_copy_bypass_s3(self, permissions_checker_mock):
         # given
         permissions_checker_mock.return_value = True
@@ -141,7 +141,7 @@ class S3BypassTest(unittest.TestCase):
         self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
         self.assertEqual(bypass.total_items, 2, 'Bypass got an incorrect number of total items')
 
-    @mock.patch('exporters.export_managers.s3_to_s3_bypass.S3Bypass._key_has_permissions', autospec=True)
+    @mock.patch('exporters.export_managers.s3_to_s3_bypass._key_has_permissions', autospec=True)
     def test_copy_mode_bypass(self, permissions_checker_mock):
         # given
         permissions_checker_mock.return_value = True
@@ -172,7 +172,7 @@ class S3BypassTest(unittest.TestCase):
             key.metadata = {'total': 2}
             key.set_contents_from_string(json.dumps(data))
 
-    @mock.patch('exporters.export_managers.s3_to_s3_bypass.S3Bypass._key_has_permissions', autospec=True)
+    @mock.patch('exporters.export_managers.s3_to_s3_bypass._key_has_permissions', autospec=True)
     def test_resume_bypass(self, permissions_checker_mock):
         # given
         permissions_checker_mock.return_value = True
@@ -228,7 +228,7 @@ class S3BypassTest(unittest.TestCase):
         filebase = bypass._get_filebase(options.writer_options['options'])
         self.assertEqual(expected, filebase)
 
-    @mock.patch('exporters.export_managers.s3_to_s3_bypass.S3Bypass._key_has_permissions', autospec=True)
+    @mock.patch('exporters.export_managers.s3_to_s3_bypass._key_has_permissions', autospec=True)
     def test_write_pointer(self, permissions_checker_mock):
         # given:
         permissions_checker_mock.return_value = True
@@ -258,7 +258,7 @@ class S3BypassTest(unittest.TestCase):
         key = saved_keys[0]
         self.assertEqual('tests/', key.get_contents_as_string())
 
-    @mock.patch('exporters.export_managers.s3_to_s3_bypass.S3Bypass._key_has_permissions', autospec=True)
+    @mock.patch('exporters.export_managers.s3_to_s3_bypass._key_has_permissions', autospec=True)
     def test_prefix_pointer_list_keys(self, permissions_checker_mock):
         #given
         permissions_checker_mock.return_value = True
