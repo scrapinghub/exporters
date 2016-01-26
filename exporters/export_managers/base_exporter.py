@@ -65,7 +65,8 @@ class BaseExporter(object):
             self.writer.write_batch(batch=next_batch)
             times.update(written=datetime.datetime.now())
             self.stats_manager.stats['items_count'] = self.writer.items_count
-            last_position['stats'] = self.stats_manager.stats
+            last_position['items_count'] = self.writer.items_count
+            last_position['accurate_items_count'] = self.stats_manager.stats['accurate_items_count']
             self.persistence.commit_position(last_position)
             times.update(persisted=datetime.datetime.now())
         except ItemsLimitReached:
@@ -81,8 +82,10 @@ class BaseExporter(object):
                                          info=self.stats_manager.stats)
         last_position = self.persistence.get_last_position()
         if last_position is not None:
-            self.stats_manager.stats = last_position.get('stats', {})
-            self.writer.items_count = self.stats_manager.stats.get('items_count', 0)
+            items_count = last_position.get('items_count', 0)
+            self.writer.items_count = items_count
+            self.stats_manager.stats['items_count'] = items_count
+            self.stats_manager.stats['accurate_items_count'] = last_position.get('accurate_items_count', False)
         self.reader.set_last_position(last_position)
 
     def _clean_export_job(self):

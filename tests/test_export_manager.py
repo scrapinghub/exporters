@@ -1,5 +1,6 @@
 import os
-import shutil
+import pickle
+import tempfile
 import mock
 import unittest
 from exporters.export_managers.base_exporter import BaseExporter
@@ -131,25 +132,36 @@ class BaseExportManagerTest(unittest.TestCase):
                         "Should notify the job failure")
 
     def test_resume_items(self):
-        shutil.copyfile('tests/data/resume_persistence.pickle', 'tests/data/tmp_resume_persistence.pickle')
-        config = self.build_config(
-            exporter_options={
-                'resume': True,
-                'persistence_state_id': 'tmp_resume_persistence.pickle'
-            },
-            persistence={
-                'name': 'exporters.persistence.pickle_persistence.PicklePersistence',
-                'options': {
-                    'file_path': 'tests/data'
-                }
-            }
-        )
+        # TODO: refactor to use TmpFile context manager
         try:
-            exporter = BaseExporter(config)
+            _, pickle_file = tempfile.mkstemp()
+            persistence_data = {
+                'last_position': {'accurate_items_count': False, 'items_count': 30, 'last_key': 3},
+            }
+            pickle.dump(persistence_data, open(pickle_file, 'w'))
+
+            config = self.build_config(
+                exporter_options={
+                    'resume': True,
+                    'persistence_state_id': os.path.basename(pickle_file),
+                },
+                persistence={
+                    'name': 'exporters.persistence.pickle_persistence.PicklePersistence',
+                    'options': {
+                        'file_path': os.path.dirname(pickle_file)
+                    }
+                }
+            )
+            try:
+                exporter = BaseExporter(config)
+                exporter._init_export_job()
+            finally:
+                remove_if_exists('tests/data/tmp_resume_persistence.pickle')
+            self.assertEqual(30, exporter.writer.items_count)
+            self.assertFalse(exporter.stats_manager.stats['accurate_items_count'],
+                             "Couldn't get accurate count from last_position")
         finally:
-            remove_if_exists('tests/data/tmp_resume_persistence.pickle')
-        self.assertEqual(30, exporter.persistence.last_position['stats']['items_count'],
-                         'Items count retrieved from persistence are wrong')
+            os.remove(pickle_file)
 
 
 class BasicExportManagerTest(unittest.TestCase):
