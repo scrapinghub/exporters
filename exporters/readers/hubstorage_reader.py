@@ -57,7 +57,7 @@ class HubstorageReader(BaseReader):
         return CollectionScanner(self.read_option('apikey'), self.read_option('project_id'),
                                  self.read_option('collection_name'),
                                  batchsize=self.batch_size,
-                                 startafter=self.last_position,
+                                 startafter=self.last_position.get('last_key', ''),
                                  count=self.read_option('count'),
                                  prefix=self.read_option('prefixes'),
                                  exclude_prefixes=self.read_option('exclude_prefixes'),
@@ -74,7 +74,7 @@ class HubstorageReader(BaseReader):
             for item in batch:
                 base_item = BaseRecord(item)
                 self.stats['read_items'] += 1
-                self.last_position = item['_key']
+                self.last_position['last_key'] = item['_key']
                 yield base_item
             self.logger.debug('Done reading batch')
         else:
@@ -90,7 +90,7 @@ class HubstorageReader(BaseReader):
             if isinstance(last_position, six.string_types):
                 last_key = last_position
             else:
-                last_key = last_position.get('last_key')
+                last_key = last_position.get('last_key', '')
             self.last_position = dict(last_key=last_key)
             self.collection_scanner.set_startafter(last_key)
         else:
