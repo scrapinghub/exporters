@@ -78,10 +78,10 @@ class PicklePersistenceTest(unittest.TestCase):
     def test_get_last_position(self, mock_load_pickle, mock_dump_pickle, mock_open, mock_is_file):
         mock_dump_pickle.return_value = True
         mock_is_file.return_value = True
-        mock_load_pickle.return_value = {'last_position': 10}
+        mock_load_pickle.return_value = {'last_position': {'last_key': 10}}
         exporter_config = ExporterConfig(self.config)
         persistence = PicklePersistence(exporter_config.persistence_options)
-        self.assertEqual(10, persistence.get_last_position())
+        self.assertEqual({'last_key': 10}, persistence.get_last_position())
 
     @patch('__builtin__.open', autospec=True)
     @patch('pickle.dump', autospec=True)

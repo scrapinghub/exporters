@@ -26,20 +26,26 @@ class S3BypassState(object):
             self.pending = S3BucketKeysFetcher(self.config.reader_options['options']).pending_keys()
             self.done = []
             self.skipped = []
+            self.stats = {'total_count': 0}
             self.state.commit_position(self._get_state())
         else:
             self.pending = self.state_position['pending']
             self.done = []
             self.skipped = self.state_position['done']
             self.keys = self.pending
+            self.stats = self.state_position.get('stats', {'total_count': 0})
 
     def _get_state(self):
-        return {'pending': self.pending, 'done': self.done, 'skipped': self.skipped}
+        return dict(pending=self.pending, done=self.done, skipped=self.skipped,
+                    stats=self.stats)
 
     def commit_copied_key(self, key):
         self.pending.remove(key)
         self.done.append(key)
         self.state.commit_position(self._get_state())
+
+    def increment_items(self, items_number):
+        self.stats['total_count'] += items_number
 
     def pending_keys(self):
         return self.pending
@@ -107,6 +113,7 @@ class S3Bypass(BaseBypass):
         dest_bucket = get_bucket(**writer_options)
         dest_filebase = self._get_filebase(writer_options)
         self.bypass_state = S3BypassState(self.config)
+        self.total_items = self.bypass_state.stats['total_count']
         source_bucket = get_bucket(**reader_options)
         pending_keys = deepcopy(self.bypass_state.pending_keys())
 
@@ -156,6 +163,7 @@ class S3Bypass(BaseBypass):
         akey = source_bucket.get_key(key_name)
         if akey.get_metadata('total'):
             self.increment_items(int(akey.get_metadata('total')))
+            self.bypass_state.increment_items(int(akey.get_metadata('total')))
         else:
             self.valid_total_count = False
         if self.copy_mode:

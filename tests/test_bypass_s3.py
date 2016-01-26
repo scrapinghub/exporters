@@ -198,6 +198,7 @@ class S3BypassTest(unittest.TestCase):
         self.assertEqual(key1.get_contents_as_string(), 'not overwritten')
         bucket_keynames = [k.name for k in list(dest_bucket.list('some_prefix/'))]
         self.assertEquals(expected_final_keys, bucket_keynames)
+        self.assertEquals(bypass.total_items, 6, 'Wrong number of items written')
 
     def test_filebase_format_bypass(self):
         # given

@@ -1,12 +1,13 @@
 import os
+import shutil
 import mock
 import unittest
 from exporters.export_managers.base_exporter import BaseExporter
 from exporters.export_managers.basic_exporter import BasicExporter
-from exporters.export_managers.s3_to_s3_bypass import BaseBypass
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
+from exporters.utils import remove_if_exists
 from exporters.writers.console_writer import ConsoleWriter
 from .utils import valid_config_with_updates
 
@@ -128,6 +129,27 @@ class BaseExportManagerTest(unittest.TestCase):
                          "Should not notify a successful dump")
         self.assertTrue(mock_notifier.return_value.notify_failed_job.called,
                         "Should notify the job failure")
+
+    def test_resume_items(self):
+        shutil.copyfile('tests/data/resume_persistence.pickle', 'tests/data/tmp_resume_persistence.pickle')
+        config = self.build_config(
+            exporter_options={
+                'resume': True,
+                'persistence_state_id': 'tmp_resume_persistence.pickle'
+            },
+            persistence={
+                'name': 'exporters.persistence.pickle_persistence.PicklePersistence',
+                'options': {
+                    'file_path': 'tests/data'
+                }
+            }
+        )
+        try:
+            exporter = BaseExporter(config)
+        finally:
+            remove_if_exists('tests/data/tmp_resume_persistence.pickle')
+        self.assertEqual(30, exporter.persistence.last_position['stats']['items_count'],
+                         'Items count retrieved from persistence are wrong')
 
 
 class BasicExportManagerTest(unittest.TestCase):
