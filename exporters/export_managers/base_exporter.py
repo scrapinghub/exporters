@@ -35,7 +35,7 @@ class BaseExporter(object):
             'items_count': 0,
             'accurate_items_count': True,
             'start_time': datetime.datetime.now(),
-            'script_name': 'basic_export_manager'
+            'script_name': 'export'
         }
         self.stats_manager = self.module_loader.load_stats_manager(
             self.config.stats_options)
