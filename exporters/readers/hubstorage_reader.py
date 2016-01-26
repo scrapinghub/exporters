@@ -1,3 +1,4 @@
+import six
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 
@@ -44,21 +45,24 @@ class HubstorageReader(BaseReader):
     }
 
     def __init__(self, options):
-        from collection_scanner import CollectionScanner
         super(HubstorageReader, self).__init__(options)
         self.batch_size = self.read_option('batch_size')
-        self.collection_scanner = CollectionScanner(self.read_option('apikey'), self.read_option('project_id'),
-                                                    self.read_option('collection_name'),
-                                                    batchsize=self.batch_size,
-                                                    startafter=self.last_position,
-                                                    count=self.read_option('count'),
-                                                    prefix=self.read_option('prefixes'),
-                                                    exclude_prefixes=self.read_option('exclude_prefixes'),
-                                                    secondary_collections=self.read_option('secondary_collections'),
-                                                    meta=['_key'])
+        self.collection_scanner = self._create_collection_scanner()
         self.logger.info('HubstorageReader has been initiated. Project id: {}. Collection name: {}'.format(
             self.read_option('project_id'), self.read_option('collection_name')))
-        self.last_position = ''
+        self.last_position = {}
+
+    def _create_collection_scanner(self):
+        from collection_scanner import CollectionScanner
+        return CollectionScanner(self.read_option('apikey'), self.read_option('project_id'),
+                                 self.read_option('collection_name'),
+                                 batchsize=self.batch_size,
+                                 startafter=self.last_position,
+                                 count=self.read_option('count'),
+                                 prefix=self.read_option('prefixes'),
+                                 exclude_prefixes=self.read_option('exclude_prefixes'),
+                                 secondary_collections=self.read_option('secondary_collections'),
+                                 meta=['_key'])
 
     def get_next_batch(self):
         """
@@ -83,7 +87,11 @@ class HubstorageReader(BaseReader):
         have resume support
         """
         if last_position:
-            self.last_position = last_position
-            self.collection_scanner.set_startafter(last_position)
+            if isinstance(last_position, six.string_types):
+                last_key = last_position
+            else:
+                last_key = last_position.get('last_key')
+            self.last_position = dict(last_key=last_key)
+            self.collection_scanner.set_startafter(last_key)
         else:
-            self.last_position = ''
+            self.last_position = {}
