@@ -2,10 +2,13 @@ import datetime
 import logging
 import shutil
 from contextlib import closing, contextmanager
+from boto.exception import S3ResponseError
 from exporters.default_retries import retry_long
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
+from exporters.progress_callback import BotoUploadProgress
 from exporters.readers.s3_reader import get_bucket, S3BucketKeysFetcher
+from exporters.utils import TmpFile
 
 
 def _add_permissions(user_id, key):
@@ -159,9 +162,20 @@ class S3Bypass(BaseBypass):
 
     def _ensure_copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name, user_id):
         key = source_bucket.get_key(key_name)
+        try:
+            with key_permissions(user_id, key):
+                dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
+        except S3ResponseError:
+            self.logger.warning('No direct copy supported for key.'.format(key_name))
+            self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
 
-        with key_permissions(user_id, key):
-            dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
+    def _copy_without_permissions(self, dest_bucket, dest_key_name, source_bucket, key_name):
+        key = source_bucket.get_key(key_name)
+        with TmpFile() as tmp_filename:
+            key.get_contents_to_filename(tmp_filename)
+            dest_key = dest_bucket.new_key(dest_key_name)
+            progress = BotoUploadProgress(self.logger)
+            dest_key.set_contents_from_filename(tmp_filename, cb=progress)
 
     @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name, user_id):
