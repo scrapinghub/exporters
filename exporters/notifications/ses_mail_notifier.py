@@ -28,8 +28,8 @@ def _render_start_dump_email(**data):
     body_tmpl = """
 Export job started with following parameters:
 
-{% set writer_name = configuration.writer.name.split('.')[-1] %}
-{% set writer_options = configuration.writer.options %}
+{% set writer_name = configuration.writer.name.split('.')[-1] -%}
+{% set writer_options = configuration.writer.options -%}
 Writer: {{ writer_name }}
 {%- if writer_options.bucket %}
 Bucket: {{ writer_options.bucket }}

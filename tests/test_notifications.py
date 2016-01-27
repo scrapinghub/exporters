@@ -135,7 +135,7 @@ class SESMailNotifierTest(unittest.TestCase):
         mock_ses.return_value.send_email.assert_called_once_with(
             DEFAULT_MAIN_FROM,
             'Started Customer export job',
-            u'\nExport job started with following parameters:\n\n\nWriter: somewriter'
+            u'\nExport job started with following parameters:\n\nWriter: somewriter'
             u'\nBucket: SOMEBUCKET\nFilebase: FILEBASE',
             ['client@example.com', 'team@example.com']
         )
