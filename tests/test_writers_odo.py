@@ -28,7 +28,7 @@ class OdoWriterTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmp_path)
 
-    @unittest.skipIf(os.getenv('DRONE_BUILD'), 'feature disabled for quick turnaround in deploy')
+    @unittest.skipIf(os.getenv('DRONE'), 'feature disabled for quick turnaround in deploy')
     def test_write_csv(self):
         writer = ODOWriter(self.writer_config)
         writer.write(self.batch_path, [])
