@@ -109,7 +109,9 @@ class SESMailNotifierTest(unittest.TestCase):
             'writer': {
                 'name': 'somewriter',
                 'options': {
-                    'some_option': 'some_value'
+                    'some_option': 'some_value',
+                    'bucket': 'SOMEBUCKET',
+                    'filebase': 'FILEBASE',
                 }
             }
 
@@ -128,25 +130,25 @@ class SESMailNotifierTest(unittest.TestCase):
 
     @mock.patch('boto.connect_ses')
     def test_start_dump(self, mock_ses):
-        self.notifier.notify_start_dump([CLIENTS, TEAM], self._create_stats())
-        expected_send_email = mock.call.send_email(
+        stats = self._create_stats()
+        self.notifier.notify_start_dump([CLIENTS, TEAM], stats)
+        mock_ses.return_value.send_email.assert_called_once_with(
             DEFAULT_MAIN_FROM,
             'Started Customer export job',
-            u'\nExport job started with following parameters:\n\n\nUsing: somewriter',
+            u'\nExport job started with following parameters:\n\n\nWriter: somewriter'
+            u'\nBucket: SOMEBUCKET\nFilebase: FILEBASE',
             ['client@example.com', 'team@example.com']
         )
-        self.assertEquals([expected_send_email], mock_ses.return_value.mock_calls)
 
     @mock.patch('boto.connect_ses')
     def test_notify_with_custom_emails(self, mock_ses):
         self.notifier.notify_start_dump(['test@test.com'], self._create_stats())
-        expected_send_email = mock.call.send_email(
+        mock_ses.return_value.send_email.assert_called_once_with(
             mock.ANY,
             mock.ANY,
             mock.ANY,
             ['test@test.com']
         )
-        self.assertEquals([expected_send_email], mock_ses.return_value.mock_calls)
 
     @mock.patch('boto.connect_ses')
     def test_complete_dump(self, mock_ses):
@@ -155,7 +157,7 @@ class SESMailNotifierTest(unittest.TestCase):
         mock_ses.return_value.send_email.assert_called_once_with(
             DEFAULT_MAIN_FROM,
             'Customer export job finished',
-            u'\nExport job finished successfully\n\n\nTotal records exported: 2\n\n'
+            u'\nExport job finished successfully\n\nTotal records exported: 2\n\n'
             'If you have any questions or concerns about the data you have received, email us at help@scrapinghub.com.\n',
             ['client@example.com', 'team@example.com']
         )

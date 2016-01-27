@@ -29,7 +29,29 @@ def _render_start_dump_email(**data):
 Export job started with following parameters:
 
 {% set writer_name = configuration.writer.name.split('.')[-1] %}
-Using: {{ writer_name }}
+{% set writer_options = configuration.writer.options %}
+Writer: {{ writer_name }}
+{%- if writer_options.bucket %}
+Bucket: {{ writer_options.bucket }}
+{%- endif -%}
+{%- if writer_options.filebase %}
+Filebase: {{ writer_options.filebase }}
+{%- endif -%}
+{%- if writer_options.host %}
+Host: {{ writer_options.host }}
+{%- endif -%}
+{%- if writer_options.port %}
+Port: {{ writer_options.port }}
+{%- endif -%}
+{%- if writer_options.port %}
+Port: {{ writer_options.port }}
+{%- endif -%}
+{%- if writer_options.email %}
+Email: {{ writer_options.email }}
+{%- endif -%}
+{%- if writer_options.endpoint_url %}
+Endpoint URL: {{ writer_options.endpoint_url }}
+{%- endif -%}
 """
     return render(subject_tmpl, **data), render(body_tmpl, **data)
 
@@ -39,7 +61,7 @@ def _render_complete_dump_email(**data):
     body_tmpl = """
 Export job finished successfully
 
-{% if accurate_items_count %}
+{% if accurate_items_count -%}
 Total records exported: {{ items_count }}
 {%- endif %}
 
