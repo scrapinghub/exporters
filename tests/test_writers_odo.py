@@ -6,6 +6,7 @@ import unittest
 from exporters.writers.odo_writer import ODOWriter
 
 
+@unittest.skipIf(os.getenv('DRONE_BUILD'), 'feature disabled for quick turnaround in deploy')
 class OdoWriterTest(unittest.TestCase):
 
     def setUp(self):
@@ -24,7 +25,6 @@ class OdoWriterTest(unittest.TestCase):
             }
         }
 
-    @unittest.skipIf(os.getenv('DRONE_BUILD'), 'feature disabled for quick turnaround in deploy')
     def test_write_csv(self):
         writer = ODOWriter(self.writer_config)
         writer.write(self.batch_path, [])
