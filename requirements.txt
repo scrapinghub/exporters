@@ -11,3 +11,4 @@ wheel==0.24.0
 
 requests==2.5.3
 six==1.9.0
+decorator

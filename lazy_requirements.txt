@@ -14,11 +14,6 @@ wsgiref==0.1.2
 
 boltons==15.1.0
 
-# odo
--e git+git@github.com:scrapinghub/flatson.git#egg=flatson
-odo==0.3.4
-pandas==0.16.2
-
 PyDrive
 
 gcloud==0.8.0

@@ -2,10 +2,10 @@ import os
 import shutil
 import tempfile
 import unittest
-
 from exporters.writers.odo_writer import ODOWriter
 
 
+@unittest.skipIf(os.getenv('DRONE'), 'feature disabled for quick turnaround in deploy')
 class OdoWriterTest(unittest.TestCase):
 
     def setUp(self):
@@ -24,6 +24,9 @@ class OdoWriterTest(unittest.TestCase):
             }
         }
 
+    def tearDown(self):
+        shutil.rmtree(self.tmp_path)
+
     def test_write_csv(self):
         writer = ODOWriter(self.writer_config)
         writer.write(self.batch_path, [])
@@ -31,4 +34,3 @@ class OdoWriterTest(unittest.TestCase):
         with open(self.tmp_file) as f:
             lines = f.readlines()
         self.assertEqual(lines, ['item\n', 'value1\n', 'value2\n', 'value3\n'])
-        shutil.rmtree(self.tmp_path)
