@@ -8,7 +8,7 @@ from exporters.export_managers.basic_exporter import BasicExporter
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
-from exporters.utils import remove_if_exists
+from exporters.utils import remove_if_exists, TmpFile
 from exporters.writers.console_writer import ConsoleWriter
 from .utils import valid_config_with_updates
 
@@ -132,9 +132,8 @@ class BaseExportManagerTest(unittest.TestCase):
                         "Should notify the job failure")
 
     def test_resume_items(self):
-        # TODO: refactor to use TmpFile context manager
-        try:
-            _, pickle_file = tempfile.mkstemp()
+        with TmpFile() as pickle_file:
+            # given:
             persistence_data = {
                 'last_position': {'accurate_items_count': False, 'items_count': 30, 'last_key': 3},
             }
@@ -152,16 +151,15 @@ class BaseExportManagerTest(unittest.TestCase):
                     }
                 }
             )
-            try:
-                exporter = BaseExporter(config)
-                exporter._init_export_job()
-            finally:
-                remove_if_exists('tests/data/tmp_resume_persistence.pickle')
+
+            # when:
+            exporter = BaseExporter(config)
+            exporter._init_export_job()
+
+            # then:
             self.assertEqual(30, exporter.writer.items_count)
             self.assertFalse(exporter.stats_manager.stats['accurate_items_count'],
                              "Couldn't get accurate count from last_position")
-        finally:
-            os.remove(pickle_file)
 
 
 class BasicExportManagerTest(unittest.TestCase):
