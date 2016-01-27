@@ -1,11 +1,11 @@
 import json
 import shutil
-import tempfile
 import unittest
 import boto
 import datetime
 import moto
 import mock
+from boto.exception import S3ResponseError
 from exporters.export_managers.s3_to_s3_bypass import S3Bypass, RequisitesNotMet
 from exporters.exporter_config import ExporterConfig
 from exporters.utils import remove_if_exists
@@ -86,7 +86,6 @@ class S3BypassConditionsTest(unittest.TestCase):
         with self.assertRaises(RequisitesNotMet):
             bypass.meets_conditions()
 
-
     def test_itesm_limit_should_not_meet_conditions(self):
         # given:
         config = create_s3_bypass_simple_config()
@@ -116,6 +115,7 @@ class S3BypassTest(unittest.TestCase):
         key = self.source_bucket.new_key('some_prefix/test_key')
         key.metadata = {'total': 2}
         key.set_contents_from_string(json.dumps(self.data))
+        key.close()
         self.tmp_bypass_resume_file = 'tests/data/tmp_s3_bypass_resume_persistence.pickle'
         shutil.copyfile('tests/data/s3_bypass_resume_persistence.pickle', self.tmp_bypass_resume_file)
 
@@ -139,15 +139,15 @@ class S3BypassTest(unittest.TestCase):
         self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
         self.assertEqual(bypass.total_items, 2, 'Bypass got an incorrect number of total items')
 
-    def test_copy_mode_bypass(self):
+    @mock.patch('boto.s3.bucket.Bucket.copy_key', autospec=True)
+    def test_copy_mode_bypass(self, copy_key_mock):
+        copy_key_mock.side_effect = S3ResponseError(None, None)
         # given
         self.s3_conn.create_bucket('dest_bucket')
         options = create_s3_bypass_simple_config()
 
         # when:
         bypass = S3Bypass(options)
-        bypass.copy_mode = False
-        bypass.tmp_folder = tempfile.mkdtemp()
         bypass.bypass()
 
         # then:
@@ -155,6 +155,7 @@ class S3BypassTest(unittest.TestCase):
         key = next(iter(bucket.list('some_prefix/')))
         self.assertEquals('some_prefix/test_key', key.name)
         self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
+        self.assertEqual(bypass.total_items, 2, 'Bypass got an incorrect number of total items')
 
     def _create_and_populate_bucket(self, bucket_name, number_of_items=3):
         self.s3_conn.create_bucket(bucket_name)
@@ -253,7 +254,6 @@ class S3BypassTest(unittest.TestCase):
 
     def test_prefix_pointer_list_keys(self):
         #given
-
         reader = {
             'name': 'exporters.readers.s3_reader.S3Reader',
             'options': {

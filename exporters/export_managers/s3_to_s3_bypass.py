@@ -1,18 +1,44 @@
 import datetime
 import logging
-import os
 import shutil
-import tempfile
-import uuid
-from contextlib import closing
-
+from contextlib import closing, contextmanager
 from boto.exception import S3ResponseError
-
 from exporters.default_retries import retry_long
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
 from exporters.progress_callback import BotoUploadProgress
 from exporters.readers.s3_reader import get_bucket, S3BucketKeysFetcher
+from exporters.utils import TmpFile
+
+
+def _add_permissions(user_id, key):
+    key.add_user_grant('READ', user_id)
+
+
+def _clean_permissions(user_id, key):
+    policy = key.get_acl()
+    policy.acl.grants = [x for x in policy.acl.grants if not x.id == user_id]
+    key.set_acl(policy)
+
+
+def _key_has_permissions(user_id, key):
+    policy = key.get_acl()
+    for grant in policy.acl.grants:
+        if grant.id == user_id:
+            return True
+    return False
+
+
+@contextmanager
+def key_permissions(user_id, key):
+    permissions_handling = not _key_has_permissions(user_id, key)
+    if permissions_handling:
+        _add_permissions(user_id, key)
+    try:
+        yield
+    finally:
+        if permissions_handling:
+            _clean_permissions(user_id, key)
 
 
 class S3BypassState(object):
@@ -116,11 +142,11 @@ class S3Bypass(BaseBypass):
         self.total_items = self.bypass_state.stats['total_count']
         source_bucket = get_bucket(**reader_options)
         pending_keys = deepcopy(self.bypass_state.pending_keys())
-
+        user_id = dest_bucket.connection.get_canonical_user_id()
         try:
             for key in pending_keys:
                 dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
-                self._copy_key(dest_bucket, dest_key_name, source_bucket, key)
+                self._copy_key(dest_bucket, dest_key_name, source_bucket, key, user_id)
                 self.bypass_state.commit_copied_key(key)
                 logging.log(logging.INFO,
                             'Copied key {} to dest: s3://{}/{}'.format(key, dest_bucket.name, dest_key_name))
@@ -141,35 +167,32 @@ class S3Bypass(BaseBypass):
         filebase = datetime.datetime.now().strftime(filebase)
         self._write_s3_pointer(dest_bucket, save_pointer, filebase)
 
-    def _copy_with_permissions(self, dest_bucket, dest_key_name, source_bucket, key_name):
+    def _ensure_copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name, user_id):
+        key = source_bucket.get_key(key_name)
         try:
-            dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
+            with key_permissions(user_id, key):
+                dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
         except S3ResponseError:
-            self.logger.warning('No direct copy supported.')
-            self.copy_mode = False
-            self.tmp_folder = tempfile.mkdtemp()
+            self.logger.warning('No direct copy supported for key.'.format(key_name))
+            self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
 
     def _copy_without_permissions(self, dest_bucket, dest_key_name, source_bucket, key_name):
         key = source_bucket.get_key(key_name)
-        tmp_filename = os.path.join(self.tmp_folder, str(uuid.uuid4()))
-        key.get_contents_to_filename(tmp_filename)
-        dest_key = dest_bucket.new_key(dest_key_name)
-        progress = BotoUploadProgress(self.logger)
-        dest_key.set_contents_from_filename(tmp_filename, cb=progress)
-        os.remove(tmp_filename)
+        with TmpFile() as tmp_filename:
+            key.get_contents_to_filename(tmp_filename)
+            dest_key = dest_bucket.new_key(dest_key_name)
+            progress = BotoUploadProgress(self.logger)
+            dest_key.set_contents_from_filename(tmp_filename, cb=progress)
 
     @retry_long
-    def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):
+    def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name, user_id):
         akey = source_bucket.get_key(key_name)
         if akey.get_metadata('total'):
             self.increment_items(int(akey.get_metadata('total')))
             self.bypass_state.increment_items(int(akey.get_metadata('total')))
         else:
             self.valid_total_count = False
-        if self.copy_mode:
-            self._copy_with_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
-        if not self.copy_mode:
-            self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
+        self._ensure_copy_key(dest_bucket, dest_key_name, source_bucket, key_name, user_id)
 
     def close(self):
         self.bypass_state.delete()
