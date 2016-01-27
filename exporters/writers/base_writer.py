@@ -1,3 +1,5 @@
+import copy
+
 from exporters.write_buffer import WriteBuffer
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
@@ -20,6 +22,7 @@ class BaseWriter(BasePipelineItem):
     supported_options = {
         'items_per_buffer_write': {'type': int, 'default': ITEMS_PER_BUFFER_WRITE},
         'size_per_buffer_write': {'type': int, 'default': SIZE_PER_BUFFER_WRITE},
+        'verbose_stats': {'type': bool, 'default': False},
         'items_limit': {'type': int, 'default': 0},
     }
     supported_file_extensions = {
@@ -59,10 +62,12 @@ class BaseWriter(BasePipelineItem):
                 key = self.write_buffer.get_key_from_item(item)
                 if self.write_buffer.should_write_buffer(key):
                     self._write(key)
-
                 self.increment_written_items()
                 self._check_items_limit()
-        self.stats.update(self.write_buffer.stats)
+        reduced_stats = copy.deepcopy(self.write_buffer.stats)
+        if self.read_option('verbose_stats') is False:
+            reduced_stats.pop('written_keys', None)
+        self.stats.update(reduced_stats)
 
     def _check_items_limit(self):
         """

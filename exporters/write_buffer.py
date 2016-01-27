@@ -113,7 +113,7 @@ class WriteBuffer(object):
         self.items_group_files = ItemsGroupFilesHandler()
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
-        self.stats = {'written_keys': {'keys': {}, 'occurrences': Counter()}}
+        self.stats = {'written_items': 0, 'written_keys': {'keys': {}}}
 
     def buffer(self, item):
         """
@@ -122,7 +122,7 @@ class WriteBuffer(object):
         key = self.get_key_from_item(item)
         self.grouping_info.ensure_group_info(key)
         self.items_group_files.add_item_to_file(item, key)
-        self._update_count(item)
+        self.stats['written_items'] += 1
 
     def finish_buffer_write(self, key, compressed_path):
         self.items_group_files.create_new_buffer_file(key, compressed_path)
@@ -138,10 +138,6 @@ class WriteBuffer(object):
             return True
         buffered_items = self.grouping_info[key].get('buffered_items', 0)
         return buffered_items >= self.items_per_buffer_write
-
-    def _update_count(self, item):
-        for key in item:
-            self.stats['written_keys']['occurrences'][key] += 1
 
     def close(self):
         self.items_group_files.close()

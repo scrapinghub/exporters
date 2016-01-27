@@ -124,9 +124,27 @@ class CustomWriterTest(unittest.TestCase):
         finally:
             writer.close()
         self.assertEqual(writer.items_count, 3)
-        for key in writer.stats['written_keys']['keys']:
-            self.assertEqual(writer.stats['written_keys']['keys'][key]['number_of_records'], 3)
+        self.assertEqual(writer.stats['written_items'], 3)
+        for key in writer.write_buffer.stats['written_keys']['keys']:
+            self.assertEqual(writer.write_buffer.stats['written_keys']['keys'][key]['number_of_records'], 3)
+        self.assertNotIn('written_keys', writer.stats)
 
+    def test_writer_stats_verbose(self):
+        # given:
+        self.batch = list(JsonExportFormatter({}).format(self.batch))
+        writer = FakeWriter({})
+        writer.options = {'verbose_stats': True}
+        # when:
+        try:
+            writer.write_batch(self.batch)
+            writer.flush()
+        finally:
+            writer.close()
+        self.assertEqual(writer.items_count, 3)
+        self.assertEqual(writer.stats['written_items'], 3)
+        for key in writer.write_buffer.stats['written_keys']['keys']:
+            self.assertEqual(writer.write_buffer.stats['written_keys']['keys'][key]['number_of_records'], 3)
+        self.assertIn('written_keys', writer.stats)
 
 class ConsoleWriterTest(unittest.TestCase):
     def setUp(self):
