@@ -6,6 +6,7 @@ import unittest
 from exporters.writers.odo_writer import ODOWriter
 
 
+@unittest.skipIf(os.getenv('DRONE_BUILD'), 'feature disabled for quick turnaround in deploy')
 class OdoWriterTest(unittest.TestCase):
 
     def setUp(self):
