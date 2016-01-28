@@ -1,4 +1,5 @@
 import datetime
+import time
 import traceback
 from collections import OrderedDict
 from exporters.writers.base_writer import ItemsLimitReached
@@ -9,6 +10,16 @@ from exporters.notifications.notifiers_list import NotifiersList
 from exporters.module_loader import ModuleLoader
 from exporters.exporter_config import ExporterConfig
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
+
+times = OrderedDict([('started', datetime.datetime.now())])
+
+
+def time_profile(f):
+    def f_timer(*args, **kwargs):
+        result = f(*args, **kwargs)
+        times.update({args[2]['name']: datetime.datetime.now()})
+        return result
+    return f_timer
 
 
 class BaseExporter(object):
@@ -99,6 +110,8 @@ class BaseExporter(object):
             },
         ]
 
+
+
     def _handle_items_limit(self, exception):
         raise exception
 
@@ -111,6 +124,7 @@ class BaseExporter(object):
         last_position['accurate_items_count'] = self.stats_manager.stats['accurate_items_count']
         self.persistence.commit_position(last_position)
 
+    @time_profile
     def _execute_step(self, batch, step, exception=None):
         if exception:
             try:
@@ -126,11 +140,9 @@ class BaseExporter(object):
 
     def _run_pipeline_iteration(self):
         batch = None
-        times = OrderedDict([('started', datetime.datetime.now())])
         for step in self.pipeline_steps:
             batch = self._execute_step(batch, step, step['exception'])
-            times.update({step['name']: datetime.datetime.now()})
-        self._iteration_stats_report(times)
+        self._iteration_stats_report()
 
     def _init_export_job(self):
         self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM],
@@ -192,7 +204,7 @@ class BaseExporter(object):
     def _collect_stats(self):
         return {mod: getattr(self, mod).stats for mod in MODULES}
 
-    def _iteration_stats_report(self, times):
+    def _iteration_stats_report(self):
         try:
             stats = self._collect_stats()
             self.stats_manager.iteration_report(times, stats)
