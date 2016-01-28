@@ -142,11 +142,10 @@ class S3Bypass(BaseBypass):
         self.total_items = self.bypass_state.stats['total_count']
         source_bucket = get_bucket(**reader_options)
         pending_keys = deepcopy(self.bypass_state.pending_keys())
-        user_id = dest_bucket.connection.get_canonical_user_id()
         try:
             for key in pending_keys:
                 dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
-                self._copy_key(dest_bucket, dest_key_name, source_bucket, key, user_id)
+                self._copy_key(dest_bucket, dest_key_name, source_bucket, key)
                 self.bypass_state.commit_copied_key(key)
                 logging.log(logging.INFO,
                             'Copied key {} to dest: s3://{}/{}'.format(key, dest_bucket.name, dest_key_name))
@@ -167,9 +166,10 @@ class S3Bypass(BaseBypass):
         filebase = datetime.datetime.now().strftime(filebase)
         self._write_s3_pointer(dest_bucket, save_pointer, filebase)
 
-    def _ensure_copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name, user_id):
+    def _ensure_copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):
         key = source_bucket.get_key(key_name)
         try:
+            user_id = dest_bucket.connection.get_canonical_user_id()
             with key_permissions(user_id, key):
                 dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
         except S3ResponseError:
@@ -185,14 +185,14 @@ class S3Bypass(BaseBypass):
             dest_key.set_contents_from_filename(tmp_filename, cb=progress)
 
     @retry_long
-    def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name, user_id):
+    def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):
         akey = source_bucket.get_key(key_name)
         if akey.get_metadata('total'):
             self.increment_items(int(akey.get_metadata('total')))
             self.bypass_state.increment_items(int(akey.get_metadata('total')))
         else:
             self.valid_total_count = False
-        self._ensure_copy_key(dest_bucket, dest_key_name, source_bucket, key_name, user_id)
+        self._ensure_copy_key(dest_bucket, dest_key_name, source_bucket, key_name)
 
     def close(self):
         self.bypass_state.delete()

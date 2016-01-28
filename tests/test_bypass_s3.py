@@ -86,7 +86,7 @@ class S3BypassConditionsTest(unittest.TestCase):
         with self.assertRaises(RequisitesNotMet):
             bypass.meets_conditions()
 
-    def test_itesm_limit_should_not_meet_conditions(self):
+    def test_items_limit_should_not_meet_conditions(self):
         # given:
         config = create_s3_bypass_simple_config()
         config.writer_options['options']['items_limit'] = 10
@@ -156,6 +156,21 @@ class S3BypassTest(unittest.TestCase):
         self.assertEquals('some_prefix/test_key', key.name)
         self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
         self.assertEqual(bypass.total_items, 2, 'Bypass got an incorrect number of total items')
+
+    @mock.patch('boto.s3.connection.S3Connection.get_canonical_user_id', autospec=True)
+    def test_copy_mode_bypass_when_cant_get_user_id(self, get_user_id_mock):
+        get_user_id_mock.side_effect = S3ResponseError('Fake 403 Forbidden Error', None)
+        # given
+        bucket = self.s3_conn.create_bucket('dest_bucket')
+        options = create_s3_bypass_simple_config()
+
+        # when:
+        bypass = S3Bypass(options)
+        bypass.bypass()
+
+        # then:
+        key = next(iter(bucket.list('some_prefix/')))
+        self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
 
     def _create_and_populate_bucket(self, bucket_name, number_of_items=3):
         self.s3_conn.create_bucket(bucket_name)
