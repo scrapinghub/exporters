@@ -42,40 +42,95 @@ class BaseExporter(object):
         self.stats_manager.stats = job_info
         self.bypass_cases = []
 
-    def _run_pipeline_iteration(self):
-        times = OrderedDict([('started', datetime.datetime.now())])
-        self.logger.debug('Getting new batch')
-        if self.config.exporter_options.get('forced_reads'):
-            next_batch = list(self.reader.get_next_batch())
-        else:
-            next_batch = self.reader.get_next_batch()
-        times.update(read=datetime.datetime.now())
+        self.pipeline_steps = [
+            {
+                'name': 'read',
+                'method': self.reader.get_next_batch,
+                'exception': None,
+                'exception_handler': None
+            },
+            {
+                'name': 'filter_before',
+                'method': self.filter_before.filter_batch,
+                'exception': None,
+                'exception_handler': None
+            },
+            {
+                'name': 'transform',
+                'method': self.transform.transform_batch,
+                'exception': None,
+                'exception_handler': None
+            },
+            {
+                'name': 'filter_before',
+                'method': self.filter_after.filter_batch,
+                'exception': None,
+                'exception_handler': None
+            },
+            {
+                'name': 'group',
+                'method': self.grouper.group_batch,
+                'exception': None,
+                'exception_handler': None
+            },
+            {
+                'name': 'formatted',
+                'method': self.export_formatter.format,
+                'exception': None,
+                'exception_handler': None
+            },
+            {
+                'name': 'write',
+                'method': self.writer.write_batch,
+                'exception': ItemsLimitReached,
+                'exception_handler': self._handle_items_limit
+            },
+            {
+                'name': 'stats',
+                'method': self._make_and_publish_stats,
+                'exception': None,
+                'exception_handler': None
+            },
+            {
+                'name': 'persistence',
+                'method': self._update_and_commit_last_position,
+                'exception': None,
+                'exception_handler': None
+            },
+        ]
+
+    def _handle_items_limit(self, exception):
+        raise exception
+
+    def _make_and_publish_stats(self):
+        self.stats_manager.stats['items_count'] = self.writer.items_count
+
+    def _update_and_commit_last_position(self):
         last_position = self.reader.get_last_position()
-        next_batch = self.filter_before.filter_batch(next_batch)
-        times.update(filtered=datetime.datetime.now())
-        next_batch = self.transform.transform_batch(next_batch)
-        times.update(transformed=datetime.datetime.now())
-        next_batch = self.filter_after.filter_batch(next_batch)
-        times.update(filtered_after=datetime.datetime.now())
-        next_batch = self.grouper.group_batch(next_batch)
-        times.update(grouped=datetime.datetime.now())
-        next_batch = self.export_formatter.format(next_batch)
-        times.update(formatted=datetime.datetime.now())
-        try:
-            self.writer.write_batch(batch=next_batch)
-            times.update(written=datetime.datetime.now())
-            self.stats_manager.stats['items_count'] = self.writer.items_count
-            last_position['items_count'] = self.writer.items_count
-            last_position['accurate_items_count'] = self.stats_manager.stats['accurate_items_count']
-            self.persistence.commit_position(last_position)
-            times.update(persisted=datetime.datetime.now())
-        except ItemsLimitReached:
-            # we have written some amount of records up to the limit
-            times.update(written=datetime.datetime.now())
-            self._iteration_stats_report(times)
-            raise
+        last_position['items_count'] = self.writer.items_count
+        last_position['accurate_items_count'] = self.stats_manager.stats['accurate_items_count']
+        self.persistence.commit_position(last_position)
+
+    def _execute_step(self, batch, step, exception=None):
+        if exception:
+            try:
+                batch = self._execute_step(batch, step)
+            except exception as e:
+                step['exception_handler'](e)
         else:
-            self._iteration_stats_report(times)
+            if batch:
+                batch = step['method'](batch)
+            else:
+                batch = step['method']()
+        return batch
+
+    def _run_pipeline_iteration(self):
+        batch = None
+        times = OrderedDict([('started', datetime.datetime.now())])
+        for step in self.pipeline_steps:
+            batch = self._execute_step(batch, step, step['exception'])
+            times.update({step['name']: datetime.datetime.now()})
+        self._iteration_stats_report(times)
 
     def _init_export_job(self):
         self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM],
