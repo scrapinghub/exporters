@@ -3,7 +3,7 @@ import os
 import re
 from exporters.notifications.base_notifier import BaseNotifier
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
-from jinja2 import Template
+
 
 
 DEFAULT_MAIN_FROM = 'Scrapinghub data services <dataservices@scrapinghub.com>'
@@ -17,6 +17,7 @@ def get_scrapy_cloud_link(jobkey):
 
 
 def render(template_text, **data):
+    from jinja2 import Template
     template = Template(template_text)
     template.globals['as_json'] = json.dumps
     template.globals['job_link'] = get_scrapy_cloud_link
