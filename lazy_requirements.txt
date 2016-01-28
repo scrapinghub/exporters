@@ -17,3 +17,5 @@ boltons==15.1.0
 PyDrive
 
 gcloud==0.8.0
+
+Jinja2==2.8
