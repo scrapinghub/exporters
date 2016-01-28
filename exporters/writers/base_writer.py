@@ -22,7 +22,6 @@ class BaseWriter(BasePipelineItem):
     supported_options = {
         'items_per_buffer_write': {'type': int, 'default': ITEMS_PER_BUFFER_WRITE},
         'size_per_buffer_write': {'type': int, 'default': SIZE_PER_BUFFER_WRITE},
-        'verbose_stats': {'type': bool, 'default': False},
         'items_limit': {'type': int, 'default': 0},
     }
     supported_file_extensions = {
@@ -64,10 +63,7 @@ class BaseWriter(BasePipelineItem):
                     self._write(key)
                 self.increment_written_items()
                 self._check_items_limit()
-        reduced_stats = copy.deepcopy(self.write_buffer.stats)
-        if self.read_option('verbose_stats') is False:
-            reduced_stats.pop('written_keys', None)
-        self.stats.update(reduced_stats)
+        self.stats.update(self.write_buffer.stats)
 
     def _check_items_limit(self):
         """

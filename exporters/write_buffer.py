@@ -67,7 +67,6 @@ class ItemsGroupFilesHandler(object):
         compressed_size = os.path.getsize(compressed_path)
         write_info = {'number_of_records': self.grouping_info[key]['buffered_items'],
                       'size': compressed_size, 'compressed_path': compressed_path}
-        # self.stats['written_keys']['keys'][compressed_path] = write_info
         return write_info
 
     def _compress_file(self, path):
@@ -113,7 +112,7 @@ class WriteBuffer(object):
         self.items_group_files = ItemsGroupFilesHandler()
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
-        self.stats = {'written_items': 0, 'written_keys': {'keys': {}}}
+        self.stats = {'written_items': 0}
 
     def buffer(self, item):
         """
@@ -129,7 +128,7 @@ class WriteBuffer(object):
 
     def pack_buffer(self, key):
         write_info = self.items_group_files.compress_key_path(key)
-        self.stats['written_keys']['keys'][write_info['compressed_path']] = write_info
+        # self.stats['written_keys']['keys'][write_info['compressed_path']] = write_info
         return write_info
 
     def should_write_buffer(self, key):

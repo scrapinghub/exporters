@@ -125,31 +125,6 @@ class CustomWriterTest(unittest.TestCase):
             writer.close()
         self.assertEqual([writer.items_count, writer.stats['written_items']], [3, 3])
 
-    def test_writer_stats_not_verbose(self):
-        # given:
-        self.batch = list(JsonExportFormatter({}).format(self.batch))
-        writer = FakeWriter({})
-        # when:
-        try:
-            writer.write_batch(self.batch)
-            writer.flush()
-        finally:
-            writer.close()
-        self.assertNotIn('written_keys', writer.stats)
-
-    def test_writer_stats_verbose(self):
-        # given:
-        self.batch = list(JsonExportFormatter({}).format(self.batch))
-        writer = FakeWriter({})
-        writer.options = {'verbose_stats': True}
-        # when:
-        try:
-            writer.write_batch(self.batch)
-            writer.flush()
-        finally:
-            writer.close()
-        self.assertIn('written_keys', writer.stats)
-
 class ConsoleWriterTest(unittest.TestCase):
     def setUp(self):
         self.options = {

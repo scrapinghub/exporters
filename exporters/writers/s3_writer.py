@@ -1,5 +1,6 @@
 from contextlib import closing
 import datetime
+import gzip
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
@@ -39,7 +40,7 @@ class S3Writer(FilebaseBaseWriter):
         'aws_secret_access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_S3WRITER_AWS_SECRET'},
         'aws_region': {'type': basestring, 'default': None},
         'save_pointer': {'type': basestring, 'default': None},
-        'save_metadata': {'type': bool, 'default': True, 'required': False}
+        'save_metadata': {'type': bool, 'default': True, 'required': True}
     }
 
     def __init__(self, options):
@@ -72,7 +73,9 @@ class S3Writer(FilebaseBaseWriter):
         return boto.connect_s3(access_key, secret_key).get_bucket(bucket).get_location() or DEFAULT_BUCKET_REGION
 
     def _get_total_count(self, dump_path):
-        return self.write_buffer.stats['written_keys']['keys'][dump_path]['number_of_records']
+        with gzip.open(dump_path) as f:
+            total_lines = sum(1 for _ in f)
+            return total_lines
 
     @retry_long
     def _write_s3_key(self, dump_path, key_name):
