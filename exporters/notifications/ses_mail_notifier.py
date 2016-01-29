@@ -5,7 +5,6 @@ from exporters.notifications.base_notifier import BaseNotifier
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
 
 
-
 DEFAULT_MAIN_FROM = 'Scrapinghub data services <dataservices@scrapinghub.com>'
 
 
@@ -60,10 +59,10 @@ Endpoint URL: {{ writer_options.endpoint_url }}
 def _render_complete_dump_email(**data):
     subject_tmpl = '{{ client }} export job finished'
     body_tmpl = """
-Export job finished successfully
+Export job finished successfully.
 
 {% if accurate_items_count -%}
-Total records exported: {{ items_count }}
+Total records exported: {{ items_count }}.
 {%- endif %}
 
 If you have any questions or concerns about the data you have received, email us at help@scrapinghub.com.\n
