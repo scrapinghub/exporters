@@ -42,6 +42,7 @@ class HubstorageReader(BaseReader):
         'prefixes': {'type': list, 'default': []},
         'exclude_prefixes': {'type': list, 'default': []},
         'secondary_collections': {'type': list, 'default': []},
+        'has_many_collections': {'type': dict, 'default': {}},
     }
 
     def __init__(self, options):
@@ -62,6 +63,7 @@ class HubstorageReader(BaseReader):
                                  prefix=self.read_option('prefixes'),
                                  exclude_prefixes=self.read_option('exclude_prefixes'),
                                  secondary_collections=self.read_option('secondary_collections'),
+                                 has_many_collections=self.read_option('has_many_collections'),
                                  meta=['_key'])
 
     def get_next_batch(self):
