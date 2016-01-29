@@ -112,7 +112,7 @@ class WriteBuffer(object):
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
         self.stats = {'written_items': 0}
-        self.buffer_metadata = {'written_keys': {'keys': {}}}
+        self.metadata = {}
 
     def buffer(self, item):
         """
@@ -128,7 +128,7 @@ class WriteBuffer(object):
 
     def pack_buffer(self, key):
         write_info = self.items_group_files.compress_key_path(key)
-        self.buffer_metadata['written_keys']['keys'][write_info['compressed_path']] = write_info
+        self.metadata[write_info['compressed_path']] = write_info
         return write_info
 
     def should_write_buffer(self, key):
@@ -147,3 +147,6 @@ class WriteBuffer(object):
     @property
     def grouping_info(self):
         return self.items_group_files.get_grouping_info()
+
+    def get_metadata(self, buffer_path, meta_key):
+        return self.metadata[buffer_path].get(meta_key)
