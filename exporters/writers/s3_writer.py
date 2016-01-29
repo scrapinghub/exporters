@@ -73,9 +73,7 @@ class S3Writer(FilebaseBaseWriter):
         return boto.connect_s3(access_key, secret_key).get_bucket(bucket).get_location() or DEFAULT_BUCKET_REGION
 
     def _get_total_count(self, dump_path):
-        with gzip.open(dump_path) as f:
-            total_lines = sum(1 for _ in f)
-            return total_lines
+        return self.write_buffer.buffer_metadata['written_keys']['keys'][dump_path]['number_of_records']
 
     @retry_long
     def _write_s3_key(self, dump_path, key_name):

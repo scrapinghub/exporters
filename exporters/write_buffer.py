@@ -107,12 +107,12 @@ class ItemsGroupFilesHandler(object):
 
 class WriteBuffer(object):
     def __init__(self, items_per_buffer_write, size_per_buffer_write):
-
         self.files = []
         self.items_group_files = ItemsGroupFilesHandler()
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
         self.stats = {'written_items': 0}
+        self.buffer_metadata = {'written_keys': {'keys': {}}}
 
     def buffer(self, item):
         """
@@ -127,7 +127,9 @@ class WriteBuffer(object):
         self.items_group_files.create_new_buffer_file(key, compressed_path)
 
     def pack_buffer(self, key):
-        return self.items_group_files.compress_key_path(key)
+        write_info = self.items_group_files.compress_key_path(key)
+        self.buffer_metadata['written_keys']['keys'][write_info['compressed_path']] = write_info
+        return write_info
 
     def should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(
