@@ -127,9 +127,7 @@ class WriteBuffer(object):
         self.items_group_files.create_new_buffer_file(key, compressed_path)
 
     def pack_buffer(self, key):
-        write_info = self.items_group_files.compress_key_path(key)
-        # self.stats['written_keys']['keys'][write_info['compressed_path']] = write_info
-        return write_info
+        return self.items_group_files.compress_key_path(key)
 
     def should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(

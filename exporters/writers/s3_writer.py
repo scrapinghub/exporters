@@ -40,7 +40,7 @@ class S3Writer(FilebaseBaseWriter):
         'aws_secret_access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_S3WRITER_AWS_SECRET'},
         'aws_region': {'type': basestring, 'default': None},
         'save_pointer': {'type': basestring, 'default': None},
-        'save_metadata': {'type': bool, 'default': True, 'required': True}
+        'save_metadata': {'type': bool, 'default': True, 'required': False}
     }
 
     def __init__(self, options):
