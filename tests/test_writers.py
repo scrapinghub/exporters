@@ -34,6 +34,7 @@ class FakeWriter(BaseWriter):
     """CustomWriter writing records to self.custom_output
     to test BaseWriter extensibility
     """
+
     def __init__(self, *args, **kwargs):
         super(FakeWriter, self).__init__(*args, **kwargs)
         self.custom_output = {}
@@ -84,13 +85,14 @@ class CustomWriterTest(unittest.TestCase):
             self.assertGreater(len(writer.fake_files_already_written), 0)
             for f in writer.fake_files_already_written:
                 self.assertFalse(os.path.exists(f))
-                self.assertFalse(os.path.exists(f+'.gz'))
+                self.assertFalse(os.path.exists(f + '.gz'))
         finally:
             writer.close()
 
     def test_custom_writer_with_csv_formatter(self):
         # given:
-        formatter = CSVExportFormatter({'options': {'show_titles': False, 'fields': ['key1', 'key2']}})
+        formatter = CSVExportFormatter(
+                {'options': {'show_titles': False, 'fields': ['key1', 'key2']}})
         self.batch = list(formatter.format(self.batch))
         writer = FakeWriter({})
 
@@ -104,16 +106,16 @@ class CustomWriterTest(unittest.TestCase):
         # then:
         output = writer.custom_output[()].splitlines()
         self.assertEquals(
-            [
-                ['value11', 'value21'],
-                ['value12', 'value22'],
-                ['value13', 'value23'],
-            ],
-            [l for l in csv.reader(output)])
+                [
+                    ['value11', 'value21'],
+                    ['value12', 'value22'],
+                    ['value13', 'value23'],
+                ],
+                [l for l in csv.reader(output)])
 
         self.assertEquals('csv', writer.write_buffer.items_group_files.file_extension)
 
-    def test_writer_stats_not(self):
+    def test_writer_stats(self):
         # given:
         self.batch = list(JsonExportFormatter({}).format(self.batch))
         writer = FakeWriter({})
@@ -124,6 +126,20 @@ class CustomWriterTest(unittest.TestCase):
         finally:
             writer.close()
         self.assertEqual([writer.items_count, writer.stats['written_items']], [3, 3])
+
+    def test_get_metadata(self):
+        # given:
+        self.batch = list(JsonExportFormatter({}).format(self.batch))
+        writer = FakeWriter({})
+        # when:
+        writer.write_buffer.metadata['somekey'] = {'items': 10}
+        # then
+        self.assertEqual(writer.write_buffer.get_metadata('somekey', 'items'), 10,
+                         'Wrong metadata')
+        self.assertIsNone(writer.write_buffer.get_metadata('somekey', 'nokey'))
+        with self.assertRaises(KeyError):
+            self.assertIsNone(writer.write_buffer.get_metadata('nokey', 'nokey'))
+
 
 class ConsoleWriterTest(unittest.TestCase):
     def setUp(self):
@@ -149,7 +165,6 @@ class ConsoleWriterTest(unittest.TestCase):
 
 
 class FilebaseBaseWriterTest(unittest.TestCase):
-
     def test_get_file_number_not_implemented(self):
         writer_config = {
             'options': {
@@ -164,7 +179,6 @@ class FilebaseBaseWriterTest(unittest.TestCase):
 
 
 class FSWriterTest(unittest.TestCase):
-
     def test_get_file_number(self):
         writer_config = {
             'options': {
