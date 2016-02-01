@@ -27,3 +27,18 @@ def TmpFile():
         yield name
     finally:
         shutil.rmtree(tmp_folder)
+
+
+def get_substrings(start, end, s):
+    # Gets a list of substrings between two delimiters
+    words = []
+    partial = ''
+    for letter in s:
+        if letter == start:
+            partial = ''
+        elif letter == end:
+            words.append(partial)
+            partial = ''
+        else:
+            partial += letter
+    return words

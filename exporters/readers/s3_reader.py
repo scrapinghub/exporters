@@ -4,12 +4,17 @@ import os
 import tempfile
 import re
 import datetime
+
+import dateparser
+
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 from exporters.default_retries import retry_long
 from exporters.exceptions import ConfigurationError
 import logging
+
+from exporters.utils import get_substrings
 
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
@@ -25,7 +30,17 @@ def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
 
 def format_prefixes(prefixes):
     now = datetime.datetime.now()
-    return [now.strftime(p) for p in prefixes]
+    formatted_prefixes = []
+    for p in prefixes:
+        # Adding support to {yesterday} keywords in prefixes
+        natural_language_dates = get_substrings('{', '}', p)
+        for nld in list(set(natural_language_dates)):
+            date = dateparser.parse(nld)
+            if date:
+                p = p.replace('{' + nld + '}', date.strftime('%Y-%m-%d'))
+        p = now.strftime(p)
+        formatted_prefixes.append(p)
+    return formatted_prefixes
 
 
 class S3BucketKeysFetcher(object):
