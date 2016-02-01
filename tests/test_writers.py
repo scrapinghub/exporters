@@ -6,6 +6,7 @@ import unittest
 import csv
 
 from exporters.records.base_record import BaseRecord
+from exporters.write_buffer import WriteBuffer
 from exporters.writers import FSWriter
 from exporters.writers.base_writer import BaseWriter
 from exporters.writers.console_writer import ConsoleWriter
@@ -127,18 +128,20 @@ class CustomWriterTest(unittest.TestCase):
             writer.close()
         self.assertEqual([writer.items_count, writer.stats['written_items']], [3, 3])
 
+
+class WriteBufferTest(unittest.TestCase):
+
     def test_get_metadata(self):
         # given:
-        self.batch = list(JsonExportFormatter({}).format(self.batch))
-        writer = FakeWriter({})
+        write_buffer = WriteBuffer(1000, 1000)
         # when:
-        writer.write_buffer.metadata['somekey'] = {'items': 10}
+        write_buffer.metadata['somekey'] = {'items': 10}
         # then
-        self.assertEqual(writer.write_buffer.get_metadata('somekey', 'items'), 10,
+        self.assertEqual(write_buffer.get_metadata('somekey', 'items'), 10,
                          'Wrong metadata')
-        self.assertIsNone(writer.write_buffer.get_metadata('somekey', 'nokey'))
+        self.assertIsNone(write_buffer.get_metadata('somekey', 'nokey'))
         with self.assertRaises(KeyError):
-            self.assertIsNone(writer.write_buffer.get_metadata('nokey', 'nokey'))
+            self.assertIsNone(write_buffer.get_metadata('nokey', 'nokey'))
 
 
 class ConsoleWriterTest(unittest.TestCase):
