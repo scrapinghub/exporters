@@ -59,7 +59,6 @@ class BaseWriter(BasePipelineItem):
                 key = self.write_buffer.get_key_from_item(item)
                 if self.write_buffer.should_write_buffer(key):
                     self._write(key)
-
                 self.increment_written_items()
                 self._check_items_limit()
         self.stats.update(self.write_buffer.stats)

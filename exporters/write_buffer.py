@@ -67,7 +67,6 @@ class ItemsGroupFilesHandler(object):
         compressed_size = os.path.getsize(compressed_path)
         write_info = {'number_of_records': self.grouping_info[key]['buffered_items'],
                       'size': compressed_size, 'compressed_path': compressed_path}
-        # self.stats['written_keys']['keys'][compressed_path] = write_info
         return write_info
 
     def _compress_file(self, path):
@@ -108,12 +107,12 @@ class ItemsGroupFilesHandler(object):
 
 class WriteBuffer(object):
     def __init__(self, items_per_buffer_write, size_per_buffer_write):
-
         self.files = []
         self.items_group_files = ItemsGroupFilesHandler()
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
-        self.stats = {'written_keys': {'keys': {}, 'occurrences': Counter()}}
+        self.stats = {'written_items': 0}
+        self.metadata = {}
 
     def buffer(self, item):
         """
@@ -122,14 +121,14 @@ class WriteBuffer(object):
         key = self.get_key_from_item(item)
         self.grouping_info.ensure_group_info(key)
         self.items_group_files.add_item_to_file(item, key)
-        self._update_count(item)
+        self.stats['written_items'] += 1
 
     def finish_buffer_write(self, key, compressed_path):
         self.items_group_files.create_new_buffer_file(key, compressed_path)
 
     def pack_buffer(self, key):
         write_info = self.items_group_files.compress_key_path(key)
-        self.stats['written_keys']['keys'][write_info['compressed_path']] = write_info
+        self.metadata[write_info['compressed_path']] = write_info
         return write_info
 
     def should_write_buffer(self, key):
@@ -138,10 +137,6 @@ class WriteBuffer(object):
             return True
         buffered_items = self.grouping_info[key].get('buffered_items', 0)
         return buffered_items >= self.items_per_buffer_write
-
-    def _update_count(self, item):
-        for key in item:
-            self.stats['written_keys']['occurrences'][key] += 1
 
     def close(self):
         self.items_group_files.close()
@@ -152,3 +147,6 @@ class WriteBuffer(object):
     @property
     def grouping_info(self):
         return self.items_group_files.get_grouping_info()
+
+    def get_metadata(self, buffer_path, meta_key):
+        return self.metadata[buffer_path].get(meta_key)

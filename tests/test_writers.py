@@ -6,6 +6,7 @@ import unittest
 import csv
 
 from exporters.records.base_record import BaseRecord
+from exporters.write_buffer import WriteBuffer
 from exporters.writers import FSWriter
 from exporters.writers.base_writer import BaseWriter
 from exporters.writers.console_writer import ConsoleWriter
@@ -34,6 +35,7 @@ class FakeWriter(BaseWriter):
     """CustomWriter writing records to self.custom_output
     to test BaseWriter extensibility
     """
+
     def __init__(self, *args, **kwargs):
         super(FakeWriter, self).__init__(*args, **kwargs)
         self.custom_output = {}
@@ -84,13 +86,14 @@ class CustomWriterTest(unittest.TestCase):
             self.assertGreater(len(writer.fake_files_already_written), 0)
             for f in writer.fake_files_already_written:
                 self.assertFalse(os.path.exists(f))
-                self.assertFalse(os.path.exists(f+'.gz'))
+                self.assertFalse(os.path.exists(f + '.gz'))
         finally:
             writer.close()
 
     def test_custom_writer_with_csv_formatter(self):
         # given:
-        formatter = CSVExportFormatter({'options': {'show_titles': False, 'fields': ['key1', 'key2']}})
+        formatter = CSVExportFormatter(
+                {'options': {'show_titles': False, 'fields': ['key1', 'key2']}})
         self.batch = list(formatter.format(self.batch))
         writer = FakeWriter({})
 
@@ -104,12 +107,12 @@ class CustomWriterTest(unittest.TestCase):
         # then:
         output = writer.custom_output[()].splitlines()
         self.assertEquals(
-            [
-                ['value11', 'value21'],
-                ['value12', 'value22'],
-                ['value13', 'value23'],
-            ],
-            [l for l in csv.reader(output)])
+                [
+                    ['value11', 'value21'],
+                    ['value12', 'value22'],
+                    ['value13', 'value23'],
+                ],
+                [l for l in csv.reader(output)])
 
         self.assertEquals('csv', writer.write_buffer.items_group_files.file_extension)
 
@@ -123,9 +126,26 @@ class CustomWriterTest(unittest.TestCase):
             writer.flush()
         finally:
             writer.close()
-        self.assertEqual(writer.items_count, 3)
-        for key in writer.stats['written_keys']['keys']:
-            self.assertEqual(writer.stats['written_keys']['keys'][key]['number_of_records'], 3)
+        self.assertEqual([writer.items_count, writer.stats['written_items']], [3, 3])
+
+
+class WriteBufferTest(unittest.TestCase):
+
+    def setUp(self):
+        self.write_buffer = WriteBuffer(1000, 1000)
+
+    def tearDown(self):
+        self.write_buffer.close()
+
+    def test_get_metadata(self):
+        # given:
+        self.write_buffer.metadata['somekey'] = {'items': 10}
+        # then
+        self.assertEqual(self.write_buffer.get_metadata('somekey', 'items'), 10,
+                         'Wrong metadata')
+        self.assertIsNone(self.write_buffer.get_metadata('somekey', 'nokey'))
+        with self.assertRaises(KeyError):
+            self.assertIsNone(self.write_buffer.get_metadata('nokey', 'nokey'))
 
 
 class ConsoleWriterTest(unittest.TestCase):
@@ -152,7 +172,6 @@ class ConsoleWriterTest(unittest.TestCase):
 
 
 class FilebaseBaseWriterTest(unittest.TestCase):
-
     def test_get_file_number_not_implemented(self):
         writer_config = {
             'options': {
@@ -167,7 +186,6 @@ class FilebaseBaseWriterTest(unittest.TestCase):
 
 
 class FSWriterTest(unittest.TestCase):
-
     def test_get_file_number(self):
         writer_config = {
             'options': {
