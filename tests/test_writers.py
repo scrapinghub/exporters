@@ -131,17 +131,21 @@ class CustomWriterTest(unittest.TestCase):
 
 class WriteBufferTest(unittest.TestCase):
 
+    def setUp(self):
+        self.write_buffer = WriteBuffer(1000, 1000)
+
+    def tearDown(self):
+        self.write_buffer.close()
+
     def test_get_metadata(self):
         # given:
-        write_buffer = WriteBuffer(1000, 1000)
-        # when:
-        write_buffer.metadata['somekey'] = {'items': 10}
+        self.write_buffer.metadata['somekey'] = {'items': 10}
         # then
-        self.assertEqual(write_buffer.get_metadata('somekey', 'items'), 10,
+        self.assertEqual(self.write_buffer.get_metadata('somekey', 'items'), 10,
                          'Wrong metadata')
-        self.assertIsNone(write_buffer.get_metadata('somekey', 'nokey'))
+        self.assertIsNone(self.write_buffer.get_metadata('somekey', 'nokey'))
         with self.assertRaises(KeyError):
-            self.assertIsNone(write_buffer.get_metadata('nokey', 'nokey'))
+            self.assertIsNone(self.write_buffer.get_metadata('nokey', 'nokey'))
 
 
 class ConsoleWriterTest(unittest.TestCase):
