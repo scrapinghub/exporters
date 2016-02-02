@@ -133,17 +133,8 @@ class S3ReaderTest(unittest.TestCase):
                 'bucket': 'valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
                 'aws_secret_access_key': 'SECRET',
-                'prefix': '{yesterday}/test_prefix/{last week}'
-            }
-        }
-
-        self.options_not_dateparser = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
-            'options': {
-                'bucket': 'valid_keys_bucket',
-                'aws_access_key_id': 'KEY',
-                'aws_secret_access_key': 'SECRET',
-                'prefix': '{yesterday}/test_prefix/{nothing related}'
+                'prefix': 'test_prefix/%Y-%m-%d',
+                'prefix_format_using_date': 'yesterday'
             }
         }
 
@@ -198,15 +189,7 @@ class S3ReaderTest(unittest.TestCase):
     def test_date_prefix_yesterday(self):
         reader = S3Reader(self.options_dateparser)
         yesterday = dateparser.parse('yesterday').strftime('%Y-%m-%d')
-        last_week = dateparser.parse('last week').strftime('%Y-%m-%d')
-        expected = ['{yesterday}/test_prefix/{last_week}'.format(yesterday=yesterday, last_week=last_week)]
-        self.assertEqual(expected, reader.keys_fetcher.prefixes)
-        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
-
-    def test_date_not_dateparser_prefix(self):
-        reader = S3Reader(self.options_not_dateparser)
-        yesterday = dateparser.parse('yesterday').strftime('%Y-%m-%d')
-        expected = [yesterday + '/test_prefix/{nothing related}']
+        expected = ['test_prefix/{yesterday}'.format(yesterday=yesterday)]
         self.assertEqual(expected, reader.keys_fetcher.prefixes)
         shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
