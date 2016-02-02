@@ -4,6 +4,7 @@ import os
 import tempfile
 import re
 import datetime
+import dateparser
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
@@ -23,9 +24,12 @@ def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
     return connection.get_bucket(bucket)
 
 
-def format_prefixes(prefixes):
-    now = datetime.datetime.now()
-    return [now.strftime(p) for p in prefixes]
+def format_prefixes(prefixes, prefix_format_using_date=None):
+    if prefix_format_using_date:
+        date = dateparser.parse(prefix_format_using_date)
+    else:
+        date = datetime.datetime.now()
+    return [date.strftime(p) for p in prefixes]
 
 
 class S3BucketKeysFetcher(object):
@@ -34,12 +38,13 @@ class S3BucketKeysFetcher(object):
         self.pattern = reader_options.get('pattern', None)
         single_prefix = reader_options.get('prefix', '')
         self.prefix_pointer = reader_options.get('prefix_pointer', '')
+        prefix_format_using_date = reader_options.get('prefix_format_using_date')
         if single_prefix and self.prefix_pointer:
             raise ConfigurationError("prefix and prefix_pointer options cannot be used together")
         self.prefixes = [single_prefix]
         if self.prefix_pointer:
             self.prefixes = self._fetch_prefixes_from_pointer(self.prefix_pointer)
-        self.prefixes = format_prefixes(self.prefixes)
+        self.prefixes = format_prefixes(self.prefixes, prefix_format_using_date)
         self.logger = logging.getLogger('s3-reader')
         self.logger.setLevel(logging.INFO)
 
@@ -113,7 +118,8 @@ class S3Reader(BaseReader):
         'aws_secret_access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_SECRET'},
         'prefix': {'type': basestring, 'default': ''},
         'prefix_pointer': {'type': basestring, 'default': None},
-        'pattern': {'type': basestring, 'default': None}
+        'pattern': {'type': basestring, 'default': None},
+        'prefix_format_using_date': {'type': basestring, 'default': None},
     }
 
     def __init__(self, options):

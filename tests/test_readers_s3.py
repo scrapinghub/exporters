@@ -5,6 +5,8 @@ import unittest
 import StringIO
 import boto
 import datetime
+
+import dateparser
 import moto
 from exporters.readers.s3_reader import S3Reader, S3BucketKeysFetcher
 from exporters.exceptions import ConfigurationError
@@ -125,6 +127,17 @@ class S3ReaderTest(unittest.TestCase):
             }
         }
 
+        self.options_dateparser = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'valid_keys_bucket',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
+                'prefix': 'test_prefix/%Y-%m-%d',
+                'prefix_format_using_date': 'yesterday'
+            }
+        }
+
     def tearDown(self):
         self.mock_s3.stop()
 
@@ -170,6 +183,13 @@ class S3ReaderTest(unittest.TestCase):
     def test_date_prefix(self):
         reader = S3Reader(self.options_date_prefix)
         expected = [datetime.datetime.now().strftime('test_prefix/%Y-%m-%d')]
+        self.assertEqual(expected, reader.keys_fetcher.prefixes)
+        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
+
+    def test_date_prefix_yesterday(self):
+        reader = S3Reader(self.options_dateparser)
+        yesterday = dateparser.parse('yesterday').strftime('%Y-%m-%d')
+        expected = ['test_prefix/{yesterday}'.format(yesterday=yesterday)]
         self.assertEqual(expected, reader.keys_fetcher.prefixes)
         shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
