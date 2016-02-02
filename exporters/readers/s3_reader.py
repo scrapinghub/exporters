@@ -4,17 +4,13 @@ import os
 import tempfile
 import re
 import datetime
-
 import dateparser
-
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 from exporters.default_retries import retry_long
 from exporters.exceptions import ConfigurationError
 import logging
-
-from exporters.utils import get_substrings
 
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
@@ -28,7 +24,7 @@ def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
     return connection.get_bucket(bucket)
 
 
-def format_prefixes(prefixes, prefix_format_using_date):
+def format_prefixes(prefixes, prefix_format_using_date=None):
     if prefix_format_using_date:
         date = dateparser.parse(prefix_format_using_date)
     else:
