@@ -4,7 +4,6 @@ import os
 import tempfile
 import re
 import datetime
-import dateparser
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
@@ -26,6 +25,7 @@ def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
 
 def format_prefixes(prefixes, prefix_format_using_date=None):
     if prefix_format_using_date:
+        import dateparser
         date = dateparser.parse(prefix_format_using_date)
     else:
         date = datetime.datetime.now()
