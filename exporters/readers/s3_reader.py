@@ -8,7 +8,7 @@ import dateparser
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
-from exporters.default_retries import retry_long
+from exporters.default_retries import retry_long, retry_short
 from exporters.exceptions import ConfigurationError
 import logging
 
@@ -48,7 +48,7 @@ class S3BucketKeysFetcher(object):
         self.logger = logging.getLogger('s3-reader')
         self.logger.setLevel(logging.INFO)
 
-    @retry_long
+    @retry_short
     def _download_pointer(self, prefix_pointer):
         return self.source_bucket.get_key(prefix_pointer).get_contents_as_string()
 
