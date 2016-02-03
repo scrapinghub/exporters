@@ -28,7 +28,7 @@ Editing the docs
 
     make docs
 
-It will compile the docs with sphinx, open the compiled HTML docs in your browser and start watching for changes in the doc files (\*.rst) and recompiling the docs.
+You can then open the compiled HTML docs in your browser. You will need to compile whenever you make changes to the .rst files.
 
 3. Edit the doc files.
 

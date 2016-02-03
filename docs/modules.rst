@@ -6,9 +6,9 @@ Modules
 
 Export Manager
 ~~~~~~~~~~~~~~
-This module is in charge of the pipeline iteration, and it is the one executed to start it.
+This module handles the pipeline iteration.
 A pipeline iteration usually consists on calling the reader to get a batch, filter it, transform it,
-filter it again, write it and commit the read batch. It should also be  in charge of notifications
+filter it again, write it and commit the read batch. It should also be in charge of notifications
 and retries management.
 
 Provided exporters
@@ -24,7 +24,7 @@ BasicExporter
 
 Bypass support
 ~~~~~~~~~~~~~~
-Exporters architecture provides support for bypassing the pipeline. An example of using that is the case in which both reader
+Exporters architecture provides support for bypassing the pipeline. One example would be in which both reader
 and writer aim S3 buckets. If no transforms or filtering are needed, keys can be copied directly without downloading them.
 
 All bypass classes are subclasses of BaseBypass class, and must implement two methods:
@@ -116,7 +116,7 @@ Writers are in charge of writing batches of items to final destination. All writ
 BaseWriter class, and must implement:
 
     - write(dump_path, group_key=None)
-        This method is called from the manager. It gets a dump_path, which is the path of an
+        The manager calls this method. It consumes a dump_path, which is the path of an
         items buffer file compressed with gzip. It also has an optional group_key, which provides
         information regarding the group membership of the items contained in that file.
 
@@ -246,9 +246,8 @@ OdoWriter
 
 Transform
 ~~~~~~~~~
-Some transformation to items can be applied as a part of an export job. Using this module read items can
-be modified or cleaned before being written. To add a new transform module, the following method must
-be overwritten:
+You can apply some item transformations as a part of an export job. Using this module, read items can
+be modified or cleaned before being written. To add a new transform module, you must overwrite the following method: 
 
     - transform_batch(batch)
          Receives the batch, transforms its items and yields them,
@@ -329,9 +328,9 @@ PythonExpeRegex
 
 Persistence
 ~~~~~~~~~~~
-This module is in charge of resuming support. It must be able to persist the current
-state of the read and written items, and inform of that state on demand. It is usually called
-from an export manager, and it must implement the following methods:
+This module is in charge of resuming support. It persists the current
+state of the read and written items, and inform of that state on demand. It's usually called
+from an export manager, and must implement the following methods:
 
     - get_last_position()
         Returns the last commited position
@@ -349,8 +348,7 @@ from an export manager, and it must implement the following methods:
     - configuration_from_uri(uri, regex)
         returns a configuration object
 
-It must also define a `uri_regex`, which is a regex that must help the module to find
-an already created resume abstraction
+It must also define a `uri_regex` to help the module find a previously created resume abstraction.
 
 .. automodule:: exporters.persistence.base_persistence
     :members:
@@ -378,7 +376,7 @@ AlchemyPersistence
 
 Notifications
 ~~~~~~~~~~~~~
-Exporters project supports notification of main export job events, like starting an export, ending or failing.
+You can define notifications for main export job events such as starting an export, ending or failing.
 These events can be sent to multiple destinations by adding proper modules to an export configuration.
 
 
@@ -480,8 +478,7 @@ LoggingStatsManager
 
 Export Formatters
 ~~~~~~~~~~~~~~~~~
-Exporters project support exporting using different formats. This formatting is handled by
-export formatters modules. An export formatter must implement the following method:
+Exporters use formatter modules to export in different formats. An export formatter must implement the following method:
 
     - format(batch)
         It adds formatting info to all the items from a batch. Every item, which is a BaseRecord,

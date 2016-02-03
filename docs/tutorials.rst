@@ -4,19 +4,17 @@ Exporters Tutorial
 ==================
 
 In this tutorial, we are going to learn how the new exporters work. The purpose of this project is to have a tool to
-allow us to export from a wide range of sources to a wide range of targets, allowing to perform complex filtering and transformations to items.
+allow us to export from a wide range of sources to a wide range of targets, allowing us to perform complex filtering and transformations to items.
 
 
 Let's make a simple export
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-With this tutorial, we are going to read a topic in a kafka cluster into an s3 bucket, filtering by country of
-the company (we only want American companies). We need to create a proper configuration file. To do it we
-create a plain json file with the proper data.
+With this tutorial, we are going to read a topic in a `Kafka <http://kafka.apache.org>`_ cluster into an S3 bucket, filtering out non-American comapnies. We need to create a proper configuration file. To do it we create a plain JSON file with the proper data.
 
 
 Config file
 ***********
-Configuration file should be something like the following:
+The configuration file should look like this:
 
 .. code-block:: javascript
 
@@ -59,7 +57,7 @@ Configuration file should be something like the following:
     }
 
 
-If we save this file as ~/config.json, the export job could be launched with the following command:
+Save this file as ~/config.json, and you can launch the export job with the following command:
 
 .. code-block:: python
 
