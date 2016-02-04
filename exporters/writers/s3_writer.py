@@ -54,23 +54,24 @@ class S3Writer(FilebaseBaseWriter):
         self.logger.info('Starting S3Writer for bucket: %s' % bucket_name)
 
         if self.aws_region is None:
-            try:
-                self.aws_region = self._get_bucket_location(access_key, secret_key,
-                                                            bucket_name)
-            except:
-                self.aws_region = DEFAULT_BUCKET_REGION
+            self.aws_region = self._get_bucket_location(access_key, secret_key,
+                                                        bucket_name)
 
         self.conn = boto.s3.connect_to_region(self.aws_region,
                                               aws_access_key_id=access_key,
                                               aws_secret_access_key=secret_key)
-        self.bucket = self.conn.get_bucket(bucket_name)
+        self.bucket = self.conn.get_bucket(bucket_name, validate=False)
         self.save_metadata = self.read_option('save_metadata')
         self.logger.info('S3Writer has been initiated.'
                          'Writing to s3://{}/{}'.format(self.bucket.name, self.filebase))
 
     def _get_bucket_location(self, access_key, secret_key, bucket):
         import boto
-        return boto.connect_s3(access_key, secret_key).get_bucket(bucket).get_location() or DEFAULT_BUCKET_REGION
+        try:
+            conn = boto.connect_s3(access_key, secret_key)
+            return conn.get_bucket(bucket).get_location()
+        except:
+            return DEFAULT_BUCKET_REGION
 
     def _get_total_count(self, dump_path):
         return self.write_buffer.get_metadata(dump_path, 'number_of_records')
