@@ -15,15 +15,15 @@ def format_log_progress_mesg(speed, transmitted_bytes, total_transfer_time, is_u
         eta = (total_size-transmitted_bytes) / speed
         eta_string = '[ETA: {eta:.1f}s]'.format(eta=eta)
     template = ('Average {transmission_type} speed: {speed:.2f} bytes/sec '
-                '(total bytes {transmitted}: {transmitted_bytes:.2f} of {total_size:.2f},'
-                ' total {transmission_type} time: {transfer_time:.2f} sec) {eta_string}')
+                '(bytes {transmitted}: {transmitted_bytes} of {total_size},'
+                ' {transmission_type} elapsed time: {transfer_time} sec) {eta_string}')
     return template.format(
         speed=speed,
         transmitted_bytes=transmitted_bytes,
         transfer_time=total_transfer_time,
         transmission_type=transmission_type,
         transmitted=transmitted,
-        total_size=total_size,
+        total_size=total_size or 'unknown',
         eta_string=eta_string,
     )
 
