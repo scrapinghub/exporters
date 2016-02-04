@@ -4,11 +4,12 @@ import shutil
 import unittest
 import StringIO
 import boto
+import mock
 import datetime
 
 import dateparser
 import moto
-from exporters.readers.s3_reader import S3Reader, S3BucketKeysFetcher
+from exporters.readers.s3_reader import S3Reader, S3BucketKeysFetcher, get_bucket
 from exporters.exceptions import ConfigurationError
 
 NO_KEYS = ['test_list/test_key_1', 'test_list/test_key_2', 'test_list/test_key_3',
@@ -231,3 +232,30 @@ class TestS3BucketKeysFetcher(unittest.TestCase):
     def test_prefix_pointer_keys_list(self):
         fetcher = S3BucketKeysFetcher(self.options_prefix_pointer)
         self.assertEqual(set(POINTER_KEYS), set(fetcher.pending_keys()))
+
+
+class GetBucketTest(unittest.TestCase):
+    def setUp(self):
+        self.mock_s3 = moto.mock_s3()
+        self.mock_s3.start()
+        self.s3_conn = boto.connect_s3()
+        self.s3_conn.create_bucket('fake_bucket')
+
+    def tearDown(self):
+        self.mock_s3.stop()
+
+    @mock.patch('boto.s3.connection.S3Connection.get_bucket')
+    def test_get_bucket_with_limited_access(self, mock_get_bucket):
+        import boto.s3.bucket
+
+        def reject_validated_get_bucket(*args, **kwargs):
+            if kwargs.get('validate', True):
+                raise boto.exception.S3ResponseError("Fake Error", "Permission Denied")
+
+            bucket = mock.Mock(spec=boto.s3.bucket.Bucket)
+            bucket.name = 'bucket_name'
+            return bucket
+
+        mock_get_bucket.side_effect = reject_validated_get_bucket
+
+        get_bucket('some_bucket', 'fake-access-key', 'fake-secret-key')

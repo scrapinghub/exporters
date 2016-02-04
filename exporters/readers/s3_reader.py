@@ -20,7 +20,10 @@ def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
                      " are you using the correct ones?")
 
     connection = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
-    return connection.get_bucket(bucket)
+    try:
+        return connection.get_bucket(bucket)
+    except boto.exception.S3ResponseError:
+        return connection.get_bucket(bucket, validate=False)
 
 
 def format_prefixes(prefixes, prefix_format_using_date=None):
