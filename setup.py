@@ -14,13 +14,18 @@ setup(
     test_suite       = 'tests',
     tests_require    = ['mock', 'moto', 'coverage'],
     install_requires = ['six', 'retrying', 'requests', 'wheel', 'decorator', 'PyYAML'],
+    dependency_links = [
+        'git@github.com:scrapinghub/collection-scanner.git#egg=collection_scanner',
+        'git@github.com:scrapinghub/flatson.git#egg=flatson',
+        'git@github.com:scrapinghub/kafka-scanner.git#egg=kafka_scanner'
+    ],
     extras_require   = {
         'sftp': ['pysftp', 'ecdsa', 'paramiko', 'pycrypto' 'wsgiref'],
         's3': ['boto', 'dateparser'],
-        'hubstorage': ['hubstorage', '-e git+git@github.com:scrapinghub/collection-scanner.git#egg=collection_scanne'],
+        'hubstorage': ['hubstorage', 'collection_scanner'],
         'jq': ['jq'],
-        'odo': ['-e git+git@github.com:scrapinghub/flatson.git#egg=flatson', 'odo', 'pandas'],
-        'kafka': ['kafka-python', 'msgpack-python', '-e git+git@github.com:scrapinghub/kafka-scanner.git#egg=kafka_scanner'],
+        'odo': ['flatson', 'odo', 'pandas'],
+        'kafka': ['kafka-python', 'msgpack-python', 'kafka_scanner'],
         'notifications': ['Jinja2'],
         'csv': ['boltons'],
         'gcloud': ['gcloud'],
