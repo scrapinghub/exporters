@@ -106,6 +106,21 @@ class S3WriterTest(unittest.TestCase):
         key = saved_keys[0]
         self.assertEqual('tests/', key.get_contents_as_string())
 
+    @mock.patch('boto.s3.connection.S3Connection.get_bucket')
+    def test_write_without_getting_validated_bucket(self, mock_get_bucket):
+        import boto.s3.bucket
+
+        def reject_validated_get_bucket(*args, **kwargs):
+            if kwargs.get('validate', True):
+                raise boto.exception.S3ResponseError("Fake Error", "Permission Denied")
+
+            bucket = mock.Mock(spec=boto.s3.bucket.Bucket)
+            bucket.name = 'bucket_name'
+            return bucket
+
+        mock_get_bucket.side_effect = reject_validated_get_bucket
+
+        S3Writer(self.get_writer_config())
 
     def test_connect_to_bucket_location(self):
         # given:
