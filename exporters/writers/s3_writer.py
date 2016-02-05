@@ -85,6 +85,7 @@ class S3Writer(FilebaseBaseWriter):
                 key.set_metadata('total', self._get_total_count(dump_path))
             progress = BotoDownloadProgress(self.logger)
             key.set_contents_from_file(f, cb=progress)
+            key.set_acl('bucket-owner-full-control')
         self.logger.info('Saved {}'.format(destination))
 
     def write(self, dump_path, group_key=None):
