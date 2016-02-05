@@ -2,7 +2,6 @@ import datetime
 import logging
 import shutil
 from contextlib import closing, contextmanager
-from boto.exception import S3ResponseError
 from exporters.default_retries import retry_long
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
@@ -167,6 +166,7 @@ class S3Bypass(BaseBypass):
         self._write_s3_pointer(dest_bucket, save_pointer, filebase)
 
     def _ensure_copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):
+        from boto.exception import S3ResponseError
         key = source_bucket.get_key(key_name)
         try:
             user_id = dest_bucket.connection.get_canonical_user_id()
