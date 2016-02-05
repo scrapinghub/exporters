@@ -8,18 +8,18 @@ except:
 from setuptools import setup, find_packages
 
 setup(
-    name             = 'exporters',
-    version          = '0.1',
-    packages         = find_packages(exclude=['tests']),
-    test_suite       = 'tests',
-    tests_require    = ['mock', 'moto', 'coverage'],
+    name = 'exporters',
+    version = '0.1',
+    packages = find_packages(exclude=['tests']),
+    test_suite = 'tests',
+    tests_require = ['mock', 'moto', 'coverage'],
     install_requires = ['six', 'retrying', 'requests', 'wheel', 'decorator', 'PyYAML'],
     dependency_links = [
         'git@github.com:scrapinghub/collection-scanner.git#egg=collection_scanner',
         'git@github.com:scrapinghub/flatson.git#egg=flatson',
         'git@github.com:scrapinghub/kafka-scanner.git#egg=kafka_scanner'
     ],
-    extras_require   = {
+    extras_require = {
         'sftp': ['pysftp', 'ecdsa', 'paramiko', 'pycrypto' 'wsgiref'],
         's3': ['boto', 'dateparser'],
         'hubstorage': ['hubstorage', 'collection_scanner'],
