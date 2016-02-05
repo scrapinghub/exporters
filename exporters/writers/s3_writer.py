@@ -69,7 +69,7 @@ class S3Writer(FilebaseBaseWriter):
         import boto
         try:
             conn = boto.connect_s3(access_key, secret_key)
-            return conn.get_bucket(bucket).get_location()
+            return conn.get_bucket(bucket).get_location() or DEFAULT_BUCKET_REGION
         except:
             return DEFAULT_BUCKET_REGION
 
