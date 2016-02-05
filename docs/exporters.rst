@@ -6,10 +6,8 @@ Exporters description
 What are exporters?
 -------------------
 
-Exporters is a project aiming to provide a flexible and
-easy to extend infrastructure to export data from multiple sources to multiple
-destinations, allowing filtering and transforming the data.
-
+Exporters aims to provide a flexible and
+easy to extend infrastructure for exporting data to and from multiple sources, with support for filtering and transformation.
 
 Architecture
 ------------
@@ -23,8 +21,8 @@ Architecture
 Config file
 -----------
 
-Exporters behaviour is defined by what we call a configuration object. This object has the
-following sections:
+You can define Exporters behaviour with a configuration object. This object has the
+following attributes:
 
 - reader (mandatory): defines what reader module the export should use and its options.
 - writer (mandatory): defines what writer module the export should use and its options.
@@ -60,13 +58,12 @@ This is an example of the simplest config file that can be used.
 Features
 --------
 
-    - Multiple readers and writers
-    - Resume support using different technologies as a backend (mysql, postgres, pickle...)
-    - Support for bypass (direct copying) export pipeline for certain configurations to
-    improve speed exports
-    - Easy to extend and flexible architecture
-    - Different output formats
-    - Notifications and webhooks support
-    - Export stats gathering
-    - Grouping support
-    - Filter and transform exported items
+    - Multiple readers and writers.
+    - Resume support using different technologies as a backend (MySQL, Postgres, Pickle...)
+    - Support for bypass (direct copying) export pipeline for certain configurations to improve speed exports.
+    - Easy to extend and flexible architecture.
+    - Different output formats.
+    - Notifications and webhooks support.
+    - Export stats gathering.
+    - Grouping support.
+    - Filter and transform exported items.
