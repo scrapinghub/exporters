@@ -5,12 +5,12 @@ try:
 except:
     pass
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name = 'exporters',
     version = '0.1',
-    packages = find_packages(exclude=['tests']),
+    packages = ['exporters'],
     test_suite = 'tests',
     install_requires = ['six', 'retrying', 'requests', 'wheel', 'decorator', 'PyYAML'],
     dependency_links = [
