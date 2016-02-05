@@ -183,6 +183,7 @@ class S3Bypass(BaseBypass):
             dest_key = dest_bucket.new_key(dest_key_name)
             progress = BotoUploadProgress(self.logger)
             dest_key.set_contents_from_filename(tmp_filename, cb=progress)
+            dest_key.set_acl('bucket-owner-full-control')
 
     @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):
