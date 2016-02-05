@@ -12,7 +12,6 @@ setup(
     version = '0.1',
     packages = find_packages(exclude=['tests']),
     test_suite = 'tests',
-    tests_require = ['mock', 'moto', 'coverage'],
     install_requires = ['six', 'retrying', 'requests', 'wheel', 'decorator', 'PyYAML'],
     dependency_links = [
         'git@github.com:scrapinghub/collection-scanner.git#egg=collection_scanner',
