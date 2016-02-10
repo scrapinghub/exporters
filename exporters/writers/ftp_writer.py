@@ -44,7 +44,6 @@ class FTPWriter(FilebaseBaseWriter):
         self.ftp_port = self.read_option('port')
         self.ftp_user = self.read_option('ftp_user')
         self.ftp_password = self.read_option('ftp_password')
-        self.filebase = self.read_option('filebase').format(datetime.datetime.now())
         self.logger.info(
             'FTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(
                 self.ftp_host, self.ftp_port,
