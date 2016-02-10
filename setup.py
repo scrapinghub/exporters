@@ -11,7 +11,6 @@ setup(
     name = 'exporters',
     version = '0.1',
     packages = ['exporters'],
-    test_suite = 'tests',
     install_requires = ['six', 'retrying', 'requests', 'PyYAML'],
     dependency_links = [
         'git@github.com:scrapinghub/collection-scanner.git#egg=collection_scanner',
