@@ -176,6 +176,13 @@ class S3Bypass(BaseBypass):
             self.logger.warning('No direct copy supported for key.'.format(key_name))
             self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
 
+    def _ensure_proper_key_permissions(self, key):
+        from boto.exception import S3ResponseError
+        try:
+            key.set_acl('bucket-owner-full-control')
+        except S3ResponseError:
+            self.logger.warning('We have no READ_ACP/WRITE_ACP permissions')
+
     def _copy_without_permissions(self, dest_bucket, dest_key_name, source_bucket, key_name):
         key = source_bucket.get_key(key_name)
         with TmpFile() as tmp_filename:
@@ -183,7 +190,7 @@ class S3Bypass(BaseBypass):
             dest_key = dest_bucket.new_key(dest_key_name)
             progress = BotoUploadProgress(self.logger)
             dest_key.set_contents_from_filename(tmp_filename, cb=progress)
-            dest_key.set_acl('bucket-owner-full-control')
+            self._ensure_proper_key_permissions(dest_key)
 
     @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):
