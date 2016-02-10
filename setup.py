@@ -28,6 +28,8 @@ setup(
         'csv': ['boltons'],
         'gcloud': ['gcloud'],
         'gdrive': ['PyDrive'],
-        'alchemy_persistence': ['sqlitedict', 'SQLAlchemy', 'psycopg2', 'mysql-python'],
+        'sqlite': ['sqlitedict', 'SQLAlchemy'],
+        'postgres': ['psycopg2', 'SQLAlchemy'],
+        'mysql': ['mysql-python', 'SQLAlchemy'],
     },
 )
