@@ -76,6 +76,13 @@ class S3Writer(FilebaseBaseWriter):
     def _get_total_count(self, dump_path):
         return self.write_buffer.get_metadata(dump_path, 'number_of_records')
 
+    def _ensure_proper_key_permissions(self, key):
+        from boto.exception import S3ResponseError
+        try:
+            key.set_acl('bucket-owner-full-control')
+        except S3ResponseError:
+            self.logger.warning('We have no READ_ACP/WRITE_ACP permissions')
+
     @retry_long
     def _write_s3_key(self, dump_path, key_name):
         destination = 's3://{}/{}'.format(self.bucket.name, key_name)
@@ -85,7 +92,7 @@ class S3Writer(FilebaseBaseWriter):
                 key.set_metadata('total', self._get_total_count(dump_path))
             progress = BotoDownloadProgress(self.logger)
             key.set_contents_from_file(f, cb=progress)
-            key.set_acl('bucket-owner-full-control')
+            self._ensure_proper_key_permissions(key)
         self.logger.info('Saved {}'.format(destination))
 
     def write(self, dump_path, group_key=None):
