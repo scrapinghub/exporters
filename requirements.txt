@@ -10,7 +10,6 @@ mysql-python==1.2.5
 
 # retrying and its deps
 retrying==1.2.3
-wheel==0.24.0
 
 requests==2.5.3
 six==1.9.0
