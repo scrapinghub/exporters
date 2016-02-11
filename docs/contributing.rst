@@ -153,4 +153,4 @@ add this decorator to them:
 
 .. code-block:: shell
 
-    @unittest.skipIf(not os.getenv('TEST_CONTRIB'), 'disabled contrib test')
+    @unittest.skipUnless(os.getenv('TEST_CONTRIB'), 'disabled contrib test')

@@ -6,7 +6,7 @@ import unittest
 from exporters.contrib.writers.odo_writer import ODOWriter
 
 
-@unittest.skipIf(not os.getenv('TEST_CONTRIB'), 'disabled contrib test')
+@unittest.skipUnless(os.getenv('TEST_CONTRIB'), 'disabled contrib test')
 class OdoWriterTest(unittest.TestCase):
 
     def setUp(self):
