@@ -10,7 +10,7 @@ from setuptools import setup
 setup(
     name = 'exporters',
     version = '0.1',
-    packages = ['exporters'],
+    package_dir = {'': 'exporters'},
     install_requires = ['six', 'retrying', 'requests', 'PyYAML'],
     dependency_links = [
         'git@github.com:scrapinghub/collection-scanner.git#egg=collection_scanner',
