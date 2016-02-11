@@ -82,6 +82,15 @@ Please follow these coding conventions when writing code for inclusion in Export
       name in the AUTHORS file distributed with Exporters.
 
 
+.. _writing-modules:
+
+Writing modules
+~~~~~~~~~~~~~~~
+
+All modules contributions must be placed inside contrib folder. Please read :ref:`modules`
+documentation to know more about every module type specifics.
+
+
 Tests
 ~~~~~
 Running tests requires tox.
@@ -134,3 +143,14 @@ accepted sooner.
 
 Exporters uses unit-tests, which are located in the tests/ directory. Their module name
 typically resembles the full path of the module they’re testing.
+
+
+Writing contrib tests
+*********************
+
+Tests for contributed modules will only be executed if TEST_CONTRIB env variable is not set. So
+add this decorator to them:
+
+.. code-block:: shell
+
+    @unittest.skipIf(not os.getenv('TEST_CONTRIB'), 'disabled contrib test')
