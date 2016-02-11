@@ -5,12 +5,12 @@ try:
 except:
     pass
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name = 'exporters',
     version = '0.1',
-    package_dir = {'': 'exporters'},
+    packages = find_packages(exclude=['tests']),
     install_requires = ['six', 'retrying', 'requests', 'PyYAML'],
     dependency_links = [
         'git@github.com:scrapinghub/collection-scanner.git#egg=collection_scanner',
