@@ -2,10 +2,11 @@ import os
 import shutil
 import tempfile
 import unittest
-from exporters.writers.odo_writer import ODOWriter
+
+from exporters.contrib.writers.odo_writer import ODOWriter
 
 
-@unittest.skipIf(os.getenv('DRONE'), 'feature disabled for quick turnaround in deploy')
+@unittest.skipUnless(os.getenv('TEST_CONTRIB'), 'disabled contrib test')
 class OdoWriterTest(unittest.TestCase):
 
     def setUp(self):

@@ -52,6 +52,14 @@ exporters.writers.sftp_writer module
     :undoc-members:
     :show-inheritance:
 
+exporters.contrib.writers.odo module
+------------------------------------
+
+.. automodule:: exporters.contrib.writers.odo
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
