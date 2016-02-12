@@ -1,5 +1,6 @@
 import dicttoxml
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
+import collections
 
 
 class XMLExportFormatter(BaseExportFormatter):
@@ -21,6 +22,7 @@ class XMLExportFormatter(BaseExportFormatter):
 
     def format(self, batch):
         for item in batch:
-            item.formatted = '<item>{}</item>'.format(dicttoxml.dicttoxml(item, root=False))
+            item.formatted = '<item>{}</item>'.format(
+                dicttoxml.dicttoxml(collections.OrderedDict(item), root=False))
             item.format = self.format_name
             yield item

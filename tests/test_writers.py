@@ -4,6 +4,7 @@ import os
 import random
 import unittest
 import csv
+from collections import Counter
 
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
 from exporters.file_handlers import JsonFileHandler
@@ -138,14 +139,12 @@ class CustomWriterTest(unittest.TestCase):
 
         # then:
         output = writer.custom_output[()].splitlines()
-        self.assertEquals(
-                [
-                    ['<item><key2 type="str">value21</key2><key1 type="str">value11</key1></item>'],
-                    ['<item><key2 type="str">value22</key2><key1 type="str">value12</key1></item>'],
-                    ['<item><key2 type="str">value23</key2><key1 type="str">value13</key1></item>']
-                ],
-                [l for l in csv.reader(output)])
-
+        expected = [
+            '<item><key2 type="str">value21</key2><key1 type="str">value11</key1></item>',
+            '<item><key2 type="str">value22</key2><key1 type="str">value12</key1></item>',
+            '<item><key2 type="str">value23</key2><key1 type="str">value13</key1></item>'
+        ]
+        self.assertEquals(Counter(expected), Counter([l for l in output]))
         self.assertEquals('xml', writer.write_buffer.items_group_files.file_extension)
 
     def test_writer_stats(self):
