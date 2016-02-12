@@ -42,12 +42,11 @@ class BaseWriter(BasePipelineItem):
         super(BaseWriter, self).__init__(options)
         self.finished = False
         self.check_options()
-        items_per_buffer_write = self.read_option('items_per_buffer_write')
-        size_per_buffer_write = self.read_option('size_per_buffer_write')
+
         self.items_limit = self.read_option('items_limit')
         self.logger = WriterLogger({'log_level': options.get('log_level'),
                                     'logger_name': options.get('logger_name')})
-        self.write_buffer = WriteBuffer(items_per_buffer_write, size_per_buffer_write)
+        self.write_buffer = None
         self.items_count = 0
 
     def write(self, path, key):
@@ -56,13 +55,18 @@ class BaseWriter(BasePipelineItem):
         """
         raise NotImplementedError
 
+    def _ensure_write_buffer(self, format):
+        if self.write_buffer is None:
+            items_per_buffer_write = self.read_option('items_per_buffer_write')
+            size_per_buffer_write = self.read_option('size_per_buffer_write')
+            self.write_buffer = WriteBuffer(items_per_buffer_write, size_per_buffer_write, self.supported_file_extensions[format])
+
     def write_batch(self, batch):
         """
         Receives the batch and writes it. This method is usually called from a manager.
         """
         for item in batch:
-            if self.write_buffer.items_group_files.file_extension is None:
-                self.write_buffer.items_group_files.set_extension(self.supported_file_extensions[item.format])
+            self._ensure_write_buffer(item.format)
             if item.header:
                 self.write_buffer.items_group_files.header_line = item.formatted
             else:
@@ -95,12 +99,16 @@ class BaseWriter(BasePipelineItem):
         """
         Called to clean all possible tmp files created during the process.
         """
-        self.write_buffer.close()
+        if self.write_buffer is not None:
+            self.write_buffer.close()
         self._check_write_consistency()
 
     @property
     def grouping_info(self):
-        return self.write_buffer.grouping_info
+        if self.write_buffer is not None:
+            return self.write_buffer.grouping_info
+        else:
+            return {}
 
     def _check_write_consistency(self):
         """

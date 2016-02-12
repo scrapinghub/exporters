@@ -5,6 +5,7 @@ import random
 import unittest
 import csv
 
+from exporters.file_handlers import JsonFileHandler
 from exporters.records.base_record import BaseRecord
 from exporters.write_buffer import WriteBuffer
 from exporters.writers import FSWriter
@@ -37,9 +38,12 @@ class FakeWriter(BaseWriter):
     """
 
     def __init__(self, *args, **kwargs):
+        format = kwargs.pop('format', 'jl')
         super(FakeWriter, self).__init__(*args, **kwargs)
         self.custom_output = {}
         self.fake_files_already_written = []
+        format_info = {'format': format, 'file_handler': JsonFileHandler}
+        self.write_buffer = WriteBuffer(1000, 1000, format_info)
 
     def write(self, path, key):
         with gzip.open(path) as f:
@@ -77,6 +81,7 @@ class CustomWriterTest(unittest.TestCase):
         # given:
         self.batch = list(JsonExportFormatter({}).format(self.batch))
         writer = FakeWriter({})
+
         writer.write_buffer.items_per_buffer_write = 1
 
         # when:
@@ -95,7 +100,7 @@ class CustomWriterTest(unittest.TestCase):
         formatter = CSVExportFormatter(
                 {'options': {'show_titles': False, 'fields': ['key1', 'key2']}})
         self.batch = list(formatter.format(self.batch))
-        writer = FakeWriter({})
+        writer = FakeWriter({}, format='csv')
 
         # when:
         try:
@@ -132,7 +137,8 @@ class CustomWriterTest(unittest.TestCase):
 class WriteBufferTest(unittest.TestCase):
 
     def setUp(self):
-        self.write_buffer = WriteBuffer(1000, 1000)
+        format_info = {'format': 'jl', 'file_handler': JsonFileHandler}
+        self.write_buffer = WriteBuffer(1000, 1000, format_info)
 
     def tearDown(self):
         self.write_buffer.close()

@@ -30,14 +30,13 @@ class GroupingInfo(UserDict):
 
 class ItemsGroupFilesHandler(object):
 
-    def __init__(self):
+    def __init__(self, extension):
         self.grouping_info = GroupingInfo()
         self.file_extension = None
         self.header_line = None
-        # Default file handler
-        self.file_handler = JsonFileHandler(self.grouping_info)
+        self._set_extension(extension)
 
-    def set_extension(self, extension):
+    def _set_extension(self, extension):
         self.file_extension = extension['format']
         self.file_handler = extension['file_handler'](self.grouping_info)
 
@@ -62,9 +61,9 @@ class ItemsGroupFilesHandler(object):
 
 class WriteBuffer(object):
 
-    def __init__(self, items_per_buffer_write, size_per_buffer_write):
+    def __init__(self, items_per_buffer_write, size_per_buffer_write, extension):
         self.files = []
-        self.items_group_files = ItemsGroupFilesHandler()
+        self.items_group_files = ItemsGroupFilesHandler(extension)
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
         self.stats = {'written_items': 0}

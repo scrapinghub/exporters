@@ -118,7 +118,8 @@ class S3Writer(FilebaseBaseWriter):
         """
         Called to clean all possible tmp files created during the process.
         """
-        self.write_buffer.close()
+        if self.write_buffer is not None:
+            self.write_buffer.close()
         self._check_write_consistency()
         if self.read_option('save_pointer'):
             self._update_last_pointer()
