@@ -124,6 +124,7 @@ class CustomWriterTest(unittest.TestCase):
         self.assertEquals('csv', writer.write_buffer.items_group_files.file_extension)
 
     def test_custom_writer_with_xml_formatter(self):
+        from xml.dom.minidom import parseString
         # given:
         formatter = XMLExportFormatter(
                 {'options': {'show_titles': False, 'fields': ['key1', 'key2']}})
@@ -139,12 +140,23 @@ class CustomWriterTest(unittest.TestCase):
 
         # then:
         output = writer.custom_output[()].splitlines()
-        expected = [
-            '<item><key2 type="str">value21</key2><key1 type="str">value11</key1></item>',
-            '<item><key2 type="str">value22</key2><key1 type="str">value12</key1></item>',
-            '<item><key2 type="str">value23</key2><key1 type="str">value13</key1></item>'
+
+        expected_list = [
+            parseString(
+                '<item><key2 type="str">value21</key2><key1 type="str">value11</key1></item>'),
+            parseString(
+                '<item><key2 type="str">value22</key2><key1 type="str">value12</key1></item>'),
+            parseString(
+                '<item><key2 type="str">value23</key2><key1 type="str">value13</key1></item>')
         ]
-        self.assertEquals(Counter(expected), Counter([l for l in output]))
+        expected = [{'key1': item.getElementsByTagName('key1')[0].firstChild.nodeValue,
+                     'key2': item.getElementsByTagName('key2')[0].firstChild.nodeValue} for item in
+                    expected_list]
+        out = [{'key1': parseString(l).getElementsByTagName('key1')[0].firstChild.nodeValue,
+                'key2': parseString(l).getElementsByTagName('key2')[0].firstChild.nodeValue} for l
+               in output]
+
+        self.assertEquals(expected, out)
         self.assertEquals('xml', writer.write_buffer.items_group_files.file_extension)
 
     def test_writer_stats(self):
@@ -161,7 +173,6 @@ class CustomWriterTest(unittest.TestCase):
 
 
 class WriteBufferTest(unittest.TestCase):
-
     def setUp(self):
         format_info = {'format': 'jl', 'file_handler': JsonFileHandler}
         self.write_buffer = WriteBuffer(1000, 1000, format_info)
