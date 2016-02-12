@@ -5,12 +5,8 @@ import collections
 
 class XMLExportFormatter(BaseExportFormatter):
     """
-    This export formatter provides a way of exporting items in JSON format. This one is the
-    default formatter.
+    This export formatter provides a way of exporting items in XML format
 
-        - pretty_print(bool)
-            If set to True, items will be exported with an ident of 2 and keys sorted, they
-            will exported with a text line otherwise.
     """
     format_name = 'xml'
 
