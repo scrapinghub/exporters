@@ -83,14 +83,3 @@ class CSVFileHandler(FileHandler):
 class XMLFileHandler(FileHandler):
 
     file_extension = 'xml'
-
-    def create_new_buffer_path_for_key(self, key):
-        new_buffer_path = self._get_new_path_name()
-        self.grouping_info.add_path_to_group(key, new_buffer_path)
-        with open(new_buffer_path, 'w') as f:
-            f.write('<root>'+'\n')
-
-    def _compress_file(self, path):
-        with open(path, 'a') as f:
-            f.write('</root>')
-        return super(XMLFileHandler, self)._compress_file(path)

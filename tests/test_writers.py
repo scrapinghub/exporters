@@ -126,8 +126,7 @@ class CustomWriterTest(unittest.TestCase):
     def test_custom_writer_with_xml_formatter(self):
         from xml.dom.minidom import parseString
         # given:
-        formatter = XMLExportFormatter(
-                {'options': {'show_titles': False, 'fields': ['key1', 'key2']}})
+        formatter = XMLExportFormatter({'options': {}})
         self.batch = list(formatter.format(self.batch))
         writer = FakeWriter({}, format='xml')
 
@@ -149,12 +148,58 @@ class CustomWriterTest(unittest.TestCase):
             parseString(
                 '<item><key2 type="str">value23</key2><key1 type="str">value13</key1></item>')
         ]
-        expected = [{'key1': item.getElementsByTagName('key1')[0].firstChild.nodeValue,
-                     'key2': item.getElementsByTagName('key2')[0].firstChild.nodeValue} for item in
-                    expected_list]
-        out = [{'key1': parseString(l).getElementsByTagName('key1')[0].firstChild.nodeValue,
-                'key2': parseString(l).getElementsByTagName('key2')[0].firstChild.nodeValue} for l
-               in output]
+        expected = ['<root>'] + \
+                   [{'key1': item.getElementsByTagName('key1')[0].firstChild.nodeValue,
+                     'key2': item.getElementsByTagName('key2')[0].firstChild.nodeValue}
+                    for item in expected_list] + \
+                   ['</root>']
+
+        out = [output[0]] + \
+              [{'key1': parseString(l).getElementsByTagName('key1')[0].firstChild.nodeValue,
+                'key2': parseString(l).getElementsByTagName('key2')[0].firstChild.nodeValue}
+               for l in output[1:-1]] + \
+              [output[-1]]
+
+        self.assertEquals(expected, out)
+        self.assertEquals('xml', writer.write_buffer.items_group_files.file_extension)
+
+    def test_custom_writer_with_xml_formatter_with_options(self):
+        from xml.dom.minidom import parseString
+        # given:
+        formatter = XMLExportFormatter(
+                {'options': {'attr_type': False,
+                             'fields_order': ['key1', 'key2'],
+                             'item_name': 'XmlItem',
+                             'root_name': 'RootItem'}})
+        self.batch = list(formatter.format(self.batch))
+        writer = FakeWriter({}, format='xml')
+
+        # when:
+        try:
+            writer.write_batch(self.batch)
+            writer.flush()
+        finally:
+            writer.close()
+
+        # then:
+        output = writer.custom_output[()].splitlines()
+
+        expected_list = [
+            parseString(
+                '<XmlItem><key1>value11</key1><key2>value21</key2></XmlItem>'),
+            parseString(
+                '<XmlItem><key1>value12</key1><key2>value22</key2></XmlItem>'),
+            parseString(
+                '<XmlItem><key1>value13</key1><key2>value23</key2></XmlItem>')
+        ]
+        expected = ['<RootItem>'] + \
+            [[node.localName for node in item.getElementsByTagName('XmlItem')[0].childNodes]
+            for item in expected_list] + \
+            ['</RootItem>']
+        out = [output[0]] + \
+            [[node.localName for node in parseString(l).getElementsByTagName('XmlItem')[0].childNodes]
+               for l in output[1:-1]] + \
+            [output[-1]]
 
         self.assertEquals(expected, out)
         self.assertEquals('xml', writer.write_buffer.items_group_files.file_extension)
