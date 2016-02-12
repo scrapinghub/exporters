@@ -1,8 +1,6 @@
 import os
 from UserDict import UserDict
 
-from exporters.file_handlers import JsonFileHandler
-
 
 class GroupingInfo(UserDict):
 

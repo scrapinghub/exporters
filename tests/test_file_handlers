@@ -1,0 +1,23 @@
+import unittest
+
+from exporters.file_handlers import XMLFileHandler
+from exporters.write_buffer import GroupingInfo
+
+
+class XMLFileHandlerTest(unittest.TestCase):
+
+    def setUp(self):
+        self.handler = XMLFileHandler(GroupingInfo())
+        self.handler.grouping_info._init_group_info_key('filename')
+
+    def tearDown(self):
+        self.handler.close()
+
+    def test_create_new_buffer_path_for_key(self):
+        self.handler.create_new_buffer_path_for_key('filename')
+        filename = self.handler.get_group_path('filename')
+        self.handler._compress_file(filename)
+        expected = '<root>\n</root>'
+        with open(filename) as f:
+            content = f.read()
+        self.assertEqual(content, expected)
