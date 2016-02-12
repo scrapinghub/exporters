@@ -1,11 +1,7 @@
-from UserDict import UserDict
-from collections import Counter
-import gzip
 import os
-import shutil
-import tempfile
-import uuid
-import errno
+from UserDict import UserDict
+
+from exporters.file_handlers import JsonFileHandler
 
 
 class GroupingInfo(UserDict):
@@ -38,74 +34,34 @@ class ItemsGroupFilesHandler(object):
         self.grouping_info = GroupingInfo()
         self.file_extension = None
         self.header_line = None
-        self.tmp_folder = tempfile.mkdtemp()
+        # Default file handler
+        self.file_handler = JsonFileHandler(self.grouping_info)
 
-    def get_group_path(self, key):
-        if self.grouping_info[key]['group_file']:
-            path = self.grouping_info[key]['group_file'][-1]
-        else:
-            path = self._get_new_path_name()
-            with open(path, 'w') as f:
-                if self.header_line:
-                    f.write(self.header_line + '\n')
-            self.grouping_info.add_path_to_group(key, path)
-        return path
-
-    def _get_new_path_name(self):
-        return os.path.join(self.tmp_folder,
-                            '%s.%s' % (uuid.uuid4(), self.file_extension))
-
-    def create_new_buffer_path_for_key(self, key):
-        new_buffer_path = self._get_new_path_name()
-        self.grouping_info.add_path_to_group(key, new_buffer_path)
-        f = open(new_buffer_path, 'w')
-        f.close()
-
-    def compress_key_path(self, key):
-        path = self.get_group_path(key)
-        compressed_path = self._compress_file(path)
-        compressed_size = os.path.getsize(compressed_path)
-        write_info = {'number_of_records': self.grouping_info[key]['buffered_items'],
-                      'size': compressed_size, 'compressed_path': compressed_path}
-        return write_info
-
-    def _compress_file(self, path):
-        compressed_path = path + '.gz'
-        with gzip.open(compressed_path, 'wb') as dump_file, open(path) as fl:
-            shutil.copyfileobj(fl, dump_file)
-        return compressed_path
-
-    def get_grouping_info(self):
-        return self.grouping_info
-
-    def _silent_remove(self, filename):
-        try:
-            os.remove(filename)
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                raise
-
-    def clean_tmp_files(self, path, compressed_path):
-        self._silent_remove(path)
-        self._silent_remove(compressed_path)
-
-    def close(self):
-        shutil.rmtree(self.tmp_folder, ignore_errors=True)
+    def set_extension(self, extension):
+        self.file_extension = extension['format']
+        self.file_handler = extension['file_handler'](self.grouping_info)
 
     def add_item_to_file(self, item, key):
-        path = self.get_group_path(key)
+        path = self.file_handler.get_group_path(key)
         with open(path, 'a') as f:
             f.write(item.formatted + '\n')
         self.grouping_info.add_to_group(key)
 
     def create_new_buffer_file(self, key, compressed_path):
-        path = self.get_group_path(key)
-        self.create_new_buffer_path_for_key(key)
-        self.grouping_info.reset_key(key)
-        self.clean_tmp_files(path, compressed_path)
+        return self.file_handler.create_new_buffer_file(key, compressed_path)
+
+    def close(self):
+        return self.file_handler.close()
+
+    def compress_key_path(self, key):
+        return self.file_handler.compress_key_path(key)
+
+    def get_grouping_info(self):
+        return self.grouping_info
 
 
 class WriteBuffer(object):
+
     def __init__(self, items_per_buffer_write, size_per_buffer_write):
         self.files = []
         self.items_group_files = ItemsGroupFilesHandler()

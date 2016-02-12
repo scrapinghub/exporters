@@ -1,4 +1,5 @@
 from exporters.write_buffer import WriteBuffer
+from exporters.file_handlers import JsonFileHandler, CSVFileHandler, XMLFileHandler
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 
@@ -23,8 +24,18 @@ class BaseWriter(BasePipelineItem):
         'items_limit': {'type': int, 'default': 0},
     }
     supported_file_extensions = {
-        'csv': 'csv',
-        'json': 'jl',
+        'xml': {
+            'format': 'xml',
+            'file_handler': XMLFileHandler
+        },
+        'json': {
+            'format': 'jl',
+            'file_handler': JsonFileHandler
+        },
+        'csv': {
+            'format': 'csv',
+            'file_handler': CSVFileHandler
+        }
     }
 
     def __init__(self, options):
@@ -51,7 +62,7 @@ class BaseWriter(BasePipelineItem):
         """
         for item in batch:
             if self.write_buffer.items_group_files.file_extension is None:
-                self.write_buffer.items_group_files.file_extension = self.supported_file_extensions[item.format]
+                self.write_buffer.items_group_files.set_extension(self.supported_file_extensions[item.format])
             if item.header:
                 self.write_buffer.items_group_files.header_line = item.formatted
             else:
