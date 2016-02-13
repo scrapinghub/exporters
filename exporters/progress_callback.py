@@ -11,7 +11,7 @@ def get_transmission_names(is_upload):
 def format_log_progress_mesg(speed, transmitted_bytes, total_transfer_time, is_upload, total_size=None):
     transmission_type, transmitted = get_transmission_names(is_upload)
     eta_string = ''
-    if total_size:
+    if total_size and speed:
         eta = (total_size-transmitted_bytes) / speed
         eta_string = '[ETA: {eta:.1f}s]'.format(eta=eta)
     template = ('Average {transmission_type} speed: {speed:.2f} bytes/sec '
