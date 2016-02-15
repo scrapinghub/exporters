@@ -1,6 +1,5 @@
 from contextlib import closing
 import datetime
-import gzip
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
@@ -122,3 +121,7 @@ class S3Writer(FilebaseBaseWriter):
         self._check_write_consistency()
         if self.read_option('save_pointer'):
             self._update_last_pointer()
+
+    def get_file_suffix(self, path, prefix):
+        number_of_keys = len(list(self.bucket.list(prefix=path)))
+        return '{}'.format(str(number_of_keys))
