@@ -1,15 +1,12 @@
-# Workaround
-# http://bugs.python.org/issue15881
-try:
-    import multiprocessing
-except:
-    pass
-
+from os.path import dirname, join
 from setuptools import setup, find_packages
+
+with open(join(dirname(__file__), 'exporters/VERSION'), 'rb') as f:
+    version = f.read().decode('ascii').strip()
 
 setup(
     name = 'exporters',
-    version = '0.1',
+    version = version,
     packages = find_packages(exclude=['tests']),
     install_requires = ['six', 'retrying', 'requests', 'PyYAML'],
     dependency_links = [
