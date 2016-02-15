@@ -8,6 +8,7 @@ setup(
     name = 'exporters',
     version = version,
     packages = find_packages(exclude=['tests']),
+    package_data = {'exporters': ['VERSION']},
     install_requires = ['six', 'retrying', 'requests', 'PyYAML'],
     dependency_links = [
         'git@github.com:scrapinghub/collection-scanner.git#egg=collection_scanner',
