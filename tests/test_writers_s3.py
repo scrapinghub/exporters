@@ -62,7 +62,6 @@ class S3WriterTest(unittest.TestCase):
         saved_keys = [k for k in bucket.list()]
         self.assertEquals(1, len(saved_keys))
         self.assertEqual(saved_keys[0].name, 'tests/0.gz')
-        # self.assertTrue(re.match('tests/.*[.]gz', saved_keys[0].name))
 
     def test_connect_to_specific_region(self):
         # given:
