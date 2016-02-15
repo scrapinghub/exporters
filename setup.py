@@ -1,14 +1,9 @@
-from os.path import dirname, join
 from setuptools import setup, find_packages
-
-with open(join(dirname(__file__), 'exporters/VERSION'), 'rb') as f:
-    version = f.read().decode('ascii').strip()
 
 setup(
     name = 'exporters',
-    version = version,
+    version = '0.1',
     packages = find_packages(exclude=['tests']),
-    package_data = {'exporters': ['VERSION']},
     install_requires = ['six', 'retrying', 'requests', 'PyYAML'],
     dependency_links = [
         'git@github.com:scrapinghub/collection-scanner.git#egg=collection_scanner',
