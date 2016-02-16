@@ -68,7 +68,9 @@ class BaseWriter(BasePipelineItem):
         for item in batch:
             self._ensure_write_buffer(item.format)
             if item.header:
-                self.write_buffer.items_group_files.header_line = item.formatted
+                self.write_buffer.items_group_files.header = item.formatted
+            elif item.bottom:
+                self.write_buffer.items_group_files.bottom = item.formatted
             else:
                 self.write_buffer.buffer(item)
                 key = self.write_buffer.get_key_from_item(item)

@@ -14,6 +14,7 @@ class BaseRecord(dict):
     group_membership = ()
     format = 'json'
     header = False
+    bottom = False
 
     def __init__(self, *args, **kwargs):
         super(BaseRecord, self).__init__(*args, **kwargs)
