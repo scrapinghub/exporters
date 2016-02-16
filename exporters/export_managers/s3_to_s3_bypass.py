@@ -44,7 +44,7 @@ class S3BypassState(object):
 
     def __init__(self, config):
         self.config = config
-        module_loader = ModuleLoader()
+        module_loader = ModuleLoader({})
         self.state = module_loader.load_persistence(config.persistence_options)
         self.state_position = self.state.get_last_position()
         if not self.state_position:

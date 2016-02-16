@@ -76,7 +76,7 @@ class CSVFormatterTest(unittest.TestCase):
         formatted_batch = formatter.format(self.batch)
 
         # then:
-        memfile = self._create_memfile(it.formatted for it in formatted_batch)
+        memfile = self._create_memfile((it.formatted for it in formatted_batch), header=['"key1","key2"'])
         self.assertEqual(self.batch, list(csv.DictReader(memfile)))
 
     def test_format_batch_no_show_titles(self):
@@ -136,8 +136,11 @@ class CSVFormatterTest(unittest.TestCase):
         formatted_batch = formatter.format(self.batch)
 
         # then:
-        memfile = self._create_memfile(it.formatted for it in formatted_batch)
+        memfile = self._create_memfile((it.formatted for it in formatted_batch), header=['"key1","key2"'])
         self.assertEqual(self.batch, list(csv.DictReader(memfile)))
 
-    def _create_memfile(self, lines):
+    def _create_memfile(self, lines, header=None):
+        if not header:
+            header = []
+        lines = header + list(lines)
         return io.BytesIO('\n'.join(l for l in lines))

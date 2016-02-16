@@ -22,6 +22,7 @@ class BasePipelineItem(object):
         self.options = options.get('options', {})
         self.check_options()
         self.stats = {}
+        self.export_metadata = {}
 
     def check_options(self):
         for option_name, option_spec in self.supported_options.iteritems():

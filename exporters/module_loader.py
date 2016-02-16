@@ -4,6 +4,9 @@ from exporters.exceptions import ConfigurationError
 
 class ModuleLoader(object):
 
+    def __init__(self, export_metadata):
+        self.export_metadata = export_metadata
+
     def load_reader(self, options):
         from exporters.readers.base_reader import BaseReader
         return self._load_module(options, BaseReader)
@@ -50,6 +53,7 @@ class ModuleLoader(object):
         module_name = options['name']
         try:
             instance = self._instantiate_class(module_name, options)
+            instance.export_metadata = self.export_metadata
         except ConfigurationError as e:
             raise ConfigurationError('Error in configuration for module %s: %s' % (module_name, e))
         if not isinstance(instance, module_type):

@@ -30,25 +30,16 @@ class XMLExportFormatter(BaseExportFormatter):
         fields = self.read_option('fields_order')
         return {key: idx for idx, key in enumerate(fields)}
 
-    def _write_opening_root(self):
-        header = BaseRecord({})
-        header.formatted = '<{}>'.format(self.root_name)
-        header.format = self.format_name
-        header.header = True
-        return header
-
-    def _write_closing_root(self):
-        bottom = BaseRecord({})
-        bottom.formatted = '</{}>'.format(self.root_name)
-        bottom.format = self.format_name
-        bottom.bottom = True
-        return bottom
+    def _check_metadata(self):
+        if not self.export_metadata.get('formatter'):
+            self.export_metadata['formatter'] = {
+                'header': '<{}>'.format(self.root_name),
+                'bottom': '</{}>'.format(self.root_name)
+            }
 
     def format(self, batch):
         fields_len = len(self.fields_order)
-
-        yield self._write_opening_root()
-        yield self._write_closing_root()
+        self._check_metadata()
         for item in batch:
             ordered_item = collections.OrderedDict(
                 sorted(item.items(),

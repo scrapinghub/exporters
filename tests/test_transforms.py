@@ -51,7 +51,7 @@ class NoTransformTest(unittest.TestCase):
         self.assertEquals(self.transform.transform_batch([]), [])
 
     def test_transform_batch(self):
-        reader = ModuleLoader().load_reader(self.options['reader'])
+        reader = ModuleLoader({}).load_reader(self.options['reader'])
         # FIXME inline batch, without a reader
         batch = reader.get_next_batch()
         self.assertEquals(self.transform.transform_batch(batch), batch)

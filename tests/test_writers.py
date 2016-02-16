@@ -45,7 +45,7 @@ class FakeWriter(BaseWriter):
         self.custom_output = {}
         self.fake_files_already_written = []
         format_info = {'format': format, 'file_handler': JsonFileHandler}
-        self.write_buffer = WriteBuffer(1000, 1000, format_info)
+        self.write_buffer = WriteBuffer(1000, 1000, format_info, {})
 
     def write(self, path, key):
         with gzip.open(path) as f:
@@ -220,7 +220,7 @@ class CustomWriterTest(unittest.TestCase):
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
         format_info = {'format': 'jl', 'file_handler': JsonFileHandler}
-        self.write_buffer = WriteBuffer(1000, 1000, format_info)
+        self.write_buffer = WriteBuffer(1000, 1000, format_info, {})
 
     def tearDown(self):
         self.write_buffer.close()
