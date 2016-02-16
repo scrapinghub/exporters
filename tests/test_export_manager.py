@@ -54,7 +54,7 @@ class BaseExportManagerTest(unittest.TestCase):
     def test_simple_export(self):
         self.exporter = exporter = BaseExporter(self.build_config())
         exporter.export()
-        self.assertEquals(10, exporter.writer.items_count)
+        self.assertEquals(10, exporter.writer.writer_metadata['items_count'])
 
     def test_export_with_csv_formatter(self):
         config = self.build_config()
@@ -68,7 +68,7 @@ class BaseExportManagerTest(unittest.TestCase):
         self.exporter = exporter = BaseExporter(config)
         exporter.export()
         expected_count = 10 + 1  # FIXME: it's currently counting header as an item
-        self.assertEquals(expected_count, exporter.writer.items_count)
+        self.assertEquals(expected_count, exporter.writer.writer_metadata['items_count'])
 
     def test_bypass_should_be_called(self):
         # given:
@@ -135,7 +135,11 @@ class BaseExportManagerTest(unittest.TestCase):
         with TmpFile() as pickle_file:
             # given:
             persistence_data = {
-                'last_position': {'accurate_items_count': False, 'items_count': 30, 'last_key': 3},
+                'last_position': {
+                    'accurate_items_count': False,
+                    'writer_metadata': {'items_count': 30},
+                    'last_key': 3
+                },
             }
             pickle.dump(persistence_data, open(pickle_file, 'w'))
 
@@ -157,7 +161,7 @@ class BaseExportManagerTest(unittest.TestCase):
             exporter._init_export_job()
 
             # then:
-            self.assertEqual(30, exporter.writer.items_count)
+            self.assertEqual(30, exporter.writer.writer_metadata['items_count'])
             self.assertFalse(exporter.stats_manager.stats['accurate_items_count'],
                              "Couldn't get accurate count from last_position")
 

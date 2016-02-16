@@ -64,9 +64,10 @@ class BaseExporter(object):
         try:
             self.writer.write_batch(batch=next_batch)
             times.update(written=datetime.datetime.now())
-            self.stats_manager.stats['items_count'] = self.writer.items_count
-            last_position['items_count'] = self.writer.items_count
+            self.stats_manager.stats['items_count'] = self.writer.writer_metadata['items_count']
+            last_position['items_count'] = self.writer.writer_metadata['items_count']
             last_position['accurate_items_count'] = self.stats_manager.stats['accurate_items_count']
+            last_position['writer_metadata'] = self.writer.writer_metadata
             self.persistence.commit_position(last_position)
             times.update(persisted=datetime.datetime.now())
         except ItemsLimitReached:
@@ -82,9 +83,9 @@ class BaseExporter(object):
                                          info=self.stats_manager.stats)
         last_position = self.persistence.get_last_position()
         if last_position is not None:
-            items_count = last_position.get('items_count', 0)
-            self.writer.items_count = items_count
-            self.stats_manager.stats['items_count'] = items_count
+            # items_count = last_position.get('items_count', 0)
+            self.writer.writer_metadata = last_position.get('writer_metadata')
+            self.stats_manager.stats['items_count'] = last_position.get('writer_metadata').get('items_count', 0)
             self.stats_manager.stats['accurate_items_count'] = last_position.get('accurate_items_count', False)
         self.reader.set_last_position(last_position)
 
@@ -92,7 +93,7 @@ class BaseExporter(object):
         self.writer.close()
 
     def _finish_export_job(self):
-        self.stats_manager.stats['items_count'] = self.writer.items_count
+        self.stats_manager.stats['items_count'] = self.writer.writer_metadata['items_count']
         self.stats_manager.stats['end_time'] = datetime.datetime.now()
         self.stats_manager.stats['elapsed_time'] = self.stats_manager.stats['end_time'] - \
                                                    self.stats_manager.stats['start_time']

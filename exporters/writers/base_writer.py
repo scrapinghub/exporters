@@ -37,7 +37,9 @@ class BaseWriter(BasePipelineItem):
         self.logger = WriterLogger({'log_level': options.get('log_level'),
                                     'logger_name': options.get('logger_name')})
         self.write_buffer = WriteBuffer(items_per_buffer_write, size_per_buffer_write)
-        self.items_count = 0
+        self.writer_metadata = {
+            'items_count': 0
+        }
 
     def write(self, path, key):
         """
@@ -68,10 +70,10 @@ class BaseWriter(BasePipelineItem):
         Check if a writer has reached the items limit. If so, it raises an ItemsLimitReached
         exception
         """
-        if self.items_limit and self.items_limit == self.items_count:
+        if self.items_limit and self.items_limit == self.writer_metadata['items_count']:
             self.stats.update(self.write_buffer.stats)
             raise ItemsLimitReached('Finishing job after items_limit reached:'
-                                    ' {} items written.'.format(self.items_count))
+                                    ' {} items written.'.format(self.writer_metadata['items_count']))
 
     def flush(self):
         """
@@ -98,7 +100,7 @@ class BaseWriter(BasePipelineItem):
         self.logger.warning('Not checking write consistency')
 
     def increment_written_items(self):
-        self.items_count += 1
+        self.writer_metadata['items_count'] += 1
 
     def _write(self, key):
         write_info = self.write_buffer.pack_buffer(key)
