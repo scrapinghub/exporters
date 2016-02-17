@@ -103,6 +103,7 @@ class CSVFormatterTest(unittest.TestCase):
             'options': {
                 'fields': ['key1', 'key2'],
                 'delimiter': '|',
+                'show_titles': True
             }
         }
         formatter = CSVExportFormatter(options)
@@ -111,7 +112,8 @@ class CSVFormatterTest(unittest.TestCase):
         formatted_batch = formatter.format(self.batch)
 
         # then:
-        memfile = self._create_memfile(it.formatted for it in formatted_batch)
+        memfile = self._create_memfile((it.formatted for it in formatted_batch), header=['"key1"|"key2"'])
+
         self.assertEqual(self.batch, list(csv.DictReader(memfile, delimiter='|')))
 
     def test_format_from_schema(self):
