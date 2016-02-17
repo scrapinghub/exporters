@@ -5,13 +5,6 @@ script:
   - pip install -U tox coverage shub
   - tox
 
-deploy:
-  bash:
-    script:
-      - 'shub deploy-egg 7389 ; shub deploy-egg 28865 ; shub deploy-egg 33469'
-    when:
-      branch: master
-
 notify:
   slack:
     webhook_url: 'https://hooks.slack.com/services/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'
