@@ -205,7 +205,7 @@ class TestS3BucketKeysFetcher(unittest.TestCase):
         bucket = self.s3_conn.get_bucket('last_bucket')
         key = bucket.new_key('test_list/LAST')
         self.pointers = ['pointer1', 'pointer2', 'pointer3', '']
-        key.set_contents_from_string('\n'.join(self.pointers))
+        key.set_contents_from_string('\r\n'.join(self.pointers))
         key.close()
 
         for key_name in POINTER_KEYS:

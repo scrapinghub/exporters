@@ -215,7 +215,7 @@ class CustomWriterTest(unittest.TestCase):
             writer.flush()
         finally:
             writer.close()
-        self.assertEqual([writer.items_count, writer.stats['written_items']], [3, 3])
+        self.assertEqual([writer.writer_metadata['items_count'], writer.stats['written_items']], [3, 3])
 
 
 class WriteBufferTest(unittest.TestCase):
@@ -257,7 +257,7 @@ class ConsoleWriterTest(unittest.TestCase):
             items_to_write.append(item)
 
         self.writer.write_batch(items_to_write)
-        self.assertEqual(self.writer.items_count, 10)
+        self.assertEqual(self.writer.writer_metadata['items_count'], 10)
 
 
 class FilebaseBaseWriterTest(unittest.TestCase):

@@ -1,10 +1,3 @@
-# Workaround
-# http://bugs.python.org/issue15881
-try:
-    import multiprocessing
-except:
-    pass
-
 from setuptools import setup, find_packages
 
 setup(

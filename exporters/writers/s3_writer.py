@@ -1,6 +1,6 @@
+from collections import Counter
 from contextlib import closing
 import datetime
-import gzip
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
@@ -64,6 +64,7 @@ class S3Writer(FilebaseBaseWriter):
         self.save_metadata = self.read_option('save_metadata')
         self.logger.info('S3Writer has been initiated.'
                          'Writing to s3://{}/{}'.format(self.bucket.name, self.filebase))
+        self.writer_metadata['files_counter'] = Counter()
 
     def _get_bucket_location(self, access_key, secret_key, bucket):
         import boto
@@ -101,6 +102,7 @@ class S3Writer(FilebaseBaseWriter):
         filebase_path, filename = self.create_filebase_name(group_key)
         key_name = filebase_path + '/' + filename
         self._write_s3_key(dump_path, key_name)
+        self.writer_metadata['files_counter'][filebase_path] += 1
 
     @retry_long
     def _write_s3_pointer(self, save_pointer, filebase):
@@ -123,3 +125,9 @@ class S3Writer(FilebaseBaseWriter):
         self._check_write_consistency()
         if self.read_option('save_pointer'):
             self._update_last_pointer()
+
+    def get_file_suffix(self, path, prefix):
+        number_of_keys = self.writer_metadata['files_counter'].get(path, 0)
+        suffix = '{}'.format(str(number_of_keys))
+        self.writer_metadata['files_counter'][path] = number_of_keys + 1
+        return suffix

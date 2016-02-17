@@ -44,7 +44,6 @@ class S3WriterTest(unittest.TestCase):
         ]
         return [BaseRecord(d) for d in data]
 
-
     def test_write_s3(self):
         # given
         items_to_write = self.get_batch()
@@ -62,7 +61,7 @@ class S3WriterTest(unittest.TestCase):
         bucket = self.s3_conn.get_bucket('fake_bucket')
         saved_keys = [k for k in bucket.list()]
         self.assertEquals(1, len(saved_keys))
-        self.assertTrue(re.match('tests/.*[.]gz', saved_keys[0].name))
+        self.assertEqual(saved_keys[0].name, 'tests/0.gz')
 
     def test_connect_to_specific_region(self):
         # given:
