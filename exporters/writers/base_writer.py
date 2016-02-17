@@ -59,7 +59,8 @@ class BaseWriter(BasePipelineItem):
         if self.write_buffer is None:
             items_per_buffer_write = self.read_option('items_per_buffer_write')
             size_per_buffer_write = self.read_option('size_per_buffer_write')
-            self.write_buffer = WriteBuffer(items_per_buffer_write, size_per_buffer_write, self.supported_file_extensions[format])
+            self.write_buffer = WriteBuffer(items_per_buffer_write, size_per_buffer_write,
+                                            self.supported_file_extensions[format], self.export_metadata)
 
     def write_batch(self, batch):
         """
@@ -67,17 +68,12 @@ class BaseWriter(BasePipelineItem):
         """
         for item in batch:
             self._ensure_write_buffer(item.format)
-            if item.header:
-                self.write_buffer.items_group_files.header = item.formatted
-            elif item.bottom:
-                self.write_buffer.items_group_files.bottom = item.formatted
-            else:
-                self.write_buffer.buffer(item)
-                key = self.write_buffer.get_key_from_item(item)
-                if self.write_buffer.should_write_buffer(key):
-                    self._write(key)
-                self.increment_written_items()
-                self._check_items_limit()
+            self.write_buffer.buffer(item)
+            key = self.write_buffer.get_key_from_item(item)
+            if self.write_buffer.should_write_buffer(key):
+                self._write(key)
+            self.increment_written_items()
+            self._check_items_limit()
         self.stats.update(self.write_buffer.stats)
 
     def _check_items_limit(self):

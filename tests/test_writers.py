@@ -40,12 +40,13 @@ class FakeWriter(BaseWriter):
     """
 
     def __init__(self, *args, **kwargs):
-        format = kwargs.pop('format', 'jl')
+        format = kwargs.pop('format', 'json')
+        format_data = kwargs.pop('format_data', {})
         super(FakeWriter, self).__init__(*args, **kwargs)
         self.custom_output = {}
         self.fake_files_already_written = []
-        format_info = {'format': format, 'file_handler': JsonFileHandler}
-        self.write_buffer = WriteBuffer(1000, 1000, format_info)
+        format_info = BaseWriter.supported_file_extensions[format]
+        self.write_buffer = WriteBuffer(1000, 1000, format_info, format_data)
 
     def write(self, path, key):
         with gzip.open(path) as f:
@@ -128,7 +129,7 @@ class CustomWriterTest(unittest.TestCase):
         # given:
         formatter = XMLExportFormatter({'options': {}})
         self.batch = list(formatter.format(self.batch))
-        writer = FakeWriter({}, format='xml')
+        writer = FakeWriter({}, format='xml', format_data={'formatter': {'header': '<root>', 'bottom': '</root>'}})
 
         # when:
         try:
@@ -172,7 +173,7 @@ class CustomWriterTest(unittest.TestCase):
                              'item_name': 'XmlItem',
                              'root_name': 'RootItem'}})
         self.batch = list(formatter.format(self.batch))
-        writer = FakeWriter({}, format='xml')
+        writer = FakeWriter({}, format='xml', format_data={'formatter': {'header': '<RootItem>', 'bottom': '</RootItem>'}})
 
         # when:
         try:
@@ -192,14 +193,14 @@ class CustomWriterTest(unittest.TestCase):
             parseString(
                 '<XmlItem><key1>value13</key1><key2>value23</key2></XmlItem>')
         ]
-        expected = ['<RootItem>'] + \
-            [[node.localName for node in item.getElementsByTagName('XmlItem')[0].childNodes]
-            for item in expected_list] + \
-            ['</RootItem>']
-        out = [output[0]] + \
-            [[node.localName for node in parseString(l).getElementsByTagName('XmlItem')[0].childNodes]
-               for l in output[1:-1]] + \
-            [output[-1]]
+        expected = ['<RootItem>']
+        expected += [[node.localName for node in item.getElementsByTagName('XmlItem')[0].childNodes]
+                     for item in expected_list]
+        expected += ['</RootItem>']
+        out = [output[0]]
+        out += [[node.localName for node in parseString(l).getElementsByTagName('XmlItem')[0].childNodes]
+                for l in output[1:-1]]
+        out += [output[-1]]
 
         self.assertEquals(expected, out)
         self.assertEquals('xml', writer.write_buffer.items_group_files.file_extension)
@@ -220,7 +221,7 @@ class CustomWriterTest(unittest.TestCase):
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
         format_info = {'format': 'jl', 'file_handler': JsonFileHandler}
-        self.write_buffer = WriteBuffer(1000, 1000, format_info)
+        self.write_buffer = WriteBuffer(1000, 1000, format_info, {})
 
     def tearDown(self):
         self.write_buffer.close()

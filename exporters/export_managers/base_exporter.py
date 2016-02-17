@@ -13,9 +13,10 @@ from exporters.notifications.receiver_groups import CLIENTS, TEAM
 
 class BaseExporter(object):
     def __init__(self, configuration):
+        self.export_metadata = {}
         self.config = ExporterConfig(configuration)
         self.logger = ExportManagerLogger(self.config.log_options)
-        self.module_loader = ModuleLoader()
+        self.module_loader = ModuleLoader(self.export_metadata)
         self.reader = self.module_loader.load_reader(self.config.reader_options)
         self.filter_before = self.module_loader.load_filter(
             self.config.filter_before_options)
@@ -28,7 +29,7 @@ class BaseExporter(object):
         self.export_formatter = self.module_loader.load_formatter(
             self.config.formatter_options)
         self.grouper = self.module_loader.load_grouper(self.config.grouper_options)
-        self.notifiers = NotifiersList(self.config.notifiers)
+        self.notifiers = NotifiersList(self.config.notifiers, self.export_metadata)
         self.logger.debug('{} has been initiated'.format(self.__class__.__name__))
         job_info = {
             'configuration': configuration,

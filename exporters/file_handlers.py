@@ -10,9 +10,10 @@ class FileHandler(object):
 
     file_extension = None
 
-    def __init__(self, grouping_info):
+    def __init__(self, grouping_info, export_metadata):
         self.grouping_info = grouping_info
         self.tmp_folder = tempfile.mkdtemp()
+        self.export_metadata = export_metadata
 
     def _get_new_path_name(self):
         return os.path.join(self.tmp_folder,
@@ -59,8 +60,9 @@ class FileHandler(object):
         if self.grouping_info[key]['group_file']:
             path = self.grouping_info[key]['group_file'][-1]
         else:
-            path = self._get_new_path_name()
+            path = self.create_new_buffer_path_for_key(key)
             self.grouping_info.add_path_to_group(key, path)
+
         return path
 
     def create_new_buffer_path_for_key(self, key):
@@ -68,6 +70,7 @@ class FileHandler(object):
         self.grouping_info.add_path_to_group(key, new_buffer_path)
         with open(new_buffer_path, 'w') as f:
             pass
+        return new_buffer_path
 
 
 class JsonFileHandler(FileHandler):
@@ -79,7 +82,27 @@ class CSVFileHandler(FileHandler):
 
     file_extension = 'csv'
 
+    def create_new_buffer_path_for_key(self, key):
+        new_buffer_path = self._get_new_path_name()
+        self.grouping_info.add_path_to_group(key, new_buffer_path)
+        with open(new_buffer_path, 'w') as f:
+            if self.export_metadata.get('formatter', {}).get('header'):
+                f.write(self.export_metadata.get('formatter', {}).get('header') + '\n')
+        return new_buffer_path
+
 
 class XMLFileHandler(FileHandler):
 
     file_extension = 'xml'
+
+    def create_new_buffer_path_for_key(self, key):
+        new_buffer_path = self._get_new_path_name()
+        self.grouping_info.add_path_to_group(key, new_buffer_path)
+        with open(new_buffer_path, 'w') as f:
+            f.write(self.export_metadata.get('formatter', {}).get('header') + '\n')
+        return new_buffer_path
+
+    def _compress_file(self, path):
+        with open(path, 'a') as f:
+            f.write(self.export_metadata.get('formatter', {}).get('bottom'))
+        return super(XMLFileHandler, self)._compress_file(path)

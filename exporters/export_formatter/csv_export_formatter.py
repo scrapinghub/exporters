@@ -36,7 +36,6 @@ class CSVExportFormatter(BaseExportFormatter):
         super(CSVExportFormatter, self).__init__(options)
         self.show_titles = self.read_option('show_titles')
         self.delimiter = self.read_option('delimiter')
-        self.titles_already_shown = False
         self.fields = self._get_fields()
 
     def _get_fields_from_schema(self):
@@ -54,17 +53,14 @@ class CSVExportFormatter(BaseExportFormatter):
         output = io.BytesIO()
         writer = self._create_csv_writer(output)
         writer.writeheader()
-        header = BaseRecord({})
-        header.formatted = output.getvalue().rstrip()
-        header.format = self.format_name
-        header.header = True
-        self.titles_already_shown = True
-        return header
+        self.export_metadata['formatter'] = {
+            'header': output.getvalue().rstrip()
+        }
 
     def format(self, batch):
         for item in batch:
-            if self.show_titles and not self.titles_already_shown:
-                yield self._write_titles()
+            if self.show_titles and not self.export_metadata.get('formatter'):
+                self._write_titles()
             item.formatted = self._item_to_csv(item)
             item.format = self.format_name
             yield item
