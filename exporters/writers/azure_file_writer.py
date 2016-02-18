@@ -49,20 +49,24 @@ class AzureFileWriter(FilebaseBaseWriter):
         self._write_file(dump_path, group_key)
 
     def _ensure_path(self, filebase):
-        self.azure_service.create_directory(
-            self.share,
-            filebase,
-        )
+        path = filebase.split('/')
+        folders_added = []
+        for sub_path in path:
+            folders_added.append(sub_path)
+            parent = '/'.join(folders_added)
+            self.azure_service.create_directory(
+                    self.share,
+                    parent,
+            )
 
     @retry_long
     def _write_file(self, dump_path, group_key):
         filebase_path, filename = self.create_filebase_name(group_key)
-        key_name = filebase_path + '/' + filename
         self._ensure_path(filebase_path)
         self.azure_service.put_file_from_path(
             self.share,
             filebase_path,
-            key_name,
+            filename,
             dump_path,
             max_connections=5,
         )
