@@ -72,13 +72,6 @@ class AzureFileWriter(FilebaseBaseWriter):
         )
         self.writer_metadata['files_counter'][filebase_path] += 1
 
-    def close(self):
-        """
-        Called to clean all possible tmp files created during the process.
-        """
-        self.write_buffer.close()
-        self._check_write_consistency()
-
     def get_file_suffix(self, path, prefix):
         number_of_keys = self.writer_metadata['files_counter'].get(path, 0)
         suffix = '{}'.format(str(number_of_keys))
