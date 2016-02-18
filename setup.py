@@ -24,5 +24,6 @@ setup(
         'sqlite': ['sqlitedict', 'SQLAlchemy'],
         'postgres': ['psycopg2', 'SQLAlchemy'],
         'mysql': ['mysql-python', 'SQLAlchemy'],
+        'azure': ['azure'],
     },
 )
