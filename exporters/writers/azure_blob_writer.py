@@ -1,5 +1,4 @@
 from collections import Counter
-import datetime
 from exporters.default_retries import retry_long
 from exporters.writers.base_writer import BaseWriter
 

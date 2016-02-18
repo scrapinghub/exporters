@@ -1,8 +1,4 @@
 from collections import Counter
-from contextlib import closing
-
-import datetime
-
 from exporters.default_retries import retry_long
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
