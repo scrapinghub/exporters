@@ -129,7 +129,7 @@ class CustomWriterTest(unittest.TestCase):
         # given:
         formatter = XMLExportFormatter({'options': {}})
         self.batch = list(formatter.format(self.batch))
-        writer = FakeWriter({}, format='xml', format_data={'formatter': {'header': '<root>', 'bottom': '</root>'}})
+        writer = FakeWriter({}, format='xml', format_data={'formatter': {'header': '<root>', 'footer': '</root>'}})
 
         # when:
         try:
@@ -173,7 +173,7 @@ class CustomWriterTest(unittest.TestCase):
                              'item_name': 'XmlItem',
                              'root_name': 'RootItem'}})
         self.batch = list(formatter.format(self.batch))
-        writer = FakeWriter({}, format='xml', format_data={'formatter': {'header': '<RootItem>', 'bottom': '</RootItem>'}})
+        writer = FakeWriter({}, format='xml', format_data={'formatter': {'header': '<RootItem>', 'footer': '</RootItem>'}})
 
         # when:
         try:

@@ -104,5 +104,5 @@ class XMLFileHandler(FileHandler):
 
     def _compress_file(self, path):
         with open(path, 'a') as f:
-            f.write(self.export_metadata.get('formatter', {}).get('bottom'))
+            f.write(self.export_metadata.get('formatter', {}).get('footer'))
         return super(XMLFileHandler, self)._compress_file(path)

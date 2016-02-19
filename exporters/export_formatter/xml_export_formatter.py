@@ -2,8 +2,6 @@ import dicttoxml
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 import collections
 
-from exporters.records.base_record import BaseRecord
-
 
 class XMLExportFormatter(BaseExportFormatter):
     """
@@ -34,7 +32,7 @@ class XMLExportFormatter(BaseExportFormatter):
         if not self.export_metadata.get('formatter'):
             self.export_metadata['formatter'] = {
                 'header': '<{}>'.format(self.root_name),
-                'bottom': '</{}>'.format(self.root_name)
+                'footer': '</{}>'.format(self.root_name)
             }
 
     def format(self, batch):
