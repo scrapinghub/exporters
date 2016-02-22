@@ -23,7 +23,7 @@ class CSVExportFormatter(BaseExportFormatter):
         - delimiter(str)
             field delimiter character for csv rows
     """
-    format_name = 'csv'
+    file_extension = 'csv'
 
     supported_options = {
         'show_titles': {'type': bool, 'default': True},
@@ -49,22 +49,6 @@ class CSVExportFormatter(BaseExportFormatter):
             raise ConfigurationError('CSV formatter requires at least one of: fields or schema')
         return self._get_fields_from_schema()
 
-    def _write_titles(self):
-        output = io.BytesIO()
-        writer = self._create_csv_writer(output)
-        writer.writeheader()
-        self.export_metadata['formatter'] = {
-            'header': output.getvalue().rstrip()
-        }
-
-    def format(self, batch):
-        for item in batch:
-            if self.show_titles and not self.export_metadata.get('formatter'):
-                self._write_titles()
-            item.formatted = self._item_to_csv(item)
-            item.format = self.format_name
-            yield item
-
     def _encode_string(self, path, key, value):
         if isinstance(value, six.text_type):
             return key, value.encode('utf-8')
@@ -83,3 +67,14 @@ class CSVExportFormatter(BaseExportFormatter):
         item = remap(item, visit=self._encode_string)
         writer.writerow(item)
         return output.getvalue().rstrip()
+
+    def start_exporting(self, key):
+        path = self.create_new_buffer_file(key)
+        if self.show_titles:
+            with open(path, 'a') as f:
+                writer = self._create_csv_writer(f)
+                writer.writeheader()
+        return path
+
+    def export_item(self, item):
+        return self._item_to_csv(item)

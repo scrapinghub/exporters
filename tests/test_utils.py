@@ -249,7 +249,7 @@ class ConfigValidationTest(unittest.TestCase):
 
 class ModuleLoaderTest(unittest.TestCase):
     def setUp(self):
-        self.module_loader = ModuleLoader({})
+        self.module_loader = ModuleLoader()
 
     def test_reader_valid_class(self):
         options = valid_config_with_updates({

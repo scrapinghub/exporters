@@ -7,9 +7,9 @@ class NotifiersList(object):
     This class is only used to support a list of notifications modules.
     """
 
-    def __init__(self, options, export_metadata):
+    def __init__(self, options):
         self.options = options
-        self.module_loader = ModuleLoader(export_metadata)
+        self.module_loader = ModuleLoader()
         self.notifiers = self._populate_notifiers()
         self.stats = {}
 

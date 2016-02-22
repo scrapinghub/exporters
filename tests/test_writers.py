@@ -4,17 +4,13 @@ import os
 import random
 import unittest
 import csv
-from collections import Counter
-
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
-from exporters.file_handlers import JsonItemExporter
 from exporters.records.base_record import BaseRecord
-from exporters.write_buffer import WriteBuffer
+from exporters.write_buffer import WriteBuffer, GroupingInfo
 from exporters.writers import FSWriter
 from exporters.writers.base_writer import BaseWriter
 from exporters.writers.console_writer import ConsoleWriter
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
-from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 
 
@@ -40,13 +36,9 @@ class FakeWriter(BaseWriter):
     """
 
     def __init__(self, *args, **kwargs):
-        format = kwargs.pop('format', 'json')
-        format_data = kwargs.pop('format_data', {})
         super(FakeWriter, self).__init__(*args, **kwargs)
         self.custom_output = {}
         self.fake_files_already_written = []
-        format_info = BaseWriter.supported_file_extensions[format]
-        self.write_buffer = WriteBuffer(1000, 1000, format_info, format_data)
 
     def write(self, path, key):
         with gzip.open(path) as f:
@@ -64,7 +56,6 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_custom_writer(self):
         # given:
-        self.batch = list(JsonExportFormatter({}).format(self.batch))
         writer = FakeWriter({})
 
         # when:
@@ -82,28 +73,28 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_write_buffer_removes_files(self):
         # given:
-        self.batch = list(JsonExportFormatter({}).format(self.batch))
         writer = FakeWriter({})
-
         writer.write_buffer.items_per_buffer_write = 1
 
         # when:
         try:
             writer.write_batch(self.batch)
             # then
-            self.assertGreater(len(writer.fake_files_already_written), 0)
+            self.assertEqual(len(writer.fake_files_already_written), 3, 'Wrong number of files written')
             for f in writer.fake_files_already_written:
                 self.assertFalse(os.path.exists(f))
-                self.assertFalse(os.path.exists(f + '.gz'))
+                self.assertFalse(os.path.exists(f[:-3]))
         finally:
             writer.close()
 
     def test_custom_writer_with_csv_formatter(self):
         # given:
-        formatter = CSVExportFormatter(
-                {'options': {'show_titles': False, 'fields': ['key1', 'key2']}})
-        self.batch = list(formatter.format(self.batch))
-        writer = FakeWriter({}, format='csv')
+
+        options = {
+            'name': 'exporters.export_formatter.csv_export_formatter.CSVExportFormatter',
+            'options': {'show_titles': False, 'fields': ['key1', 'key2']}
+        }
+        writer = FakeWriter({'formatter': options})
 
         # when:
         try:
@@ -127,9 +118,13 @@ class CustomWriterTest(unittest.TestCase):
     def test_custom_writer_with_xml_formatter(self):
         from xml.dom.minidom import parseString
         # given:
-        formatter = XMLExportFormatter({'options': {}})
-        self.batch = list(formatter.format(self.batch))
-        writer = FakeWriter({}, format='xml', format_data={'formatter': {'header': '<root>', 'footer': '</root>'}})
+        options = {
+            'name': 'exporters.export_formatter.xml_export_formatter.XMLExportFormatter',
+            'options': {
+
+            }
+        }
+        writer = FakeWriter({'formatter': options})
 
         # when:
         try:
@@ -167,13 +162,14 @@ class CustomWriterTest(unittest.TestCase):
     def test_custom_writer_with_xml_formatter_with_options(self):
         from xml.dom.minidom import parseString
         # given:
-        formatter = XMLExportFormatter(
-                {'options': {'attr_type': False,
-                             'fields_order': ['key1', 'key2'],
-                             'item_name': 'XmlItem',
-                             'root_name': 'RootItem'}})
-        self.batch = list(formatter.format(self.batch))
-        writer = FakeWriter({}, format='xml', format_data={'formatter': {'header': '<RootItem>', 'footer': '</RootItem>'}})
+        options = {'name': 'exporters.export_formatter.xml_export_formatter.XMLExportFormatter',
+                   'options': {
+                       'attr_type': False,
+                       'fields_order': ['key1', 'key2'],
+                       'item_name': 'XmlItem',
+                       'root_name': 'RootItem'}
+                   }
+        writer = FakeWriter({'formatter': options})
 
         # when:
         try:
@@ -207,8 +203,9 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_writer_stats(self):
         # given:
-        self.batch = list(JsonExportFormatter({}).format(self.batch))
+        formatter = JsonExportFormatter({})
         writer = FakeWriter({})
+        writer.export_formatter = formatter
         # when:
         try:
             writer.write_batch(self.batch)
@@ -220,8 +217,9 @@ class CustomWriterTest(unittest.TestCase):
 
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
-        format_info = {'format': 'jl', 'file_handler': JsonItemExporter}
-        self.write_buffer = WriteBuffer(1000, 1000, format_info, {})
+        self.formatter = JsonExportFormatter({})
+        self.formatter.set_grouping_info(GroupingInfo())
+        self.write_buffer = WriteBuffer(1000, 1000, self.formatter)
 
     def tearDown(self):
         self.write_buffer.close()

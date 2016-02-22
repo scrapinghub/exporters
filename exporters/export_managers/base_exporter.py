@@ -13,10 +13,9 @@ from exporters.notifications.receiver_groups import CLIENTS, TEAM
 
 class BaseExporter(object):
     def __init__(self, configuration):
-        self.export_metadata = {}
         self.config = ExporterConfig(configuration)
         self.logger = ExportManagerLogger(self.config.log_options)
-        self.module_loader = ModuleLoader(self.export_metadata)
+        self.module_loader = ModuleLoader()
         self.reader = self.module_loader.load_reader(self.config.reader_options)
         self.filter_before = self.module_loader.load_filter(
             self.config.filter_before_options)
@@ -26,10 +25,8 @@ class BaseExporter(object):
         self.writer = self.module_loader.load_writer(self.config.writer_options)
         self.persistence = self.module_loader.load_persistence(
             self.config.persistence_options)
-        self.export_formatter = self.module_loader.load_formatter(
-            self.config.formatter_options)
         self.grouper = self.module_loader.load_grouper(self.config.grouper_options)
-        self.notifiers = NotifiersList(self.config.notifiers, self.export_metadata)
+        self.notifiers = NotifiersList(self.config.notifiers)
         self.logger.debug('{} has been initiated'.format(self.__class__.__name__))
         job_info = {
             'configuration': configuration,
@@ -60,8 +57,6 @@ class BaseExporter(object):
         times.update(filtered_after=datetime.datetime.now())
         next_batch = self.grouper.group_batch(next_batch)
         times.update(grouped=datetime.datetime.now())
-        next_batch = self.export_formatter.format(next_batch)
-        times.update(formatted=datetime.datetime.now())
         try:
             self.writer.write_batch(batch=next_batch)
             times.update(written=datetime.datetime.now())

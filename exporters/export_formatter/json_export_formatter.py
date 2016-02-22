@@ -16,17 +16,17 @@ class JsonExportFormatter(BaseExportFormatter):
         'pretty_print': {'type': bool, 'default': False}
     }
 
+    file_extension = 'jl'
+
     def __init__(self, options):
         super(JsonExportFormatter, self).__init__(options)
         self.pretty_print = self.read_option('pretty_print')
 
-    def format(self, batch):
-        for item in batch:
-            if self.pretty_print:
-                item.formatted = self._format(item)
-            else:
-                item.formatted = json.dumps(item)
-            yield item
-
     def _format(self, item):
         return json.dumps(item, indent=2, sort_keys=True)
+
+    def export_item(self, item):
+        if self.pretty_print:
+            return self._format(item)
+        else:
+            return json.dumps(item)

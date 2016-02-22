@@ -30,6 +30,7 @@ class ExporterConfig(object):
         self.persistence_options['persistence_state_id'] = exporter_options.get('persistence_state_id', None)
         self.stats_options = self._merge_options('stats_manager', DEFAULT_STATS_MANAGER_CLASS)
         self.formatter_options = exporter_options.get('formatter', DEFAULT_FORMATTER_CLASS)
+        self.writer_options['formatter'] = self.formatter_options
         self.notifiers = exporter_options.get('notifications', [])
 
     def __str__(self):

@@ -1,6 +1,8 @@
 import os
 from UserDict import UserDict
 
+import errno
+
 
 class GroupingInfo(UserDict):
 
@@ -28,54 +30,58 @@ class GroupingInfo(UserDict):
 
 class ItemsGroupFilesHandler(object):
 
-    def __init__(self, extension, export_metadata):
-        self.export_metadata = export_metadata
+    def __init__(self, formatter):
         self.grouping_info = GroupingInfo()
         self.file_extension = None
         self.header = None
         self.bottom = None
-        self._set_extension(extension)
-
-    def _set_extension(self, extension):
-        self.file_extension = extension['format']
-        self.file_handler = extension['file_handler'](self.grouping_info, self.export_metadata)
+        self.file_extension = formatter.file_extension
+        self.formatter = formatter
+        self.formatter.set_grouping_info(self.grouping_info)
 
     def _add_to_file(self, content, key):
-        path = self.file_handler.get_group_path(key)
+        path = self.formatter.get_group_path(key)
         with open(path, 'a') as f:
             f.write(content + '\n')
         self.grouping_info.add_to_group(key)
 
     def add_item_to_file(self, item, key):
-        self._add_to_file(item.formatted, key)
+        content = self.formatter.export_item(item)
+        self._add_to_file(content, key)
 
-    def create_new_buffer_file(self, key, compressed_path):
-        return self.file_handler.create_new_buffer_file(key, compressed_path)
+    def create_new_buffer_file(self, key):
+        return self.formatter.start_exporting(key)
+
+    def end_buffer_file(self, key):
+        return self.formatter.finish_exporting(key)
 
     def close(self):
-        return self.file_handler.close()
+        return self.formatter.close()
 
     def compress_key_path(self, key):
-        return self.file_handler.compress_key_path(key)
+        return self.formatter.compress_key_path(key)
 
     def get_grouping_info(self):
         return self.grouping_info
 
-    def add_header_to_file(self, key):
-        if self.header:
-            self._add_to_file(self.header, key)
+    def clean_tmp_files(self, compressed_path):
+        path = compressed_path[:-3]
+        self._silent_remove(path)
+        self._silent_remove(compressed_path)
 
-    def add_bottom_to_file(self, key):
-        if self.bottom:
-            self._add_to_file(self.bottom, key)
+    def _silent_remove(self, filename):
+        try:
+            os.remove(filename)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
 
 
 class WriteBuffer(object):
 
-    def __init__(self, items_per_buffer_write, size_per_buffer_write, extension, export_metadata):
+    def __init__(self, items_per_buffer_write, size_per_buffer_write, formatter):
         self.files = []
-        self.export_metadata = export_metadata
-        self.items_group_files = ItemsGroupFilesHandler(extension, self.export_metadata)
+        self.items_group_files = ItemsGroupFilesHandler(formatter)
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
         self.stats = {'written_items': 0}
@@ -91,13 +97,18 @@ class WriteBuffer(object):
         self.items_group_files.add_item_to_file(item, key)
         self.stats['written_items'] += 1
 
-    def finish_buffer_write(self, key, compressed_path):
-        self.items_group_files.create_new_buffer_file(key, compressed_path)
+    def finish_buffer_write(self, key):
+        self.items_group_files.end_buffer_file(key)
 
     def pack_buffer(self, key):
+        self.finish_buffer_write(key)
         write_info = self.items_group_files.compress_key_path(key)
         self.metadata[write_info['compressed_path']] = write_info
+        self.items_group_files.create_new_buffer_file(key)
         return write_info
+
+    def clean_tmp_files(self, key, compressed_path):
+        self.items_group_files.clean_tmp_files(compressed_path)
 
     def should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(
