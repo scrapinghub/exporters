@@ -1,5 +1,3 @@
-import json
-
 from exporters.writers.base_writer import BaseWriter, ItemsLimitReached
 
 

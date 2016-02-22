@@ -1,6 +1,3 @@
-import json
-
-
 class BaseRecord(dict):
     """
     This class represents the basic item that the exporters pipeline works with.
