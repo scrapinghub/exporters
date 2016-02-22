@@ -1,13 +1,13 @@
 import unittest
 
-from exporters.file_handlers import XMLFileHandler
+from exporters.file_handlers import XMLItemExporter
 from exporters.write_buffer import GroupingInfo
 
 
 class XMLFileHandlerTest(unittest.TestCase):
 
     def setUp(self):
-        self.handler = XMLFileHandler(GroupingInfo())
+        self.handler = XMLItemExporter(GroupingInfo(), {'formatter': {'header': '<root>', 'footer': '</root>'}})
         self.handler.grouping_info._init_group_info_key('filename')
 
     def tearDown(self):

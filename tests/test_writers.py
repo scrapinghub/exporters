@@ -7,7 +7,7 @@ import csv
 from collections import Counter
 
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
-from exporters.file_handlers import JsonFileHandler
+from exporters.file_handlers import JsonItemExporter
 from exporters.records.base_record import BaseRecord
 from exporters.write_buffer import WriteBuffer
 from exporters.writers import FSWriter
@@ -220,7 +220,7 @@ class CustomWriterTest(unittest.TestCase):
 
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
-        format_info = {'format': 'jl', 'file_handler': JsonFileHandler}
+        format_info = {'format': 'jl', 'file_handler': JsonItemExporter}
         self.write_buffer = WriteBuffer(1000, 1000, format_info, {})
 
     def tearDown(self):

@@ -1,5 +1,5 @@
 from exporters.write_buffer import WriteBuffer
-from exporters.file_handlers import JsonFileHandler, CSVFileHandler, XMLFileHandler
+from exporters.file_handlers import JsonItemExporter, CSVItemExporter, XMLItemExporter
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 
@@ -26,15 +26,15 @@ class BaseWriter(BasePipelineItem):
     supported_file_extensions = {
         'xml': {
             'format': 'xml',
-            'file_handler': XMLFileHandler
+            'file_handler': XMLItemExporter
         },
         'json': {
             'format': 'jl',
-            'file_handler': JsonFileHandler
+            'file_handler': JsonItemExporter
         },
         'csv': {
             'format': 'csv',
-            'file_handler': CSVFileHandler
+            'file_handler': CSVItemExporter
         }
     }
 

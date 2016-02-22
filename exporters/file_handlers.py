@@ -6,7 +6,7 @@ import tempfile
 import uuid
 
 
-class FileHandler(object):
+class BaseItemExporter(object):
 
     file_extension = None
 
@@ -14,6 +14,15 @@ class FileHandler(object):
         self.grouping_info = grouping_info
         self.tmp_folder = tempfile.mkdtemp()
         self.export_metadata = export_metadata
+
+    def export_item(self, item):
+        raise NotImplementedError
+
+    def start_exporting(self):
+        pass
+
+    def finish_exporting(self):
+        pass
 
     def _get_new_path_name(self):
         return os.path.join(self.tmp_folder,
@@ -73,12 +82,12 @@ class FileHandler(object):
         return new_buffer_path
 
 
-class JsonFileHandler(FileHandler):
+class JsonItemExporter(BaseItemExporter):
 
     file_extension = 'jl'
 
 
-class CSVFileHandler(FileHandler):
+class CSVItemExporter(BaseItemExporter):
 
     file_extension = 'csv'
 
@@ -91,7 +100,7 @@ class CSVFileHandler(FileHandler):
         return new_buffer_path
 
 
-class XMLFileHandler(FileHandler):
+class XMLItemExporter(BaseItemExporter):
 
     file_extension = 'xml'
 
@@ -105,4 +114,4 @@ class XMLFileHandler(FileHandler):
     def _compress_file(self, path):
         with open(path, 'a') as f:
             f.write(self.export_metadata.get('formatter', {}).get('footer'))
-        return super(XMLFileHandler, self)._compress_file(path)
+        return super(XMLItemExporter, self)._compress_file(path)
