@@ -4,9 +4,8 @@ import os
 import random
 import unittest
 import csv
-from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
 from exporters.records.base_record import BaseRecord
-from exporters.write_buffer import WriteBuffer, GroupingInfo
+from exporters.write_buffer import WriteBuffer
 from exporters.writers import FSWriter
 from exporters.writers.base_writer import BaseWriter
 from exporters.writers.console_writer import ConsoleWriter
@@ -218,7 +217,6 @@ class CustomWriterTest(unittest.TestCase):
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
         self.formatter = JsonExportFormatter({})
-        self.formatter.set_grouping_info(GroupingInfo())
         self.write_buffer = WriteBuffer(1000, 1000, self.formatter)
 
     def tearDown(self):

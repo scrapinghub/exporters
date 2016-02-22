@@ -41,7 +41,6 @@ class ItemsGroupFilesHandler(object):
         self.bottom = None
         self.file_extension = formatter.file_extension
         self.formatter = formatter
-        self.formatter.set_grouping_info(self.grouping_info)
         self.tmp_folder = tempfile.mkdtemp()
 
     def _add_to_file(self, content, key):
@@ -56,11 +55,11 @@ class ItemsGroupFilesHandler(object):
 
     def end_group_file(self, key):
         path = self.get_group_path(key)
-        footer = self.formatter.finish_exporting(key)
+        footer = self.formatter.finish_exporting()
         if footer:
             with open(path, 'a') as f:
                 f.write(footer)
-        return self.formatter.finish_exporting(key)
+        return path
 
     def close(self):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
@@ -88,14 +87,14 @@ class ItemsGroupFilesHandler(object):
             path = self.grouping_info[key]['group_file'][-1]
         else:
             path = self.create_new_group_file(key)
-            self.formatter.start_exporting(path)
+            self.formatter.start_exporting()
             self.grouping_info.add_path_to_group(key, path)
         return path
 
     def create_new_group_file(self, key):
         path = self.create_new_group_path_for_key(key)
         self.grouping_info.reset_key(key)
-        header = self.formatter.start_exporting(key)
+        header = self.formatter.start_exporting()
         if header:
             with open(path, 'w') as f:
                 f.write(header)

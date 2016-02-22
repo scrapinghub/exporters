@@ -3,7 +3,6 @@ import io
 import six
 from exporters.exceptions import ConfigurationError
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
-from exporters.records.base_record import BaseRecord
 
 
 class CSVExportFormatter(BaseExportFormatter):
@@ -68,7 +67,7 @@ class CSVExportFormatter(BaseExportFormatter):
         writer.writerow(item)
         return output.getvalue().rstrip()
 
-    def start_exporting(self, key):
+    def start_exporting(self):
         if self.show_titles:
             output = io.BytesIO()
             writer = self._create_csv_writer(output)

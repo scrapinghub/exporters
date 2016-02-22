@@ -28,10 +28,10 @@ class XMLExportFormatter(BaseExportFormatter):
         fields = self.read_option('fields_order')
         return {key: idx for idx, key in enumerate(fields)}
 
-    def start_exporting(self, key):
+    def start_exporting(self):
         return '<{}>\n'.format(self.root_name)
 
-    def finish_exporting(self, key):
+    def finish_exporting(self):
         return '</{}>'.format(self.root_name)
 
     def export_item(self, item):
