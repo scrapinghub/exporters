@@ -54,7 +54,7 @@ class ItemsGroupFilesHandler(object):
         content = self.formatter.export_item(item)
         self._add_to_file(content, key)
 
-    def end_buffer_file(self, key):
+    def end_group_file(self, key):
         path = self.get_group_path(key)
         footer = self.formatter.finish_exporting(key)
         if footer:
@@ -87,13 +87,13 @@ class ItemsGroupFilesHandler(object):
         if self.grouping_info[key]['group_file']:
             path = self.grouping_info[key]['group_file'][-1]
         else:
-            path = self.create_new_buffer_file(key)
+            path = self.create_new_group_file(key)
             self.formatter.start_exporting(path)
             self.grouping_info.add_path_to_group(key, path)
         return path
 
-    def create_new_buffer_file(self, key):
-        path = self.create_new_buffer_path_for_key(key)
+    def create_new_group_file(self, key):
+        path = self.create_new_group_path_for_key(key)
         self.grouping_info.reset_key(key)
         header = self.formatter.start_exporting(key)
         if header:
@@ -101,7 +101,7 @@ class ItemsGroupFilesHandler(object):
                 f.write(header)
         return path
 
-    def create_new_buffer_path_for_key(self, key):
+    def create_new_group_path_for_key(self, key):
         new_buffer_path = self._get_new_path_name()
         self.grouping_info.add_path_to_group(key, new_buffer_path)
         with open(new_buffer_path, 'w') as f:
@@ -149,13 +149,13 @@ class WriteBuffer(object):
         self.stats['written_items'] += 1
 
     def finish_buffer_write(self, key):
-        self.items_group_files.end_buffer_file(key)
+        self.items_group_files.end_group_file(key)
 
     def pack_buffer(self, key):
         self.finish_buffer_write(key)
         write_info = self.items_group_files.compress_key_path(key)
         self.metadata[write_info['compressed_path']] = write_info
-        self.items_group_files.create_new_buffer_file(key)
+        self.items_group_files.create_new_group_file(key)
         return write_info
 
     def clean_tmp_files(self, key, compressed_path):
