@@ -29,16 +29,10 @@ class XMLExportFormatter(BaseExportFormatter):
         return {key: idx for idx, key in enumerate(fields)}
 
     def start_exporting(self, key):
-        path = self.create_new_buffer_file(key)
-        with open(path, 'a') as f:
-            f.write('<{}>\n'.format(self.root_name))
-        return path
+        return '<{}>\n'.format(self.root_name)
 
     def finish_exporting(self, key):
-        path = self.get_group_path(key)
-        with open(path, 'a') as f:
-            f.write('</{}>'.format(self.root_name))
-        return path
+        return '</{}>'.format(self.root_name)
 
     def export_item(self, item):
         fields_len = len(self.fields_order)

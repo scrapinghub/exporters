@@ -69,12 +69,11 @@ class CSVExportFormatter(BaseExportFormatter):
         return output.getvalue().rstrip()
 
     def start_exporting(self, key):
-        path = self.create_new_buffer_file(key)
         if self.show_titles:
-            with open(path, 'a') as f:
-                writer = self._create_csv_writer(f)
-                writer.writeheader()
-        return path
+            output = io.BytesIO()
+            writer = self._create_csv_writer(output)
+            writer.writeheader()
+            return output.getvalue().rstrip() + '\n'
 
     def export_item(self, item):
         return self._item_to_csv(item)

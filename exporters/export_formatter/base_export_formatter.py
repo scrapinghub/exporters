@@ -11,10 +11,6 @@ class BaseExportFormatter(BasePipelineItem):
 
     file_extension = None
 
-    def __init__(self, options):
-        super(BaseExportFormatter, self).__init__(options)
-        self.tmp_folder = tempfile.mkdtemp()
-
     def set_grouping_info(self, grouping_info):
         self.grouping_info = grouping_info
 
@@ -22,51 +18,7 @@ class BaseExportFormatter(BasePipelineItem):
         raise NotImplementedError
 
     def start_exporting(self, key):
-        return self.create_new_buffer_file(key)
+        pass
 
     def finish_exporting(self, key):
-        return self.get_group_path(key)
-
-    def _get_new_path_name(self):
-        return os.path.join(self.tmp_folder,
-                            '%s.%s' % (uuid.uuid4(), self.file_extension))
-
-    def create_new_buffer_file(self, key):
-        path = self.create_new_buffer_path_for_key(key)
-        self.grouping_info.reset_key(key)
-        return path
-
-    def compress_key_path(self, key):
-        path = self.get_group_path(key)
-        compressed_path = self._compress_file(path)
-        compressed_size = os.path.getsize(compressed_path)
-        write_info = {'number_of_records': self.grouping_info[key]['buffered_items'],
-                      'size': compressed_size, 'compressed_path': compressed_path}
-        return write_info
-
-    def _compress_file(self, path):
-        compressed_path = path + '.gz'
-        with gzip.open(compressed_path, 'wb') as dump_file, open(path) as fl:
-            shutil.copyfileobj(fl, dump_file)
-        return compressed_path
-
-    def get_grouping_info(self):
-        return self.grouping_info
-
-    def close(self):
-        shutil.rmtree(self.tmp_folder, ignore_errors=True)
-
-    def get_group_path(self, key):
-        if self.grouping_info[key]['group_file']:
-            path = self.grouping_info[key]['group_file'][-1]
-        else:
-            path = self.start_exporting(key)
-            self.grouping_info.add_path_to_group(key, path)
-        return path
-
-    def create_new_buffer_path_for_key(self, key):
-        new_buffer_path = self._get_new_path_name()
-        self.grouping_info.add_path_to_group(key, new_buffer_path)
-        with open(new_buffer_path, 'w') as f:
-            pass
-        return new_buffer_path
+        pass

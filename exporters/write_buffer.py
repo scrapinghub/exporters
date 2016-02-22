@@ -1,4 +1,8 @@
+import gzip
 import os
+import shutil
+import tempfile
+import uuid
 from UserDict import UserDict
 
 import errno
@@ -38,9 +42,10 @@ class ItemsGroupFilesHandler(object):
         self.file_extension = formatter.file_extension
         self.formatter = formatter
         self.formatter.set_grouping_info(self.grouping_info)
+        self.tmp_folder = tempfile.mkdtemp()
 
     def _add_to_file(self, content, key):
-        path = self.formatter.get_group_path(key)
+        path = self.get_group_path(key)
         with open(path, 'a') as f:
             f.write(content + '\n')
         self.grouping_info.add_to_group(key)
@@ -49,17 +54,19 @@ class ItemsGroupFilesHandler(object):
         content = self.formatter.export_item(item)
         self._add_to_file(content, key)
 
-    def create_new_buffer_file(self, key):
-        return self.formatter.start_exporting(key)
-
     def end_buffer_file(self, key):
+        path = self.get_group_path(key)
+        footer = self.formatter.finish_exporting(key)
+        if footer:
+            with open(path, 'a') as f:
+                f.write(footer)
         return self.formatter.finish_exporting(key)
 
     def close(self):
-        return self.formatter.close()
+        shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
     def compress_key_path(self, key):
-        return self.formatter.compress_key_path(key)
+        return self.compress_key_path(key)
 
     def get_grouping_info(self):
         return self.grouping_info
@@ -76,6 +83,49 @@ class ItemsGroupFilesHandler(object):
             if e.errno != errno.ENOENT:
                 raise
 
+    def get_group_path(self, key):
+        if self.grouping_info[key]['group_file']:
+            path = self.grouping_info[key]['group_file'][-1]
+        else:
+            path = self.create_new_buffer_file(key)
+            self.formatter.start_exporting(path)
+            self.grouping_info.add_path_to_group(key, path)
+        return path
+
+    def create_new_buffer_file(self, key):
+        path = self.create_new_buffer_path_for_key(key)
+        self.grouping_info.reset_key(key)
+        header = self.formatter.start_exporting(key)
+        if header:
+            with open(path, 'w') as f:
+                f.write(header)
+        return path
+
+    def create_new_buffer_path_for_key(self, key):
+        new_buffer_path = self._get_new_path_name()
+        self.grouping_info.add_path_to_group(key, new_buffer_path)
+        with open(new_buffer_path, 'w') as f:
+            pass
+        return new_buffer_path
+
+    def _get_new_path_name(self):
+        return os.path.join(self.tmp_folder,
+                            '%s.%s' % (uuid.uuid4(), self.file_extension))
+
+    def compress_key_path(self, key):
+        path = self.get_group_path(key)
+        compressed_path = self._compress_file(path)
+        compressed_size = os.path.getsize(compressed_path)
+        write_info = {'number_of_records': self.grouping_info[key]['buffered_items'],
+                      'size': compressed_size, 'compressed_path': compressed_path}
+        return write_info
+
+    def _compress_file(self, path):
+        compressed_path = path + '.gz'
+        with gzip.open(compressed_path, 'wb') as dump_file, open(path) as fl:
+            shutil.copyfileobj(fl, dump_file)
+        return compressed_path
+
 
 class WriteBuffer(object):
 
@@ -87,6 +137,7 @@ class WriteBuffer(object):
         self.stats = {'written_items': 0}
         self.metadata = {}
         self.is_new_buffer = True
+
 
     def buffer(self, item):
         """
@@ -129,3 +180,23 @@ class WriteBuffer(object):
 
     def get_metadata(self, buffer_path, meta_key):
         return self.metadata[buffer_path].get(meta_key)
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def get_grouping_info(self):
+        return self.grouping_info
+
+    def close(self):
+        self.items_group_files.close()
+
+
