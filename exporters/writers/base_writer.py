@@ -1,3 +1,6 @@
+import hashlib
+import json
+import os
 from exporters.write_buffer import WriteBuffer
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
@@ -22,6 +25,7 @@ class BaseWriter(BasePipelineItem):
         'items_per_buffer_write': {'type': int, 'default': ITEMS_PER_BUFFER_WRITE},
         'size_per_buffer_write': {'type': int, 'default': SIZE_PER_BUFFER_WRITE},
         'items_limit': {'type': int, 'default': 0},
+        'file_info_path': {'type': basestring, 'default': None}
     }
     supported_file_extensions = {
         'csv': 'csv',
@@ -41,6 +45,10 @@ class BaseWriter(BasePipelineItem):
         self.writer_metadata = {
             'items_count': 0
         }
+        self.file_info_path = self.read_option('file_info_path')
+        if self.file_info_path:
+            with open(self.file_info_path, 'w'):
+                pass
 
     def write(self, path, key):
         """
@@ -103,7 +111,21 @@ class BaseWriter(BasePipelineItem):
     def increment_written_items(self):
         self.writer_metadata['items_count'] += 1
 
+    def _append_md5_info(self, write_info):
+        file_name = write_info['compressed_path'].split(os.path.sep)[-1]
+        md5 = hashlib.md5(file_name).hexdigest()
+        with open(self.file_info_path, 'a') as f:
+            info = {
+                'file': file_name,
+                'size': write_info['size'],
+                'number_of_records': write_info['number_of_records'],
+                'md5': md5
+            }
+            f.write(json.dumps(info)+'\n')
+
     def _write(self, key):
         write_info = self.write_buffer.pack_buffer(key)
         self.write(write_info.get('compressed_path'), self.write_buffer.grouping_info[key]['membership'])
+        if self.file_info_path:
+            self._append_md5_info(write_info)
         self.write_buffer.finish_buffer_write(key, write_info.get('compressed_path'))
