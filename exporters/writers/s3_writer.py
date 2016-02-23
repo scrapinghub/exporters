@@ -4,6 +4,7 @@ import datetime
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
+from boto.utils import compute_md5
 
 DEFAULT_BUCKET_REGION = 'us-east-1'
 
@@ -92,7 +93,7 @@ class S3Writer(FilebaseBaseWriter):
             if self.save_metadata:
                 key.set_metadata('total', self._get_total_count(dump_path))
             progress = BotoDownloadProgress(self.logger)
-            key.set_contents_from_file(f, cb=progress)
+            key.set_contents_from_file(f, cb=progress, md5=compute_md5(f))
             self._ensure_proper_key_permissions(key)
         self.logger.info('Saved {}'.format(destination))
 

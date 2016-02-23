@@ -8,6 +8,7 @@ from exporters.module_loader import ModuleLoader
 from exporters.progress_callback import BotoUploadProgress
 from exporters.readers.s3_reader import get_bucket, S3BucketKeysFetcher
 from exporters.utils import TmpFile
+from boto.utils import compute_md5
 
 
 def _add_permissions(user_id, key):
@@ -77,6 +78,10 @@ class S3BypassState(object):
 
     def delete(self):
         self.state.delete()
+
+
+class InvalidKeyIntegrityCheck(Exception):
+    pass
 
 
 class S3Bypass(BaseBypass):
@@ -175,6 +180,12 @@ class S3Bypass(BaseBypass):
         except S3ResponseError:
             self.logger.warning('No direct copy supported for key.'.format(key_name))
             self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
+        self._check_copy_integrity(key, dest_bucket, dest_key_name)
+
+    def _check_copy_integrity(self, source_key, dest_bucket, dest_key_name):
+        dest_key = dest_bucket.get_key(dest_key_name)
+        if source_key.etag != dest_key.etag:
+            raise InvalidKeyIntegrityCheck()
 
     def _ensure_proper_key_permissions(self, key):
         from boto.exception import S3ResponseError
@@ -189,7 +200,9 @@ class S3Bypass(BaseBypass):
             key.get_contents_to_filename(tmp_filename)
             dest_key = dest_bucket.new_key(dest_key_name)
             progress = BotoUploadProgress(self.logger)
-            dest_key.set_contents_from_filename(tmp_filename, cb=progress)
+            with open(tmp_filename) as f:
+                md5 = compute_md5(f)
+            dest_key.set_contents_from_filename(tmp_filename, cb=progress, md5=md5)
             self._ensure_proper_key_permissions(dest_key)
 
     @retry_long
