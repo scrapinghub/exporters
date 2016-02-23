@@ -10,7 +10,8 @@ class ItemsLimitReached(Exception):
 
 
 ITEMS_PER_BUFFER_WRITE = 500000
-SIZE_PER_BUFFER_WRITE = 0
+# Setting a default limit of 4Gb per file
+SIZE_PER_BUFFER_WRITE = 4000000000
 
 
 class BaseWriter(BasePipelineItem):
