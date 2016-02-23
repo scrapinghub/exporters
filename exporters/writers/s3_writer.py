@@ -90,10 +90,12 @@ class S3Writer(FilebaseBaseWriter):
         destination = 's3://{}/{}'.format(self.bucket.name, key_name)
         self.logger.info('Start uploading {} to {}'.format(dump_path, destination))
         with closing(self.bucket.new_key(key_name)) as key, open(dump_path, 'r') as f:
+            md5 = compute_md5(f)
             if self.save_metadata:
                 key.set_metadata('total', self._get_total_count(dump_path))
+                key.set_metadata('md5', md5)
             progress = BotoDownloadProgress(self.logger)
-            key.set_contents_from_file(f, cb=progress, md5=compute_md5(f))
+            key.set_contents_from_file(f, cb=progress, md5=md5)
             self._ensure_proper_key_permissions(key)
         self.logger.info('Saved {}'.format(destination))
 

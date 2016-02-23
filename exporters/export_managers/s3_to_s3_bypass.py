@@ -178,7 +178,7 @@ class S3Bypass(BaseBypass):
             with key_permissions(user_id, key):
                 dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
         except S3ResponseError:
-            self.logger.warning('No direct copy supported for key.'.format(key_name))
+            self.logger.warning('No direct copy supported for key {}.'.format(key_name))
             self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
         self._check_copy_integrity(key, dest_bucket, dest_key_name)
 
@@ -194,14 +194,20 @@ class S3Bypass(BaseBypass):
         except S3ResponseError:
             self.logger.warning('We have no READ_ACP/WRITE_ACP permissions')
 
+    def _get_md5(self, key, tmp_filename):
+        md5 = key.get_metadata('md5')
+        if md5 is None:
+            with open(tmp_filename) as f:
+                md5 = compute_md5(f)
+        return md5
+
     def _copy_without_permissions(self, dest_bucket, dest_key_name, source_bucket, key_name):
         key = source_bucket.get_key(key_name)
         with TmpFile() as tmp_filename:
             key.get_contents_to_filename(tmp_filename)
             dest_key = dest_bucket.new_key(dest_key_name)
             progress = BotoUploadProgress(self.logger)
-            with open(tmp_filename) as f:
-                md5 = compute_md5(f)
+            md5 = self._get_md5(key, tmp_filename)
             dest_key.set_contents_from_filename(tmp_filename, cb=progress, md5=md5)
             self._ensure_proper_key_permissions(dest_key)
 
