@@ -22,11 +22,6 @@ class JsonExportFormatter(BaseExportFormatter):
         super(JsonExportFormatter, self).__init__(options)
         self.pretty_print = self.read_option('pretty_print')
 
-    def _format(self, item):
-        return json.dumps(item, indent=2, sort_keys=True)
-
     def export_item(self, item):
-        if self.pretty_print:
-            return self._format(item)
-        else:
-            return json.dumps(item)
+        options = dict(indent=2, sort_keys=True) if self.pretty_print else dict()
+        return json.dumps(item, **options)
