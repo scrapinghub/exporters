@@ -87,7 +87,6 @@ class ItemsGroupFilesHandler(object):
             path = self.grouping_info[key]['group_file'][-1]
         else:
             path = self.create_new_group_file(key)
-            self.formatter.format_header()
             self.grouping_info.add_path_to_group(key, path)
         return path
 
@@ -179,18 +178,6 @@ class WriteBuffer(object):
 
     def get_metadata(self, buffer_path, meta_key):
         return self.metadata[buffer_path].get(meta_key)
-
-
-
-
-
-
-
-
-
-
-
-
 
     def get_grouping_info(self):
         return self.grouping_info
