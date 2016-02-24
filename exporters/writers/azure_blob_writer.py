@@ -23,9 +23,9 @@ class AzureBlobWriter(BaseWriter):
         'container': {'type': basestring}
     }
 
-    def __init__(self, options):
+    def __init__(self, options, *args, **kw):
         from azure.storage.blob import BlobService
-        super(AzureBlobWriter, self).__init__(options)
+        super(AzureBlobWriter, self).__init__(options, *args, **kw)
         account_name = self.read_option('account_name')
         account_key = self.read_option('account_key')
         self.container = self.read_option('container')
