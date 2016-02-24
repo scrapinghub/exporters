@@ -1,5 +1,3 @@
-from exporters.defaults import DEFAULT_FORMATTER_CONFIG
-from exporters.module_loader import ModuleLoader
 from exporters.write_buffer import WriteBuffer
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
@@ -30,7 +28,6 @@ class BaseWriter(BasePipelineItem):
         super(BaseWriter, self).__init__(options, *args, **kwargs)
         self.finished = False
         self.check_options()
-        self.module_loader = ModuleLoader()
         self.items_limit = self.read_option('items_limit')
         self.logger = WriterLogger({'log_level': options.get('log_level'),
                                     'logger_name': options.get('logger_name')})
