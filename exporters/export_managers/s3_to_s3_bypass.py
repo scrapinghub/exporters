@@ -81,7 +81,9 @@ class S3BypassState(object):
 
 
 class InvalidKeyIntegrityCheck(Exception):
-    pass
+    """
+    Exception thrown when two s3 keys have different md5 checksums
+    """
 
 
 class S3Bypass(BaseBypass):
