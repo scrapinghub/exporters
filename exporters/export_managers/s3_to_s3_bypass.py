@@ -185,7 +185,8 @@ class S3Bypass(BaseBypass):
     def _check_copy_integrity(self, source_key, dest_bucket, dest_key_name):
         dest_key = dest_bucket.get_key(dest_key_name)
         if source_key.etag != dest_key.etag:
-            raise InvalidKeyIntegrityCheck()
+            raise InvalidKeyIntegrityCheck('Key {} and key {} md5 checksums are different. {} != {}'
+                                           .format(source_key.name, dest_key_name, source_key.etag, dest_key.etag))
 
     def _ensure_proper_key_permissions(self, key):
         from boto.exception import S3ResponseError
