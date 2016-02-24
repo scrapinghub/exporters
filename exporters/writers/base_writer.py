@@ -1,4 +1,4 @@
-from exporters.defaults import DEFAULT_FORMATTER_CLASS
+from exporters.defaults import DEFAULT_FORMATTER_CONFIG
 from exporters.module_loader import ModuleLoader
 from exporters.write_buffer import WriteBuffer
 from exporters.logger.base_logger import WriterLogger
@@ -33,7 +33,7 @@ class BaseWriter(BasePipelineItem):
         self.items_limit = self.read_option('items_limit')
         self.logger = WriterLogger({'log_level': options.get('log_level'),
                                     'logger_name': options.get('logger_name')})
-        self.export_formatter = self.module_loader.load_formatter(options.get('formatter', DEFAULT_FORMATTER_CLASS))
+        self.export_formatter = self.module_loader.load_formatter(options.get('formatter', DEFAULT_FORMATTER_CONFIG))
         items_per_buffer_write = self.read_option('items_per_buffer_write')
         size_per_buffer_write = self.read_option('size_per_buffer_write')
         self.write_buffer = WriteBuffer(items_per_buffer_write, size_per_buffer_write, self.export_formatter)
