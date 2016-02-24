@@ -31,8 +31,8 @@ class SFTPWriter(FilebaseBaseWriter):
         'port': {'type': int, 'default': 22},
     }
 
-    def __init__(self, options):
-        super(SFTPWriter, self).__init__(options)
+    def __init__(self, options, *args, **kwargs):
+        super(SFTPWriter, self).__init__(options, *args, **kwargs)
         self.sftp_host = self.read_option('host')
         self.sftp_port = self.read_option('port')
         self.sftp_user = self.read_option('sftp_user')

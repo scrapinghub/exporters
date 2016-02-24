@@ -1,4 +1,6 @@
 import unittest
+
+from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
 from exporters.writers.aggregation_stats_writer import AggregationStatsWriter
 
@@ -17,7 +19,7 @@ class AggregationStatsWriterTest(unittest.TestCase):
         options = self.get_writer_config()
 
         # when:
-        writer = AggregationStatsWriter(options)
+        writer = AggregationStatsWriter(options, export_formatter=JsonExportFormatter(dict()))
         writer.write_batch(items_to_write)
         writer.close()
 

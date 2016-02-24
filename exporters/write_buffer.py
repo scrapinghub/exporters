@@ -1,10 +1,10 @@
-from UserDict import UserDict
-from collections import Counter
 import gzip
 import os
 import shutil
 import tempfile
 import uuid
+from UserDict import UserDict
+
 import errno
 
 
@@ -34,32 +34,78 @@ class GroupingInfo(UserDict):
 
 class ItemsGroupFilesHandler(object):
 
-    def __init__(self):
+    def __init__(self, formatter):
         self.grouping_info = GroupingInfo()
-        self.file_extension = None
-        self.header_line = None
+        self.file_extension = formatter.file_extension
+        self.formatter = formatter
         self.tmp_folder = tempfile.mkdtemp()
+
+    def _add_to_file(self, content, key):
+        path = self.get_group_path(key)
+        with open(path, 'a') as f:
+            f.write(content + '\n')
+        self.grouping_info.add_to_group(key)
+
+    def add_item_to_file(self, item, key):
+        content = self.formatter.format(item)
+        self._add_to_file(content, key)
+
+    def end_group_file(self, key):
+        path = self.get_group_path(key)
+        footer = self.formatter.format_footer()
+        if footer:
+            with open(path, 'a') as f:
+                f.write(footer)
+        return path
+
+    def close(self):
+        shutil.rmtree(self.tmp_folder, ignore_errors=True)
+
+    def compress_key_path(self, key):
+        return self.compress_key_path(key)
+
+    def get_grouping_info(self):
+        return self.grouping_info
+
+    def clean_tmp_files(self, compressed_path):
+        path = compressed_path[:-3]
+        self._silent_remove(path)
+        self._silent_remove(compressed_path)
+
+    def _silent_remove(self, filename):
+        try:
+            os.remove(filename)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
 
     def get_group_path(self, key):
         if self.grouping_info[key]['group_file']:
             path = self.grouping_info[key]['group_file'][-1]
         else:
-            path = self._get_new_path_name()
-            with open(path, 'w') as f:
-                if self.header_line:
-                    f.write(self.header_line + '\n')
+            path = self.create_new_group_file(key)
             self.grouping_info.add_path_to_group(key, path)
         return path
+
+    def create_new_group_file(self, key):
+        path = self.create_new_group_path_for_key(key)
+        self.grouping_info.reset_key(key)
+        header = self.formatter.format_header()
+        if header:
+            with open(path, 'w') as f:
+                f.write(header)
+        return path
+
+    def create_new_group_path_for_key(self, key):
+        new_buffer_path = self._get_new_path_name()
+        self.grouping_info.add_path_to_group(key, new_buffer_path)
+        with open(new_buffer_path, 'w') as f:
+            pass
+        return new_buffer_path
 
     def _get_new_path_name(self):
         return os.path.join(self.tmp_folder,
                             '%s.%s' % (uuid.uuid4(), self.file_extension))
-
-    def create_new_buffer_path_for_key(self, key):
-        new_buffer_path = self._get_new_path_name()
-        self.grouping_info.add_path_to_group(key, new_buffer_path)
-        f = open(new_buffer_path, 'w')
-        f.close()
 
     def compress_key_path(self, key):
         path = self.get_group_path(key)
@@ -75,44 +121,18 @@ class ItemsGroupFilesHandler(object):
             shutil.copyfileobj(fl, dump_file)
         return compressed_path
 
-    def get_grouping_info(self):
-        return self.grouping_info
-
-    def _silent_remove(self, filename):
-        try:
-            os.remove(filename)
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                raise
-
-    def clean_tmp_files(self, path, compressed_path):
-        self._silent_remove(path)
-        self._silent_remove(compressed_path)
-
-    def close(self):
-        shutil.rmtree(self.tmp_folder, ignore_errors=True)
-
-    def add_item_to_file(self, item, key):
-        path = self.get_group_path(key)
-        with open(path, 'a') as f:
-            f.write(item.formatted + '\n')
-        self.grouping_info.add_to_group(key)
-
-    def create_new_buffer_file(self, key, compressed_path):
-        path = self.get_group_path(key)
-        self.create_new_buffer_path_for_key(key)
-        self.grouping_info.reset_key(key)
-        self.clean_tmp_files(path, compressed_path)
-
 
 class WriteBuffer(object):
-    def __init__(self, items_per_buffer_write, size_per_buffer_write):
+
+    def __init__(self, items_per_buffer_write, size_per_buffer_write, formatter):
         self.files = []
-        self.items_group_files = ItemsGroupFilesHandler()
+        self.items_group_files = ItemsGroupFilesHandler(formatter)
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
         self.stats = {'written_items': 0}
         self.metadata = {}
+        self.is_new_buffer = True
+
 
     def buffer(self, item):
         """
@@ -123,13 +143,18 @@ class WriteBuffer(object):
         self.items_group_files.add_item_to_file(item, key)
         self.stats['written_items'] += 1
 
-    def finish_buffer_write(self, key, compressed_path):
-        self.items_group_files.create_new_buffer_file(key, compressed_path)
+    def finish_buffer_write(self, key):
+        self.items_group_files.end_group_file(key)
 
     def pack_buffer(self, key):
+        self.finish_buffer_write(key)
         write_info = self.items_group_files.compress_key_path(key)
         self.metadata[write_info['compressed_path']] = write_info
+        self.items_group_files.create_new_group_file(key)
         return write_info
+
+    def clean_tmp_files(self, key, compressed_path):
+        self.items_group_files.clean_tmp_files(compressed_path)
 
     def should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(
@@ -150,3 +175,11 @@ class WriteBuffer(object):
 
     def get_metadata(self, buffer_path, meta_key):
         return self.metadata[buffer_path].get(meta_key)
+
+    def get_grouping_info(self):
+        return self.grouping_info
+
+    def close(self):
+        self.items_group_files.close()
+
+

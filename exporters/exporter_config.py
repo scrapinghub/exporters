@@ -3,9 +3,9 @@ from importlib import import_module
 from inspect import getmembers, isclass
 import json
 from exporters.exceptions import ConfigCheckError
-from exporters.defaults import DEFAULT_FILTER_CLASS, DEFAULT_GROUPER_CLASS, DEFAULT_PERSISTENCE_CLASS, \
-    DEFAULT_STATS_MANAGER_CLASS, DEFAULT_FORMATTER_CLASS, DEFAULT_LOGGER_LEVEL, DEFAULT_LOGGER_NAME, \
-    DEFAULT_TRANSFORM_CLASS
+from exporters.defaults import DEFAULT_FILTER_CONFIG, DEFAULT_GROUPER_CONFIG, DEFAULT_PERSISTENCE_CONFIG, \
+    DEFAULT_STATS_MANAGER_CCONFIG, DEFAULT_FORMATTER_CONFIG, DEFAULT_LOGGER_LEVEL, DEFAULT_LOGGER_NAME, \
+    DEFAULT_TRANSFORM_CONFIG
 
 
 class ExporterConfig(object):
@@ -18,18 +18,18 @@ class ExporterConfig(object):
         if 'filter' in self.configuration:
             self.filter_before_options = self._merge_options('filter')
         else:
-            self.filter_before_options = self._merge_options('filter_before', DEFAULT_FILTER_CLASS)
-        self.filter_after_options = self._merge_options('filter_after', DEFAULT_FILTER_CLASS)
-        self.transform_options = self._merge_options('transform', DEFAULT_TRANSFORM_CLASS)
-        self.grouper_options = self._merge_options('grouper', DEFAULT_GROUPER_CLASS)
+            self.filter_before_options = self._merge_options('filter_before', DEFAULT_FILTER_CONFIG)
+        self.filter_after_options = self._merge_options('filter_after', DEFAULT_FILTER_CONFIG)
+        self.transform_options = self._merge_options('transform', DEFAULT_TRANSFORM_CONFIG)
+        self.grouper_options = self._merge_options('grouper', DEFAULT_GROUPER_CONFIG)
         self.writer_options = self._merge_options('writer')
         # Persistence module needs to know about the full configuration, in order to retrieve it if needed
-        self.persistence_options = self._merge_options('persistence', DEFAULT_PERSISTENCE_CLASS)
+        self.persistence_options = self._merge_options('persistence', DEFAULT_PERSISTENCE_CONFIG)
         self.persistence_options['configuration'] = json.dumps(configuration)
         self.persistence_options['resume'] = exporter_options.get('resume', False)
         self.persistence_options['persistence_state_id'] = exporter_options.get('persistence_state_id', None)
-        self.stats_options = self._merge_options('stats_manager', DEFAULT_STATS_MANAGER_CLASS)
-        self.formatter_options = exporter_options.get('formatter', DEFAULT_FORMATTER_CLASS)
+        self.stats_options = self._merge_options('stats_manager', DEFAULT_STATS_MANAGER_CCONFIG)
+        self.formatter_options = exporter_options.get('formatter', DEFAULT_FORMATTER_CONFIG)
         self.notifiers = exporter_options.get('notifications', [])
 
     def __str__(self):

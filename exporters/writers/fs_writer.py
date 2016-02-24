@@ -17,8 +17,8 @@ class FSWriter(FilebaseBaseWriter):
 
     }
 
-    def __init__(self, options):
-        super(FSWriter, self).__init__(options)
+    def __init__(self, options, *args, **kwargs):
+        super(FSWriter, self).__init__(options, *args, **kwargs)
         self.logger.info(
             'FSWriter has been initiated. Writing to: {}'.format(self.filebase))
 

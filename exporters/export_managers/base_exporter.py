@@ -22,11 +22,10 @@ class BaseExporter(object):
         self.filter_after = self.module_loader.load_filter(
             self.config.filter_after_options)
         self.transform = self.module_loader.load_transform(self.config.transform_options)
-        self.writer = self.module_loader.load_writer(self.config.writer_options)
+        self.export_formatter = self.module_loader.load_formatter(self.config.formatter_options)
+        self.writer = self.module_loader.load_writer(self.config.writer_options, export_formatter=self.export_formatter)
         self.persistence = self.module_loader.load_persistence(
             self.config.persistence_options)
-        self.export_formatter = self.module_loader.load_formatter(
-            self.config.formatter_options)
         self.grouper = self.module_loader.load_grouper(self.config.grouper_options)
         self.notifiers = NotifiersList(self.config.notifiers)
         self.logger.debug('{} has been initiated'.format(self.__class__.__name__))
@@ -59,8 +58,6 @@ class BaseExporter(object):
         times.update(filtered_after=datetime.datetime.now())
         next_batch = self.grouper.group_batch(next_batch)
         times.update(grouped=datetime.datetime.now())
-        next_batch = self.export_formatter.format(next_batch)
-        times.update(formatted=datetime.datetime.now())
         try:
             self.writer.write_batch(batch=next_batch)
             times.update(written=datetime.datetime.now())

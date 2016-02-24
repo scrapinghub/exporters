@@ -18,7 +18,7 @@ class SupportedOptionsMeta(type):
 class BasePipelineItem(object):
     supported_options = {}
 
-    def __init__(self, options):
+    def __init__(self, options, *args, **kwargs):
         self.options = options.get('options', {})
         self.check_options()
         self.stats = {}

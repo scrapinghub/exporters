@@ -43,10 +43,10 @@ class S3Writer(FilebaseBaseWriter):
         'save_metadata': {'type': bool, 'default': True, 'required': False}
     }
 
-    def __init__(self, options):
+    def __init__(self, options, *args, **kwargs):
         import boto
 
-        super(S3Writer, self).__init__(options)
+        super(S3Writer, self).__init__(options, *args, **kwargs)
         access_key = self.read_option('aws_access_key_id')
         secret_key = self.read_option('aws_secret_access_key')
         self.aws_region = self.read_option('aws_region')
@@ -120,7 +120,8 @@ class S3Writer(FilebaseBaseWriter):
         """
         Called to clean all possible tmp files created during the process.
         """
-        self.write_buffer.close()
+        if self.write_buffer is not None:
+            self.write_buffer.close()
         self._check_write_consistency()
         if self.read_option('save_pointer'):
             self._update_last_pointer()

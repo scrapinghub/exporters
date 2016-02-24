@@ -506,3 +506,10 @@ CSVExportFormatter
     :members:
     :undoc-members:
     :show-inheritance:
+
+XMLExportFormatter
+##################
+.. automodule:: exporters.export_formatter.xml_export_formatter
+    :members:
+    :undoc-members:
+    :show-inheritance:

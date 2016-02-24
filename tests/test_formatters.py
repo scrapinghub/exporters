@@ -14,24 +14,20 @@ class BaseExportFormatterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
 
-            }
         }
         self.export_formatter = BaseExportFormatter(self.options)
 
     def test_format_not_implemented(self):
         with self.assertRaises(NotImplementedError):
-            self.export_formatter.format([])
+            self.export_formatter.format({})
 
 
 class JsonFormatterTest(unittest.TestCase):
 
     def setUp(self):
         self.options = {
-            'exporter_options': {
 
-            }
         }
         self.export_formatter = JsonExportFormatter(self.options)
 
@@ -39,13 +35,8 @@ class JsonFormatterTest(unittest.TestCase):
         item = BaseRecord()
         item['key'] = 0
         item['value'] = random.randint(0, 10000)
-        item = self.export_formatter.format([item])
-        item = list(item)[0]
-        self.assertIsInstance(json.loads(item.formatted), dict)
-
-    def test_raise_exception(self):
-        with self.assertRaises(Exception):
-            list(self.export_formatter.format([1, 2, 3]))
+        item = self.export_formatter.format(item)
+        self.assertIsInstance(json.loads(item), dict)
 
 
 class CSVFormatterTest(unittest.TestCase):
@@ -73,10 +64,10 @@ class CSVFormatterTest(unittest.TestCase):
         formatter = CSVExportFormatter(options)
 
         # when:
-        formatted_batch = formatter.format(self.batch)
+        formatted_batch = [formatter.format(item) for item in self.batch]
 
         # then:
-        memfile = self._create_memfile(it.formatted for it in formatted_batch)
+        memfile = self._create_memfile((it for it in formatted_batch), header=['"key1","key2"'])
         self.assertEqual(self.batch, list(csv.DictReader(memfile)))
 
     def test_format_batch_no_show_titles(self):
@@ -91,10 +82,10 @@ class CSVFormatterTest(unittest.TestCase):
         formatter = CSVExportFormatter(options)
 
         # when:
-        formatted_batch = formatter.format(self.batch)
+        formatted_batch = [formatter.format(item) for item in self.batch]
 
         # then:
-        memfile = self._create_memfile(it.formatted for it in formatted_batch)
+        memfile = self._create_memfile(it for it in formatted_batch)
         self.assertEqual(self.batch, list(csv.DictReader(memfile, fieldnames=fields)))
 
     def test_format_batch_with_custom_delimiter(self):
@@ -103,15 +94,17 @@ class CSVFormatterTest(unittest.TestCase):
             'options': {
                 'fields': ['key1', 'key2'],
                 'delimiter': '|',
+                'show_titles': True
             }
         }
         formatter = CSVExportFormatter(options)
 
         # when:
-        formatted_batch = formatter.format(self.batch)
+        formatted_batch = [formatter.format(item) for item in self.batch]
 
         # then:
-        memfile = self._create_memfile(it.formatted for it in formatted_batch)
+        memfile = self._create_memfile((it for it in formatted_batch), header=['"key1"|"key2"'])
+
         self.assertEqual(self.batch, list(csv.DictReader(memfile, delimiter='|')))
 
     def test_format_from_schema(self):
@@ -133,11 +126,14 @@ class CSVFormatterTest(unittest.TestCase):
         formatter = CSVExportFormatter(options)
 
         # when:
-        formatted_batch = formatter.format(self.batch)
+        formatted_batch = [formatter.format(item) for item in self.batch]
 
         # then:
-        memfile = self._create_memfile(it.formatted for it in formatted_batch)
+        memfile = self._create_memfile((it for it in formatted_batch), header=['"key1","key2"'])
         self.assertEqual(self.batch, list(csv.DictReader(memfile)))
 
-    def _create_memfile(self, lines):
+    def _create_memfile(self, lines, header=None):
+        if not header:
+            header = []
+        lines = header + list(lines)
         return io.BytesIO('\n'.join(l for l in lines))
