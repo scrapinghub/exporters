@@ -50,12 +50,12 @@ class ItemsGroupFilesHandler(object):
         self.grouping_info.add_to_group(key)
 
     def add_item_to_file(self, item, key):
-        content = self.formatter.export_item(item)
+        content = self.formatter.format(item)
         self._add_to_file(content, key)
 
     def end_group_file(self, key):
         path = self.get_group_path(key)
-        footer = self.formatter.finish_exporting()
+        footer = self.formatter.format_footer()
         if footer:
             with open(path, 'a') as f:
                 f.write(footer)
@@ -87,14 +87,14 @@ class ItemsGroupFilesHandler(object):
             path = self.grouping_info[key]['group_file'][-1]
         else:
             path = self.create_new_group_file(key)
-            self.formatter.start_exporting()
+            self.formatter.format_header()
             self.grouping_info.add_path_to_group(key, path)
         return path
 
     def create_new_group_file(self, key):
         path = self.create_new_group_path_for_key(key)
         self.grouping_info.reset_key(key)
-        header = self.formatter.start_exporting()
+        header = self.formatter.format_header()
         if header:
             with open(path, 'w') as f:
                 f.write(header)

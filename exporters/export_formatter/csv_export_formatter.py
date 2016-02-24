@@ -67,12 +67,12 @@ class CSVExportFormatter(BaseExportFormatter):
         writer.writerow(item)
         return output.getvalue().rstrip()
 
-    def start_exporting(self):
+    def format_header(self):
         if self.show_titles:
             output = io.BytesIO()
             writer = self._create_csv_writer(output)
             writer.writeheader()
             return output.getvalue().rstrip() + '\n'
 
-    def export_item(self, item):
+    def format(self, item):
         return self._item_to_csv(item)

@@ -12,13 +12,13 @@ class ConsoleWriter(BaseWriter):
         super(ConsoleWriter, self).__init__(options)
         self.logger.info('ConsoleWriter has been initiated')
         self.pretty_print = self.options.get('pretty_print', False)
-        header = self.export_formatter.start_exporting()
+        header = self.export_formatter.format_header()
         if header:
             print header
 
     def write_batch(self, batch):
         for item in batch:
-            print self.export_formatter.export_item(item)
+            print self.export_formatter.format(item)
             self.increment_written_items()
             if self.items_limit and self.items_limit == self.writer_metadata['items_count']:
                 raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'
@@ -27,6 +27,6 @@ class ConsoleWriter(BaseWriter):
 
     def close(self):
         super(ConsoleWriter, self).close()
-        footer = self.export_formatter.finish_exporting()
+        footer = self.export_formatter.format_footer()
         if footer:
             print footer

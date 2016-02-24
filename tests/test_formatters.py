@@ -20,7 +20,7 @@ class BaseExportFormatterTest(unittest.TestCase):
 
     def test_format_not_implemented(self):
         with self.assertRaises(NotImplementedError):
-            self.export_formatter.export_item({})
+            self.export_formatter.format({})
 
 
 class JsonFormatterTest(unittest.TestCase):
@@ -35,7 +35,7 @@ class JsonFormatterTest(unittest.TestCase):
         item = BaseRecord()
         item['key'] = 0
         item['value'] = random.randint(0, 10000)
-        item = self.export_formatter.export_item(item)
+        item = self.export_formatter.format(item)
         self.assertIsInstance(json.loads(item), dict)
 
 
@@ -64,7 +64,7 @@ class CSVFormatterTest(unittest.TestCase):
         formatter = CSVExportFormatter(options)
 
         # when:
-        formatted_batch = [formatter.export_item(item) for item in self.batch]
+        formatted_batch = [formatter.format(item) for item in self.batch]
 
         # then:
         memfile = self._create_memfile((it for it in formatted_batch), header=['"key1","key2"'])
@@ -82,7 +82,7 @@ class CSVFormatterTest(unittest.TestCase):
         formatter = CSVExportFormatter(options)
 
         # when:
-        formatted_batch = [formatter.export_item(item) for item in self.batch]
+        formatted_batch = [formatter.format(item) for item in self.batch]
 
         # then:
         memfile = self._create_memfile(it for it in formatted_batch)
@@ -100,7 +100,7 @@ class CSVFormatterTest(unittest.TestCase):
         formatter = CSVExportFormatter(options)
 
         # when:
-        formatted_batch = [formatter.export_item(item) for item in self.batch]
+        formatted_batch = [formatter.format(item) for item in self.batch]
 
         # then:
         memfile = self._create_memfile((it for it in formatted_batch), header=['"key1"|"key2"'])
@@ -126,7 +126,7 @@ class CSVFormatterTest(unittest.TestCase):
         formatter = CSVExportFormatter(options)
 
         # when:
-        formatted_batch = [formatter.export_item(item) for item in self.batch]
+        formatted_batch = [formatter.format(item) for item in self.batch]
 
         # then:
         memfile = self._create_memfile((it for it in formatted_batch), header=['"key1","key2"'])

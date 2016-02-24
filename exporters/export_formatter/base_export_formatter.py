@@ -5,11 +5,11 @@ class BaseExportFormatter(BasePipelineItem):
 
     file_extension = None
 
-    def export_item(self, item):
+    def format(self, item):
         raise NotImplementedError
 
-    def start_exporting(self):
-        pass
+    def format_header(self):
+        return ''
 
-    def finish_exporting(self):
-        pass
+    def format_footer(self):
+        return ''

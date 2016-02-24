@@ -28,13 +28,13 @@ class XMLExportFormatter(BaseExportFormatter):
         fields = self.read_option('fields_order')
         return {key: idx for idx, key in enumerate(fields)}
 
-    def start_exporting(self):
+    def format_header(self):
         return '<{}>\n'.format(self.root_name)
 
-    def finish_exporting(self):
+    def format_footer(self):
         return '</{}>'.format(self.root_name)
 
-    def export_item(self, item):
+    def format(self, item):
         fields_len = len(self.fields_order)
         ordered_item = collections.OrderedDict(
             sorted(item.items(),
