@@ -10,8 +10,8 @@ class AggregationStatsWriter(BaseWriter):
     It has no other options.
     """
 
-    def __init__(self, options):
-        super(AggregationStatsWriter, self).__init__(options)
+    def __init__(self, options, *args, **kwargs):
+        super(AggregationStatsWriter, self).__init__(options, *args, **kwargs)
         self.aggregated_info = {'occurrences': Counter()}
         self.logger.info('AggregationStatsWriter has been initiated')
 

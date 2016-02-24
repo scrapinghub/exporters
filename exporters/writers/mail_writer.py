@@ -43,9 +43,9 @@ class MailWriter(BaseWriter):
         }
     }
 
-    def __init__(self, options):
+    def __init__(self, options, *args, **kwargs):
         import boto
-        super(MailWriter, self).__init__(options)
+        super(MailWriter, self).__init__(options, *args, **kwargs)
         self.emails = self.read_option('emails')
         self.subject = self.read_option('subject')
         self.sender = self.read_option('from')

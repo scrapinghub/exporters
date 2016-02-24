@@ -2,6 +2,8 @@ import mock
 import tempfile
 import unittest
 from contextlib import closing
+
+from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.writers import FTPWriter
 
 
@@ -13,7 +15,7 @@ class FTPWriterTest(unittest.TestCase):
             ftp_password='password',
             host='ftp.example.com',
             filebase='test/'))
-        with closing(FTPWriter(options)) as writer:
+        with closing(FTPWriter(options, export_formatter=JsonExportFormatter(dict()))) as writer:
             self.assertEquals(21, writer.read_option('port'))
 
     @mock.patch('exporters.writers.FTPWriter.build_ftp_instance')
@@ -25,7 +27,7 @@ class FTPWriterTest(unittest.TestCase):
             host='ftp.example.com',
             filebase=filebase))
         with tempfile.NamedTemporaryFile() as tmp:
-            with closing(FTPWriter(options)) as writer:
+            with closing(FTPWriter(options, export_formatter=JsonExportFormatter(dict()))) as writer:
                 writer.write(tmp.name)
 
         mock_mkd = mock_ftp.return_value.mkd
@@ -45,7 +47,7 @@ class FTPWriterTest(unittest.TestCase):
             host='ftp.example.com',
             filebase=filebase))
         with tempfile.NamedTemporaryFile() as tmp:
-            with closing(FTPWriter(options)) as writer:
+            with closing(FTPWriter(options, export_formatter=JsonExportFormatter(dict()))) as writer:
                 writer.write(tmp.name)
 
         mock_mkd = mock_ftp.return_value.mkd

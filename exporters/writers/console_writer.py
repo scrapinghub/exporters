@@ -8,8 +8,8 @@ class ConsoleWriter(BaseWriter):
     It has no other options.
     """
 
-    def __init__(self, options):
-        super(ConsoleWriter, self).__init__(options)
+    def __init__(self, options, *args, **kwargs):
+        super(ConsoleWriter, self).__init__(options, *args, **kwargs)
         self.logger.info('ConsoleWriter has been initiated')
         self.pretty_print = self.options.get('pretty_print', False)
         header = self.export_formatter.format_header()

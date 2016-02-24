@@ -4,6 +4,9 @@ import os
 import random
 import unittest
 import csv
+
+from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
+from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
 from exporters.records.base_record import BaseRecord
 from exporters.write_buffer import WriteBuffer
 from exporters.writers import FSWriter
@@ -19,7 +22,7 @@ class BaseWriterTest(unittest.TestCase):
             'log_level': 'DEBUG',
             'logger_name': 'export-pipeline'
         }
-        self.writer = BaseWriter(self.options)
+        self.writer = BaseWriter(self.options, export_formatter=JsonExportFormatter(dict()))
 
     def tearDown(self):
         self.writer.close()
@@ -55,7 +58,7 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_custom_writer(self):
         # given:
-        writer = FakeWriter({})
+        writer = FakeWriter({}, export_formatter=JsonExportFormatter(dict()))
 
         # when:
         try:
@@ -72,7 +75,7 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_write_buffer_removes_files(self):
         # given:
-        writer = FakeWriter({})
+        writer = FakeWriter({}, export_formatter=JsonExportFormatter(dict()))
         writer.write_buffer.items_per_buffer_write = 1
 
         # when:
@@ -93,7 +96,8 @@ class CustomWriterTest(unittest.TestCase):
             'name': 'exporters.export_formatter.csv_export_formatter.CSVExportFormatter',
             'options': {'show_titles': False, 'fields': ['key1', 'key2']}
         }
-        writer = FakeWriter({'formatter': options})
+        formatter = CSVExportFormatter(options)
+        writer = FakeWriter({}, export_formatter=formatter)
 
         # when:
         try:
@@ -123,7 +127,8 @@ class CustomWriterTest(unittest.TestCase):
 
             }
         }
-        writer = FakeWriter({'formatter': options})
+        formatter = XMLExportFormatter(options)
+        writer = FakeWriter({}, export_formatter=formatter)
 
         # when:
         try:
@@ -168,7 +173,8 @@ class CustomWriterTest(unittest.TestCase):
                        'item_name': 'XmlItem',
                        'root_name': 'RootItem'}
                    }
-        writer = FakeWriter({'formatter': options})
+        formatter = XMLExportFormatter(options)
+        writer = FakeWriter({}, export_formatter=formatter)
 
         # when:
         try:
@@ -202,9 +208,7 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_writer_stats(self):
         # given:
-        formatter = JsonExportFormatter({})
-        writer = FakeWriter({})
-        writer.export_formatter = formatter
+        writer = FakeWriter({}, export_formatter=JsonExportFormatter(dict()))
         # when:
         try:
             writer.write_batch(self.batch)
@@ -239,7 +243,7 @@ class ConsoleWriterTest(unittest.TestCase):
             'log_level': 'DEBUG',
             'logger_name': 'export-pipeline'
         }
-        self.writer = ConsoleWriter(self.options)
+        self.writer = ConsoleWriter(self.options, export_formatter=JsonExportFormatter(dict()))
 
     def tearDown(self):
         self.writer.close()
@@ -263,7 +267,7 @@ class FilebaseBaseWriterTest(unittest.TestCase):
                 'filebase': '/tmp/'
             }
         }
-        writer = FilebaseBaseWriter(writer_config)
+        writer = FilebaseBaseWriter(writer_config, export_formatter=JsonExportFormatter(dict()))
         self.assertIsInstance(writer.get_file_suffix('', ''), basestring)
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')
@@ -277,7 +281,7 @@ class FSWriterTest(unittest.TestCase):
                 'filebase': '/tmp/exporter_test'
             }
         }
-        writer = FSWriter(writer_config)
+        writer = FSWriter(writer_config, export_formatter=JsonExportFormatter(dict()))
         self.assertEqual(writer.get_file_suffix('test', 'test'), '0000')
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')

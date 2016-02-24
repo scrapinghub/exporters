@@ -25,15 +25,15 @@ class BaseWriter(BasePipelineItem):
         'items_limit': {'type': int, 'default': 0},
     }
 
-    def __init__(self, options):
-        super(BaseWriter, self).__init__(options)
+    def __init__(self, options, *args, **kwargs):
+        super(BaseWriter, self).__init__(options, *args, **kwargs)
         self.finished = False
         self.check_options()
         self.module_loader = ModuleLoader()
         self.items_limit = self.read_option('items_limit')
         self.logger = WriterLogger({'log_level': options.get('log_level'),
                                     'logger_name': options.get('logger_name')})
-        self.export_formatter = self.module_loader.load_formatter(options.get('formatter', DEFAULT_FORMATTER_CONFIG))
+        self.export_formatter = kwargs.get('export_formatter')
         items_per_buffer_write = self.read_option('items_per_buffer_write')
         size_per_buffer_write = self.read_option('size_per_buffer_write')
         self.write_buffer = WriteBuffer(items_per_buffer_write, size_per_buffer_write, self.export_formatter)
