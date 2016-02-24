@@ -41,6 +41,7 @@ class FakeWriter(BaseWriter):
         super(FakeWriter, self).__init__(*args, **kwargs)
         self.custom_output = {}
         self.fake_files_already_written = []
+        self.writer_metadata['written_files'] = self.fake_files_already_written
 
     def write(self, path, key):
         with gzip.open(path) as f:
@@ -129,7 +130,7 @@ class CustomWriterTest(unittest.TestCase):
             writer.close()
         self.assertEqual([writer.writer_metadata['items_count'], writer.stats['written_items']], [3, 3])
 
-    def test_info_file(self):
+    def test_md5sum_file(self):
         # given:
         self.batch = list(JsonExportFormatter({}).format(self.batch))
         with tempfile.NamedTemporaryFile() as tmp:
@@ -140,9 +141,10 @@ class CustomWriterTest(unittest.TestCase):
                 writer.flush()
             finally:
                 writer.close()
+
             with open(tmp.name) as f:
-                print f.read()
-            self.assertEqual([writer.writer_metadata['items_count'], writer.stats['written_items']], [3, 3])
+                written_files = [line.split()[1] for line in list(f.readlines())]
+            self.assertEqual(written_files, writer.fake_files_already_written)
 
 
 class WriteBufferTest(unittest.TestCase):
