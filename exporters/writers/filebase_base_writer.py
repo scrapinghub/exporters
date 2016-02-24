@@ -18,6 +18,7 @@ class FilebaseBaseWriter(BaseWriter):
     def __init__(self, options):
         super(FilebaseBaseWriter, self).__init__(options)
         self.filebase = self.read_option('filebase')
+        self.writer_metadata['written_files'] = []
 
     def get_file_suffix(self, path, prefix):
         """

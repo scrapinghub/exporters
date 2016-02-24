@@ -112,14 +112,15 @@ class BaseWriter(BasePipelineItem):
         self.writer_metadata['items_count'] += 1
 
     def _append_md5_info(self, write_info):
-        file_name = write_info['compressed_path'].split(os.path.sep)[-1]
-        md5 = hashlib.md5(file_name).hexdigest()
+        file_name = self.writer_metadata['written_files'][-1]
+        with open(file_name, 'r') as f:
+            md5 = hashlib.md5(f.read()).hexdigest()
         with open(self.file_info_path, 'a') as f:
             f.write('{} {}'.format(md5, file_name)+'\n')
 
     def _write(self, key):
         write_info = self.write_buffer.pack_buffer(key)
         self.write(write_info.get('compressed_path'), self.write_buffer.grouping_info[key]['membership'])
-        if self.file_info_path:
+        if self.file_info_path and self.writer_metadata.get('written_files'):
             self._append_md5_info(write_info)
         self.write_buffer.finish_buffer_write(key, write_info.get('compressed_path'))

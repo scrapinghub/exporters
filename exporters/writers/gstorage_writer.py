@@ -68,3 +68,4 @@ class GStorageWriter(FilebaseBaseWriter):
         filebase_path, filename = self.create_filebase_name(group_key)
         blob_name = filebase_path + '/' + filename
         self._write_gstorage_blob(dump_path, blob_name)
+        self.writer_metadata['written_files'].append(blob_name)

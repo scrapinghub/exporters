@@ -94,6 +94,7 @@ class S3Writer(FilebaseBaseWriter):
             progress = BotoDownloadProgress(self.logger)
             key.set_contents_from_file(f, cb=progress)
             self._ensure_proper_key_permissions(key)
+        self.writer_metadata['written_files'].append(destination)
         self.logger.info('Saved {}'.format(destination))
 
     def write(self, dump_path, group_key=None):
