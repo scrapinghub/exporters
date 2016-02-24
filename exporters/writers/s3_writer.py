@@ -4,7 +4,6 @@ import datetime
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
-from boto.utils import compute_md5
 
 DEFAULT_BUCKET_REGION = 'us-east-1'
 
@@ -87,6 +86,7 @@ class S3Writer(FilebaseBaseWriter):
 
     @retry_long
     def _write_s3_key(self, dump_path, key_name):
+        from boto.utils import compute_md5
         destination = 's3://{}/{}'.format(self.bucket.name, key_name)
         self.logger.info('Start uploading {} to {}'.format(dump_path, destination))
         with closing(self.bucket.new_key(key_name)) as key, open(dump_path, 'r') as f:
