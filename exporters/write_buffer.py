@@ -36,9 +36,6 @@ class ItemsGroupFilesHandler(object):
 
     def __init__(self, formatter):
         self.grouping_info = GroupingInfo()
-        self.file_extension = None
-        self.header = None
-        self.bottom = None
         self.file_extension = formatter.file_extension
         self.formatter = formatter
         self.tmp_folder = tempfile.mkdtemp()
