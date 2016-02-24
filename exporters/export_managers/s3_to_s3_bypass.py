@@ -8,7 +8,6 @@ from exporters.module_loader import ModuleLoader
 from exporters.progress_callback import BotoUploadProgress
 from exporters.readers.s3_reader import get_bucket, S3BucketKeysFetcher
 from exporters.utils import TmpFile
-from boto.utils import compute_md5
 
 
 def _add_permissions(user_id, key):
@@ -198,6 +197,7 @@ class S3Bypass(BaseBypass):
             self.logger.warning('We have no READ_ACP/WRITE_ACP permissions')
 
     def _get_md5(self, key, tmp_filename):
+        from boto.utils import compute_md5
         md5 = key.get_metadata('md5')
         if md5 is None:
             with open(tmp_filename) as f:
