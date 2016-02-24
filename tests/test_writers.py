@@ -2,6 +2,7 @@ import gzip
 import json
 import os
 import random
+import tempfile
 import unittest
 import csv
 
@@ -127,6 +128,21 @@ class CustomWriterTest(unittest.TestCase):
         finally:
             writer.close()
         self.assertEqual([writer.writer_metadata['items_count'], writer.stats['written_items']], [3, 3])
+
+    def test_info_file(self):
+        # given:
+        self.batch = list(JsonExportFormatter({}).format(self.batch))
+        with tempfile.NamedTemporaryFile() as tmp:
+            writer = FakeWriter({'options': {'file_info_path': tmp.name}})
+            # when:
+            try:
+                writer.write_batch(self.batch)
+                writer.flush()
+            finally:
+                writer.close()
+            with open(tmp.name) as f:
+                print f.read()
+            self.assertEqual([writer.writer_metadata['items_count'], writer.stats['written_items']], [3, 3])
 
 
 class WriteBufferTest(unittest.TestCase):

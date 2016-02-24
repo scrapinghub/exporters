@@ -115,13 +115,7 @@ class BaseWriter(BasePipelineItem):
         file_name = write_info['compressed_path'].split(os.path.sep)[-1]
         md5 = hashlib.md5(file_name).hexdigest()
         with open(self.file_info_path, 'a') as f:
-            info = {
-                'file': file_name,
-                'size': write_info['size'],
-                'number_of_records': write_info['number_of_records'],
-                'md5': md5
-            }
-            f.write(json.dumps(info)+'\n')
+            f.write('{} {}'.format(md5, file_name)+'\n')
 
     def _write(self, key):
         write_info = self.write_buffer.pack_buffer(key)
