@@ -27,9 +27,9 @@ class AzureFileWriter(FilebaseBaseWriter):
         'share': {'type': basestring}
     }
 
-    def __init__(self, options):
+    def __init__(self, options, *args, **kw):
         from azure.storage.file import FileService
-        super(AzureFileWriter, self).__init__(options)
+        super(AzureFileWriter, self).__init__(options, *args, **kw)
         account_name = self.read_option('account_name')
         account_key = self.read_option('account_key')
         self.azure_service = FileService(account_name, account_key)

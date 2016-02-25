@@ -31,9 +31,9 @@ class GStorageWriter(FilebaseBaseWriter):
         'credentials': {'type': dict}
     }
 
-    def __init__(self, options):
+    def __init__(self, options, *args, **kwargs):
         from gcloud import storage
-        super(GStorageWriter, self).__init__(options)
+        super(GStorageWriter, self).__init__(options, *args, **kwargs)
         project = self.read_option('project')
         bucket_name = self.read_option('bucket')
 

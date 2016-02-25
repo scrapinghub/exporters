@@ -13,3 +13,4 @@ htmlcov
 .coverage
 .vim.custom
 docs/_build
+.swp

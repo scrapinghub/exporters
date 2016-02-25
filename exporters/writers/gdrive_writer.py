@@ -25,8 +25,8 @@ class GDriveWriter(FilebaseBaseWriter):
         'client_secret': {'type': object},
     }
 
-    def __init__(self, options):
-        super(GDriveWriter, self).__init__(options)
+    def __init__(self, options, *args, **kwargs):
+        super(GDriveWriter, self).__init__(options, *args, **kwargs)
         from pydrive.auth import GoogleAuth
         from pydrive.drive import GoogleDrive
         gauth = GoogleAuth()

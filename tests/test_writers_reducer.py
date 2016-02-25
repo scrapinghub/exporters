@@ -1,5 +1,6 @@
 import unittest
 
+from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.writers.reduce_writer import ReduceWriter
 from exporters.records.base_record import BaseRecord
 
@@ -20,7 +21,7 @@ def reduce_function(item, accumulator=None):
         accumulator[key] += 1
     return accumulator
 """
-        writer = ReduceWriter({"options": {"code": reduce_code}})
+        writer = ReduceWriter({"options": {"code": reduce_code}}, export_formatter=JsonExportFormatter(dict()))
         writer.write_batch(batch)
         writer.write_batch(batch)
         expected = {'country_code': 4, 'name': 6, 'something': 2}

@@ -37,8 +37,8 @@ class FTPWriter(FilebaseBaseWriter):
         'port': {'type': int, 'default': 21},
     }
 
-    def __init__(self, options):
-        super(FTPWriter, self).__init__(options)
+    def __init__(self, options, *args, **kwargs):
+        super(FTPWriter, self).__init__(options, *args, **kwargs)
 
         self.ftp_host = self.read_option('host')
         self.ftp_port = self.read_option('port')

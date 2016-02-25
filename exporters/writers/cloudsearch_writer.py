@@ -84,8 +84,8 @@ class CloudSearchWriter(BaseWriter):
         },
     }
 
-    def __init__(self, options):
-        super(CloudSearchWriter, self).__init__(options)
+    def __init__(self, options, *args, **kwargs):
+        super(CloudSearchWriter, self).__init__(options, *args, **kwargs)
         self.endpoint_url = self.read_option('endpoint_url').rstrip('/')
         self.access_key = self.read_option('access_key')
         self.secret_key = self.read_option('secret_key')

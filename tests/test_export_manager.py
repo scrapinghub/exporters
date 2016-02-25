@@ -67,7 +67,7 @@ class BaseExportManagerTest(unittest.TestCase):
         }
         self.exporter = exporter = BaseExporter(config)
         exporter.export()
-        expected_count = 10 + 1  # FIXME: it's currently counting header as an item
+        expected_count = 10
         self.assertEquals(expected_count, exporter.writer.writer_metadata['items_count'])
 
     def test_bypass_should_be_called(self):

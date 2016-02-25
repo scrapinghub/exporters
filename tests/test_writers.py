@@ -6,13 +6,14 @@ import tempfile
 import unittest
 import csv
 
+from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
+from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
 from exporters.records.base_record import BaseRecord
 from exporters.write_buffer import WriteBuffer
 from exporters.writers import FSWriter
 from exporters.writers.base_writer import BaseWriter
 from exporters.writers.console_writer import ConsoleWriter
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
-from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 
 
@@ -22,7 +23,7 @@ class BaseWriterTest(unittest.TestCase):
             'log_level': 'DEBUG',
             'logger_name': 'export-pipeline'
         }
-        self.writer = BaseWriter(self.options)
+        self.writer = BaseWriter(self.options, export_formatter=JsonExportFormatter(dict()))
 
     def tearDown(self):
         self.writer.close()
@@ -59,8 +60,7 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_custom_writer(self):
         # given:
-        self.batch = list(JsonExportFormatter({}).format(self.batch))
-        writer = FakeWriter({})
+        writer = FakeWriter({}, export_formatter=JsonExportFormatter(dict()))
 
         # when:
         try:
@@ -77,27 +77,29 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_write_buffer_removes_files(self):
         # given:
-        self.batch = list(JsonExportFormatter({}).format(self.batch))
-        writer = FakeWriter({})
+        writer = FakeWriter({}, export_formatter=JsonExportFormatter(dict()))
         writer.write_buffer.items_per_buffer_write = 1
 
         # when:
         try:
             writer.write_batch(self.batch)
             # then
-            self.assertGreater(len(writer.fake_files_already_written), 0)
+            self.assertEqual(len(writer.fake_files_already_written), 3, 'Wrong number of files written')
             for f in writer.fake_files_already_written:
                 self.assertFalse(os.path.exists(f))
-                self.assertFalse(os.path.exists(f + '.gz'))
+                self.assertFalse(os.path.exists(f[:-3]))
         finally:
             writer.close()
 
     def test_custom_writer_with_csv_formatter(self):
         # given:
-        formatter = CSVExportFormatter(
-                {'options': {'show_titles': False, 'fields': ['key1', 'key2']}})
-        self.batch = list(formatter.format(self.batch))
-        writer = FakeWriter({})
+
+        options = {
+            'name': 'exporters.export_formatter.csv_export_formatter.CSVExportFormatter',
+            'options': {'show_titles': False, 'fields': ['key1', 'key2']}
+        }
+        formatter = CSVExportFormatter(options)
+        writer = FakeWriter({}, export_formatter=formatter)
 
         # when:
         try:
@@ -118,10 +120,97 @@ class CustomWriterTest(unittest.TestCase):
 
         self.assertEquals('csv', writer.write_buffer.items_group_files.file_extension)
 
+    def test_custom_writer_with_xml_formatter(self):
+        from xml.dom.minidom import parseString
+        # given:
+        options = {
+            'name': 'exporters.export_formatter.xml_export_formatter.XMLExportFormatter',
+            'options': {
+
+            }
+        }
+        formatter = XMLExportFormatter(options)
+        writer = FakeWriter({}, export_formatter=formatter)
+
+        # when:
+        try:
+            writer.write_batch(self.batch)
+            writer.flush()
+        finally:
+            writer.close()
+
+        # then:
+        output = writer.custom_output[()].splitlines()
+
+        expected_list = [
+            parseString(
+                '<item><key2 type="str">value21</key2><key1 type="str">value11</key1></item>'),
+            parseString(
+                '<item><key2 type="str">value22</key2><key1 type="str">value12</key1></item>'),
+            parseString(
+                '<item><key2 type="str">value23</key2><key1 type="str">value13</key1></item>')
+        ]
+        expected = ['<root>'] + \
+                   [{'key1': item.getElementsByTagName('key1')[0].firstChild.nodeValue,
+                     'key2': item.getElementsByTagName('key2')[0].firstChild.nodeValue}
+                    for item in expected_list] + \
+                   ['</root>']
+
+        out = [output[0]] + \
+              [{'key1': parseString(l).getElementsByTagName('key1')[0].firstChild.nodeValue,
+                'key2': parseString(l).getElementsByTagName('key2')[0].firstChild.nodeValue}
+               for l in output[1:-1]] + \
+              [output[-1]]
+
+        self.assertEquals(expected, out)
+        self.assertEquals('xml', writer.write_buffer.items_group_files.file_extension)
+
+    def test_custom_writer_with_xml_formatter_with_options(self):
+        from xml.dom.minidom import parseString
+        # given:
+        options = {'name': 'exporters.export_formatter.xml_export_formatter.XMLExportFormatter',
+                   'options': {
+                       'attr_type': False,
+                       'fields_order': ['key1', 'key2'],
+                       'item_name': 'XmlItem',
+                       'root_name': 'RootItem'}
+                   }
+        formatter = XMLExportFormatter(options)
+        writer = FakeWriter({}, export_formatter=formatter)
+
+        # when:
+        try:
+            writer.write_batch(self.batch)
+            writer.flush()
+        finally:
+            writer.close()
+
+        # then:
+        output = writer.custom_output[()].splitlines()
+
+        expected_list = [
+            parseString(
+                '<XmlItem><key1>value11</key1><key2>value21</key2></XmlItem>'),
+            parseString(
+                '<XmlItem><key1>value12</key1><key2>value22</key2></XmlItem>'),
+            parseString(
+                '<XmlItem><key1>value13</key1><key2>value23</key2></XmlItem>')
+        ]
+        expected = ['<RootItem>']
+        expected += [[node.localName for node in item.getElementsByTagName('XmlItem')[0].childNodes]
+                     for item in expected_list]
+        expected += ['</RootItem>']
+        out = [output[0]]
+        out += [[node.localName for node in parseString(l).getElementsByTagName('XmlItem')[0].childNodes]
+                for l in output[1:-1]]
+        out += [output[-1]]
+
+        self.assertEquals(expected, out)
+        self.assertEquals('xml', writer.write_buffer.items_group_files.file_extension)
+
     def test_writer_stats(self):
         # given:
-        self.batch = list(JsonExportFormatter({}).format(self.batch))
-        writer = FakeWriter({})
+        writer = FakeWriter({}, export_formatter=JsonExportFormatter(dict()))
         # when:
         try:
             writer.write_batch(self.batch)
@@ -148,9 +237,9 @@ class CustomWriterTest(unittest.TestCase):
 
 
 class WriteBufferTest(unittest.TestCase):
-
     def setUp(self):
-        self.write_buffer = WriteBuffer(1000, 1000)
+        self.formatter = JsonExportFormatter({})
+        self.write_buffer = WriteBuffer(1000, 1000, self.formatter)
 
     def tearDown(self):
         self.write_buffer.close()
@@ -172,7 +261,7 @@ class ConsoleWriterTest(unittest.TestCase):
             'log_level': 'DEBUG',
             'logger_name': 'export-pipeline'
         }
-        self.writer = ConsoleWriter(self.options)
+        self.writer = ConsoleWriter(self.options, export_formatter=JsonExportFormatter(dict()))
 
     def tearDown(self):
         self.writer.close()
@@ -196,7 +285,7 @@ class FilebaseBaseWriterTest(unittest.TestCase):
                 'filebase': '/tmp/'
             }
         }
-        writer = FilebaseBaseWriter(writer_config)
+        writer = FilebaseBaseWriter(writer_config, export_formatter=JsonExportFormatter(dict()))
         self.assertIsInstance(writer.get_file_suffix('', ''), basestring)
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')
@@ -210,7 +299,7 @@ class FSWriterTest(unittest.TestCase):
                 'filebase': '/tmp/exporter_test'
             }
         }
-        writer = FSWriter(writer_config)
+        writer = FSWriter(writer_config, export_formatter=JsonExportFormatter(dict()))
         self.assertEqual(writer.get_file_suffix('test', 'test'), '0000')
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')

@@ -15,8 +15,8 @@ class FilebaseBaseWriter(BaseWriter):
     """
     supported_options = {'filebase': {'type': basestring}}
 
-    def __init__(self, options):
-        super(FilebaseBaseWriter, self).__init__(options)
+    def __init__(self, options, *args, **kwargs):
+        super(FilebaseBaseWriter, self).__init__(options, *args, **kwargs)
         self.filebase = self.read_option('filebase')
         self.writer_metadata['written_files'] = []
 
