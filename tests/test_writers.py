@@ -221,9 +221,9 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_md5sum_file(self):
         # given:
-        self.batch = list(JsonExportFormatter({}).format(self.batch))
+        formatter = JsonExportFormatter({})
         with tempfile.NamedTemporaryFile() as tmp:
-            writer = FakeWriter({'options': {'file_info_path': tmp.name}})
+            writer = FakeWriter({'options': {'file_info_path': tmp.name}}, export_formatter=formatter)
             # when:
             try:
                 writer.write_batch(self.batch)
