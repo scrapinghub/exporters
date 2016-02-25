@@ -246,18 +246,6 @@ class ConfigValidationTest(unittest.TestCase):
         self.assertEqual(len(exception.errors), 3)
         self.assertEqual(len(exception.errors['reader']), 2)
 
-    def test_not_supported_options(self):
-        options = valid_config_with_updates({
-            'writer': {
-                'name': 'exporters.writers.console_writer.ConsoleWriter',
-                'options': {
-                    'not_a_supported_option': 'foo'
-                }
-            },
-        })
-        with self.assertRaises(ValueError):
-            ExporterConfig(options)
-
     def test_supported_and_not_supported_options(self):
         options = valid_config_with_updates({
             'writer': {
