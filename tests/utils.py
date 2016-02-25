@@ -23,7 +23,7 @@ VALID_EXPORTER_CONFIG = {
     'exporter_options': {},
     'persistence': {
         'name': 'exporters.persistence.pickle_persistence.PicklePersistence',
-        'options': {'file_base': '/tmp'}
+        'options': {'file_path': '/tmp'}
     },
     'grouper': {
         'name': 'exporters.groupers.no_grouper.NoGrouper',

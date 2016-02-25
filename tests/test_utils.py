@@ -260,8 +260,6 @@ class ModuleLoaderTest(unittest.TestCase):
             'reader': {
                 'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
-                    'number_of_items': 1000,
-                    'batch_size': 100
                 }
             }
         })
@@ -296,8 +294,6 @@ class ModuleLoaderTest(unittest.TestCase):
             'persistence': {
                 'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
-                    'number_of_items': 1000,
-                    'batch_size': 100
                 }
             }
         })
@@ -312,11 +308,9 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline',
                 "EXPORTER": 'exporters.writers.console_writer.ConsoleWriter',
             },
-            'reader': {
+            'formatter': {
                 'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
-                    'number_of_items': 1000,
-                    'batch_size': 100
                 }
             },
         })
@@ -333,8 +327,6 @@ class ModuleLoaderTest(unittest.TestCase):
             'notifier': {
                 'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
-                    'number_of_items': 1000,
-                    'batch_size': 100
                 }
             }
         })
@@ -351,8 +343,6 @@ class ModuleLoaderTest(unittest.TestCase):
             'grouper': {
                 'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
-                    'number_of_items': 1000,
-                    'batch_size': 100
                 }
             }
         })
@@ -369,8 +359,6 @@ class ModuleLoaderTest(unittest.TestCase):
             'filter': {
                 'name': 'exporters.transform.no_transform.NoTransform',
                 'options': {
-                    'number_of_items': 1000,
-                    'batch_size': 100
                 }
             },
         })
@@ -387,8 +375,6 @@ class ModuleLoaderTest(unittest.TestCase):
             'transform': {
                 'name': 'exporters.filters.no_filter.NoFilter',
                 'options': {
-                    'number_of_items': 1000,
-                    'batch_size': 100
                 }
             }
         })
