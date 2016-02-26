@@ -145,5 +145,6 @@ class S3WriterTest(unittest.TestCase):
                 'aws_access_key_id': 'FAKE_ACCESS_KEY',
                 'aws_secret_access_key': 'FAKE_SECRET_KEY',
                 'filebase': 'tests/',
+                'generate_md5': False,
             }
         }
