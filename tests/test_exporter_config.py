@@ -1,0 +1,160 @@
+import unittest
+from exporters.exceptions import ConfigurationError
+from exporters.exporter_config import ExporterConfig, check_for_errors
+from tests.utils import valid_config_with_updates, VALID_EXPORTER_CONFIG
+from exporters.writers import FSWriter
+
+
+class SampleSubclassWriter(FSWriter):
+    supported_options = {
+        'someoption': dict(type=basestring)
+    }
+
+
+class ConfigValidationTest(unittest.TestCase):
+    def test_find_missing_sections(self):
+        with self.assertRaises(ConfigurationError):
+            check_for_errors({})
+
+    def test_check_configuration(self):
+        try:
+            check_for_errors(VALID_EXPORTER_CONFIG)
+        except Exception:
+            self.fail("check_for_errors() raised Exception unexpectedly!")
+
+    def test_validate_returns_errors(self):
+        errors = check_for_errors({}, raise_exception=False)
+        self.assertIsInstance(errors, dict)
+        self.assertNotEqual(len(errors), 0)
+
+    def test_missing_supported_options(self):
+        config = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {}
+            },
+            'writer': {
+                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'options': {}
+            },
+            'filter': {
+                'name': 'exporters.filters.no_filter.NoFilter',
+                'options': {}
+            },
+            'transform': {
+                'name': 'exporters.transform.jq_transform.JQTransform',
+                'options': {}
+            },
+            'exporter_options': {},
+            'persistence': {
+                'name': 'exporters.persistence.PicklePersistence',
+                'options': {
+                    'file_path': '/tmp'
+                }
+            }
+        }
+        with self.assertRaises(ConfigurationError) as cm:
+            check_for_errors(config)
+
+        exception = cm.exception
+        expected_errors = {
+            'transform': {'jq_filter': 'Option jq_filter is missing'}
+            }
+        self.assertEqual(expected_errors, exception.errors)
+
+    def test_wrong_type_supported_options(self):
+        config = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {
+                    'number_of_items': {},
+                    'batch_size': []
+                }
+            },
+            'writer': {
+                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'options': {}
+            },
+            'filter': {
+                'name': 'exporters.filters.no_filter.NoFilter',
+                'options': {}
+            },
+            'transform': {
+                'name': 'exporters.transform.jq_transform.JQTransform',
+                'options': {
+                    'jq_filter': 5
+                }
+            },
+            'exporter_options': {},
+            'persistence': {
+                'name': 'exporters.persistence.PicklePersistence',
+                'options': {
+                    'file_path': 567
+                }
+            }
+        }
+        with self.assertRaises(ConfigurationError) as cm:
+            check_for_errors(config)
+
+        exception = cm.exception
+        expected_errors = {
+            'reader': {
+                'number_of_items': 'Wrong type: found <type \'dict\'>, expected <type \'int\'>',
+                'batch_size': 'Wrong type: found <type \'list\'>, expected <type \'int\'>'},
+            'transform': {
+                'jq_filter': 'Wrong type: found <type \'int\'>, expected <type \'basestring\'>'},
+            'persistence': {
+                'file_path': 'Wrong type: found <type \'int\'>, expected <type \'basestring\'>'}
+        }
+        self.assertEqual(expected_errors, exception.errors)
+        self.assertEqual(len(exception.errors), 3)
+        self.assertEqual(len(exception.errors['reader']), 2)
+
+    def test_curate_options(self):
+        options = {}
+        with self.assertRaises(ConfigurationError):
+            ExporterConfig(options)
+        options = {'reader': ''}
+        with self.assertRaises(ConfigurationError):
+            ExporterConfig(options)
+        options = {'reader': '', 'filter': ''}
+        with self.assertRaises(ConfigurationError):
+            ExporterConfig(options)
+        options = {'reader': '', 'filter': '', 'transform': ''}
+        with self.assertRaises(ConfigurationError):
+            ExporterConfig(options)
+        options = {'reader': '', 'filter': '', 'transform': '', 'writer': ''}
+        with self.assertRaises(ConfigurationError):
+            ExporterConfig(options)
+        self.assertIsInstance(ExporterConfig(VALID_EXPORTER_CONFIG),
+                              ExporterConfig)
+
+    def test_supported_and_not_supported_options(self):
+        options = valid_config_with_updates({
+            'writer': {
+                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'options': {
+                    'items_limit': 1234,
+                    'not_a_supported_option': 'foo'
+                }
+            },
+        })
+
+        with self.assertRaisesRegexp(ValueError, 'unsupported_options'):
+            ExporterConfig(options)
+
+    def test_supported_and_not_supported_options_for_subclass(self):
+        mod_name = __name__ + '.SampleSubclassWriter'
+
+        options = valid_config_with_updates({
+            'writer': {
+                'name': mod_name,
+                'options': {
+                    'filebase': 'blah',
+                    'someoption': 'blah',
+                    'not_supported_option': 'foo',
+                }
+            }
+        })
+        with self.assertRaisesRegexp(ValueError, 'unsupported_options'):
+            ExporterConfig(options)
