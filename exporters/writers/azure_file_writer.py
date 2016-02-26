@@ -71,6 +71,4 @@ class AzureFileWriter(FilebaseBaseWriter):
     def get_file_suffix(self, path, prefix):
         number_of_keys = self.writer_metadata['files_counter'].get(path, 0)
         suffix = '{}'.format(str(number_of_keys))
-        self.writer_metadata['files_counter'][path] = number_of_keys + 1
-        self.writer_metadata['written_files'].append(suffix)
         return suffix
