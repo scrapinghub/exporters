@@ -270,8 +270,6 @@ class WriteBufferTest(unittest.TestCase):
         self.assertEqual(self.write_buffer.get_metadata('somekey', 'items'), 10,
                          'Wrong metadata')
         self.assertIsNone(self.write_buffer.get_metadata('somekey', 'nokey'))
-        with self.assertRaises(KeyError):
-            self.assertIsNone(self.write_buffer.get_metadata('nokey', 'nokey'))
 
 
 class ConsoleWriterTest(unittest.TestCase):
