@@ -50,6 +50,28 @@ class FakeWriter(BaseWriter):
         self.fake_files_already_written.append(path)
 
 
+class FakeFilebaseWriter(FilebaseBaseWriter):
+    """CustomWriter writing records to self.custom_output
+    to test BaseWriter extensibility
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(FakeFilebaseWriter, self).__init__(*args, **kwargs)
+        self.custom_output = {}
+        self.fake_files_already_written = []
+        self.writer_metadata['written_files'] = self.fake_files_already_written
+
+    def write(self, path, key, file_name=None):
+        if file_name:
+            with open(path) as f:
+                self.custom_output[key] = f.read()
+            self.fake_files_already_written.append(file_name)
+        else:
+            with gzip.open(path) as f:
+                self.custom_output[key] = f.read()
+            self.fake_files_already_written.append(path)
+
+
 class CustomWriterTest(unittest.TestCase):
     def setUp(self):
         self.batch = [
@@ -223,17 +245,14 @@ class CustomWriterTest(unittest.TestCase):
         # given:
         formatter = JsonExportFormatter({})
         with tempfile.NamedTemporaryFile() as tmp:
-            writer = FakeWriter({'options': {'file_info_path': tmp.name}}, export_formatter=formatter)
+            writer = FakeFilebaseWriter({'options': {'filebase': tmp.name}}, export_formatter=formatter)
             # when:
             try:
                 writer.write_batch(self.batch)
                 writer.flush()
             finally:
                 writer.close()
-
-            with open(tmp.name) as f:
-                written_files = [line.split()[1] for line in list(f.readlines())]
-            self.assertEqual(written_files, writer.fake_files_already_written)
+            self.assertIn('md5checksum.md5', writer.fake_files_already_written)
 
 
 class WriteBufferTest(unittest.TestCase):
@@ -282,7 +301,8 @@ class FilebaseBaseWriterTest(unittest.TestCase):
     def test_get_file_number_not_implemented(self):
         writer_config = {
             'options': {
-                'filebase': '/tmp/'
+                'filebase': '/tmp/',
+                'generate_md5': False,
             }
         }
         writer = FilebaseBaseWriter(writer_config, export_formatter=JsonExportFormatter(dict()))
@@ -296,7 +316,8 @@ class FSWriterTest(unittest.TestCase):
     def test_get_file_number(self):
         writer_config = {
             'options': {
-                'filebase': '/tmp/exporter_test'
+                'filebase': '/tmp/exporter_test',
+                'generate_md5': False
             }
         }
         writer = FSWriter(writer_config, export_formatter=JsonExportFormatter(dict()))

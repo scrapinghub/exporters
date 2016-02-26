@@ -43,14 +43,13 @@ class SFTPWriter(FilebaseBaseWriter):
                 self.filebase))
 
     @retry_long
-    def write(self, dump_path, group_key=None):
+    def write(self, dump_path, group_key=None, file_name=None):
         import pysftp
         if group_key is None:
             group_key = []
 
-        filebase_path, filename = self.create_filebase_name(group_key)
-        destination = (filebase_path + '/' + filename)
-
+        filebase_path, file_name = self.create_filebase_name(group_key, file_name=file_name)
+        destination = (filebase_path + '/' + file_name)
         self.logger.info('Start uploading to {}'.format(dump_path))
         with pysftp.Connection(self.sftp_host, port=self.sftp_port,
                                username=self.sftp_user,

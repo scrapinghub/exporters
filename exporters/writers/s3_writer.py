@@ -97,11 +97,11 @@ class S3Writer(FilebaseBaseWriter):
         self.writer_metadata['written_files'].append(destination)
         self.logger.info('Saved {}'.format(destination))
 
-    def write(self, dump_path, group_key=None):
+    def write(self, dump_path, group_key=None, file_name=None):
         if group_key is None:
             group_key = []
-        filebase_path, filename = self.create_filebase_name(group_key)
-        key_name = filebase_path + '/' + filename
+        filebase_path, file_name = self.create_filebase_name(group_key, file_name=file_name)
+        key_name = filebase_path + '/' + file_name
         self._write_s3_key(dump_path, key_name)
         self.writer_metadata['files_counter'][filebase_path] += 1
 
