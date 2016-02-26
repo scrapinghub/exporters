@@ -256,7 +256,10 @@ class ConfigValidationTest(unittest.TestCase):
                 }
             },
         })
-        with self.assertRaises(ValueError):
+
+        expected_error = "Configuration provided isn't valid.\n" + "writer:\n" + \
+                         "  unsupported_options: \['not_a_supported_option'\]"
+        with self.assertRaisesRegexp(ValueError, expected_error):
             ExporterConfig(options)
 
 
