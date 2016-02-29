@@ -245,12 +245,14 @@ class CustomWriterTest(unittest.TestCase):
         # given:
         formatter = JsonExportFormatter({})
         with tempfile.NamedTemporaryFile() as tmp:
-            writer = FakeFilebaseWriter({'options': {'filebase': tmp.name}}, export_formatter=formatter)
+            writer = FakeFilebaseWriter({'options': {'filebase': tmp.name, 'generate_md5': True}}
+                                        , export_formatter=formatter)
             # when:
             try:
                 writer.write_batch(self.batch)
                 writer.flush()
             finally:
+                writer.finish_writing()
                 writer.close()
             self.assertIn('md5checksum.md5', writer.fake_files_already_written)
 
