@@ -2,12 +2,20 @@ import datetime
 import hashlib
 import os
 import re
-import shutil
-import tempfile
 import uuid
 from exporters.writers.base_writer import BaseWriter
 
 MD5_FILE_NAME = 'md5checksum.md5'
+
+
+def md5_for_file(f, block_size=2**20):
+    md5 = hashlib.md5()
+    while True:
+        data = f.read(block_size)
+        if not data:
+            break
+        md5.update(data)
+    return md5.hexdigest()
 
 
 class FilebaseBaseWriter(BaseWriter):
@@ -59,8 +67,9 @@ class FilebaseBaseWriter(BaseWriter):
 
     def _append_md5_info(self, write_info):
         file_name = self.writer_metadata['written_files'][-1]
+
         with open(write_info['compressed_path'], 'r') as f:
-            md5 = hashlib.md5(f.read()).hexdigest()
+            md5 = md5_for_file(f)
         with open(self.md5_file_name, 'a') as f:
             f.write('{} {}'.format(md5, file_name)+'\n')
 
