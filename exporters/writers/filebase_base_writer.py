@@ -29,7 +29,7 @@ class FilebaseBaseWriter(BaseWriter):
         self.writer_metadata['written_files'] = []
         self.md5_file_name = None
         if self.read_option('generate_md5'):
-            self.md5_file_name = MD5_FILE_NAME
+            self.md5_file_name = str(uuid.uuid4())
 
     def write(self, path, key, file_name=False):
         """
@@ -76,5 +76,6 @@ class FilebaseBaseWriter(BaseWriter):
             try:
                 self.write(self.md5_file_name, None, file_name=MD5_FILE_NAME)
             finally:
-                os.remove(MD5_FILE_NAME)
+                if self.md5_file_name:
+                    os.remove(self.md5_file_name)
         super(FilebaseBaseWriter, self).close()
