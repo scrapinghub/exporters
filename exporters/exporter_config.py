@@ -110,6 +110,9 @@ def _get_section_errors(config_section):
             error = _get_option_error(name, spec, config_options)
             if error:
                 option_errors[name] = error
+        not_supported_options = list(set(config_options.keys()) - set(module_options.keys()))
+        if not_supported_options:
+            option_errors['unsupported_options'] = not_supported_options
         return option_errors
     except ConfigCheckError as e:
         return e.message  # in general we should check e.errors also
