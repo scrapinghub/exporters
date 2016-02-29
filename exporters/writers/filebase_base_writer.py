@@ -80,10 +80,9 @@ class FilebaseBaseWriter(BaseWriter):
             self._append_md5_info(write_info)
         self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
 
-    def close(self):
+    def finish_writing(self):
         if self.md5_file_name:
             try:
                 self.write(self.md5_file_name, None, file_name=MD5_FILE_NAME)
             finally:
                 os.remove(self.md5_file_name)
-        super(FilebaseBaseWriter, self).close()

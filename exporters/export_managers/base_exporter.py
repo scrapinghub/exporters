@@ -88,6 +88,7 @@ class BaseExporter(object):
         self.writer.close()
 
     def _finish_export_job(self):
+        self.writer.finish_writing()
         self.stats_manager.stats['items_count'] = self.writer.writer_metadata['items_count']
         self.stats_manager.stats['end_time'] = datetime.datetime.now()
         self.stats_manager.stats['elapsed_time'] = self.stats_manager.stats['end_time'] - \
