@@ -28,7 +28,7 @@ class FilebaseBaseWriter(BaseWriter):
     """
     supported_options = {
         'filebase': {'type': basestring},
-        'generate_md5': {'type': bool, 'default': True}
+        'generate_md5': {'type': bool, 'default': False}
     }
 
     def __init__(self, options, *args, **kwargs):
