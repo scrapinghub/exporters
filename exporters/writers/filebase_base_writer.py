@@ -85,6 +85,5 @@ class FilebaseBaseWriter(BaseWriter):
             try:
                 self.write(self.md5_file_name, None, file_name=MD5_FILE_NAME)
             finally:
-                if self.md5_file_name:
-                    os.remove(self.md5_file_name)
+                os.remove(self.md5_file_name)
         super(FilebaseBaseWriter, self).close()
