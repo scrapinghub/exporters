@@ -1,5 +1,9 @@
 from collections import Counter
+
+from azure.common import AzureMissingResourceHttpError
+
 from exporters.default_retries import retry_long
+from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
@@ -38,6 +42,17 @@ class AzureFileWriter(FilebaseBaseWriter):
         self.logger.info('AzureWriter has been initiated.'
                          'Writing to share {}'.format(self.share))
         self.writer_metadata['files_counter'] = Counter()
+        self.writer_metadata['files_written'] = []
+
+    def _update_metadata(self, dump_path, filebase_path, file_name):
+        buffer_info = self.write_buffer.metadata[dump_path]
+        file_info = {
+            'file_name': file_name,
+            'filebase_path': filebase_path,
+            'size': buffer_info['size'],
+            'number_of_records': buffer_info['number_of_records']
+        }
+        self.writer_metadata['files_written'].append(file_info)
 
     def write(self, dump_path, group_key=None):
         if group_key is None:
@@ -66,6 +81,7 @@ class AzureFileWriter(FilebaseBaseWriter):
             dump_path,
             max_connections=5,
         )
+        self._update_metadata(dump_path, filebase_path, filename)
         self.writer_metadata['files_counter'][filebase_path] += 1
 
     def get_file_suffix(self, path, prefix):
@@ -73,3 +89,15 @@ class AzureFileWriter(FilebaseBaseWriter):
         suffix = '{}'.format(str(number_of_keys))
         self.writer_metadata['files_counter'][path] = number_of_keys + 1
         return suffix
+
+    def _check_write_consistency(self):
+        for file_info in self.writer_metadata['files_written']:
+            try:
+                file_properties = self.azure_service.get_file_properties(self.share, file_info['filebase_path'], file_info['file_name'])
+                file_size = file_properties.get('content-length')
+                if str(file_size) != str(file_info['size']):
+                    raise InconsistentWriteState('File {} has wrong size. Extected: {} - got {}'.format(
+                                file_info['file_name'], file_info['size'], file_size))
+            except AzureMissingResourceHttpError:
+                raise InconsistentWriteState('Missing file {}'.format(file_info['file_name']))
+        self.logger.info('Consistency check passed')
