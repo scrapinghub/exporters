@@ -1,6 +1,8 @@
 import glob
 import os
 import shutil
+
+from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
@@ -20,7 +22,8 @@ class FSWriter(FilebaseBaseWriter):
     def __init__(self, options, *args, **kwargs):
         super(FSWriter, self).__init__(options, *args, **kwargs)
         self.logger.info(
-            'FSWriter has been initiated. Writing to: {}'.format(self.filebase))
+                'FSWriter has been initiated. Writing to: {}'.format(self.filebase))
+        self.writer_metadata['files_written'] = []
 
     def _create_path_if_not_exist(self, path):
         """
@@ -44,6 +47,24 @@ class FSWriter(FilebaseBaseWriter):
             group_key = []
         filebase_path, filename = self.create_filebase_name(group_key)
         destination = os.path.join(filebase_path, filename)
+        buffer_info = self.write_buffer.metadata[dump_path]
+        file_info = {
+            'filename': destination,
+            'size': buffer_info['size'],
+            'number_of_records': buffer_info['number_of_records']
+        }
+        self.writer_metadata['files_written'].append(file_info)
         self._create_path_if_not_exist(filebase_path)
         shutil.move(dump_path, destination)
         self.logger.info('Saved {}'.format(dump_path))
+
+    def _check_write_consistency(self):
+        for file_info in self.writer_metadata['files_written']:
+            if not os.path.isfile(file_info['filename']):
+                raise InconsistentWriteState(
+                    '{} file is not present at destination'.format(file_info['filename']))
+            if os.path.getsize(file_info['filename']) != file_info['size']:
+                raise InconsistentWriteState('Wrong size for file {}. Extected: {} - got {}'
+                                             .format(file_info['filename'], file_info['size'],
+                                                     os.path.getsize(file_info['filename'])))
+        self.logger.info('Consistency check passed')
