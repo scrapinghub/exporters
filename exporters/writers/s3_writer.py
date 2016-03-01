@@ -165,3 +165,4 @@ class S3Writer(FilebaseBaseWriter):
                 self.logger.warning(
                         'Skipping consistency check for key {}. Probably due to lack of read permissions'.format(
                                 key_info['key_name']))
+        self.logger.info('Consistency check passed')
