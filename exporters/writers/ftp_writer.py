@@ -3,6 +3,7 @@ import os
 
 from exporters.default_retries import retry_long
 from exporters.progress_callback import FtpUploadProgress
+from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
@@ -44,6 +45,7 @@ class FTPWriter(FilebaseBaseWriter):
         self.ftp_port = self.read_option('port')
         self.ftp_user = self.read_option('ftp_user')
         self.ftp_password = self.read_option('ftp_password')
+        self.writer_metadata['files_written'] = []
         self.logger.info(
             'FTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(
                 self.ftp_host, self.ftp_port,
@@ -80,6 +82,15 @@ class FTPWriter(FilebaseBaseWriter):
         import ftplib
         return ftplib.FTP()
 
+    def _update_metadata(self, dump_path, destination):
+        buffer_info = self.write_buffer.metadata.get(dump_path, {})
+        file_info = {
+            'filename': destination,
+            'size': buffer_info.get('size'),
+            'number_of_records': buffer_info.get('number_of_records')
+        }
+        self.writer_metadata['files_written'].append(file_info)
+
     @retry_long
     def write(self, dump_path, group_key=None):
         if group_key is None:
@@ -94,4 +105,21 @@ class FTPWriter(FilebaseBaseWriter):
         progress = FtpUploadProgress(self.logger)
         self.ftp.storbinary('STOR %s' % destination, open(dump_path), callback=progress)
         self.ftp.close()
+        self._update_metadata(dump_path, destination)
         self.logger.info('Saved {}'.format(dump_path))
+
+    def _check_write_consistency(self):
+        self.ftp = self.build_ftp_instance()
+        self.ftp.connect(self.ftp_host, self.ftp_port)
+        self.ftp.login(self.ftp_user, self.ftp_password)
+        for file_info in self.writer_metadata['files_written']:
+            ftp_size = self.ftp.size(file_info['filename'])
+            if ftp_size < 0:
+                raise InconsistentWriteState(
+                    '{} file is not present at destination'.format(file_info['filename']))
+            if ftp_size != file_info['size']:
+                raise InconsistentWriteState('Wrong size for file {}. Extected: {} - got {}'
+                                             .format(file_info['filename'], file_info['size'],
+                                                     ftp_size))
+        self.ftp.close()
+        self.logger.info('Consistency check passed')

@@ -3,6 +3,7 @@ import unittest
 from exporters.records.base_record import BaseRecord
 from exporters.writers.azure_blob_writer import AzureBlobWriter
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
+from exporters.writers.azure_file_writer import AzureFileWriter
 
 
 class AzureBlobWriterTest(unittest.TestCase):
@@ -13,7 +14,8 @@ class AzureBlobWriterTest(unittest.TestCase):
             'options': {
                 'container': 'datasetsscrapinghub',
                 'account_name': 'account_name',
-                'account_key': 'account_key'
+                'account_key': 'account_key',
+                'check_consistency': False
             }
         }
 
@@ -49,11 +51,13 @@ class AzureFileWriterTest(unittest.TestCase):
 
     def get_writer_config(self):
         return {
-            'name': 'exporters.writers.azure_blob_writer.AzureBlobWriter',
+            'name': 'exporters.writers.azure_file_writer.AzureFileWriter',
             'options': {
-                'container': 'datasetsscrapinghub',
+                'share': 'datasetsscrapinghub',
+                'filebase': 'somefilebase',
                 'account_name': 'account_name',
-                'account_key': 'account_key'
+                'account_key': 'account_key',
+                'check_consistency': False
             }
         }
 
@@ -65,16 +69,17 @@ class AzureFileWriterTest(unittest.TestCase):
         return [BaseRecord(d) for d in data]
 
 
-    @mock.patch('azure.storage.blob.BlobService.create_container')
-    @mock.patch('azure.storage.blob.BlobService.put_block_blob_from_path')
-    def test_write_blob(self, create_mock, put_block_blob_mock):
+    @mock.patch('azure.storage.file.FileService.create_share')
+    @mock.patch('azure.storage.file.FileService.create_directory')
+    @mock.patch('azure.storage.file.FileService.put_file_from_path')
+    def test_write_file(self, create_mock, create_directory_mock, put_file_mock):
 
         # given
         items_to_write = self.get_batch()
         options = self.get_writer_config()
 
         # when:
-        writer = AzureBlobWriter(options, export_formatter=JsonExportFormatter(dict()))
+        writer = AzureFileWriter(options, export_formatter=JsonExportFormatter(dict()))
         try:
             writer.write_batch(items_to_write)
             writer.flush()

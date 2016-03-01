@@ -1,5 +1,8 @@
+import errno
+
 from exporters.default_retries import retry_long
 from exporters.progress_callback import SftpUploadProgress
+from exporters.writers.base_writer import InconsistentWriteState
 
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
@@ -37,10 +40,20 @@ class SFTPWriter(FilebaseBaseWriter):
         self.sftp_port = self.read_option('port')
         self.sftp_user = self.read_option('sftp_user')
         self.sftp_password = self.read_option('sftp_password')
+        self.writer_metadata['files_written'] = []
         self.logger.info(
             'SFTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(
                 self.sftp_host, self.sftp_port,
                 self.filebase))
+
+    def _update_metadata(self, dump_path, destination):
+        buffer_info = self.write_buffer.metadata.get(dump_path, {})
+        file_info = {
+            'filename': destination,
+            'size': buffer_info.get('size'),
+            'number_of_records': buffer_info.get('number_of_records')
+        }
+        self.writer_metadata['files_written'].append(file_info)
 
     @retry_long
     def write(self, dump_path, group_key=None):
@@ -59,4 +72,24 @@ class SFTPWriter(FilebaseBaseWriter):
                 sftp.makedirs(filebase_path)
             progress = SftpUploadProgress(self.logger)
             sftp.put(dump_path, destination, callback=progress)
+        self._update_metadata(dump_path, destination)
         self.logger.info('Saved {}'.format(dump_path))
+
+    def _check_write_consistency(self):
+        import pysftp
+        with pysftp.Connection(self.sftp_host, port=self.sftp_port,
+                               username=self.sftp_user,
+                               password=self.sftp_password) as sftp:
+            for file_info in self.writer_metadata['files_written']:
+                try:
+                    sftp_info = sftp.stat(file_info['filename'])
+                except IOError, e:
+                    if e.errno == errno.ENOENT:
+                        raise InconsistentWriteState(
+                            '{} file is not present at destination'.format(file_info['filename']))
+                sftp_size = sftp_info.st_size
+                if sftp_size != file_info['size']:
+                    raise InconsistentWriteState('Wrong size for file {}. Extected: {} - got {}'
+                                                 .format(file_info['filename'], file_info['size'],
+                                                         sftp_size))
+        self.logger.info('Consistency check passed')

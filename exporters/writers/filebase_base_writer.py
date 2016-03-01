@@ -13,7 +13,9 @@ class FilebaseBaseWriter(BaseWriter):
         Path to store the exported files
 
     """
-    supported_options = {'filebase': {'type': basestring}}
+    supported_options = {
+        'filebase': {'type': basestring}
+    }
 
     def __init__(self, options, *args, **kwargs):
         super(FilebaseBaseWriter, self).__init__(options, *args, **kwargs)
