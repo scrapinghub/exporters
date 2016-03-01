@@ -12,6 +12,7 @@ class SFTPWriterTest(unittest.TestCase):
             'sftp_password': 'password',
             'filebase': 'test/',
             'host': 'sftp.example.com',
+            'check_consistency': False
         }
         writer = SFTPWriter(dict(options=options), export_formatter=JsonExportFormatter(dict()))
         self.assertEquals(22, writer.read_option('port'))

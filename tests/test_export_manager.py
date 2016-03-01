@@ -120,6 +120,7 @@ class BaseExportManagerTest(unittest.TestCase):
                     'filebase': '_',
                     'ftp_user': 'invaliduser',
                     'ftp_password': 'invalidpass',
+                    'check_consistency': False
                 }
             },
         )
