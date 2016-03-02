@@ -67,11 +67,11 @@ class FilebaseBaseWriter(BaseWriter):
 
     def _append_md5_info(self, write_info):
         file_name = self.writer_metadata['written_files'][-1]
-
         with open(write_info['compressed_path'], 'r') as f:
             md5 = md5_for_file(f)
         with open(self.md5_file_name, 'a') as f:
             f.write('{} {}'.format(md5, file_name)+'\n')
+        self.logger.info('Checksum for file {}: {}'.format(write_info['compressed_path'], md5))
 
     def _write(self, key):
         write_info = self.write_buffer.pack_buffer(key)
