@@ -3,6 +3,8 @@ from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 import collections
 
 
+DEFAULT_XML_HEADER = '<?xml version="1.0" encoding="UTF-8"?>'
+
 class XMLExportFormatter(BaseExportFormatter):
     """
     This export formatter provides a way of exporting items in XML format
@@ -14,7 +16,8 @@ class XMLExportFormatter(BaseExportFormatter):
         'attr_type': {'type': bool, 'default': True},
         'fields_order': {'type': list, 'default': []},
         'item_name': {'type': basestring, 'default': 'item'},
-        'root_name': {'type': basestring, 'default': 'root'}
+        'root_name': {'type': basestring, 'default': 'root'},
+        'xml_header': {'type': basestring, 'default': DEFAULT_XML_HEADER}
     }
 
     def __init__(self, options):
@@ -22,6 +25,7 @@ class XMLExportFormatter(BaseExportFormatter):
         self.attr_type = self.read_option('attr_type')
         self.item_name = self.read_option('item_name')
         self.root_name = self.read_option('root_name')
+        self.xml_header = self.read_option('xml_header')
         self.fields_order = self._get_fields()
 
     def _get_fields(self):
@@ -29,6 +33,8 @@ class XMLExportFormatter(BaseExportFormatter):
         return {key: idx for idx, key in enumerate(fields)}
 
     def format_header(self):
+        if self.xml_header:
+            return '{}\n<{}>\n'.format(self.xml_header, self.root_name)
         return '<{}>\n'.format(self.root_name)
 
     def format_footer(self):

@@ -148,16 +148,16 @@ class CustomWriterTest(unittest.TestCase):
             parseString(
                 '<item><key2 type="str">value23</key2><key1 type="str">value13</key1></item>')
         ]
-        expected = ['<root>'] + \
+        expected = ['<?xml version="1.0" encoding="UTF-8"?>', '<root>'] + \
                    [{'key1': item.getElementsByTagName('key1')[0].firstChild.nodeValue,
                      'key2': item.getElementsByTagName('key2')[0].firstChild.nodeValue}
                     for item in expected_list] + \
                    ['</root>']
 
-        out = [output[0]] + \
+        out = [output[0], output[1]] + \
               [{'key1': parseString(l).getElementsByTagName('key1')[0].firstChild.nodeValue,
                 'key2': parseString(l).getElementsByTagName('key2')[0].firstChild.nodeValue}
-               for l in output[1:-1]] + \
+               for l in output[2:-1]] + \
               [output[-1]]
 
         self.assertEquals(expected, out)
@@ -194,13 +194,13 @@ class CustomWriterTest(unittest.TestCase):
             parseString(
                 '<XmlItem><key1>value13</key1><key2>value23</key2></XmlItem>')
         ]
-        expected = ['<RootItem>']
+        expected = ['<?xml version="1.0" encoding="UTF-8"?>', '<RootItem>']
         expected += [[node.localName for node in item.getElementsByTagName('XmlItem')[0].childNodes]
                      for item in expected_list]
         expected += ['</RootItem>']
-        out = [output[0]]
+        out = [output[0], output[1]]
         out += [[node.localName for node in parseString(l).getElementsByTagName('XmlItem')[0].childNodes]
-                for l in output[1:-1]]
+                for l in output[2:-1]]
         out += [output[-1]]
 
         self.assertEquals(expected, out)
