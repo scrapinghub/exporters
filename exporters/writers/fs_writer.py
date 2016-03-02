@@ -46,5 +46,5 @@ class FSWriter(FilebaseBaseWriter):
         destination = os.path.join(filebase_path, file_name)
         self._create_path_if_not_exist(filebase_path)
         shutil.copy(dump_path, destination)
-        self.writer_metadata['written_files'].append(destination)
+        self.last_written_file = destination
         self.logger.info('Saved {}'.format(dump_path))

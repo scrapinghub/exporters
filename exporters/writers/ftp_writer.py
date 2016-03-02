@@ -94,5 +94,5 @@ class FTPWriter(FilebaseBaseWriter):
         progress = FtpUploadProgress(self.logger)
         self.ftp.storbinary('STOR %s' % destination, open(dump_path), callback=progress)
         self.ftp.close()
-        self.writer_metadata['written_files'].append(destination)
+        self.last_written_file = destination
         self.logger.info('Saved {}'.format(dump_path))

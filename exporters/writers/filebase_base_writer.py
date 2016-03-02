@@ -34,8 +34,9 @@ class FilebaseBaseWriter(BaseWriter):
     def __init__(self, options, *args, **kwargs):
         super(FilebaseBaseWriter, self).__init__(options, *args, **kwargs)
         self.filebase = self.read_option('filebase')
-        self.writer_metadata['written_files'] = []
+        self.writer_metadata['write_info'] = {}
         self.md5_file_name = None
+        self.last_written_file = None
         if self.read_option('generate_md5'):
             self.md5_file_name = str(uuid.uuid4())
 
@@ -57,32 +58,35 @@ class FilebaseBaseWriter(BaseWriter):
         """
         normalized = [re.sub('\W', '_', s) for s in group_info]
         filebase = self.read_option('filebase')
-        filebase = filebase.format(date=datetime.datetime.now(),
-                                                           groups=normalized)
+        filebase = filebase.format(date=datetime.datetime.now(), groups=normalized)
         filebase = datetime.datetime.now().strftime(filebase)
         filebase_path, prefix = os.path.split(filebase)
         if not file_name:
             file_name = prefix + self.get_file_suffix(filebase_path, prefix) + '.' + extension
         return filebase_path, file_name
 
-    def _append_md5_info(self, write_info):
-        file_name = self.writer_metadata['written_files'][-1]
-        with open(write_info['compressed_path'], 'r') as f:
-            md5 = md5_for_file(f)
+    def _append_md5_info(self, file_name, write_info):
         with open(self.md5_file_name, 'a') as f:
-            f.write('{} {}'.format(md5, file_name)+'\n')
-        self.logger.info('Checksum for file {}: {}'.format(write_info['compressed_path'], md5))
+            f.write('{} {}'.format(write_info['md5'], file_name)+'\n')
+
+    def _get_md5(self, path):
+        with open(path, 'r') as f:
+            return md5_for_file(f)
 
     def _write(self, key):
         write_info = self.write_buffer.pack_buffer(key)
         self.write(write_info.get('compressed_path'), self.write_buffer.grouping_info[key]['membership'])
-        if self.md5_file_name:
-            self._append_md5_info(write_info)
+        write_info['md5'] = self._get_md5(write_info.get('compressed_path'))
+        self.logger.info('Checksum for file {}: {}'.format(write_info['compressed_path'], write_info['md5']))
+        self.writer_metadata['write_info'][self.last_written_file] = write_info
         self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
 
     def finish_writing(self):
         if self.md5_file_name:
             try:
+                for file_name, write_info in self.writer_metadata['write_info'].iteritems():
+                    write_info = self.writer_metadata['write_info'][file_name]
+                    self._append_md5_info(file_name, write_info)
                 self.write(self.md5_file_name, None, file_name=MD5_FILE_NAME)
             finally:
                 os.remove(self.md5_file_name)
