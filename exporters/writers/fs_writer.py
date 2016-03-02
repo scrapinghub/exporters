@@ -39,11 +39,12 @@ class FSWriter(FilebaseBaseWriter):
             number_of_files = 0
         return '{0:04}'.format(number_of_files)
 
-    def write(self, dump_path, group_key=None):
+    def write(self, dump_path, group_key=None, file_name=None):
         if group_key is None:
             group_key = []
-        filebase_path, filename = self.create_filebase_name(group_key)
-        destination = os.path.join(filebase_path, filename)
+        filebase_path, file_name = self.create_filebase_name(group_key, file_name=file_name)
+        destination = os.path.join(filebase_path, file_name)
         self._create_path_if_not_exist(filebase_path)
-        shutil.move(dump_path, destination)
+        shutil.copy(dump_path, destination)
+        self.last_written_file = destination
         self.logger.info('Saved {}'.format(dump_path))

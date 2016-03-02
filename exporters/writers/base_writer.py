@@ -1,3 +1,4 @@
+import hashlib
 from exporters.write_buffer import WriteBuffer
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
@@ -21,7 +22,7 @@ class BaseWriter(BasePipelineItem):
     supported_options = {
         'items_per_buffer_write': {'type': int, 'default': ITEMS_PER_BUFFER_WRITE},
         'size_per_buffer_write': {'type': int, 'default': SIZE_PER_BUFFER_WRITE},
-        'items_limit': {'type': int, 'default': 0},
+        'items_limit': {'type': int, 'default': 0}
     }
 
     def __init__(self, options, *args, **kwargs):
@@ -103,3 +104,9 @@ class BaseWriter(BasePipelineItem):
         write_info = self.write_buffer.pack_buffer(key)
         self.write(write_info.get('compressed_path'), self.write_buffer.grouping_info[key]['membership'])
         self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
+
+    def finish_writing(self):
+        """
+        Method called to do final writing operations before being closed
+        """
+        pass

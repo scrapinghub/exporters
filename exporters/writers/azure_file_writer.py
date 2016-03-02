@@ -56,13 +56,13 @@ class AzureFileWriter(FilebaseBaseWriter):
             )
 
     @retry_long
-    def _write_file(self, dump_path, group_key):
-        filebase_path, filename = self.create_filebase_name(group_key)
+    def _write_file(self, dump_path, group_key, file_name=None):
+        filebase_path, file_name = self.create_filebase_name(group_key, file_name=file_name)
         self._ensure_path(filebase_path)
         self.azure_service.put_file_from_path(
             self.share,
             filebase_path,
-            filename,
+            file_name,
             dump_path,
             max_connections=5,
         )
@@ -71,5 +71,4 @@ class AzureFileWriter(FilebaseBaseWriter):
     def get_file_suffix(self, path, prefix):
         number_of_keys = self.writer_metadata['files_counter'].get(path, 0)
         suffix = '{}'.format(str(number_of_keys))
-        self.writer_metadata['files_counter'][path] = number_of_keys + 1
         return suffix

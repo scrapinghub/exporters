@@ -2,6 +2,7 @@ import gzip
 import json
 import os
 import random
+import tempfile
 import unittest
 import csv
 
@@ -41,11 +42,34 @@ class FakeWriter(BaseWriter):
         super(FakeWriter, self).__init__(*args, **kwargs)
         self.custom_output = {}
         self.fake_files_already_written = []
+        self.writer_metadata['written_files'] = self.fake_files_already_written
 
     def write(self, path, key):
         with gzip.open(path) as f:
             self.custom_output[key] = f.read()
         self.fake_files_already_written.append(path)
+
+
+class FakeFilebaseWriter(FilebaseBaseWriter):
+    """CustomWriter writing records to self.custom_output
+    to test BaseWriter extensibility
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(FakeFilebaseWriter, self).__init__(*args, **kwargs)
+        self.custom_output = {}
+        self.fake_files_already_written = []
+        self.writer_metadata['written_files'] = self.fake_files_already_written
+
+    def write(self, path, key, file_name=None):
+        if file_name:
+            with open(path) as f:
+                self.custom_output[key] = f.read()
+            self.fake_files_already_written.append(file_name)
+        else:
+            with gzip.open(path) as f:
+                self.custom_output[key] = f.read()
+            self.fake_files_already_written.append(path)
 
 
 class CustomWriterTest(unittest.TestCase):
@@ -217,6 +241,21 @@ class CustomWriterTest(unittest.TestCase):
             writer.close()
         self.assertEqual([writer.writer_metadata['items_count'], writer.stats['written_items']], [3, 3])
 
+    def test_md5sum_file(self):
+        # given:
+        formatter = JsonExportFormatter({})
+        with tempfile.NamedTemporaryFile() as tmp:
+            writer = FakeFilebaseWriter({'options': {'filebase': tmp.name, 'generate_md5': True}}
+                                        , export_formatter=formatter)
+            # when:
+            try:
+                writer.write_batch(self.batch)
+                writer.flush()
+                writer.finish_writing()
+            finally:
+                writer.close()
+            self.assertIn('md5checksum.md5', writer.fake_files_already_written)
+
 
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
@@ -233,8 +272,6 @@ class WriteBufferTest(unittest.TestCase):
         self.assertEqual(self.write_buffer.get_metadata('somekey', 'items'), 10,
                          'Wrong metadata')
         self.assertIsNone(self.write_buffer.get_metadata('somekey', 'nokey'))
-        with self.assertRaises(KeyError):
-            self.assertIsNone(self.write_buffer.get_metadata('nokey', 'nokey'))
 
 
 class ConsoleWriterTest(unittest.TestCase):
@@ -264,7 +301,7 @@ class FilebaseBaseWriterTest(unittest.TestCase):
     def test_get_file_number_not_implemented(self):
         writer_config = {
             'options': {
-                'filebase': '/tmp/'
+                'filebase': '/tmp/',
             }
         }
         writer = FilebaseBaseWriter(writer_config, export_formatter=JsonExportFormatter(dict()))
@@ -278,7 +315,7 @@ class FSWriterTest(unittest.TestCase):
     def test_get_file_number(self):
         writer_config = {
             'options': {
-                'filebase': '/tmp/exporter_test'
+                'filebase': '/tmp/exporter_test',
             }
         }
         writer = FSWriter(writer_config, export_formatter=JsonExportFormatter(dict()))

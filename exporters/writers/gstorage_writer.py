@@ -61,10 +61,11 @@ class GStorageWriter(FilebaseBaseWriter):
 
         self.logger.info('Saved {}'.format(destination))
 
-    def write(self, dump_path, group_key=None):
+    def write(self, dump_path, group_key=None, file_name=None):
         if group_key is None:
             group_key = []
 
-        filebase_path, filename = self.create_filebase_name(group_key)
-        blob_name = filebase_path + '/' + filename
+        filebase_path, file_name = self.create_filebase_name(group_key, file_name=file_name)
+        blob_name = filebase_path + '/' + file_name
         self._write_gstorage_blob(dump_path, blob_name)
+        self.last_written_file = blob_name

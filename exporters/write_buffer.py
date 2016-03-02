@@ -174,7 +174,7 @@ class WriteBuffer(object):
         return self.items_group_files.get_grouping_info()
 
     def get_metadata(self, buffer_path, meta_key):
-        return self.metadata[buffer_path].get(meta_key)
+        return self.metadata.get(buffer_path, {}).get(meta_key)
 
     def get_grouping_info(self):
         return self.grouping_info

@@ -75,7 +75,7 @@ class S3Writer(FilebaseBaseWriter):
             return DEFAULT_BUCKET_REGION
 
     def _get_total_count(self, dump_path):
-        return self.write_buffer.get_metadata(dump_path, 'number_of_records')
+        return self.write_buffer.get_metadata(dump_path, 'number_of_records') or 0
 
     def _ensure_proper_key_permissions(self, key):
         from boto.exception import S3ResponseError
@@ -97,13 +97,14 @@ class S3Writer(FilebaseBaseWriter):
             progress = BotoDownloadProgress(self.logger)
             key.set_contents_from_file(f, cb=progress, md5=md5)
             self._ensure_proper_key_permissions(key)
+        self.last_written_file = destination
         self.logger.info('Saved {}'.format(destination))
 
-    def write(self, dump_path, group_key=None):
+    def write(self, dump_path, group_key=None, file_name=None):
         if group_key is None:
             group_key = []
-        filebase_path, filename = self.create_filebase_name(group_key)
-        key_name = filebase_path + '/' + filename
+        filebase_path, file_name = self.create_filebase_name(group_key, file_name=file_name)
+        key_name = filebase_path + '/' + file_name
         self._write_s3_key(dump_path, key_name)
         self.writer_metadata['files_counter'][filebase_path] += 1
 
@@ -128,9 +129,9 @@ class S3Writer(FilebaseBaseWriter):
         self._check_write_consistency()
         if self.read_option('save_pointer'):
             self._update_last_pointer()
+        super(S3Writer, self).close()
 
     def get_file_suffix(self, path, prefix):
         number_of_keys = self.writer_metadata['files_counter'].get(path, 0)
         suffix = '{}'.format(str(number_of_keys))
-        self.writer_metadata['files_counter'][path] = number_of_keys + 1
         return suffix

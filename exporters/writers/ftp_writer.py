@@ -81,17 +81,18 @@ class FTPWriter(FilebaseBaseWriter):
         return ftplib.FTP()
 
     @retry_long
-    def write(self, dump_path, group_key=None):
+    def write(self, dump_path, group_key=None, file_name=None):
         if group_key is None:
             group_key = []
-        filebase_path, filename = self.create_filebase_name(group_key)
+        filebase_path, file_name = self.create_filebase_name(group_key, file_name=file_name)
         self.logger.info('Start uploading to {}'.format(dump_path))
         self.ftp = self.build_ftp_instance()
         self.ftp.connect(self.ftp_host, self.ftp_port)
         self.ftp.login(self.ftp_user, self.ftp_password)
-        destination = (filebase_path + '/' + filename)
+        destination = (filebase_path + '/' + file_name)
         self._create_target_dir_if_needed(destination)
         progress = FtpUploadProgress(self.logger)
         self.ftp.storbinary('STOR %s' % destination, open(dump_path), callback=progress)
         self.ftp.close()
+        self.last_written_file = destination
         self.logger.info('Saved {}'.format(dump_path))
