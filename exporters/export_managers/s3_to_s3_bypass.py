@@ -181,13 +181,14 @@ class S3Bypass(BaseBypass):
         except S3ResponseError:
             self.logger.warning('No direct copy supported for key {}.'.format(key_name))
             self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
-        self._check_copy_integrity(key, dest_bucket, dest_key_name)
-
-    def _check_copy_integrity(self, source_key, dest_bucket, dest_key_name):
         dest_key = dest_bucket.get_key(dest_key_name)
+        self._check_copy_integrity(key, dest_bucket, dest_key)
+        self._ensure_proper_key_permissions(dest_key)
+
+    def _check_copy_integrity(self, source_key, dest_bucket, dest_key):
         if source_key.etag != dest_key.etag:
             raise InvalidKeyIntegrityCheck('Key {} and key {} md5 checksums are different. {} != {}'
-                                           .format(source_key.name, dest_key_name, source_key.etag, dest_key.etag))
+                                           .format(source_key.name, dest_key.name, source_key.etag, dest_key.etag))
 
     def _ensure_proper_key_permissions(self, key):
         from boto.exception import S3ResponseError
@@ -212,7 +213,6 @@ class S3Bypass(BaseBypass):
             progress = BotoUploadProgress(self.logger)
             md5 = self._get_md5(key, tmp_filename)
             dest_key.set_contents_from_filename(tmp_filename, cb=progress, md5=md5)
-            self._ensure_proper_key_permissions(dest_key)
 
     @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):
