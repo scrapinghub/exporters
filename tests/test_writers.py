@@ -251,8 +251,8 @@ class CustomWriterTest(unittest.TestCase):
             try:
                 writer.write_batch(self.batch)
                 writer.flush()
-            finally:
                 writer.finish_writing()
+            finally:
                 writer.close()
             self.assertIn('md5checksum.md5', writer.fake_files_already_written)
 
