@@ -182,8 +182,8 @@ class S3Bypass(BaseBypass):
             self.logger.warning('No direct copy supported for key {}.'.format(key_name))
             self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
         dest_key = dest_bucket.get_key(dest_key_name)
-        self._check_copy_integrity(key, dest_bucket, dest_key)
         self._ensure_proper_key_permissions(dest_key)
+        self._check_copy_integrity(key, dest_bucket, dest_key)
 
     def _check_copy_integrity(self, source_key, dest_bucket, dest_key):
         if source_key.etag != dest_key.etag:
