@@ -24,7 +24,6 @@ class GStorageWriterTest(unittest.TestCase):
                     "private_key": "yyy",
                 },
                 'filebase': 'tests/',
-                'generate_md5': False,
             }
         }
 

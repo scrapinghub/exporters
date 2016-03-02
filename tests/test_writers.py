@@ -245,7 +245,7 @@ class CustomWriterTest(unittest.TestCase):
         # given:
         formatter = JsonExportFormatter({})
         with tempfile.NamedTemporaryFile() as tmp:
-            writer = FakeFilebaseWriter({'options': {'filebase': tmp.name, 'generate_md5': True}}
+            writer = FakeFilebaseWriter({'options': {'filebase': tmp.name, 'md5_file_name': 'md5checksum.md5'}}
                                         , export_formatter=formatter)
             # when:
             try:
@@ -302,7 +302,6 @@ class FilebaseBaseWriterTest(unittest.TestCase):
         writer_config = {
             'options': {
                 'filebase': '/tmp/',
-                'generate_md5': False,
             }
         }
         writer = FilebaseBaseWriter(writer_config, export_formatter=JsonExportFormatter(dict()))
@@ -317,7 +316,6 @@ class FSWriterTest(unittest.TestCase):
         writer_config = {
             'options': {
                 'filebase': '/tmp/exporter_test',
-                'generate_md5': False
             }
         }
         writer = FSWriter(writer_config, export_formatter=JsonExportFormatter(dict()))

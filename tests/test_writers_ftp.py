@@ -11,7 +11,6 @@ class FTPWriterTest(unittest.TestCase):
 
     def test_default_port_is_21(self):
         options = dict(options=dict(
-            generate_md5=False,
             ftp_user='user',
             ftp_password='password',
             host='ftp.example.com',
@@ -23,7 +22,6 @@ class FTPWriterTest(unittest.TestCase):
     def test_create_parent_dirs_in_right_order(self, mock_ftp):
         filebase = 'some/long/dir/tree/'
         options = dict(options=dict(
-            generate_md5=False,
             ftp_user='user',
             ftp_password='password',
             host='ftp.example.com',
@@ -44,7 +42,6 @@ class FTPWriterTest(unittest.TestCase):
     def test_create_parent_dirs_with_filebase_prefix(self, mock_ftp):
         filebase = 'some/long/dir/with/prefix'
         options = dict(options=dict(
-            generate_md5=False,
             ftp_user='user',
             ftp_password='password',
             host='ftp.example.com',
