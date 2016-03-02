@@ -106,4 +106,7 @@ class BaseWriter(BasePipelineItem):
         self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
 
     def finish_writing(self):
+        """
+        Method called to do final writing operations before being closed
+        """
         pass
