@@ -28,7 +28,7 @@ class FilebaseBaseWriter(BaseWriter):
     """
     supported_options = {
         'filebase': {'type': basestring},
-        'md5_file_name': {'type': basestring, 'default': None}
+        'generate_md5': {'type': bool, 'default': False}
     }
 
     def __init__(self, options, *args, **kwargs):
@@ -37,7 +37,7 @@ class FilebaseBaseWriter(BaseWriter):
         self.written_files = {}
         self.md5_file_name = None
         self.last_written_file = None
-        self.md5_file_name = self.read_option('md5_file_name')
+        self.generate_md5 = self.read_option('generate_md5')
 
     def write(self, path, key, file_name=False):
         """
@@ -64,10 +64,6 @@ class FilebaseBaseWriter(BaseWriter):
             file_name = prefix + self.get_file_suffix(filebase_path, prefix) + '.' + extension
         return filebase_path, file_name
 
-    def _append_md5_info(self, file_name, write_info):
-        with open(self.md5_file_name, 'a') as f:
-            f.write('{} {}'.format(write_info['md5'], file_name)+'\n')
-
     def _get_md5(self, path):
         with open(path, 'r') as f:
             return md5_for_file(f)
@@ -81,11 +77,12 @@ class FilebaseBaseWriter(BaseWriter):
         self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
 
     def finish_writing(self):
-        if self.md5_file_name:
+        if self.generate_md5:
             try:
-                for file_name, write_info in self.written_files.iteritems():
-                    write_info = self.written_files[file_name]
-                    self._append_md5_info(file_name, write_info)
-                self.write(self.md5_file_name, None, file_name=MD5_FILE_NAME)
+                with open(MD5_FILE_NAME, 'a') as f:
+                    for file_name, write_info in self.written_files.iteritems():
+                        write_info = self.written_files[file_name]
+                        f.write('{} {}'.format(write_info['md5'], file_name)+'\n')
+                self.write(MD5_FILE_NAME, None, file_name=MD5_FILE_NAME)
             finally:
-                os.remove(self.md5_file_name)
+                os.remove(MD5_FILE_NAME)
