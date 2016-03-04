@@ -162,3 +162,29 @@ To resume the export, you must run:
      .. code-block:: python
 
         python export.py --resume pickle://job_state.pickle
+
+
+Dropbox export tutorial
+~~~~~~~~~~~~~~~~~~~~~~~
+To get the needed access_token please follow this steps.
+
+  1. Go to your `dropbox apps section <https://www.dropbox.com/developers-v1/apps>`_
+
+  2. Press `Create app` button.
+
+  3. Select `Dropbox Api` and `Full Dropbox` permissions, and set a proper name for your app.
+
+  4. Press `Generate` button under `Generated access token`.
+
+  5. Use the generated token for your configuration.
+
+
+.. code-block:: python
+
+        "writer":{
+            "name": "exporters.writers.dropbox_writer.DropboxWriter",
+            "options": {
+                "access_token": "YOUR_ACCESS_TOKEN",
+                "filebase": "/export/exported_file"
+            }
+        }
