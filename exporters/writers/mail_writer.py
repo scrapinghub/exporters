@@ -1,6 +1,6 @@
 import email
-import uuid
 import os
+import datetime
 from exporters.writers.base_writer import BaseWriter
 from exporters.default_retries import retry_short
 
@@ -40,7 +40,8 @@ class MailWriter(BaseWriter):
         'secret_key': {
             'type': basestring,
             'env_fallback': 'EXPORTERS_MAIL_AWS_SECRET_KEY',
-        }
+        },
+        'file_name': {'type': basestring, 'default': None}
     }
 
     def __init__(self, options, *args, **kwargs):
@@ -54,6 +55,17 @@ class MailWriter(BaseWriter):
         self.ses = boto.connect_ses(self.options['access_key'], self.options['secret_key'])
         self.logger.info('MailWriter has been initiated. Sending to: {}'.format(self.emails))
         self.writer_finished = False
+        self.file_base_name = self._get_base_file_name(self.read_option('file_name'))
+
+    def _get_base_file_name(self, file_name_base):
+        if file_name_base:
+            file_name_base = file_name_base.format(date=datetime.datetime.now())
+            file_name_base = datetime.datetime.now().strftime(file_name_base)
+            return file_name_base
+        return ''
+
+    def _get_file_name(self):
+        return '{}{}.{}'.format(self.file_base_name, self.mails_sent, 'gz')
 
     def _write_mail(self, dump_path, group_key):
         if self.max_mails_sent == self.mails_sent:
@@ -65,13 +77,13 @@ class MailWriter(BaseWriter):
         m['From'] = self.sender
 
         # Attachment
-        key_name = '{}_{}.{}'.format('ds_dump', uuid.uuid4(), 'gz')
+        file_name = self._get_file_name()
         filesize = os.path.getsize(dump_path)
         with open(dump_path, 'rb') as fd:
             part = email.mime.base.MIMEBase('application', 'octet-stream')
             part.set_payload(fd.read())
             email.encoders.encode_base64(part)
-            part.add_header('Content-Disposition', 'attachment', filename=key_name)
+            part.add_header('Content-Disposition', 'attachment', filename=file_name)
             m.attach(part)
 
         # Message body
@@ -80,7 +92,7 @@ class MailWriter(BaseWriter):
         body += "Number of Records: {buffered_items}\n"
 
         body = body.format(
-            key_name=key_name,
+            key_name=file_name,
             filesize=filesize,
             buffered_items=self.grouping_info[tuple(group_key)]['buffered_items']
         )
