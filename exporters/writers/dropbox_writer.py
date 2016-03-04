@@ -34,23 +34,23 @@ class DropboxWriter(FilebaseBaseWriter):
         self._write_file(dump_path, group_key)
 
     @retry_long
-    def _upload_file(self, f, filebase_path, file_name):
+    def _upload_file(self, input_file, filepath):
         from dropbox import files
         session_id = self.client.files_upload_session_start('')
         current_offset = 0
         while True:
-            data = f.read(2**20)
+            data = input_file.read(2**20)
             if not data:
                 break
             self.client.files_upload_session_append(data, session_id.session_id, current_offset)
             current_offset += len(data)
         cursor = files.UploadSessionCursor(session_id.session_id, current_offset)
-        self.client.files_upload_session_finish('', cursor, files.CommitInfo(path='{}/{}'.format(filebase_path, file_name)))
+        self.client.files_upload_session_finish('', cursor, files.CommitInfo(path='{}'.format(filepath)))
 
     def _write_file(self, dump_path, group_key, file_name=None):
         filebase_path, file_name = self.create_filebase_name(group_key, file_name=file_name)
         with open(dump_path, 'r') as f:
-            self._upload_file(f, filebase_path, file_name)
+            self._upload_file(f, '{}/{}'.format(filebase_path, file_name))
         self.writer_metadata['files_counter'][filebase_path] += 1
 
     def get_file_suffix(self, path, prefix):
