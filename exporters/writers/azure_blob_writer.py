@@ -5,8 +5,7 @@ from exporters.writers.base_writer import BaseWriter
 
 class AzureBlobWriter(BaseWriter):
     """
-    Writes items to S3 bucket. It is a File Based writer, so it has filebase
-    option available
+    Writes items to azure blob containers.
 
         - account_name (str)
             Public acces name of the azure account.

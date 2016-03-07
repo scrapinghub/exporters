@@ -5,7 +5,7 @@ from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 class AzureFileWriter(FilebaseBaseWriter):
     """
-    Writes items to S3 bucket. It is a File Based writer, so it has filebase
+    Writes items to azure file shares. It is a File Based writer, so it has filebase
     option available
 
         - account_name (str)
