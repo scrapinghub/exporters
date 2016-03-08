@@ -52,7 +52,9 @@ class MailWriter(BaseWriter):
         self.sender = self.read_option('from')
         self.max_mails_sent = self.read_option('max_mails_sent')
         self.mails_sent = 0
-        self.ses = boto.connect_ses(self.options['access_key'], self.options['secret_key'])
+        access_key = self.read_option('access_key')
+        secret_key = self.read_option('secret_key')
+        self.ses = boto.connect_ses(access_key, secret_key)
         self.logger.info('MailWriter has been initiated. Sending to: {}'.format(self.emails))
         self.writer_finished = False
         self.file_base_name = self._get_base_file_name(self.read_option('file_name'))
