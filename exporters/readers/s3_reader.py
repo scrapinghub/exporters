@@ -36,8 +36,8 @@ def format_prefixes(prefixes, prefix_format_using_date=None):
 
 
 class S3BucketKeysFetcher(object):
-    def __init__(self, reader_options):
-        self.source_bucket = get_bucket(**reader_options)
+    def __init__(self, reader_options, aws_access_key_id, aws_secret_access_key):
+        self.source_bucket = get_bucket(reader_options.get('bucket'), aws_access_key_id, aws_secret_access_key)
         self.pattern = reader_options.get('pattern', None)
         single_prefix = reader_options.get('prefix', '')
         self.prefix_pointer = reader_options.get('prefix_pointer', '')
@@ -142,7 +142,9 @@ class S3Reader(BaseReader):
         if single_prefix and self.prefix_pointer:
             raise ConfigurationError("prefix and prefix_pointer options cannot be used together")
 
-        self.keys_fetcher = S3BucketKeysFetcher(options['options'])
+        self.keys_fetcher = S3BucketKeysFetcher(options['options'],
+                                                self.read_option('aws_access_key_id'),
+                                                self.read_option('aws_secret_access_key'))
         self.keys = self.keys_fetcher.pending_keys()
         self.read_keys = []
         self.current_key = None
