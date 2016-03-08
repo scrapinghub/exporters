@@ -1,5 +1,6 @@
 import datetime
 import logging
+import os
 import shutil
 from contextlib import closing, contextmanager
 from exporters.default_retries import retry_long
@@ -47,8 +48,10 @@ class S3BypassState(object):
         module_loader = ModuleLoader()
         self.state = module_loader.load_persistence(config.persistence_options)
         self.state_position = self.state.get_last_position()
+        aws_key = self.config.reader_options['options']['aws_access_key_id']
+        aws_secret = self.config.reader_options['options']['aws_secret_access_key']
         if not self.state_position:
-            self.pending = S3BucketKeysFetcher(self.config.reader_options['options']).pending_keys()
+            self.pending = S3BucketKeysFetcher(self.config.reader_options['options'], aws_key, aws_secret).pending_keys()
             self.done = []
             self.skipped = []
             self.stats = {'total_count': 0}
@@ -137,12 +140,23 @@ class S3Bypass(BaseBypass):
         dest_filebase = datetime.datetime.now().strftime(dest_filebase)
         return dest_filebase
 
+    def _fill_config_with_env(self):
+        if 'aws_access_key_id' not in self.config.reader_options['options']:
+            self.config.reader_options['options']['aws_access_key_id'] = os.environ.get('EXPORTERS_S3READER_AWS_KEY')
+        if 'aws_access_key_id' not in self.config.writer_options['options']:
+            self.config.writer_options['options']['aws_access_key_id'] = os.environ.get('EXPORTERS_S3WRITER_AWS_LOGIN')
+        if 'aws_secret_access_key' not in self.config.reader_options['options']:
+            self.config.reader_options['options']['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3READER_AWS_SECRET')
+        if 'aws_secret_access_key' not in self.config.writer_options['options']:
+            self.config.writer_options['options']['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3WRITER_AWS_SECRET')
+
     def bypass(self):
         from copy import deepcopy
         reader_options = self.config.reader_options['options']
         writer_options = self.config.writer_options['options']
         dest_bucket = get_bucket(**writer_options)
         dest_filebase = self._get_filebase(writer_options)
+        self._fill_config_with_env()
         self.bypass_state = S3BypassState(self.config)
         self.total_items = self.bypass_state.stats['total_count']
         source_bucket = get_bucket(**reader_options)

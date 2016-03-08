@@ -226,11 +226,11 @@ class TestS3BucketKeysFetcher(unittest.TestCase):
     def test_prefix_pointer_list(self):
         self.s3_conn.create_bucket('last_bucket')
         expected_pointers = ['pointer1', 'pointer2', 'pointer3']
-        fetcher = S3BucketKeysFetcher(self.options_prefix_pointer)
+        fetcher = S3BucketKeysFetcher(self.options_prefix_pointer, 'KEY', 'SECRET')
         self.assertEqual(expected_pointers, fetcher.prefixes)
 
     def test_prefix_pointer_keys_list(self):
-        fetcher = S3BucketKeysFetcher(self.options_prefix_pointer)
+        fetcher = S3BucketKeysFetcher(self.options_prefix_pointer, 'KEY', 'SECRET')
         self.assertEqual(set(POINTER_KEYS), set(fetcher.pending_keys()))
 
 
