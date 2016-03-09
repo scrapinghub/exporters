@@ -150,22 +150,20 @@ class S3Bypass(BaseBypass):
         self.config.writer_options['options']['aws_secret_access_key'] = aws_secret_access_key
 
     def _get_reader_credentials(self):
-        aws_access_key_id = self.config.reader_options['options'].get('aws_access_key_id', os.environ.get('EXPORTERS_S3READER_AWS_KEY'))
-        if not aws_access_key_id:
-            raise ConfigCheckError('aws_access_key_id not found in reader options. Also tried EXPORTERS_S3READER_AWS_KEY env variable')
-        aws_secret_access_key = self.config.reader_options['options'].get('aws_secret_access_key', os.environ.get('EXPORTERS_S3READER_AWS_SECRET'))
-        if not aws_secret_access_key:
-            raise ConfigCheckError('aws_secret_access_key not found in reader options. Also tried EXPORTERS_S3READER_AWS_SECRET env variable')
+        aws_access_key_id = self._get_option(self.config.reader_options['options'], 'aws_access_key_id', 'EXPORTERS_S3READER_AWS_KEY')
+        aws_secret_access_key = self._get_option(self.config.reader_options['options'], 'aws_secret_access_key', 'EXPORTERS_S3READER_AWS_SECRET')
         return aws_access_key_id, aws_secret_access_key
 
     def _get_writer_credentials(self):
-        aws_access_key_id = self.config.writer_options['options'].get('aws_access_key_id', os.environ.get('EXPORTERS_S3WRITER_AWS_LOGIN'))
-        if not aws_access_key_id:
-            raise ConfigCheckError('aws_access_key_id not found in writer options. Also tried EXPORTERS_S3WRITER_AWS_LOGIN env variable')
-        aws_secret_access_key = self.config.writer_options['options'].get('aws_secret_access_key', os.environ.get('EXPORTERS_S3WRITER_AWS_SECRET'))
-        if not aws_secret_access_key:
-            raise ConfigCheckError('aws_secret_access_key not found in writer options. Also tried EXPORTERS_S3WRITER_AWS_SECRET env variable')
+        aws_access_key_id = self._get_option(self.config.writer_options['options'], 'aws_access_key_id', 'EXPORTERS_S3WRITER_AWS_LOGIN')
+        aws_secret_access_key = self._get_option(self.config.writer_options['options'], 'aws_secret_access_key', 'EXPORTERS_S3WRITER_AWS_SECRET')
         return aws_access_key_id, aws_secret_access_key
+
+    def _get_option(self, options, name, env=None):
+        option = options.get(name, os.environ.get(env))
+        if not option:
+            raise ConfigCheckError('{} not found in options. Also tried {} env variable'.format(name, env))
+        return option
 
     def bypass(self):
         from copy import deepcopy
