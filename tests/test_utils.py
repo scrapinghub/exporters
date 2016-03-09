@@ -14,7 +14,7 @@ from exporters.module_loader import ModuleLoader
 from exporters.exporter_config import ExporterConfig
 from exporters.python_interpreter import Interpreter
 
-from .utils import VALID_EXPORTER_CONFIG, valid_config_with_updates
+from .utils import VALID_EXPORTER_CONFIG, valid_config_with_updates, environment
 
 
 class BaseLoggerTest(unittest.TestCase):
@@ -32,16 +32,6 @@ class BaseLoggerTest(unittest.TestCase):
         options = ExporterConfig(self.options)
         logger = CategoryLogger(options.log_options)
         logger.critical('Critial message')
-
-
-@contextmanager
-def environment(env):
-    original_env = os.environ
-    os.environ = env
-    try:
-        yield
-    finally:
-        os.environ = original_env
 
 
 class BasePipelineItemTest(unittest.TestCase):

@@ -4,6 +4,7 @@ import os
 import shutil
 from contextlib import closing, contextmanager
 from exporters.default_retries import retry_long
+from exporters.exceptions import ConfigCheckError
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
 from exporters.progress_callback import BotoUploadProgress
@@ -140,15 +141,31 @@ class S3Bypass(BaseBypass):
         dest_filebase = datetime.datetime.now().strftime(dest_filebase)
         return dest_filebase
 
-    def _fill_config_with_env(self):
-        if 'aws_access_key_id' not in self.config.reader_options['options']:
-            self.config.reader_options['options']['aws_access_key_id'] = os.environ.get('EXPORTERS_S3READER_AWS_KEY')
-        if 'aws_access_key_id' not in self.config.writer_options['options']:
-            self.config.writer_options['options']['aws_access_key_id'] = os.environ.get('EXPORTERS_S3WRITER_AWS_LOGIN')
-        if 'aws_secret_access_key' not in self.config.reader_options['options']:
-            self.config.reader_options['options']['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3READER_AWS_SECRET')
-        if 'aws_secret_access_key' not in self.config.writer_options['options']:
-            self.config.writer_options['options']['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3WRITER_AWS_SECRET')
+    def _ensure_config_credentials(self):
+        aws_access_key_id, aws_secret_access_key = self._get_reader_credentials()
+        self.config.reader_options['options']['aws_access_key_id'] = aws_access_key_id
+        self.config.reader_options['options']['aws_secret_access_key'] = aws_secret_access_key
+        aws_access_key_id, aws_secret_access_key = self._get_writer_credentials()
+        self.config.writer_options['options']['aws_access_key_id'] = aws_access_key_id
+        self.config.writer_options['options']['aws_secret_access_key'] = aws_secret_access_key
+
+    def _get_reader_credentials(self):
+        aws_access_key_id = self.config.reader_options['options'].get('aws_access_key_id', os.environ.get('EXPORTERS_S3READER_AWS_KEY'))
+        if not aws_access_key_id:
+            raise ConfigCheckError('aws_access_key_id not found in reader options. Also tried EXPORTERS_S3READER_AWS_KEY env variable')
+        aws_secret_access_key = self.config.reader_options['options'].get('aws_secret_access_key', os.environ.get('EXPORTERS_S3READER_AWS_SECRET'))
+        if not aws_secret_access_key:
+            raise ConfigCheckError('aws_secret_access_key not found in reader options. Also tried EXPORTERS_S3READER_AWS_SECRET env variable')
+        return aws_access_key_id, aws_secret_access_key
+
+    def _get_writer_credentials(self):
+        aws_access_key_id = self.config.writer_options['options'].get('aws_access_key_id', os.environ.get('EXPORTERS_S3WRITER_AWS_LOGIN'))
+        if not aws_access_key_id:
+            raise ConfigCheckError('aws_access_key_id not found in writer options. Also tried EXPORTERS_S3WRITER_AWS_LOGIN env variable')
+        aws_secret_access_key = self.config.writer_options['options'].get('aws_secret_access_key', os.environ.get('EXPORTERS_S3WRITER_AWS_SECRET'))
+        if not aws_secret_access_key:
+            raise ConfigCheckError('aws_secret_access_key not found in writer options. Also tried EXPORTERS_S3WRITER_AWS_SECRET env variable')
+        return aws_access_key_id, aws_secret_access_key
 
     def bypass(self):
         from copy import deepcopy
@@ -156,7 +173,7 @@ class S3Bypass(BaseBypass):
         writer_options = self.config.writer_options['options']
         dest_bucket = get_bucket(**writer_options)
         dest_filebase = self._get_filebase(writer_options)
-        self._fill_config_with_env()
+        self._ensure_config_credentials()
         self.bypass_state = S3BypassState(self.config)
         self.total_items = self.bypass_state.stats['total_count']
         source_bucket = get_bucket(**reader_options)

@@ -6,9 +6,12 @@ import datetime
 import moto
 import mock
 from boto.exception import S3ResponseError
+
+from exporters.exceptions import ConfigCheckError
 from exporters.export_managers.s3_to_s3_bypass import S3Bypass, RequisitesNotMet
 from exporters.exporter_config import ExporterConfig
 from exporters.utils import remove_if_exists
+from tests.utils import environment
 
 
 def create_fake_key():
@@ -313,3 +316,49 @@ class S3BypassTest(unittest.TestCase):
             keys_list.append(key.name)
         self.assertEqual(expected_keys, keys_list)
 
+    def test_load_from_env(self):
+        # given
+        reader = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'source_bucket',
+                'prefix': 'some_prefix/'
+            }
+        }
+        options = create_s3_bypass_simple_config(reader=reader)
+        # when:
+        bypass = S3Bypass(options)
+
+        # then
+        with self.assertRaises(ConfigCheckError):
+            bypass.bypass()
+
+
+    def test_copy_bypass_s3_with_env(self):
+        # given
+        self.s3_conn.create_bucket('dest_bucket')
+        reader = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'source_bucket',
+                'prefix': 'some_prefix/'
+            }
+        }
+        options = create_s3_bypass_simple_config(reader=reader)
+        env = {
+            'EXPORTERS_S3READER_AWS_KEY': 'a',
+            'EXPORTERS_S3READER_AWS_SECRET': 'b'
+        }
+
+        # when:
+
+        bypass = S3Bypass(options)
+        with environment(env):
+            bypass.bypass()
+
+        # then:
+        bucket = self.s3_conn.get_bucket('dest_bucket')
+        key = next(iter(bucket.list('some_prefix/')))
+        self.assertEquals('some_prefix/test_key', key.name)
+        self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
+        self.assertEqual(bypass.total_items, 2, 'Bypass got an incorrect number of total items')
