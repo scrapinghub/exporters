@@ -361,4 +361,4 @@ class S3BypassTest(unittest.TestCase):
         key = next(iter(bucket.list('some_prefix/')))
         self.assertEquals('some_prefix/test_key', key.name)
         self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
-        self.assertEqual(bypass.total_items, 2, 'Bypass got an incorrect number of total items')
+        self.assertEqual(bypass.total_items, len(self.data), 'Bypass got an incorrect number of total items')
