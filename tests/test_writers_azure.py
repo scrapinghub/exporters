@@ -1,5 +1,6 @@
 import mock
 import unittest
+import warnings
 from exporters.records.base_record import BaseRecord
 from exporters.writers.azure_blob_writer import AzureBlobWriter
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
@@ -24,6 +25,15 @@ class AzureBlobWriterTest(unittest.TestCase):
         ]
         return [BaseRecord(d) for d in data]
 
+    @mock.patch('azure.storage.blob.BlobService.create_container')
+    def test_invalid_container_name(self, mock_container):
+        options = self.get_writer_config()
+        options['options']['container'] = 'invalid--container--name'
+        warnings.simplefilter('always')
+        with warnings.catch_warnings(record=True) as w:
+            AzureBlobWriter(options, export_formatter=JsonExportFormatter(dict()))
+            self.assertIn("Container name invalid--container--name doesn't conform",
+                          str(w[0].message))
 
     @mock.patch('azure.storage.blob.BlobService.create_container')
     @mock.patch('azure.storage.blob.BlobService.put_block_blob_from_path')
