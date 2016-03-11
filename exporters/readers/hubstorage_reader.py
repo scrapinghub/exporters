@@ -32,10 +32,10 @@ class HubstorageReader(BaseReader):
             A list of secondary collections to merge from.
 
         - startts (int or str)
-            Either epoch in milliseconds, or date string.
+            Either milliseconds since epoch, or date string.
 
         - endts (int or str)
-            Either epoch in milliseconds, or date string.
+            Either milliseconds since epoch, or date string.
     """
 
     # List of options to set up the reader
