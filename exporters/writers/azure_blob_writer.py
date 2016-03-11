@@ -45,8 +45,10 @@ class AzureBlobWriter(BaseWriter):
         self.writer_metadata['files_counter'] = Counter()
 
     def write(self, dump_path, group_key=None):
+        self.logger.info('Start uploading {} to {}'.format(dump_path, self.container))
         self._write_blob(dump_path)
         self.writer_metadata['files_counter'][''] += 1
+        self.logger.info('Saved {}'.format(dump_path))
 
     @retry_long
     def _write_blob(self, dump_path):
