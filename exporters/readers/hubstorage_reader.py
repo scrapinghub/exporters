@@ -72,8 +72,8 @@ class HubstorageReader(BaseReader):
                                  exclude_prefixes=self.read_option('exclude_prefixes'),
                                  secondary_collections=self.read_option('secondary_collections'),
                                  has_many_collections=self.read_option('has_many_collections'),
-                                 startts=self.read_option('startts') or None,
-                                 endts=self.read_option('endts') or None,
+                                 startts=self.read_option('startts'),
+                                 endts=self.read_option('endts'),
                                  meta=['_key'])
 
     def get_next_batch(self):
