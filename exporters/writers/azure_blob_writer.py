@@ -48,13 +48,14 @@ class AzureBlobWriter(BaseWriter):
         self.logger.info('Start uploading {} to {}'.format(dump_path, self.container))
         self._write_blob(dump_path)
         self.writer_metadata['files_counter'][''] += 1
-        self.logger.info('Saved {}'.format(dump_path))
 
     @retry_long
     def _write_blob(self, dump_path):
+        blob_name = dump_path.split('/')[-1]
         self.azure_service.put_block_blob_from_path(
             self.read_option('container'),
             dump_path.split('/')[-1],
             dump_path,
             max_connections=5,
         )
+        self.logger.info('Saved {}'.format(blob_name))
