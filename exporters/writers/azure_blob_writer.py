@@ -54,7 +54,7 @@ class AzureBlobWriter(BaseWriter):
         blob_name = dump_path.split('/')[-1]
         self.azure_service.put_block_blob_from_path(
             self.read_option('container'),
-            dump_path.split('/')[-1],
+            blob_name,
             dump_path,
             max_connections=5,
         )
