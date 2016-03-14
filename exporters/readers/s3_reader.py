@@ -26,30 +26,74 @@ def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
         return connection.get_bucket(bucket, validate=False)
 
 
-def format_prefixes(prefixes, prefix_format_using_date=None):
-    if prefix_format_using_date:
-        import dateparser
-        date = dateparser.parse(prefix_format_using_date)
-    else:
-        date = datetime.datetime.now()
-    return [date.strftime(p) for p in prefixes]
+def format_prefixes(prefixes, start, end):
+    import dateparser
+    start_date = dateparser.parse(start)
+    end_date = dateparser.parse(end)
+    if start_date > end_date:
+        raise ConfigurationError("Invalid date range")
+
+    dates = []
+    while start_date <= end_date:
+        dates.append(start_date)
+        start_date += datetime.timedelta(days=1)
+
+    return [date.strftime(p) for date in dates for p in prefixes]
 
 
 class S3BucketKeysFetcher(object):
     def __init__(self, reader_options, aws_access_key_id, aws_secret_access_key):
         self.source_bucket = get_bucket(reader_options.get('bucket'), aws_access_key_id, aws_secret_access_key)
         self.pattern = reader_options.get('pattern', None)
-        single_prefix = reader_options.get('prefix', '')
-        self.prefix_pointer = reader_options.get('prefix_pointer', '')
+
+        prefix = reader_options.get('prefix', '')
+        prefix_list = reader_options.get('prefix_list', '')
+        prefix_pointer = reader_options.get('prefix_pointer', '')
         prefix_format_using_date = reader_options.get('prefix_format_using_date')
-        if single_prefix and self.prefix_pointer:
-            raise ConfigurationError("prefix and prefix_pointer options cannot be used together")
-        self.prefixes = [single_prefix]
-        if self.prefix_pointer:
-            self.prefixes = self._fetch_prefixes_from_pointer(self.prefix_pointer)
-        self.prefixes = format_prefixes(self.prefixes, prefix_format_using_date)
+        prefix_format_using_date_start = reader_options.get('prefix_format_using_date_start')
+        prefix_format_using_date_end = reader_options.get('prefix_format_using_date_end')
+
+        prefixes = self._get_prefixes(prefix, prefix_list, prefix_pointer)
+        start, end = self._get_prefix_formatting(prefix_format_using_date,
+                                                 prefix_format_using_date_start,
+                                                 prefix_format_using_date_end)
+
+        self.prefixes = format_prefixes(prefixes, start, end)
         self.logger = logging.getLogger('s3-reader')
         self.logger.setLevel(logging.INFO)
+
+    def _get_prefixes(self, prefix, prefix_list, prefix_pointer):
+        if prefix and prefix_list:
+            raise ConfigurationError("prefix and prefix_list options cannot be used together")
+        if prefix and prefix_pointer:
+            raise ConfigurationError("prefix and prefix_pointer options cannot be used together")
+        if prefix_list and prefix_pointer:
+            raise ConfigurationError("prefix_list and prefix_pointer options cannot be used together")
+
+        if prefix:
+            return [prefix]
+        if prefix_list:
+            return prefix_list
+        if prefix_pointer:
+            return self._fetch_prefixes_from_pointer(prefix_pointer)
+        return ['']
+
+    def _get_prefix_formatting(self, prefix_format_using_date,
+                               prefix_format_using_date_start,
+                               prefix_format_using_date_end):
+        if prefix_format_using_date and (prefix_format_using_date_start or
+                                         prefix_format_using_date_end):
+            raise ConfigurationError("prefix_format_using_date and prefix_format_using_date_start or "
+                                     "prefix_format_using_date_end options cannot be used together")
+
+        if prefix_format_using_date:
+            return prefix_format_using_date, prefix_format_using_date
+        if not prefix_format_using_date_start:
+            prefix_format_using_date_start = "today"
+        if not prefix_format_using_date_end:
+            prefix_format_using_date_end = "today"
+
+        return prefix_format_using_date_start, prefix_format_using_date_end
 
     @retry_short
     def _download_pointer(self, prefix_pointer):
@@ -121,8 +165,11 @@ class S3Reader(BaseReader):
         'aws_secret_access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_SECRET'},
         'prefix': {'type': basestring, 'default': ''},
         'prefix_pointer': {'type': basestring, 'default': None},
+        'prefix_list': {'type': list, 'default': []},
         'pattern': {'type': basestring, 'default': None},
         'prefix_format_using_date': {'type': basestring, 'default': None},
+        'prefix_format_using_date_start': {'type': basestring, 'default': None},
+        'prefix_format_using_date_end': {'type': basestring, 'default': None},
     }
 
     def __init__(self, options):
@@ -134,13 +181,6 @@ class S3Reader(BaseReader):
         self.bucket = get_bucket(bucket_name,
                                  self.read_option('aws_access_key_id'),
                                  self.read_option('aws_secret_access_key'))
-
-        single_prefix = self.read_option('prefix')
-        self.prefix_pointer = self.read_option('prefix_pointer')
-        self.pattern = self.read_option('pattern')
-
-        if single_prefix and self.prefix_pointer:
-            raise ConfigurationError("prefix and prefix_pointer options cannot be used together")
 
         self.keys_fetcher = S3BucketKeysFetcher(options['options'],
                                                 self.read_option('aws_access_key_id'),
