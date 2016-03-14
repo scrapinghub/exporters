@@ -2,6 +2,7 @@ import gzip
 import os
 import shutil
 import tempfile
+import uuid
 from UserDict import UserDict
 
 import errno
@@ -103,8 +104,8 @@ class ItemsGroupFilesHandler(object):
         return new_buffer_path
 
     def _get_new_path_name(self):
-        filename = '%s.%s' % (self.formatter.new_filename(), self.file_extension)
-        return os.path.join(self.tmp_folder, filename)
+        return os.path.join(self.tmp_folder,
+                            '%s.%s' % (uuid.uuid4(), self.file_extension))
 
     def compress_key_path(self, key):
         path = self.get_group_path(key)
