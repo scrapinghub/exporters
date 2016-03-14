@@ -7,6 +7,8 @@ from UserDict import UserDict
 
 import errno
 
+import datetime
+
 
 class GroupingInfo(UserDict):
 
@@ -39,12 +41,19 @@ class ItemsGroupFilesHandler(object):
         self.file_extension = formatter.file_extension
         self.formatter = formatter
         self.tmp_folder = tempfile.mkdtemp()
+        self.base_filename = None
+        self.file_count = 0
 
     def _add_to_file(self, content, key):
         path = self.get_group_path(key)
         with open(path, 'a') as f:
             f.write(content + '\n')
         self.grouping_info.add_to_group(key)
+
+    def set_base_filename(self, base_filename):
+        if not self.base_filename and base_filename:
+            date = datetime.datetime.now()
+            self.base_filename = date.strftime(base_filename)
 
     def add_item_to_file(self, item, key):
         content = self.formatter.format(item)
@@ -104,8 +113,13 @@ class ItemsGroupFilesHandler(object):
         return new_buffer_path
 
     def _get_new_path_name(self):
-        return os.path.join(self.tmp_folder,
-                            '%s.%s' % (uuid.uuid4(), self.file_extension))
+        if self.base_filename:
+            filename = '{}{:04d}.{}'.format(self.base_filename, self.file_count,
+                                            self.file_extension)
+            self.file_count += 1
+        else:
+            filename = '{}.{}'.format(uuid.uuid4(), self.file_extension)
+        return os.path.join(self.tmp_folder, filename)
 
     def compress_key_path(self, key):
         path = self.get_group_path(key)
