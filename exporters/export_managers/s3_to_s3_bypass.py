@@ -195,9 +195,13 @@ class S3Bypass(BaseBypass):
         except S3ResponseError:
             self.logger.warning('No direct copy supported for key {}.'.format(key_name))
             self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
-        dest_key = dest_bucket.get_key(dest_key_name)
-        self._ensure_proper_key_permissions(dest_key)
-        self._check_copy_integrity(key, dest_bucket, dest_key)
+        # Using a second try catch, as they are independent operations
+        try:
+            dest_key = dest_bucket.get_key(dest_key_name)
+            self._ensure_proper_key_permissions(dest_key)
+            self._check_copy_integrity(key, dest_bucket, dest_key)
+        except S3ResponseError:
+            self.logger.warning('We have no READ_ACP/WRITE_ACP permissions')
 
     def _check_copy_integrity(self, source_key, dest_bucket, dest_key):
         if source_key.etag != dest_key.etag:
@@ -205,11 +209,7 @@ class S3Bypass(BaseBypass):
                                            .format(source_key.name, dest_key.name, source_key.etag, dest_key.etag))
 
     def _ensure_proper_key_permissions(self, key):
-        from boto.exception import S3ResponseError
-        try:
-            key.set_acl('bucket-owner-full-control')
-        except S3ResponseError:
-            self.logger.warning('We have no READ_ACP/WRITE_ACP permissions')
+        key.set_acl('bucket-owner-full-control')
 
     def _get_md5(self, key, tmp_filename):
         from boto.utils import compute_md5
