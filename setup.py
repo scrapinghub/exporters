@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'exporters',
-    version = '0.1.8',
+    version = '0.1.9',
     packages = find_packages(exclude=['tests']),
     install_requires = ['six', 'retrying', 'requests', 'PyYAML'],
     dependency_links = [
