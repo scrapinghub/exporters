@@ -1,10 +1,6 @@
 import logging
 
 
-def init_logging():
-    logging.basicConfig()
-
-
 LEVEL_DICT = {
     'INFO': logging.INFO,
     'DEBUG': logging.DEBUG,
