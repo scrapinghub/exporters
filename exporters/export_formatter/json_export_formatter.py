@@ -1,5 +1,14 @@
 import json
+
+import datetime
+
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
+
+
+def default(o):
+    if isinstance(o, datetime.datetime):
+        return o.isoformat()
+    return json.JSONEncoder.default(o)
 
 
 class JsonExportFormatter(BaseExportFormatter):
@@ -24,4 +33,4 @@ class JsonExportFormatter(BaseExportFormatter):
 
     def format(self, item):
         options = dict(indent=2, sort_keys=True) if self.pretty_print else dict()
-        return json.dumps(item, **options)
+        return json.dumps(item, default=default, **options)
