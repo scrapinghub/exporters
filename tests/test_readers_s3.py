@@ -146,7 +146,7 @@ class S3ReaderTest(unittest.TestCase):
                 'aws_access_key_id': 'KEY',
                 'aws_secret_access_key': 'SECRET',
                 'prefix': 'test_prefix/%Y-%m-%d',
-                'prefix_format_using_date_start': '2 days ago'
+                'prefix_format_using_date': ['2 days ago', 'today']
             }
         }
 
@@ -156,9 +156,9 @@ class S3ReaderTest(unittest.TestCase):
                 'bucket': 'valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
                 'aws_secret_access_key': 'SECRET',
-                'prefix_list': ['a_prefix/daily/%Y-%m-%d',
-                                'b_prefix/daily/%Y-%m-%d',
-                                'c_prefix/daily/%Y-%m-%d']
+                'prefix': ['a_prefix/daily/%Y-%m-%d',
+                           'b_prefix/daily/%Y-%m-%d',
+                           'c_prefix/daily/%Y-%m-%d']
             }
         }
 
@@ -168,21 +168,10 @@ class S3ReaderTest(unittest.TestCase):
                 'bucket': 'valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
                 'aws_secret_access_key': 'SECRET',
-                'prefix_list': ['a_prefix/daily/%Y-%m-%d',
-                                'b_prefix/daily/%Y-%m-%d',
-                                'c_prefix/daily/%Y-%m-%d'],
+                'prefix': ['a_prefix/daily/%Y-%m-%d',
+                           'b_prefix/daily/%Y-%m-%d',
+                           'c_prefix/daily/%Y-%m-%d'],
                 'prefix_format_using_date': 'yesterday'
-            }
-        }
-
-        self.options_prefix_and_prefix_list = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
-            'options': {
-                'bucket': 'valid_keys_bucket',
-                'aws_access_key_id': 'KEY',
-                'aws_secret_access_key': 'SECRET',
-                'prefix': 'test_list/',
-                'prefix_list': ['test_list1/', 'test_list2/', 'test_list3']
             }
         }
 
@@ -193,7 +182,7 @@ class S3ReaderTest(unittest.TestCase):
                 'aws_access_key_id': 'KEY',
                 'aws_secret_access_key': 'SECRET',
                 'prefix': 'test_prefix/%Y-%m-%d',
-                'prefix_format_using_date_end': '2 days ago'
+                'prefix_format_using_date': [None, '2 days ago']
             }
         }
 
@@ -280,10 +269,6 @@ class S3ReaderTest(unittest.TestCase):
         self.assertEqual(3, len(reader.keys_fetcher.prefixes))
         self.assertEqual(expected, reader.keys_fetcher.prefixes)
         shutil.rmtree(reader.tmp_folder, ignore_errors=True)
-
-    def test_prefix_and_prefix_list_exception(self):
-        self.assertRaises(ConfigurationError, S3Reader,
-                          self.options_prefix_and_prefix_list)
 
     def test_invalid_date_range(self):
         self.assertRaises(ConfigurationError, S3Reader,
