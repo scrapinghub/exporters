@@ -11,6 +11,9 @@ from exporters.exceptions import ConfigurationError
 import logging
 
 
+logging.basicConfig()
+
+
 def parse_args():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
