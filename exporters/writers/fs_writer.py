@@ -26,7 +26,7 @@ class FSWriter(FilebaseBaseWriter):
         """
         Creates a folders path if it doesn't exist
         """
-        if not os.path.exists(path):
+        if path and not os.path.exists(path):
             os.makedirs(path)
 
     def get_file_suffix(self, path, prefix):
