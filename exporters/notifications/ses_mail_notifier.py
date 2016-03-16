@@ -1,6 +1,8 @@
 import json
 import os
 import re
+
+from exporters.default_retries import retry_short
 from exporters.notifications.base_notifier import BaseNotifier
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
 
@@ -157,6 +159,7 @@ class SESMailNotifier(BaseNotifier):
         )
         self._send_email(mails, subject, body)
 
+    @retry_short
     def _send_email(self, mails, subject, body):
         import boto
         ses = boto.connect_ses(self.read_option('access_key'), self.read_option('secret_key'))
