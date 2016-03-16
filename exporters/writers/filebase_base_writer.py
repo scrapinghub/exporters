@@ -33,7 +33,7 @@ class FilebaseBaseWriter(BaseWriter):
 
     def __init__(self, options, *args, **kwargs):
         super(FilebaseBaseWriter, self).__init__(options, *args, **kwargs)
-        self.filebase = self.read_option('filebase')
+        self.filebase = self.get_filebase_with_date()
         self.written_files = {}
         self.md5_file_name = None
         self.last_written_file = None
@@ -51,14 +51,17 @@ class FilebaseBaseWriter(BaseWriter):
         """
         return str(uuid.uuid4())
 
+    def get_filebase_with_date(self):
+        filebase = self.read_option('filebase')
+        filebase = datetime.datetime.now().strftime(filebase)
+        return filebase
+
     def create_filebase_name(self, group_info, extension='gz', file_name=None):
         """
         Returns filebase and file valid name
         """
         normalized = [re.sub('\W', '_', s) for s in group_info]
-        filebase = self.read_option('filebase')
-        filebase = filebase.format(date=datetime.datetime.now(), groups=normalized)
-        filebase = datetime.datetime.now().strftime(filebase)
+        filebase = self.filebase.format(groups=normalized)
         filebase_path, prefix = os.path.split(filebase)
         if not file_name:
             file_name = prefix + self.get_file_suffix(filebase_path, prefix) + '.' + extension
