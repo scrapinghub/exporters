@@ -53,7 +53,6 @@ class FilebaseBaseWriter(BaseWriter):
 
     def get_filebase_with_date(self):
         filebase = self.read_option('filebase')
-        filebase = filebase.format(date=datetime.datetime.now())
         filebase = datetime.datetime.now().strftime(filebase)
         return filebase
 
