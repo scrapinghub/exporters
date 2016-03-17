@@ -2,8 +2,6 @@ import unittest
 
 import errno
 import mock
-import pysftp
-
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
 from exporters.writers import SFTPWriter
@@ -32,7 +30,7 @@ class SFTPWriterTest(unittest.TestCase):
 
     def test_create(self):
         options = self.get_writer_config()
-        writer = SFTPWriter(dict(options=options), export_formatter=JsonExportFormatter(dict()))
+        writer = SFTPWriter(options, export_formatter=JsonExportFormatter(dict()))
         self.assertEquals(22, writer.read_option('port'))
         writer.close()
 

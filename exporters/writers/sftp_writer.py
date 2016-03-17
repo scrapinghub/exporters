@@ -55,7 +55,7 @@ class SFTPWriter(FilebaseBaseWriter):
         }
         self.writer_metadata['files_written'].append(file_info)
 
-    # @retry_long
+    @retry_long
     def write(self, dump_path, group_key=None, file_name=None):
         import pysftp
         if group_key is None:
