@@ -123,8 +123,8 @@ class S3BypassTest(unittest.TestCase):
         key.metadata = {'total': 2, 'md5': self.key_md5}
         key.set_contents_from_string(json.dumps(self.data))
         key.close()
-        self.tmp_bypass_resume_file = 'data/tmp_s3_bypass_resume_persistence.pickle'
-        shutil.copyfile('data/s3_bypass_resume_persistence.pickle', self.tmp_bypass_resume_file)
+        self.tmp_bypass_resume_file = 'tests/data/tmp_s3_bypass_resume_persistence.pickle'
+        shutil.copyfile('tests/data/s3_bypass_resume_persistence.pickle', self.tmp_bypass_resume_file)
 
     def tearDown(self):
         self.mock_s3.stop()
