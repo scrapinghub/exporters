@@ -119,7 +119,7 @@ class FTPWriter(FilebaseBaseWriter):
                 raise InconsistentWriteState(
                     '{} file is not present at destination'.format(file_info['filename']))
             if ftp_size != file_info['size']:
-                raise InconsistentWriteState('Wrong size for file {}. Extected: {} - got {}'
+                raise InconsistentWriteState('Wrong size for file {}. (expected {}) - got {}'
                                              .format(file_info['filename'], file_info['size'],
                                                      ftp_size))
         self.ftp.close()
