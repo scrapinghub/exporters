@@ -56,9 +56,8 @@ class ItemsGroupFilesHandler(object):
 
     @base_filename.setter
     def base_filename(self, value):
-        if not self._base_filename and value:
-            date = datetime.datetime.now()
-            self._base_filename = date.strftime(value)
+        date = datetime.datetime.now()
+        self._base_filename = date.strftime(value)
 
     def add_item_to_file(self, item, key):
         content = self.formatter.format(item)

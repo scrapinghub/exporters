@@ -31,8 +31,7 @@ def format_prefixes(prefixes, start, end):
     start_date = dateparser.parse(start or 'today')
     end_date = dateparser.parse(end or 'today')
     if start_date > end_date:
-        raise InvalidDateRangeError('Invalid range, "start" date cannot be '
-                                    'set beyond "end" date')
+        raise InvalidDateRangeError
 
     dates = []
     while start_date <= end_date:
@@ -55,23 +54,23 @@ class S3BucketKeysFetcher(object):
         try:
             start, end = self._get_prefix_formatting_dates(prefix_format_using_date)
         except ValueError:
-            raise ConfigurationError("The option prefix_format_using_date "
-                                     "should be either a date string or a two "
-                                     "date strings in a list/tuple")
-
+            raise ConfigurationError('The option prefix_format_using_date '
+                                     'should be either a date string or two '
+                                     'date strings in a list/tuple')
         try:
             self.prefixes = format_prefixes(unformatted_prefixes, start, end)
-        except ValueError as ex:
-            raise ConfigurationError('An error occurred while trying to '
-                                     'format the prefixes: %s' % str(ex))
+        except InvalidDateRangeError:
+            raise ConfigurationError('The end date should be greater or equal '
+                                     'to the start date for the '
+                                     'prefix_format_using_date option')
 
         self.logger = logging.getLogger('s3-reader')
         self.logger.setLevel(logging.INFO)
 
     def _get_prefixes(self, prefix, prefix_pointer):
         if prefix and prefix_pointer:
-            raise ConfigurationError("prefix and prefix_pointer options "
-                                     "cannot be used together")
+            raise ConfigurationError('prefix and prefix_pointer options '
+                                     'cannot be used together')
 
         prefixes = [prefix] if isinstance(prefix, basestring) else prefix
         if prefix_pointer:

@@ -269,7 +269,9 @@ class S3ReaderTest(unittest.TestCase):
 
     def test_invalid_date_range(self):
         self.assertRaisesRegexp(ConfigurationError,
-                                '"start" date cannot be set beyond "end" date',
+                                'The end date should be greater or equal to '
+                                'the start date for the '
+                                'prefix_format_using_date option',
                                 S3Reader, self.options_with_invalid_date_range)
 
 
