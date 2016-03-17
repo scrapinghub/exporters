@@ -6,6 +6,9 @@ import tempfile
 import unittest
 import csv
 
+import mock
+from mock import patch
+
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
 from exporters.records.base_record import BaseRecord
@@ -255,6 +258,22 @@ class CustomWriterTest(unittest.TestCase):
             finally:
                 writer.close()
             self.assertIn('md5checksum.md5', writer.fake_files_already_written)
+
+    @mock.patch('exporters.writers.base_writer.BaseWriter._check_write_consistency')
+    def test_consistency_check(self, consistency_mock):
+        # given:
+        writer = FakeWriter({'options': {'check_consistency': True}}, export_formatter=JsonExportFormatter(dict()))
+
+        # when:
+        try:
+            writer.write_batch(self.batch)
+            writer.flush()
+            writer.finish_writing()
+        finally:
+            writer.close()
+
+        # then:
+        consistency_mock.assert_called_once_with()
 
 
 class WriteBufferTest(unittest.TestCase):
