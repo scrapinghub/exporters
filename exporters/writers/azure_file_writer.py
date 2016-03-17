@@ -67,7 +67,7 @@ class AzureFileWriter(FilebaseBaseWriter):
                     parent,
             )
 
-    # @retry_long
+    @retry_long
     def _write_file(self, dump_path, group_key, file_name=None):
         filebase_path, file_name = self.create_filebase_name(group_key, file_name=file_name)
         self._ensure_path(filebase_path)
