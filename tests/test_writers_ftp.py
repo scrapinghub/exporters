@@ -1,13 +1,25 @@
+import os
+
 import mock
 import tempfile
 import unittest
 from contextlib import closing
 
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
+from exporters.records.base_record import BaseRecord
 from exporters.writers import FTPWriter
+from exporters.writers.base_writer import InconsistentWriteState
 
 
 class FTPWriterTest(unittest.TestCase):
+
+    def get_batch(self):
+        data = [
+            {'name': 'Roberto', 'birthday': '12/05/1987'},
+            {'name': 'Claudia', 'birthday': '21/12/1985'},
+        ]
+        return [BaseRecord(d) for d in data]
+
 
     def test_default_port_is_21(self):
         options = dict(options=dict(
@@ -57,3 +69,26 @@ class FTPWriterTest(unittest.TestCase):
             mock.call('some/long/dir'),
             mock.call('some/long/dir/with'),
         ], mock_mkd.mock_calls)
+
+
+    @mock.patch('exporters.writers.FTPWriter.build_ftp_instance')
+    def test_check_writer_consistency(self, mock_ftp):
+
+        # given
+        options = dict(options=dict(
+            check_consistency=True,
+            ftp_user='user',
+            ftp_password='password',
+            host='ftp.example.com',
+            filebase='test/',))
+        mock_ftp.return_value.size.side_effect = [999, -1]
+
+        # when:
+        with tempfile.NamedTemporaryFile() as tmp:
+            with closing(FTPWriter(options, export_formatter=JsonExportFormatter(dict()))) as writer:
+                writer.write_batch(self.get_batch())
+                writer.flush()
+                with self.assertRaisesRegexp(InconsistentWriteState, 'Wrong size for file'):
+                    writer.finish_writing()
+        with self.assertRaisesRegexp(InconsistentWriteState, 'file is not present at destination'):
+            writer.finish_writing()
