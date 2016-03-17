@@ -10,6 +10,12 @@ class ItemsLimitReached(Exception):
     """
 
 
+class InconsistentWriteState(Exception):
+    """
+    This exception is thrown when write state is inconsistent with expected final state
+    """
+
+
 ITEMS_PER_BUFFER_WRITE = 500000
 # Setting a default limit of 4Gb per file
 SIZE_PER_BUFFER_WRITE = 4000000000
@@ -22,7 +28,8 @@ class BaseWriter(BasePipelineItem):
     supported_options = {
         'items_per_buffer_write': {'type': int, 'default': ITEMS_PER_BUFFER_WRITE},
         'size_per_buffer_write': {'type': int, 'default': SIZE_PER_BUFFER_WRITE},
-        'items_limit': {'type': int, 'default': 0}
+        'items_limit': {'type': int, 'default': 0},
+        'check_consistency': {'type': bool, 'default': False}
     }
 
     def __init__(self, options, *args, **kwargs):
@@ -82,7 +89,6 @@ class BaseWriter(BasePipelineItem):
         """
         if self.write_buffer is not None:
             self.write_buffer.close()
-        self._check_write_consistency()
 
     @property
     def grouping_info(self):
@@ -109,4 +115,5 @@ class BaseWriter(BasePipelineItem):
         """
         Method called to do final writing operations before being closed
         """
-        pass
+        if self.read_option('check_consistency'):
+            self._check_write_consistency()
