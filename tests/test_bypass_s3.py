@@ -6,9 +6,11 @@ import datetime
 import moto
 import mock
 from boto.exception import S3ResponseError
+from boto.utils import compute_md5
+
 from exporters.export_managers.s3_to_s3_bypass import S3Bypass, RequisitesNotMet
 from exporters.exporter_config import ExporterConfig
-from exporters.utils import remove_if_exists
+from exporters.utils import remove_if_exists, TmpFile
 
 
 def create_fake_key():
@@ -113,11 +115,16 @@ class S3BypassTest(unittest.TestCase):
             {'name': 'Claudia', 'birthday': '21/12/1985'},
         ]
         key = self.source_bucket.new_key('some_prefix/test_key')
-        key.metadata = {'total': 2}
+        with TmpFile() as tmp_filename:
+            with open(tmp_filename, 'w') as f:
+                f.write(json.dumps(self.data))
+            with open(tmp_filename) as f:
+                self.key_md5 = compute_md5(f)
+        key.metadata = {'total': 2, 'md5': self.key_md5}
         key.set_contents_from_string(json.dumps(self.data))
         key.close()
-        self.tmp_bypass_resume_file = 'tests/data/tmp_s3_bypass_resume_persistence.pickle'
-        shutil.copyfile('tests/data/s3_bypass_resume_persistence.pickle', self.tmp_bypass_resume_file)
+        self.tmp_bypass_resume_file = 'data/tmp_s3_bypass_resume_persistence.pickle'
+        shutil.copyfile('data/s3_bypass_resume_persistence.pickle', self.tmp_bypass_resume_file)
 
     def tearDown(self):
         self.mock_s3.stop()
@@ -313,3 +320,20 @@ class S3BypassTest(unittest.TestCase):
             keys_list.append(key.name)
         self.assertEqual(expected_keys, keys_list)
 
+    def test_get_md5(self):
+         # given
+        self.s3_conn.create_bucket('dest_bucket')
+        options = create_s3_bypass_simple_config()
+        options.writer_options['options']['save_metadata'] = True
+
+        # when:
+        bypass = S3Bypass(options)
+        bucket = self.s3_conn.get_bucket('source_bucket')
+        key = bucket.get_key('some_prefix/test_key')
+
+        with TmpFile() as tmp_filename:
+            key.get_contents_to_filename(tmp_filename)
+            metadata_md5 = bypass._get_md5(key, tmp_filename)
+
+        # then:
+        self.assertEqual(metadata_md5, self.key_md5)
