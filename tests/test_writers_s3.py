@@ -7,6 +7,7 @@ import mock
 
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
+from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.s3_writer import S3Writer
 
 
@@ -147,3 +148,69 @@ class S3WriterTest(unittest.TestCase):
                 'filebase': 'tests/',
             }
         }
+
+    def test_write_s3_check_consistency_key_not_present(self):
+        # given
+        items_to_write = self.get_batch()
+        options = self.get_writer_config()
+        options['options']['check_consistency'] = True
+
+        # when:
+        try:
+            writer = S3Writer(options, export_formatter=JsonExportFormatter(dict()))
+            writer.write_batch(items_to_write)
+            writer.flush()
+        finally:
+            writer.close()
+        bucket = self.s3_conn.get_bucket('fake_bucket')
+        bucket.delete_key('tests/0.gz')
+
+        # then:
+        with self.assertRaisesRegexp(InconsistentWriteState, 'not found in bucket'):
+            writer.finish_writing()
+
+    def test_write_s3_check_consistency_wrong_size(self):
+        # given
+        items_to_write = self.get_batch()
+        options = self.get_writer_config()
+        options['options']['check_consistency'] = True
+
+        # when:
+        try:
+            writer = S3Writer(options, export_formatter=JsonExportFormatter(dict()))
+            writer.write_batch(items_to_write)
+            writer.flush()
+        finally:
+            writer.close()
+        bucket = self.s3_conn.get_bucket('fake_bucket')
+        key = bucket.get_key('tests/0.gz')
+        key.set_contents_from_string('fake contents')
+
+        # then:
+        with self.assertRaisesRegexp(InconsistentWriteState, 'has wrong size'):
+            writer.finish_writing()
+
+    def test_write_s3_check_consistency_wrong_items_count(self):
+        # given
+        items_to_write = self.get_batch()
+        options = self.get_writer_config()
+        options['options']['check_consistency'] = True
+
+        # when:
+        try:
+            writer = S3Writer(options, export_formatter=JsonExportFormatter(dict()))
+            writer.write_batch(items_to_write)
+            writer.flush()
+        finally:
+            writer.close()
+        bucket = self.s3_conn.get_bucket('fake_bucket')
+        key = bucket.get_key('tests/0.gz')
+        content = key.get_contents_as_string()
+        bucket.delete_key('tests/0.gz')
+        new_key = bucket.new_key('tests/0.gz')
+        new_key.update_metadata({'total': 999})
+        new_key.set_contents_from_string(content)
+
+        # then:
+        with self.assertRaisesRegexp(InconsistentWriteState, 'Wrong number of records'):
+            writer.finish_writing()
