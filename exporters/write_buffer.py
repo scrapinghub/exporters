@@ -41,7 +41,7 @@ class ItemsGroupFilesHandler(object):
         self.file_extension = formatter.file_extension
         self.formatter = formatter
         self.tmp_folder = tempfile.mkdtemp()
-        self.base_filename = None
+        self._base_filename = None
         self.file_count = 0
 
     def _add_to_file(self, content, key):
@@ -50,10 +50,15 @@ class ItemsGroupFilesHandler(object):
             f.write(content + '\n')
         self.grouping_info.add_to_group(key)
 
-    def set_base_filename(self, base_filename):
-        if not self.base_filename and base_filename:
+    @property
+    def base_filename(self):
+        return self._base_filename
+
+    @base_filename.setter
+    def base_filename(self, value):
+        if not self._base_filename and value:
             date = datetime.datetime.now()
-            self.base_filename = date.strftime(base_filename)
+            self._base_filename = date.strftime(value)
 
     def add_item_to_file(self, item, key):
         content = self.formatter.format(item)

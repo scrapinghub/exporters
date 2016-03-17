@@ -8,7 +8,7 @@ from exporters.progress_callback import BotoDownloadProgress
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 from exporters.default_retries import retry_long, retry_short
-from exporters.exceptions import ConfigurationError
+from exporters.exceptions import ConfigurationError, InvalidDateRangeError
 import logging
 
 
@@ -28,10 +28,11 @@ def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
 
 def format_prefixes(prefixes, start, end):
     import dateparser
-    start_date = dateparser.parse(start)
-    end_date = dateparser.parse(end)
+    start_date = dateparser.parse(start or 'today')
+    end_date = dateparser.parse(end or 'today')
     if start_date > end_date:
-        raise ConfigurationError("Invalid date range")
+        raise InvalidDateRangeError('Invalid range, "start" date cannot be '
+                                    'set beyond "end" date')
 
     dates = []
     while start_date <= end_date:
@@ -50,37 +51,37 @@ class S3BucketKeysFetcher(object):
         prefix_pointer = reader_options.get('prefix_pointer', '')
         prefix_format_using_date = reader_options.get('prefix_format_using_date')
 
-        prefixes = self._get_prefixes(prefix, prefix_pointer)
-        start, end = self._get_prefix_formatting(prefix_format_using_date)
+        unformatted_prefixes = self._get_prefixes(prefix, prefix_pointer)
+        try:
+            start, end = self._get_prefix_formatting_dates(prefix_format_using_date)
+        except ValueError:
+            raise ConfigurationError("The option prefix_format_using_date "
+                                     "should be either a date string or a two "
+                                     "date strings in a list/tuple")
 
-        self.prefixes = format_prefixes(prefixes, start, end)
+        try:
+            self.prefixes = format_prefixes(unformatted_prefixes, start, end)
+        except ValueError as ex:
+            raise ConfigurationError('An error occurred while trying to '
+                                     'format the prefixes: %s' % str(ex))
+
         self.logger = logging.getLogger('s3-reader')
         self.logger.setLevel(logging.INFO)
 
     def _get_prefixes(self, prefix, prefix_pointer):
         if prefix and prefix_pointer:
-            raise ConfigurationError("prefix and prefix_pointer options cannot be used together")
+            raise ConfigurationError("prefix and prefix_pointer options "
+                                     "cannot be used together")
 
         prefixes = [prefix] if isinstance(prefix, basestring) else prefix
         if prefix_pointer:
             prefixes = self._fetch_prefixes_from_pointer(prefix_pointer)
         return prefixes
 
-    def _get_prefix_formatting(self, prefix_format_using_date):
-        if not prefix_format_using_date:
-            return 'today', 'today'
-        if isinstance(prefix_format_using_date, basestring):
-            date = prefix_format_using_date or 'today'
-            return date, date
-        if len(prefix_format_using_date) == 1:
-            date = prefix_format_using_date[0] or 'today'
-            return date, date
-        if len(prefix_format_using_date) != 2:
-            raise ConfigurationError('When a range is specified on '
-                                     'prefix_format_using_date it must take '
-                                     'exactly two arguments')
-        start, end = prefix_format_using_date
-        return start or 'today', end or 'today'
+    def _get_prefix_formatting_dates(self, prefix_dates):
+        if not prefix_dates or isinstance(prefix_dates, basestring):
+            prefix_dates = (prefix_dates, prefix_dates)
+        return prefix_dates
 
     @retry_short
     def _download_pointer(self, prefix_pointer):
@@ -153,7 +154,7 @@ class S3Reader(BaseReader):
         'prefix': {'type': (basestring, list), 'default': ''},
         'prefix_pointer': {'type': basestring, 'default': None},
         'pattern': {'type': basestring, 'default': None},
-        'prefix_format_using_date': {'type': (basestring, list), 'default': None}
+        'prefix_format_using_date': {'type': (basestring, tuple, list), 'default': None}
     }
 
     def __init__(self, options):
