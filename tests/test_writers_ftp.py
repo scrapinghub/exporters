@@ -72,7 +72,7 @@ class FTPWriterTest(unittest.TestCase):
 
 
     @mock.patch('exporters.writers.FTPWriter.build_ftp_instance')
-    def test_check_writer_consistency(self, mock_ftp):
+    def test_check_writer_consistency_unexpected_size(self, mock_ftp):
 
         # given
         options = dict(options=dict(
@@ -81,14 +81,31 @@ class FTPWriterTest(unittest.TestCase):
             ftp_password='password',
             host='ftp.example.com',
             filebase='test/',))
-        mock_ftp.return_value.size.side_effect = [999, -1]
+        mock_ftp.return_value.size.return_value = 999
 
         # when:
-        with tempfile.NamedTemporaryFile() as tmp:
-            with closing(FTPWriter(options, export_formatter=JsonExportFormatter(dict()))) as writer:
-                writer.write_batch(self.get_batch())
-                writer.flush()
-                with self.assertRaisesRegexp(InconsistentWriteState, 'Wrong size for file'):
-                    writer.finish_writing()
-        with self.assertRaisesRegexp(InconsistentWriteState, 'file is not present at destination'):
-            writer.finish_writing()
+        with closing(FTPWriter(options, export_formatter=JsonExportFormatter(dict()))) as writer:
+            writer.write_batch(self.get_batch())
+            writer.flush()
+            # then
+            with self.assertRaisesRegexp(InconsistentWriteState, 'Unexpected size for file'):
+                writer.finish_writing()
+
+    @mock.patch('exporters.writers.FTPWriter.build_ftp_instance')
+    def test_check_writer_consistency_not_present(self, mock_ftp):
+        # given
+        options = dict(options=dict(
+            check_consistency=True,
+            ftp_user='user',
+            ftp_password='password',
+            host='ftp.example.com',
+            filebase='test/',))
+        mock_ftp.return_value.size.return_value = -1
+
+        # when:
+        with closing(FTPWriter(options, export_formatter=JsonExportFormatter(dict()))) as writer:
+            writer.write_batch(self.get_batch())
+            writer.flush()
+            # then
+            with self.assertRaisesRegexp(InconsistentWriteState, 'file is not present at destination'):
+                writer.finish_writing()
