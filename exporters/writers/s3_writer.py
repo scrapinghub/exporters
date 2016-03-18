@@ -154,12 +154,12 @@ class S3Writer(FilebaseBaseWriter):
                 if not key:
                     raise InconsistentWriteState('Key {} not found in bucket'.format(key_info['key_name']))
                 if str(key.content_length) != str(key_info['size']):
-                    raise InconsistentWriteState('Key {} has wrong size. Extected: {} - got {}'.format(
+                    raise InconsistentWriteState('Key {} has unexpected size. (expected {} - got {})'.format(
                             key_info['key_name'], key_info['size'], key.content_length))
                 if self.save_metadata:
                     if str(key.get_metadata('total')) != str(key_info['number_of_records']):
                         raise InconsistentWriteState(
-                                'Wrong number of records for key {}. Extected: {} - got {}'.format(
+                                'Unexpected number of records for key {}. (expected {} - got {})'.format(
                                         key_info['key_name'], key_info['number_of_records'],
                                         key.get_metadata('total')))
             except S3ResponseError:
