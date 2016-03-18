@@ -1,6 +1,7 @@
 import mock
 import unittest
 import warnings
+
 from exporters.records.base_record import BaseRecord
 from exporters.writers.azure_blob_writer import AzureBlobWriter
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
@@ -55,11 +56,10 @@ class AzureBlobWriterTest(unittest.TestCase):
         # then:
         self.assertEqual(writer.writer_metadata['items_count'], 2)
 
-
     @mock.patch('azure.storage.blob.BlobService.get_blob_properties')
     @mock.patch('azure.storage.blob.BlobService.put_block_blob_from_path')
     @mock.patch('azure.storage.blob.BlobService.create_container')
-    def test_write_file_consistency(self, create_mock, put_blob_from_path_mock, get_blob_properties_mock):
+    def test_write_blob_consistency_size(self, create_mock, put_blob_from_path_mock, get_blob_properties_mock):
 
         # given
         items_to_write = self.get_batch()
@@ -80,10 +80,31 @@ class AzureBlobWriterTest(unittest.TestCase):
         finally:
             writer.close()
 
-        with self.assertRaises(InconsistentWriteState):
+        with self.assertRaisesRegexp(InconsistentWriteState, 'has unexpected size'):
                 writer.finish_writing()
 
+    @mock.patch('azure.storage.blob.BlobService.get_blob_properties')
+    @mock.patch('azure.storage.blob.BlobService.put_block_blob_from_path')
+    @mock.patch('azure.storage.blob.BlobService.create_container')
+    def test_write_blob_consistency_present(self, create_mock, put_blob_from_path_mock, get_blob_properties_mock):
+        from azure.common import AzureMissingResourceHttpError
+        # given
+        items_to_write = self.get_batch()
+        options = self.get_writer_config()
+        options['options']['check_consistency'] = True
 
+        get_blob_properties_mock.side_effect = AzureMissingResourceHttpError('', 404)
+
+        # when:
+        writer = AzureBlobWriter(options, export_formatter=JsonExportFormatter(dict()))
+        try:
+            writer.write_batch(items_to_write)
+            writer.flush()
+        finally:
+            writer.close()
+
+        with self.assertRaisesRegexp(InconsistentWriteState, 'Missing blob'):
+                writer.finish_writing()
 
 
 class AzureFileWriterTest(unittest.TestCase):
