@@ -81,7 +81,7 @@ class AzureBlobWriterTest(unittest.TestCase):
             writer.close()
 
         with self.assertRaisesRegexp(InconsistentWriteState, 'has unexpected size'):
-                writer.finish_writing()
+            writer.finish_writing()
 
     @mock.patch('azure.storage.blob.BlobService.get_blob_properties')
     @mock.patch('azure.storage.blob.BlobService.put_block_blob_from_path')
@@ -104,7 +104,7 @@ class AzureBlobWriterTest(unittest.TestCase):
             writer.close()
 
         with self.assertRaisesRegexp(InconsistentWriteState, 'Missing blob'):
-                writer.finish_writing()
+            writer.finish_writing()
 
 
 class AzureFileWriterTest(unittest.TestCase):
