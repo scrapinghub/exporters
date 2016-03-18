@@ -87,7 +87,6 @@ class FTPWriter(FilebaseBaseWriter):
         file_info = {
             'filename': destination,
             'size': buffer_info.get('size'),
-            'number_of_records': buffer_info.get('number_of_records')
         }
         self.writer_metadata['files_written'].append(file_info)
 
