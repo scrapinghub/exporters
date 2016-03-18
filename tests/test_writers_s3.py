@@ -187,7 +187,7 @@ class S3WriterTest(unittest.TestCase):
         key.set_contents_from_string('fake contents')
 
         # then:
-        with self.assertRaisesRegexp(InconsistentWriteState, 'has wrong size'):
+        with self.assertRaisesRegexp(InconsistentWriteState, 'has unexpected size'):
             writer.finish_writing()
 
     def test_write_s3_check_consistency_wrong_items_count(self):
@@ -212,5 +212,5 @@ class S3WriterTest(unittest.TestCase):
         new_key.set_contents_from_string(content)
 
         # then:
-        with self.assertRaisesRegexp(InconsistentWriteState, 'Wrong number of records'):
+        with self.assertRaisesRegexp(InconsistentWriteState, 'Unexpected number of records'):
             writer.finish_writing()
