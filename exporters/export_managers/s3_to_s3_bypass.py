@@ -1,10 +1,8 @@
 import datetime
 import logging
-import os
 import shutil
 from contextlib import closing, contextmanager
 from exporters.default_retries import retry_long
-from exporters.exceptions import ConfigCheckError
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
 from exporters.progress_callback import BotoUploadProgress
@@ -42,83 +40,12 @@ def key_permissions(user_id, key):
             _clean_permissions(user_id, key)
 
 
-class S3BypassConfig(object):
-    def __init__(self, config):
-        self.config = config
-
-    def _get_reader_credentials(self):
-        aws_access_key_id = self._get_option(self.config.reader_options['options'], 'aws_access_key_id', 'EXPORTERS_S3READER_AWS_KEY')
-        aws_secret_access_key = self._get_option(self.config.reader_options['options'], 'aws_secret_access_key', 'EXPORTERS_S3READER_AWS_SECRET')
-        return aws_access_key_id, aws_secret_access_key
-
-    def _get_writer_credentials(self):
-        aws_access_key_id = self._get_option(self.config.writer_options['options'], 'aws_access_key_id', 'EXPORTERS_S3WRITER_AWS_LOGIN')
-        aws_secret_access_key = self._get_option(self.config.writer_options['options'], 'aws_secret_access_key', 'EXPORTERS_S3WRITER_AWS_SECRET')
-        return aws_access_key_id, aws_secret_access_key
-
-    def _get_option(self, options, name, env=None):
-        option = options.get(name, os.environ.get(env))
-        if not option:
-            raise ConfigCheckError('{} not found in options. Also tried {} env variable'.format(name, env))
-        return option
-
-    @property
-    def persistence_options(self):
-        from copy import deepcopy
-        options = deepcopy(self.config.persistence_options)
-        return options
-
-    @property
-    def filter_before_options(self):
-        from copy import deepcopy
-        options = deepcopy(self.config.filter_before_options)
-        return options
-
-    @property
-    def filter_after_options(self):
-        from copy import deepcopy
-        options = deepcopy(self.config.filter_after_options)
-        return options
-
-    @property
-    def transform_options(self):
-        from copy import deepcopy
-        options = deepcopy(self.config.transform_options)
-        return options
-
-    @property
-    def grouper_options(self):
-        from copy import deepcopy
-        options = deepcopy(self.config.grouper_options)
-        return options
-
-    @property
-    def reader_options(self):
-        from copy import deepcopy
-        options = deepcopy(self.config.reader_options)
-        aws_access_key_id, aws_secret_access_key = self._get_reader_credentials()
-        options['options']['aws_access_key_id'] = aws_access_key_id
-        options['options']['aws_secret_access_key'] = aws_secret_access_key
-        return options
-
-    @property
-    def writer_options(self):
-        from copy import deepcopy
-        options = deepcopy(self.config.writer_options)
-        aws_access_key_id, aws_secret_access_key = self._get_writer_credentials()
-        options['options']['aws_access_key_id'] = aws_access_key_id
-        options['options']['aws_secret_access_key'] = aws_secret_access_key
-        return options
-
-
 class S3BypassState(object):
 
-    def __init__(self, config):
+    def __init__(self, config, aws_key, aws_secret):
         module_loader = ModuleLoader()
         self.state = module_loader.load_persistence(config.persistence_options)
         self.state_position = self.state.get_last_position()
-        aws_key = config.reader_options['options']['aws_access_key_id']
-        aws_secret = config.reader_options['options']['aws_secret_access_key']
         if not self.state_position:
             self.pending = S3BucketKeysFetcher(config.reader_options['options'], aws_key, aws_secret).pending_keys()
             self.done = []
@@ -211,14 +138,19 @@ class S3Bypass(BaseBypass):
 
     def bypass(self):
         from copy import deepcopy
-        self.s3_bypass_config = S3BypassConfig(self.config)
-        reader_options = self.s3_bypass_config.reader_options['options']
-        writer_options = self.s3_bypass_config.writer_options['options']
-        dest_bucket = get_bucket(**writer_options)
+        reader_aws_key = self.read_option('reader', 'aws_access_key_id', 'EXPORTERS_S3READER_AWS_KEY')
+        reader_aws_secret = self.read_option('reader', 'aws_secret_access_key', 'EXPORTERS_S3READER_AWS_SECRET')
+
+        writer_aws_key = self.read_option('writer', 'aws_access_key_id', 'EXPORTERS_S3WRITER_AWS_LOGIN')
+        writer_aws_secret = self.read_option('writer', 'aws_secret_access_key', 'EXPORTERS_S3WRITER_AWS_SECRET')
+
+        writer_options = self.config.writer_options['options']
+        dest_bucket = get_bucket(self.read_option('writer', 'bucket'), writer_aws_key, writer_aws_secret)
         dest_filebase = self._get_filebase(writer_options)
-        self.bypass_state = S3BypassState(self.s3_bypass_config)
+        self.bypass_state = S3BypassState(self.config, reader_aws_key, reader_aws_secret)
         self.total_items = self.bypass_state.stats['total_count']
-        source_bucket = get_bucket(**reader_options)
+
+        source_bucket = get_bucket(self.read_option('reader', 'bucket'), reader_aws_key, reader_aws_secret)
         pending_keys = deepcopy(self.bypass_state.pending_keys())
         try:
             for key in pending_keys:

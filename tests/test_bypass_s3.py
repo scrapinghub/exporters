@@ -336,9 +336,28 @@ class S3BypassTest(unittest.TestCase):
         bypass = S3Bypass(options)
 
         # then
-        with self.assertRaises(ConfigCheckError):
-            bypass.bypass()
+        expected = '123'
+        with environment({'aws_key': expected}):
+            self.assertEqual(bypass.read_option('reader', 'aws_access_key_id', 'aws_key'), expected)
+        self.assertIsNone(bypass.read_option('reader', 'aws_access_key_id', 'aws_key'))
 
+    def test_load_from_config(self):
+        # given
+        reader = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'source_bucket',
+                'prefix': 'some_prefix/',
+                'aws_access_key_id': '123'
+            }
+        }
+        options = create_s3_bypass_simple_config(reader=reader)
+        # when:
+        bypass = S3Bypass(options)
+
+        # then
+        expected = '123'
+        self.assertEqual(bypass.read_option('reader', 'aws_access_key_id', 'aws_key'), expected)
 
     def test_copy_bypass_s3_with_env(self):
         # given
