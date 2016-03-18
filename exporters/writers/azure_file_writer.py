@@ -93,7 +93,7 @@ class AzureFileWriter(FilebaseBaseWriter):
                 file_properties = self.azure_service.get_file_properties(self.share, file_info['filebase_path'], file_info['file_name'])
                 file_size = file_properties.get('content-length')
                 if str(file_size) != str(file_info['size']):
-                    raise InconsistentWriteState('File {} has wrong size. Extected: {} - got {}'.format(
+                    raise InconsistentWriteState('File {} has unexpected size. (expected {} - got {})'.format(
                                 file_info['file_name'], file_info['size'], file_size))
             except AzureMissingResourceHttpError:
                 raise InconsistentWriteState('Missing file {}'.format(file_info['file_name']))

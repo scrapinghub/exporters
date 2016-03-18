@@ -81,7 +81,7 @@ class AzureFileWriterTest(unittest.TestCase):
     @mock.patch('azure.storage.file.FileService.put_file_from_path')
     @mock.patch('azure.storage.file.FileService.create_share')
     @mock.patch('azure.storage.file.FileService.create_directory')
-    def test_write_file_consistency(self, create_mock, create_share_mock, put_file_from_path_mock, get_file_properties_mock):
+    def test_write_file_consistency_size(self, create_mock, create_share_mock, put_file_from_path_mock, get_file_properties_mock):
 
         # given
         items_to_write = self.get_batch()
@@ -104,3 +104,27 @@ class AzureFileWriterTest(unittest.TestCase):
 
         with self.assertRaises(InconsistentWriteState):
                 writer.finish_writing()
+
+    @mock.patch('azure.storage.file.FileService.get_file_properties')
+    @mock.patch('azure.storage.file.FileService.put_file_from_path')
+    @mock.patch('azure.storage.file.FileService.create_share')
+    @mock.patch('azure.storage.file.FileService.create_directory')
+    def test_write_file_consistency_present(self, create_mock, create_share_mock, put_file_from_path_mock, get_file_properties_mock):
+        from azure.common import AzureMissingResourceHttpError
+        # given
+        items_to_write = self.get_batch()
+        options = self.get_writer_config()
+        options['options']['check_consistency'] = True
+
+        get_file_properties_mock.side_effect = AzureMissingResourceHttpError('', 404)
+
+        # when:
+        writer = AzureFileWriter(options, export_formatter=JsonExportFormatter(dict()))
+        try:
+            writer.write_batch(items_to_write)
+            writer.flush()
+        finally:
+            writer.close()
+
+        with self.assertRaisesRegexp(InconsistentWriteState, 'Missing file'):
+            writer.finish_writing()
