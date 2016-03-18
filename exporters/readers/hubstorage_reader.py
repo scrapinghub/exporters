@@ -30,6 +30,12 @@ class HubstorageReader(BaseReader):
 
         - secondary_collections (list)
             A list of secondary collections to merge from.
+
+        - startts (int or str)
+            Either milliseconds since epoch, or date string.
+
+        - endts (int or str)
+            Either milliseconds since epoch, or date string.
     """
 
     # List of options to set up the reader
@@ -43,6 +49,8 @@ class HubstorageReader(BaseReader):
         'exclude_prefixes': {'type': list, 'default': []},
         'secondary_collections': {'type': list, 'default': []},
         'has_many_collections': {'type': dict, 'default': {}},
+        'startts': {'type': (basestring, int), 'default': None},
+        'endts': {'type': (basestring, int), 'default': None},
     }
 
     def __init__(self, options):
@@ -64,6 +72,8 @@ class HubstorageReader(BaseReader):
                                  exclude_prefixes=self.read_option('exclude_prefixes'),
                                  secondary_collections=self.read_option('secondary_collections'),
                                  has_many_collections=self.read_option('has_many_collections'),
+                                 startts=self.read_option('startts'),
+                                 endts=self.read_option('endts'),
                                  meta=['_key'])
 
     def get_next_batch(self):

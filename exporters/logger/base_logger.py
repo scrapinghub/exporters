@@ -1,5 +1,5 @@
 import logging
-logging.basicConfig()
+
 
 LEVEL_DICT = {
     'INFO': logging.INFO,

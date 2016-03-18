@@ -20,7 +20,6 @@ class NotifiersList(object):
             notifiers_list.append(notifier_object)
         return notifiers_list
 
-    @retry_short
     def notify_start_dump(self, receivers=None, info=None):
         if receivers is None:
             receivers = []
@@ -29,7 +28,6 @@ class NotifiersList(object):
         for notifier in self.notifiers:
             notifier.notify_start_dump(receivers, info)
 
-    @retry_short
     def notify_complete_dump(self, receivers=None, info=None):
         if receivers is None:
             receivers = []
@@ -38,7 +36,6 @@ class NotifiersList(object):
         for notifier in self.notifiers:
             notifier.notify_complete_dump(receivers, info)
 
-    @retry_short
     def notify_failed_job(self, msg, stack_strace, receivers=None, info=None):
         if receivers is None:
             receivers = []

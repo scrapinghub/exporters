@@ -33,11 +33,15 @@ class FilebaseBaseWriter(BaseWriter):
 
     def __init__(self, options, *args, **kwargs):
         super(FilebaseBaseWriter, self).__init__(options, *args, **kwargs)
-        self.filebase = self.read_option('filebase')
+        self.filebase = self.get_filebase_with_date()
+        self.writer_metadata['filebase'] = self.filebase
         self.written_files = {}
         self.md5_file_name = None
         self.last_written_file = None
         self.generate_md5 = self.read_option('generate_md5')
+
+        filebase_path, prefix = os.path.split(self.filebase)
+        self.write_buffer.items_group_files.base_filename = prefix
 
     def write(self, path, key, file_name=False):
         """
@@ -51,14 +55,17 @@ class FilebaseBaseWriter(BaseWriter):
         """
         return str(uuid.uuid4())
 
+    def get_filebase_with_date(self):
+        filebase = self.read_option('filebase')
+        filebase = datetime.datetime.now().strftime(filebase)
+        return filebase
+
     def create_filebase_name(self, group_info, extension='gz', file_name=None):
         """
         Returns filebase and file valid name
         """
         normalized = [re.sub('\W', '_', s) for s in group_info]
-        filebase = self.read_option('filebase')
-        filebase = filebase.format(date=datetime.datetime.now(), groups=normalized)
-        filebase = datetime.datetime.now().strftime(filebase)
+        filebase = self.filebase.format(groups=normalized)
         filebase_path, prefix = os.path.split(filebase)
         if not file_name:
             file_name = prefix + self.get_file_suffix(filebase_path, prefix) + '.' + extension
@@ -77,6 +84,7 @@ class FilebaseBaseWriter(BaseWriter):
         self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
 
     def finish_writing(self):
+        super(FilebaseBaseWriter, self).finish_writing()
         if self.generate_md5:
             try:
                 with open(MD5_FILE_NAME, 'a') as f:

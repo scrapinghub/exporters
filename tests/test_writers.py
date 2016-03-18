@@ -6,12 +6,15 @@ import tempfile
 import unittest
 import csv
 
+import mock
+from mock import patch
+
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
 from exporters.records.base_record import BaseRecord
 from exporters.write_buffer import WriteBuffer
 from exporters.writers import FSWriter
-from exporters.writers.base_writer import BaseWriter
+from exporters.writers.base_writer import BaseWriter, InconsistentWriteState
 from exporters.writers.console_writer import ConsoleWriter
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
@@ -256,6 +259,22 @@ class CustomWriterTest(unittest.TestCase):
                 writer.close()
             self.assertIn('md5checksum.md5', writer.fake_files_already_written)
 
+    @mock.patch('exporters.writers.base_writer.BaseWriter._check_write_consistency')
+    def test_consistency_check(self, consistency_mock):
+        # given:
+        writer = FakeWriter({'options': {'check_consistency': True}}, export_formatter=JsonExportFormatter(dict()))
+
+        # when:
+        try:
+            writer.write_batch(self.batch)
+            writer.flush()
+            writer.finish_writing()
+        finally:
+            writer.close()
+
+        # then:
+        consistency_mock.assert_called_once_with()
+
 
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
@@ -312,15 +331,53 @@ class FilebaseBaseWriterTest(unittest.TestCase):
 
 
 class FSWriterTest(unittest.TestCase):
-    def test_get_file_number(self):
-        writer_config = {
+
+    def get_batch(self):
+        data = [
+            {'name': 'Roberto', 'birthday': '12/05/1987'},
+            {'name': 'Claudia', 'birthday': '21/12/1985'},
+        ]
+        return [BaseRecord(d) for d in data]
+
+    def get_writer_config(self):
+        return {
+            'name': 'exporters.writers.fs_writer.FSWriter',
             'options': {
                 'filebase': '/tmp/exporter_test',
             }
         }
+
+    def test_get_file_number(self):
+        writer_config = self.get_writer_config()
         writer = FSWriter(writer_config, export_formatter=JsonExportFormatter(dict()))
         self.assertEqual(writer.get_file_suffix('test', 'test'), '0000')
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')
         self.assertEqual(file_name, 'exporter_test0000.gz')
         writer.close()
+
+    def test_check_writer_consistency(self):
+
+        # given
+        options = self.get_writer_config()
+        options['options']['check_consistency'] = True
+
+        # when:
+        writer = FSWriter(options, export_formatter=JsonExportFormatter(dict()))
+        try:
+            writer.write_batch(self.get_batch())
+            writer.flush()
+
+        finally:
+            writer.close()
+
+        # Consistency check passes
+        writer.finish_writing()
+
+        with open('/tmp/exporter_test0000.gz', 'w'):
+            with self.assertRaisesRegexp(InconsistentWriteState, 'Wrong size for file'):
+                writer.finish_writing()
+
+        os.remove('/tmp/exporter_test0000.gz')
+        with self.assertRaisesRegexp(InconsistentWriteState, 'file is not present at destination'):
+            writer.finish_writing()
