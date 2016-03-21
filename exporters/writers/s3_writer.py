@@ -64,7 +64,7 @@ class S3Writer(FilebaseBaseWriter):
         self.save_metadata = self.read_option('save_metadata')
         self.logger.info('S3Writer has been initiated.'
                          'Writing to s3://{}/{}'.format(self.bucket.name, self.filebase))
-        self.writer_metadata['files_counter'] = Counter()
+        self.set_metadata('files_counter', Counter())
 
     def _get_bucket_location(self, access_key, secret_key, bucket):
         import boto
@@ -106,7 +106,7 @@ class S3Writer(FilebaseBaseWriter):
         filebase_path, file_name = self.create_filebase_name(group_key, file_name=file_name)
         key_name = filebase_path + '/' + file_name
         self._write_s3_key(dump_path, key_name)
-        self.writer_metadata['files_counter'][filebase_path] += 1
+        self.get_metadata('files_counter')[filebase_path] += 1
 
     @retry_long
     def _write_s3_pointer(self, save_pointer, filebase):
@@ -132,6 +132,6 @@ class S3Writer(FilebaseBaseWriter):
         super(S3Writer, self).close()
 
     def get_file_suffix(self, path, prefix):
-        number_of_keys = self.writer_metadata['files_counter'].get(path, 0)
+        number_of_keys = self.get_metadata('files_counter').get(path, 0)
         suffix = '{}'.format(str(number_of_keys))
         return suffix

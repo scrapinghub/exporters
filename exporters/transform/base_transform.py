@@ -7,8 +7,8 @@ class BaseTransform(BasePipelineItem):
     This module receives a batch and writes it where needed. It can implement the following methods:
     """
 
-    def __init__(self, options):
-        super(BaseTransform, self).__init__(options)
+    def __init__(self, options, metadata=None):
+        super(BaseTransform, self).__init__(options, metadata)
         self.logger = TransformLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
 
     def transform_batch(self, batch):

@@ -7,10 +7,12 @@ class BaseGrouper(BasePipelineItem):
     Base class fro groupers
     """
 
-    def __init__(self, configuration):
-        super(BaseGrouper, self).__init__(configuration)
-        self.logger = FilterLogger(
-            {'log_level': configuration.get('log_level'), 'logger_name': configuration.get('logger_name')})
+    def __init__(self, options, metadata=None):
+        super(BaseGrouper, self).__init__(options, metadata)
+        self.logger = FilterLogger({
+            'log_level': self.options.get('log_level'),
+            'logger_name': self.options.get('logger_name')
+        })
 
     def group_batch(self, batch):
         """

@@ -9,19 +9,19 @@ class BaseNotifier(BasePipelineItem):
     methods:
     """
 
-    def notify_start_dump(self, receivers=None, info=None):
+    def notify_start_dump(self, receivers=None):
         """
         Notifies the start of a dump to the receivers
         """
         raise NotImplementedError
 
-    def notify_complete_dump(self, receivers=None, info=None):
+    def notify_complete_dump(self, receivers=None):
         """
         Notifies the end of a dump to the receivers
         """
         raise NotImplementedError
 
-    def notify_failed_job(self, mgs, stack_trace, receivers=None, info=None):
+    def notify_failed_job(self, mgs, stack_trace, receivers=None):
         """
         Notifies the failure of a dump to the receivers
         """

@@ -64,7 +64,7 @@ def _render_complete_dump_email(**data):
 Export job finished successfully.
 
 {% if accurate_items_count -%}
-Total records exported: {{ items_count }}.
+Total records exported: {{ writer.items_count }}.
 {%- endif %}
 
 If you have any questions or concerns about the data you have received, email us at help@scrapinghub.com.\n
@@ -111,7 +111,7 @@ class SESMailNotifier(BaseNotifier):
         - secret_key (str)
             AWS secret access key
     """
-    def __init__(self, options):
+    def __init__(self, options, metadata):
         self.supported_options = {
             'team_mails': {'type': list, 'default': []},
             'client_mails': {'type': list, 'default': []},
@@ -120,10 +120,9 @@ class SESMailNotifier(BaseNotifier):
             'client_name': {'type': basestring, 'default': 'Customer'},
         }
 
-        super(SESMailNotifier, self).__init__(options)
-        self.options = options['options']
-        self.team_mails = self.options['team_mails']
-        self.client_mails = self.options['client_mails']
+        super(SESMailNotifier, self).__init__(options, metadata)
+        self.team_mails = self.read_option('team_mails')
+        self.client_mails = self.read_option('client_mails')
         self.client_name = self.read_option('client_name')
         self._check_mails()
 
@@ -132,24 +131,24 @@ class SESMailNotifier(BaseNotifier):
             if not re.match('.+@.+', mail):
                 raise InvalidMailProvided()
 
-    def notify_start_dump(self, receivers=None, info=None):
+    def notify_start_dump(self, receivers=None):
         receivers = receivers or []
-        info = info or None
+        info = self.metadata.to_dict()
         mails = self._get_mails(receivers)
         subject, body = _render_start_dump_email(client=self.client_name, **info)
         self._send_email(mails, subject, body)
 
-    def notify_complete_dump(self, receivers=None, info=None):
+    def notify_complete_dump(self, receivers=None):
         receivers = receivers or []
-        info = info or {}
         mails = self._get_mails(receivers)
+        info = self.metadata.to_dict()
         subject, body = _render_complete_dump_email(client=self.client_name, **info)
         self._send_email(mails, subject, body)
 
-    def notify_failed_job(self, msg, stack_trace, receivers=None, info=None):
+    def notify_failed_job(self, msg, stack_trace, receivers=None):
         receivers = receivers or []
-        info = info or {}
         mails = self._get_mails(receivers)
+        info = self.metadata.to_dict()
         subject, body = _render_failed_job_email(
             client=self.client_name,
             reason=msg,
@@ -163,7 +162,7 @@ class SESMailNotifier(BaseNotifier):
     def _send_email(self, mails, subject, body):
         import boto
         ses = boto.connect_ses(self.read_option('access_key'), self.read_option('secret_key'))
-        ses.send_email(self.options.get('mail_from', DEFAULT_MAIN_FROM), subject, body, mails)
+        ses.send_email(self.read_option('mail_from', DEFAULT_MAIN_FROM), subject, body, mails)
 
     def _get_mails(self, receivers):
         mails = []

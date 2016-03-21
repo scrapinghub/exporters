@@ -34,7 +34,7 @@ class FilebaseBaseWriter(BaseWriter):
     def __init__(self, options, *args, **kwargs):
         super(FilebaseBaseWriter, self).__init__(options, *args, **kwargs)
         self.filebase = self.get_filebase_with_date()
-        self.writer_metadata['filebase'] = self.filebase
+        self.set_metadata('filebase', self.filebase)
         self.written_files = {}
         self.md5_file_name = None
         self.last_written_file = None

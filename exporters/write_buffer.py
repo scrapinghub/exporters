@@ -147,7 +147,6 @@ class WriteBuffer(object):
         self.items_group_files = ItemsGroupFilesHandler(formatter)
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
-        self.stats = {'written_items': 0}
         self.metadata = {}
         self.is_new_buffer = True
 
@@ -159,7 +158,6 @@ class WriteBuffer(object):
         key = self.get_key_from_item(item)
         self.grouping_info.ensure_group_info(key)
         self.items_group_files.add_item_to_file(item, key)
-        self.stats['written_items'] += 1
 
     def finish_buffer_write(self, key):
         self.items_group_files.end_group_file(key)

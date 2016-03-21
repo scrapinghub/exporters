@@ -7,12 +7,16 @@ class BaseReader(BasePipelineItem):
     This module reads and creates a batch to pass them to the pipeline
     """
 
-    def __init__(self, options):
-        super(BaseReader, self).__init__(options)
+    def __init__(self, options, metadata):
+        super(BaseReader, self).__init__(options, metadata)
         self.finished = False
         self.logger = ReaderLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
         self.last_position = {}
-        self.stats['read_items'] = 0
+        self.set_metadata('read_items', 0)
+
+    def increase_read(self):
+        self.set_metadata('read_items',
+                          self.get_metadata('read_items') + 1)
 
     def get_next_batch(self):
         """
@@ -39,3 +43,15 @@ class BaseReader(BasePipelineItem):
         Returns the last read position.
         """
         return self.last_position
+
+    def set_metadata(self, key, value, module='reader'):
+        super(BaseReader, self).set_metadata(key, value, module)
+
+    def update_metadata(self, data, module='reader'):
+        super(BaseReader, self).update_metadata(data, module)
+
+    def get_metadata(self, key, module='reader'):
+        return super(BaseReader, self).get_metadata(key, module)
+
+    def get_all_metadata(self, module='reader'):
+        return super(BaseReader, self).get_all_metadata(module)

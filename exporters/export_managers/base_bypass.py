@@ -5,8 +5,9 @@ class RequisitesNotMet(Exception):
 
 
 class BaseBypass(object):
-    def __init__(self, config):
+    def __init__(self, config, metadata):
         self.config = config
+        self.metadata = metadata
         self.total_items = 0
         self.valid_total_count = True
 

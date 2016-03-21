@@ -18,10 +18,10 @@ class SupportedOptionsMeta(type):
 class BasePipelineItem(object):
     supported_options = {}
 
-    def __init__(self, options, *args, **kwargs):
+    def __init__(self, options, metadata, *args, **kwargs):
         self.options = options.get('options', {})
         self.check_options()
-        self.stats = {}
+        self.metadata = metadata
 
     def check_options(self):
         for option_name, option_spec in self.supported_options.iteritems():
@@ -45,3 +45,15 @@ class BasePipelineItem(object):
         if env_name and env_name in os.environ:
             return os.environ.get(env_name)
         return self.supported_options.get(option_name, {}).get('default', default)
+
+    def set_metadata(self, key, value, module):
+        self.metadata.per_module[module][key] = value
+
+    def update_metadata(self, d, module):
+        self.metadata.per_module[module].update(d)
+
+    def get_metadata(self, key, module):
+        return self.metadata.per_module[module].get(key)
+
+    def get_all_metadata(self, module):
+        return self.metadata.per_module[module]

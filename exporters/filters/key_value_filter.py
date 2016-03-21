@@ -15,8 +15,8 @@ class KeyValueFilter(BaseFilter):
         'keys': {'type': list}
     }
 
-    def __init__(self, options):
-        super(KeyValueFilter, self).__init__(options)
+    def __init__(self, *args, **kwargs):
+        super(KeyValueFilter, self).__init__(*args, **kwargs)
         self.keys = self.read_option('keys')
         self.logger.info('KeyValueFilter has been initiated. Keys: {}'.format(self.keys))
 

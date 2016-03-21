@@ -38,8 +38,8 @@ class FSReader(BaseReader):
         'pattern': {'type': basestring, 'default': None}
     }
 
-    def __init__(self, options):
-        super(FSReader, self).__init__(options)
+    def __init__(self, *args, **kwargs):
+        super(FSReader, self).__init__(*args, **kwargs)
         self.batch_size = self.read_option('batch_size')
         self.path = self.read_option('path')
         self.path_pointer = self.read_option('path_pointer')

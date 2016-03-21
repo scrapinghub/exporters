@@ -156,8 +156,8 @@ class S3Reader(BaseReader):
         'prefix_format_using_date': {'type': (basestring, tuple, list), 'default': None}
     }
 
-    def __init__(self, options):
-        super(S3Reader, self).__init__(options)
+    def __init__(self, *args, **kwargs):
+        super(S3Reader, self).__init__(*args, **kwargs)
         self.batch_size = self.read_option('batch_size')
         bucket_name = self.read_option('bucket')
         self.logger.info('Starting S3Reader for bucket: %s' % bucket_name)
@@ -166,7 +166,7 @@ class S3Reader(BaseReader):
                                  self.read_option('aws_access_key_id'),
                                  self.read_option('aws_secret_access_key'))
 
-        self.keys_fetcher = S3BucketKeysFetcher(options['options'],
+        self.keys_fetcher = S3BucketKeysFetcher(self.options,
                                                 self.read_option('aws_access_key_id'),
                                                 self.read_option('aws_secret_access_key'))
         self.keys = self.keys_fetcher.pending_keys()
@@ -214,7 +214,7 @@ class S3Reader(BaseReader):
         for line in lines[self.last_line:last_item]:
             line = line.replace("\n", '')
             item = BaseRecord(json.loads(line))
-            self.stats['read_items'] += 1
+            self.increase_read()
             yield item
         dump_file.close()
 

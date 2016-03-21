@@ -28,9 +28,9 @@ class BaseAlchemyPersistence(BasePersistence):
         'database': {'type': basestring}
     }
 
-    def __init__(self, options):
+    def __init__(self, *args, **kwargs):
         self.engine = None
-        super(BaseAlchemyPersistence, self).__init__(options)
+        super(BaseAlchemyPersistence, self).__init__(*args, **kwargs)
 
     def _db_init(self):
         user = self.read_option('user')
@@ -60,7 +60,8 @@ class BaseAlchemyPersistence(BasePersistence):
              "last_committed": datetime.datetime.now()}, synchronize_session='fetch')
         self.session.commit()
         self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: ' + str(self.persistence_state_id))
-        self.stats['commited_positions'] += 1
+        self.set_metadata('commited_positions',
+                          self.get_metadata('commited_positions') + 1)
 
     def generate_new_job(self):
         if not self.engine:

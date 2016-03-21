@@ -7,6 +7,8 @@ from exporters.filters.key_value_regex_filter import KeyValueRegexFilter
 from exporters.filters.no_filter import NoFilter
 from exporters.records.base_record import BaseRecord
 
+from .utils import meta
+
 
 class BaseFilterTest(unittest.TestCase):
 
@@ -17,7 +19,7 @@ class BaseFilterTest(unittest.TestCase):
                 'logger_name': 'export-pipeline'
             }
         }
-        self.filter = BaseFilter(self.options)
+        self.filter = BaseFilter(self.options, meta())
 
     def test_no_filter_configured_raise_notimplemented(self):
         with self.assertRaises(NotImplementedError):
@@ -28,7 +30,7 @@ class BaseFilterTest(unittest.TestCase):
             def filter(self, item):
                 return item.get('key') == 1
 
-        myfilter = CustomFilter(self.options)
+        myfilter = CustomFilter(self.options, meta())
         output = list(myfilter.filter_batch([{'key': 1}, {'key': 2}]))
         self.assertEqual([{'key': 1}], output)
 
@@ -42,7 +44,7 @@ class NoFilterTest(unittest.TestCase):
                 'logger_name': 'export-pipeline'
             }
         }
-        self.filter = NoFilter(self.options)
+        self.filter = NoFilter(self.options, meta())
 
     def test_filter_empty_batch(self):
         self.assertTrue(self.filter.filter_batch([]) == [])
@@ -75,7 +77,7 @@ class KeyValueFilterTest(unittest.TestCase):
         for item in items:
             record = BaseRecord(item)
             self.batch.append(record)
-        self.filter = KeyValueFilter({'options': {'keys': self.keys}})
+        self.filter = KeyValueFilter({'options': {'keys': self.keys}}, meta())
 
     def test_filter_with_key_value(self):
         batch = self.filter.filter_batch(self.batch)
@@ -97,7 +99,7 @@ class KeyValueRegexFilterTest(unittest.TestCase):
         batch = [BaseRecord(it) for it in items]
 
         keys = [{'name': 'country', 'value': 'e[sg]'}]
-        regex_filter = KeyValueRegexFilter({'options': {'keys': keys}})
+        regex_filter = KeyValueRegexFilter({'options': {'keys': keys}}, meta())
 
         # when:
         result = list(regex_filter.filter_batch(batch))
