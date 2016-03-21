@@ -3,6 +3,8 @@ import hashlib
 import os
 import re
 import uuid
+
+from exporters.write_buffer import CustomNameItemsGroupFilesHandler
 from exporters.writers.base_writer import BaseWriter
 import six
 
@@ -34,15 +36,16 @@ class FilebaseBaseWriter(BaseWriter):
 
     def __init__(self, *args, **kwargs):
         super(FilebaseBaseWriter, self).__init__(*args, **kwargs)
-        self.filebase = self.get_filebase_with_date()
+        self.filebase = self.get_date_formatted_file_path()
         self.set_metadata('effective_filebase', self.filebase)
         self.written_files = {}
         self.md5_file_name = None
         self.last_written_file = None
         self.generate_md5 = self.read_option('generate_md5')
 
-        filebase_path, prefix = os.path.split(self.filebase)
-        self.write_buffer.items_group_files.base_filename = prefix
+    def _items_group_files_handler(self):
+        _, filename = os.path.split(self.read_option('filebase'))
+        return CustomNameItemsGroupFilesHandler(self.export_formatter, filename)
 
     def write(self, path, key, file_name=False):
         """
@@ -56,10 +59,11 @@ class FilebaseBaseWriter(BaseWriter):
         """
         return str(uuid.uuid4())
 
-    def get_filebase_with_date(self):
-        filebase = self.read_option('filebase')
-        filebase = datetime.datetime.now().strftime(filebase)
-        return filebase
+    def get_date_formatted_file_path(self):
+        self.logger.debug('Extracting path from filebase option')
+        file_path, _ = os.path.split(self.read_option('filebase'))
+        file_path = datetime.datetime.now().strftime(file_path)
+        return file_path
 
     def create_filebase_name(self, group_info, extension='gz', file_name=None):
         """
@@ -67,10 +71,9 @@ class FilebaseBaseWriter(BaseWriter):
         """
         normalized = [re.sub('\W', '_', s) for s in group_info]
         filebase = self.filebase.format(groups=normalized)
-        filebase_path, prefix = os.path.split(filebase)
         if not file_name:
-            file_name = prefix + self.get_file_suffix(filebase_path, prefix) + '.' + extension
-        return filebase_path, file_name
+            file_name = self.get_file_suffix(filebase, '') + '.' + extension
+        return filebase, file_name
 
     def _get_md5(self, path):
         with open(path, 'r') as f:
@@ -78,8 +81,10 @@ class FilebaseBaseWriter(BaseWriter):
 
     def _write(self, key):
         write_info = self.write_buffer.pack_buffer(key)
-        self.write(write_info.get('compressed_path'),
-                   self.write_buffer.grouping_info[key]['membership'])
+        compressed_path = write_info.get('compressed_path')
+        self.write(compressed_path,
+                   self.write_buffer.grouping_info[key]['membership'],
+                   os.path.basename(compressed_path))
         write_info['md5'] = self._get_md5(write_info.get('compressed_path'))
         self.logger.info(
             'Checksum for file {}: {}'.format(write_info['compressed_path'], write_info['md5']))

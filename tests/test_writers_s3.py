@@ -66,7 +66,7 @@ class S3WriterTest(unittest.TestCase):
         bucket = self.s3_conn.get_bucket('fake_bucket')
         saved_keys = [k for k in bucket.list()]
         self.assertEquals(1, len(saved_keys))
-        self.assertEqual(saved_keys[0].name, 'tests/0.gz')
+        self.assertEqual(saved_keys[0].name, 'tests/0.jl.gz')
 
     def test_connect_to_specific_region(self):
         # given:
@@ -153,7 +153,7 @@ class S3WriterTest(unittest.TestCase):
                 'bucket': 'fake_bucket',
                 'aws_access_key_id': 'FAKE_ACCESS_KEY',
                 'aws_secret_access_key': 'FAKE_SECRET_KEY',
-                'filebase': 'tests/',
+                'filebase': 'tests/{}',
             }
         }
 
@@ -172,7 +172,7 @@ class S3WriterTest(unittest.TestCase):
         finally:
             writer.close()
         bucket = self.s3_conn.get_bucket('fake_bucket')
-        bucket.delete_key('tests/0.gz')
+        bucket.delete_key('tests/0.jl.gz')
 
         # then:
         with self.assertRaisesRegexp(InconsistentWriteState, 'not found in bucket'):
@@ -193,7 +193,7 @@ class S3WriterTest(unittest.TestCase):
         finally:
             writer.close()
         bucket = self.s3_conn.get_bucket('fake_bucket')
-        key = bucket.get_key('tests/0.gz')
+        key = bucket.get_key('tests/0.jl.gz')
         key.set_contents_from_string('fake contents')
 
         # then:
@@ -215,10 +215,10 @@ class S3WriterTest(unittest.TestCase):
         finally:
             writer.close()
         bucket = self.s3_conn.get_bucket('fake_bucket')
-        key = bucket.get_key('tests/0.gz')
+        key = bucket.get_key('tests/0.jl.gz')
         content = key.get_contents_as_string()
-        bucket.delete_key('tests/0.gz')
-        new_key = bucket.new_key('tests/0.gz')
+        bucket.delete_key('tests/0.jl.gz')
+        new_key = bucket.new_key('tests/0.jl.gz')
         new_key.update_metadata({'total': 999})
         new_key.set_contents_from_string(content)
 

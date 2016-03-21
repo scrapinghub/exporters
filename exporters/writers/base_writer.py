@@ -1,6 +1,6 @@
-from exporters.write_buffer import WriteBuffer
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
+from exporters.write_buffer import WriteBuffer, ItemsGroupFilesHandler
 
 
 class ItemsLimitReached(Exception):
@@ -39,11 +39,16 @@ class BaseWriter(BasePipelineItem):
         self.logger = WriterLogger({'log_level': options.get('log_level'),
                                     'logger_name': options.get('logger_name')})
         self.export_formatter = kwargs.get('export_formatter')
+
         items_per_buffer_write = self.read_option('items_per_buffer_write')
         size_per_buffer_write = self.read_option('size_per_buffer_write')
-        self.write_buffer = WriteBuffer(
-            items_per_buffer_write, size_per_buffer_write, self.export_formatter)
+        self.write_buffer = WriteBuffer(items_per_buffer_write,
+                                        size_per_buffer_write,
+                                        self._items_group_files_handler())
         self.set_metadata('items_count', 0)
+
+    def _items_group_files_handler(self):
+        return ItemsGroupFilesHandler(self.export_formatter)
 
     def write(self, path, key):
         """

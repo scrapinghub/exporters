@@ -41,23 +41,12 @@ class ItemsGroupFilesHandler(object):
         self.file_extension = formatter.file_extension
         self.formatter = formatter
         self.tmp_folder = tempfile.mkdtemp()
-        self._base_filename = None
-        self.file_count = 0
 
     def _add_to_file(self, content, key):
         path = self.get_group_path(key)
         with open(path, 'a') as f:
             f.write(content + '\n')
         self.grouping_info.add_to_group(key)
-
-    @property
-    def base_filename(self):
-        return self._base_filename
-
-    @base_filename.setter
-    def base_filename(self, value):
-        date = datetime.datetime.now()
-        self._base_filename = date.strftime(value)
 
     def add_item_to_file(self, item, key):
         content = self.formatter.format(item)
@@ -114,12 +103,7 @@ class ItemsGroupFilesHandler(object):
         return new_buffer_path
 
     def _get_new_path_name(self):
-        if self.base_filename:
-            filename = '{}{:04d}.{}'.format(self.base_filename, self.file_count,
-                                            self.file_extension)
-            self.file_count += 1
-        else:
-            filename = '{}.{}'.format(uuid.uuid4(), self.file_extension)
+        filename = '{}.{}'.format(uuid.uuid4(), self.file_extension)
         return os.path.join(self.tmp_folder, filename)
 
     def compress_key_path(self, key):
@@ -137,11 +121,31 @@ class ItemsGroupFilesHandler(object):
         return compressed_path
 
 
+class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
+
+    def __init__(self, formatter, base_filename):
+        super(CustomNameItemsGroupFilesHandler, self).__init__(formatter)
+        self.base_filename = self._format_date(base_filename)
+        self.file_count = 0
+
+    def _get_new_path_name(self):
+        name = self.base_filename.format(self.file_count)
+        if name == self.base_filename:
+            name += '{:04d}'.format(self.file_count)
+        filename = '{}.{}'.format(name, self.file_extension)
+        self.file_count += 1
+        return os.path.join(self.tmp_folder, filename)
+
+    def _format_date(self, value):
+        date = datetime.datetime.now()
+        return date.strftime(value)
+
+
 class WriteBuffer(object):
 
-    def __init__(self, items_per_buffer_write, size_per_buffer_write, formatter):
+    def __init__(self, items_per_buffer_write, size_per_buffer_write, items_group_files_handler):
         self.files = []
-        self.items_group_files = ItemsGroupFilesHandler(formatter)
+        self.items_group_files = items_group_files_handler
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
         self.metadata = {}

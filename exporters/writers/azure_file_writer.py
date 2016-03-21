@@ -42,10 +42,10 @@ class AzureFileWriter(FilebaseBaseWriter):
         self.set_metadata('files_counter', Counter())
         self.set_metadata('files_written', [])
 
-    def write(self, dump_path, group_key=None):
+    def write(self, dump_path, group_key=None, file_name=None):
         if group_key is None:
             group_key = []
-        self._write_file(dump_path, group_key)
+        self._write_file(dump_path, group_key, file_name)
 
     def _update_metadata(self, dump_path, filebase_path, file_name):
         buffer_info = self.write_buffer.metadata[dump_path]
