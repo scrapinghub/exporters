@@ -40,6 +40,9 @@ class FilebaseBaseWriter(BaseWriter):
         self.last_written_file = None
         self.generate_md5 = self.read_option('generate_md5')
 
+        filebase_path, prefix = os.path.split(self.filebase)
+        self.write_buffer.items_group_files.base_filename = prefix
+
     def write(self, path, key, file_name=False):
         """
         Receive path to temp dump file and group key, and write it to the proper location.
