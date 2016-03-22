@@ -19,7 +19,7 @@ class BaseFilter(BasePipelineItem):
     def _log_progress(self):
         if self.total % self.log_at_every == 0:
             self.logger.info('Filtered out %d records from %d total' %
-                             (self.stats['filtered_out'], self.total))
+                             (self.get_metadata('filtered_out'), self.total))
 
     def filter_batch(self, batch):
         """

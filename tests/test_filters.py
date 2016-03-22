@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import random
 import unittest
 from exporters.filters.base_filter import BaseFilter
 from exporters.filters.key_value_filter import KeyValueFilter
@@ -84,6 +84,11 @@ class KeyValueFilterTest(unittest.TestCase):
         batch = list(batch)
         self.assertEqual(1, len(batch))
         self.assertEqual('es', dict(batch[0])['country_code'])
+
+    def test_filter_logs(self):
+        batch = [{'country': random.choice(['es', 'uk']), 'value': random.randint(0, 1000)} for i in range(5000)]
+        # No exception should be raised
+        self.filter.filter_batch(batch)
 
 
 class KeyValueRegexFilterTest(unittest.TestCase):
