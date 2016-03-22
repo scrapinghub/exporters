@@ -10,8 +10,8 @@ class AggregationStatsWriter(BaseWriter):
     It has no other options.
     """
 
-    def __init__(self, options, *args, **kwargs):
-        super(AggregationStatsWriter, self).__init__(options, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(AggregationStatsWriter, self).__init__(*args, **kwargs)
         self.aggregated_info = {'occurrences': Counter()}
         self.logger.info('AggregationStatsWriter has been initiated')
 
@@ -23,9 +23,9 @@ class AggregationStatsWriter(BaseWriter):
             for key in item:
                 self.aggregated_info['occurrences'][key] += 1
             self.increment_written_items()
-            if self.items_limit and self.items_limit == self.writer_metadata['items_count']:
+            if self.items_limit and self.items_limit == self.get_metadata('items_count'):
                 raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'
-                                        .format(self.writer_metadata['items_count']))
+                                        .format(self.get_metadata('items_count')))
         self.logger.debug('Wrote items')
 
     def _get_aggregated_info(self):
@@ -37,7 +37,7 @@ class AggregationStatsWriter(BaseWriter):
             agg_results[key] = {
                 'occurrences': self.aggregated_info['occurrences'].get(key),
                 'coverage': (float(self.aggregated_info['occurrences']
-                                   .get(key))/float(self.writer_metadata['items_count']))*100
+                                   .get(key))/float(self.get_metadata('items_count')))*100
             }
         return agg_results
 

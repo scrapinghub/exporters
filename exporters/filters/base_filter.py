@@ -8,12 +8,12 @@ class BaseFilter(BasePipelineItem):
     """
     log_at_every = 1000
 
-    def __init__(self, options):
-        super(BaseFilter, self).__init__(options)
+    def __init__(self, options, metadata):
+        super(BaseFilter, self).__init__(options, metadata)
         self.check_options()
         self.logger = FilterLogger(
             {'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
-        self.stats['filtered_out'] = 0
+        self.set_metadata('filtered_out', 0)
         self.total = 0
 
     def _log_progress(self):
@@ -29,7 +29,8 @@ class BaseFilter(BasePipelineItem):
             if self.filter(item):
                 yield item
             else:
-                self.stats['filtered_out'] += 1
+                self.set_metadata('filtered_out',
+                                  self.get_metadata('filtered_out') + 1)
 
             self.total += 1
             self._log_progress()
@@ -39,3 +40,15 @@ class BaseFilter(BasePipelineItem):
         It receives an item and returns True if the filter must be included, or False if not
         """
         raise NotImplementedError
+
+    def set_metadata(self, key, value, module='filter'):
+        super(BaseFilter, self).set_metadata(key, value, module)
+
+    def update_metadata(self, data, module='filter'):
+        super(BaseFilter, self).update_metadata(data, module)
+
+    def get_metadata(self, key, module='filter'):
+        return super(BaseFilter, self).get_metadata(key, module)
+
+    def get_all_metadata(self, module='filter'):
+        return super(BaseFilter, self).get_all_metadata(module)

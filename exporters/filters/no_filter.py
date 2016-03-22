@@ -7,8 +7,8 @@ class NoFilter(BaseFilter):
     on the original items.
     """
 
-    def __init__(self, options):
-        super(NoFilter, self).__init__(options)
+    def __init__(self, *args, **kwargs):
+        super(NoFilter, self).__init__(*args, **kwargs)
 
     def filter_batch(self, batch):
         return batch

@@ -5,7 +5,8 @@ from exporters.persistence.alchemy_persistence import MysqlPersistence, Postgres
 from exporters.persistence.base_persistence import BasePersistence
 from exporters.persistence.pickle_persistence import PicklePersistence
 from exporters.utils import remove_if_exists
-from .utils import valid_config_with_updates
+
+from .utils import valid_config_with_updates, meta
 
 
 class BasePersistenceTest(unittest.TestCase):
@@ -23,25 +24,25 @@ class BasePersistenceTest(unittest.TestCase):
     def test_get_last_position(self):
         exporter_config = ExporterConfig(self.config)
         with self.assertRaises(NotImplementedError):
-            persistence = BasePersistence(exporter_config.persistence_options)
+            persistence = BasePersistence(exporter_config.persistence_options, meta())
             persistence.get_last_position()
 
     def test_commit_position(self):
         exporter_config = ExporterConfig(self.config)
         with self.assertRaises(NotImplementedError):
-            persistence = BasePersistence(exporter_config.persistence_options)
+            persistence = BasePersistence(exporter_config.persistence_options, meta())
             persistence.commit_position(1)
 
     def test_generate_new_job(self):
         exporter_config = ExporterConfig(self.config)
         with self.assertRaises(NotImplementedError):
-            persistence = BasePersistence(exporter_config.persistence_options)
+            persistence = BasePersistence(exporter_config.persistence_options, meta())
             persistence.generate_new_job()
 
     def test_delete_instance(self):
         exporter_config = ExporterConfig(self.config)
         with self.assertRaises(NotImplementedError):
-            persistence = BasePersistence(exporter_config.persistence_options)
+            persistence = BasePersistence(exporter_config.persistence_options, meta())
             persistence.close()
 
 
@@ -65,7 +66,8 @@ class PicklePersistenceTest(unittest.TestCase):
         mock_uuid.return_value = file_name
         exporter_config = ExporterConfig(self.config)
         try:
-            persistence = PicklePersistence(exporter_config.persistence_options)
+            persistence = PicklePersistence(
+                exporter_config.persistence_options, meta())
             self.assertIsInstance(persistence, PicklePersistence)
             persistence.close()
         finally:
@@ -80,7 +82,7 @@ class PicklePersistenceTest(unittest.TestCase):
         mock_is_file.return_value = True
         mock_load_pickle.return_value = {'last_position': {'last_key': 10}}
         exporter_config = ExporterConfig(self.config)
-        persistence = PicklePersistence(exporter_config.persistence_options)
+        persistence = PicklePersistence(exporter_config.persistence_options, meta())
         self.assertEqual({'last_key': 10}, persistence.get_last_position())
 
     @patch('__builtin__.open', autospec=True)
@@ -90,9 +92,9 @@ class PicklePersistenceTest(unittest.TestCase):
         mock_dump_pickle.return_value = True
         mock_uuid.return_value = 1
         exporter_config = ExporterConfig(self.config)
-        persistence = PicklePersistence(exporter_config.persistence_options)
+        persistence = PicklePersistence(exporter_config.persistence_options, meta())
         self.assertEqual(None, persistence.commit_position(10))
-        self.assertEqual(persistence.stats['commited_positions'], 1)
+        self.assertEqual(persistence.get_metadata('commited_positions'), 1)
 
 
 class MysqlPersistenceTest(unittest.TestCase):
@@ -121,7 +123,7 @@ class MysqlPersistenceTest(unittest.TestCase):
         mock_metadata.return_value = True
         mock_commit.return_value = True
         exporter_config = ExporterConfig(options)
-        persistence = MysqlPersistence(exporter_config.persistence_options)
+        persistence = MysqlPersistence(exporter_config.persistence_options, meta())
         self.assertIsInstance(persistence, MysqlPersistence)
 
     @patch('sqlalchemy.orm.session.Session.add')
@@ -153,7 +155,7 @@ class MysqlPersistenceTest(unittest.TestCase):
         mock_query.return_value.filter.return_value.first.return_value = mock_job
         mock_add.return_value = True
         exporter_config = ExporterConfig(options)
-        persistence = MysqlPersistence(exporter_config.persistence_options)
+        persistence = MysqlPersistence(exporter_config.persistence_options, meta())
         self.assertIsInstance(persistence, MysqlPersistence)
 
     @patch('sqlalchemy.schema.MetaData.create_all')
@@ -180,7 +182,7 @@ class MysqlPersistenceTest(unittest.TestCase):
         mock_metadata.return_value = True
         mock_commit.return_value = {}
         exporter_config = ExporterConfig(options)
-        persistence = MysqlPersistence(exporter_config.persistence_options)
+        persistence = MysqlPersistence(exporter_config.persistence_options, meta())
         self.assertIsInstance(persistence, MysqlPersistence)
 
     @patch('sqlalchemy.orm.session.Session.query')
@@ -209,9 +211,9 @@ class MysqlPersistenceTest(unittest.TestCase):
         mock_commit.return_value = {}
         mock_query.return_value.filter.return_value.update.return_value = True
         exporter_config = ExporterConfig(options)
-        persistence = MysqlPersistence(exporter_config.persistence_options)
+        persistence = MysqlPersistence(exporter_config.persistence_options, meta())
         persistence.commit_position(10)
-        self.assertEqual(persistence.stats['commited_positions'], 1)
+        self.assertEqual(persistence.get_metadata('commited_positions'), 1)
 
     @patch('sqlalchemy.orm.session.Session.query')
     @patch('sqlalchemy.schema.MetaData.create_all')
@@ -239,7 +241,7 @@ class MysqlPersistenceTest(unittest.TestCase):
         mock_commit.return_value = {}
         mock_query.return_value.filter.return_value.update.return_value = True
         exporter_config = ExporterConfig(options)
-        persistence = MysqlPersistence(exporter_config.persistence_options)
+        persistence = MysqlPersistence(exporter_config.persistence_options, meta())
         persistence.close()
 
     @patch('sqlalchemy.orm.session.Session.query')
@@ -268,7 +270,7 @@ class MysqlPersistenceTest(unittest.TestCase):
         mock_commit.return_value = True
         mock_query.return_value.filter.return_value.first.return_value.last_position = '0'
         exporter_config = ExporterConfig(options)
-        persistence = MysqlPersistence(exporter_config.persistence_options)
+        persistence = MysqlPersistence(exporter_config.persistence_options, meta())
         self.assertTrue(persistence.get_last_position() == 0)
 
 
@@ -300,7 +302,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
         mock_metadata.return_value = True
         mock_commit.return_value = True
         exporter_config = ExporterConfig(self.config)
-        persistence = PostgresqlPersistence(exporter_config.persistence_options)
+        persistence = PostgresqlPersistence(exporter_config.persistence_options, meta())
         self.assertIsInstance(persistence, PostgresqlPersistence)
 
     @patch('sqlalchemy.orm.session.Session.query')
@@ -311,7 +313,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
         mock_commit.return_value = True
         mock_query.return_value.filter.return_value.first.return_value.last_position = '0'
         exporter_config = ExporterConfig(self.config)
-        persistence = PostgresqlPersistence(exporter_config.persistence_options)
+        persistence = PostgresqlPersistence(exporter_config.persistence_options, meta())
         self.assertTrue(persistence.get_last_position() == 0)
 
     @patch('sqlalchemy.orm.session.Session.add')
@@ -343,7 +345,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
         mock_query.return_value.filter.return_value.first.return_value = mock_job
         mock_add.return_value = True
         exporter_config = ExporterConfig(options)
-        persistence = PostgresqlPersistence(exporter_config.persistence_options)
+        persistence = PostgresqlPersistence(exporter_config.persistence_options, meta())
         self.assertIsInstance(persistence, PostgresqlPersistence)
 
     @patch('sqlalchemy.orm.session.Session.query')
@@ -372,9 +374,9 @@ class PostgresqlPersistenceTest(unittest.TestCase):
         mock_commit.return_value = {}
         mock_query.return_value.filter.return_value.update.return_value = True
         exporter_config = ExporterConfig(options)
-        persistence = PostgresqlPersistence(exporter_config.persistence_options)
+        persistence = PostgresqlPersistence(exporter_config.persistence_options, meta())
         persistence.commit_position(10)
-        self.assertEqual(persistence.stats['commited_positions'], 1)
+        self.assertEqual(persistence.get_metadata('commited_positions'), 1)
 
     @patch('sqlalchemy.orm.session.Session.query')
     @patch('sqlalchemy.schema.MetaData.create_all')
@@ -402,5 +404,5 @@ class PostgresqlPersistenceTest(unittest.TestCase):
         mock_commit.return_value = {}
         mock_query.return_value.filter.return_value.update.return_value = True
         exporter_config = ExporterConfig(options)
-        persistence = PostgresqlPersistence(exporter_config.persistence_options)
+        persistence = PostgresqlPersistence(exporter_config.persistence_options, meta())
         persistence.close()

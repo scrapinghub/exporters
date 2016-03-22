@@ -5,6 +5,7 @@ import os
 import unittest
 
 import mock
+from exporters.meta import ExportMeta
 from exporters.notifications.base_notifier import BaseNotifier
 from exporters.notifications.ses_mail_notifier import (DEFAULT_MAIN_FROM,
                                                        InvalidMailProvided,
@@ -35,7 +36,7 @@ class BaseNotifierTest(unittest.TestCase):
 
             }
         }
-        self.notifier = BaseNotifier(self.options)
+        self.notifier = BaseNotifier(self.options, {})
 
     def test_raise_exception_start_dump(self):
         with self.assertRaises(NotImplementedError):
@@ -66,7 +67,7 @@ class BaseNotifierTest(unittest.TestCase):
             }
         }
 
-        test_notifier = BaseNotifier(options)
+        test_notifier = BaseNotifier(options, {})
         test_notifier.supported_options['test'] = {'type': int, 'default': 5}
         test_notifier.check_options()
 
@@ -116,22 +117,14 @@ class SESMailNotifierTest(unittest.TestCase):
             }
 
         }
-        self.job_info = self._create_stats()
-        self.notifier = SESMailNotifier(self.options['exporter_options']['notifications'][0])
-
-    def _create_stats(self):
-        return {
-            'configuration': self.options,
-            'items_count': 2,
-            'accurate_items_count': True,
-            'start_time': datetime.datetime.now(),
-            'script_name': 'basic_export_manager'
-        }
+        self.meta = ExportMeta(self.options)
+        self.meta.per_module['writer']['items_count'] = 2
+        self.notifier = SESMailNotifier(
+            self.options['exporter_options']['notifications'][0], self.meta)
 
     @mock.patch('boto.connect_ses')
     def test_start_dump(self, mock_ses):
-        stats = self._create_stats()
-        self.notifier.notify_start_dump([CLIENTS, TEAM], stats)
+        self.notifier.notify_start_dump([CLIENTS, TEAM])
         mock_ses.return_value.send_email.assert_called_once_with(
             DEFAULT_MAIN_FROM,
             'Started Customer export job',
@@ -142,7 +135,7 @@ class SESMailNotifierTest(unittest.TestCase):
 
     @mock.patch('boto.connect_ses')
     def test_notify_with_custom_emails(self, mock_ses):
-        self.notifier.notify_start_dump(['test@test.com'], self._create_stats())
+        self.notifier.notify_start_dump(['test@test.com'])
         mock_ses.return_value.send_email.assert_called_once_with(
             mock.ANY,
             mock.ANY,
@@ -152,8 +145,7 @@ class SESMailNotifierTest(unittest.TestCase):
 
     @mock.patch('boto.connect_ses')
     def test_complete_dump(self, mock_ses):
-        self.notifier.notify_complete_dump([CLIENTS, TEAM], self._create_stats())
-
+        self.notifier.notify_complete_dump([CLIENTS, TEAM])
         mock_ses.return_value.send_email.assert_called_once_with(
             DEFAULT_MAIN_FROM,
             'Customer export job finished',
@@ -164,9 +156,9 @@ class SESMailNotifierTest(unittest.TestCase):
 
     @mock.patch('boto.connect_ses')
     def test_complete_dump_no_accurate_count(self, mock_ses):
-        stats = self._create_stats()
-        stats['accurate_items_count'] = False
-        self.notifier.notify_complete_dump(['test@test.com'], stats)
+        self.meta.accurate_items_count = False
+        self.notifier.notify_complete_dump(['test@test.com'])
+        self.meta.accurate_items_count = False
         mock_ses.return_value.send_email.assert_called_once_with(
             DEFAULT_MAIN_FROM,
             'Customer export job finished',
@@ -177,7 +169,7 @@ class SESMailNotifierTest(unittest.TestCase):
 
     @mock.patch('boto.connect_ses')
     def test_failed_dump(self, mock_ses):
-        self.notifier.notify_failed_job('REASON', 'STACKTRACE', ['test@test.com'], self._create_stats())
+        self.notifier.notify_failed_job('REASON', 'STACKTRACE', ['test@test.com'])
         mock_ses.return_value.send_email.assert_called_once_with(
             DEFAULT_MAIN_FROM,
             'Failed export job for Customer',
@@ -191,7 +183,7 @@ class SESMailNotifierTest(unittest.TestCase):
     @mock.patch('boto.connect_ses')
     def test_failed_dump_in_scrapy_cloud(self, mock_ses):
         with environment(dict(SHUB_JOBKEY='10804/1/12')):
-            self.notifier.notify_failed_job('REASON', 'STACKTRACE', ['test@test.com'], self._create_stats())
+            self.notifier.notify_failed_job('REASON', 'STACKTRACE', ['test@test.com'])
 
         mock_ses.return_value.send_email.assert_called_once_with(
             DEFAULT_MAIN_FROM,
@@ -231,10 +223,11 @@ class SESMailNotifierTest(unittest.TestCase):
             }
         }
         with self.assertRaises(InvalidMailProvided):
-            SESMailNotifier(options['exporter_options']['notifications'][0])
+            SESMailNotifier(options['exporter_options']['notifications'][0], {})
 
 
 class WebhookNotifierTest(unittest.TestCase):
+
     def setUp(self):
         self.options = {
             'exporter_options': {
@@ -258,25 +251,26 @@ class WebhookNotifierTest(unittest.TestCase):
             }
 
         }
-        self.job_info = {
+        self.meta = {
             'configuration': self.options,
             'items_count': 0,
             'start_time': datetime.datetime.now(),
             'script_name': 'basic_export_manager'
         }
-        self.notifier = WebhookNotifier(self.options['exporter_options']['notifications'][0])
+        self.notifier = WebhookNotifier(
+            self.options['exporter_options']['notifications'][0], self.meta)
 
     @mock.patch('requests.post')
     def test_start_dump(self, mock_request):
         # TODO: make this test actually test something
-        self.notifier.notify_start_dump([], self.job_info)
+        self.notifier.notify_start_dump([])
 
     @mock.patch('requests.post')
     def test_completed_dump(self, mock_request):
         # TODO: make this test actually test something
-        self.notifier.notify_complete_dump([], self.job_info)
+        self.notifier.notify_complete_dump([])
 
     @mock.patch('requests.post')
     def test_failed_dump(self, mock_request):
         # TODO: make this test actually test something
-        self.notifier.notify_failed_job('', '', info=self.job_info)
+        self.notifier.notify_failed_job('', '')

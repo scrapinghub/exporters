@@ -107,7 +107,7 @@ class MailWriter(BaseWriter):
         self.logger.debug('Sent {}'.format(dump_path))
 
     def write(self, dump_path, group_key=None):
-        if self.writer_metadata['items_count']:
+        if self.get_metadata('items_count'):
             self._write_mail(dump_path, group_key)
         else:
             self.logger.debug('Mail not sent. 0 records exported')

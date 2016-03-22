@@ -20,8 +20,8 @@ class PicklePersistence(BasePersistence):
 
     uri_regex = "pickle:(([a-zA-Z\d-]|\/)+)"
 
-    def __init__(self, options):
-        super(PicklePersistence, self).__init__(options)
+    def __init__(self, *args, **kwargs):
+        super(PicklePersistence, self).__init__(*args, **kwargs)
         self.persistence_file_name = self._get_persistence_file_name()
 
     def _get_persistence_file_name(self):
@@ -49,7 +49,8 @@ class PicklePersistence(BasePersistence):
             pickle.dump(persistence_object, persistence_file)
         self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: '
                           + self.persistence_state_id)
-        self.stats['commited_positions'] += 1
+        self.set_metadata('commited_positions',
+                          self.get_metadata('commited_positions') + 1)
 
     def generate_new_job(self):
         self.persistence_state_id = str(uuid.uuid4())
