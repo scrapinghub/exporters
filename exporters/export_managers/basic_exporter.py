@@ -1,6 +1,7 @@
 import yaml
+
+from exporters.bypasses.s3_to_s3_bypass import S3Bypass
 from exporters.export_managers.base_exporter import BaseExporter
-from exporters.export_managers.s3_to_s3_bypass import S3Bypass
 from exporters.persistence.persistence_config_dispatcher import PersistenceConfigDispatcher
 
 
