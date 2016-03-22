@@ -27,8 +27,8 @@ class JsonExportFormatter(BaseExportFormatter):
 
     file_extension = 'jl'
 
-    def __init__(self, options):
-        super(JsonExportFormatter, self).__init__(options)
+    def __init__(self, *args, **kwargs):
+        super(JsonExportFormatter, self).__init__(*args, **kwargs)
         self.pretty_print = self.read_option('pretty_print')
 
     def format(self, item):

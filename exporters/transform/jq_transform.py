@@ -15,8 +15,8 @@ class JQTransform(BaseTransform):
         'jq_filter': {'type': basestring}
     }
 
-    def __init__(self, options):
-        super(JQTransform, self).__init__(options)
+    def __init__(self, *args, **kwargs):
+        super(JQTransform, self).__init__(*args, **kwargs)
         self.jq_expression = self.read_option('jq_filter')
         self.logger.info('JQTransform has been initiated. Expression: {}'.format(self.jq_expression))
         if not self.is_valid_jq_expression(self.jq_expression):

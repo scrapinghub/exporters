@@ -12,7 +12,7 @@ class BasicExporter(BaseExporter):
     def __init__(self, configuration):
         super(BasicExporter, self).__init__(configuration)
         self.bypass_cases = [
-            S3Bypass(self.config),
+            S3Bypass(self.config, self.metadata),
         ]
 
     @staticmethod

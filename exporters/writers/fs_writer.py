@@ -23,7 +23,7 @@ class FSWriter(FilebaseBaseWriter):
         super(FSWriter, self).__init__(options, *args, **kwargs)
         self.logger.info(
             'FSWriter has been initiated. Writing to: {}'.format(self.filebase))
-        self.writer_metadata['files_written'] = []
+        self.set_metadata('files_written', [])
 
     def _create_path_if_not_exist(self, path):
         """
@@ -49,7 +49,7 @@ class FSWriter(FilebaseBaseWriter):
             'size': buffer_info['size'],
             'number_of_records': buffer_info['number_of_records']
         }
-        self.writer_metadata['files_written'].append(file_info)
+        self.get_metadata('files_written').append(file_info)
 
     def write(self, dump_path, group_key=None, file_name=None):
         if group_key is None:
@@ -63,7 +63,7 @@ class FSWriter(FilebaseBaseWriter):
         self._update_metadata(dump_path, destination)
 
     def _check_write_consistency(self):
-        for file_info in self.writer_metadata['files_written']:
+        for file_info in self.get_metadata('files_written'):
             if not os.path.isfile(file_info['filename']):
                 raise InconsistentWriteState(
                     '{} file is not present at destination'.format(file_info['filename']))

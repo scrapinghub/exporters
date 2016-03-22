@@ -19,13 +19,13 @@ class DropboxWriter(FilebaseBaseWriter):
         'access_token': {'type': basestring, 'env_fallback': 'EXPORTERS_DROPBOXWRITER_TOKEN'},
     }
 
-    def __init__(self, options, *args, **kw):
+    def __init__(self, *args, **kw):
         from dropbox import Dropbox
-        super(DropboxWriter, self).__init__(options, *args, **kw)
+        super(DropboxWriter, self).__init__(*args, **kw)
         access_token = self.read_option('access_token')
         self.logger.info('DroboxWriter has been initiated.'
                          'Writing to folder {}'.format(self.filebase))
-        self.writer_metadata['files_counter'] = Counter()
+        self.set_metadata('files_counter', Counter())
         self.client = Dropbox(access_token)
 
     def write(self, dump_path, group_key=None):
@@ -51,9 +51,9 @@ class DropboxWriter(FilebaseBaseWriter):
         filebase_path, file_name = self.create_filebase_name(group_key, file_name=file_name)
         with open(dump_path, 'r') as f:
             self._upload_file(f, '{}/{}'.format(filebase_path, file_name))
-        self.writer_metadata['files_counter'][filebase_path] += 1
+        self.get_metadata('files_counter')[filebase_path] += 1
 
     def get_file_suffix(self, path, prefix):
-        number_of_keys = self.writer_metadata['files_counter'].get(path, 0)
+        number_of_keys = self.get_metadata('files_counter').get(path, 0)
         suffix = '{}'.format(str(number_of_keys))
         return suffix

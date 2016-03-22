@@ -25,8 +25,8 @@ class RandomReader(BaseReader):
         'batch_size': {'type': int, 'default': 100}
     }
 
-    def __init__(self, options):
-        super(RandomReader, self).__init__(options)
+    def __init__(self, *args, **kwargs):
+        super(RandomReader, self).__init__(*args, **kwargs)
         self.last_key = self.last_position.get('last_key', 0) * self.read_option('batch_size')
         self.logger.info('RandomReader has been initiated')
         self.country_codes = [u'es', u'uk', u'us']
@@ -57,7 +57,7 @@ class RandomReader(BaseReader):
                 item['state'] = random.choice(self.states)
                 item['city'] = random.choice(self.cities)
                 item['value'] = random.randint(0, 10000)
-                self.stats['read_items'] += 1
+                self.increase_read()
                 yield item
         self.logger.debug('Done reading batch')
         self.last_position['last_key'] += 1

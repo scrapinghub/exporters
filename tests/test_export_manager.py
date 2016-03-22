@@ -1,6 +1,5 @@
 import os
 import pickle
-import tempfile
 import mock
 import unittest
 from exporters.export_managers.base_exporter import BaseExporter
@@ -8,7 +7,7 @@ from exporters.export_managers.basic_exporter import BasicExporter
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
-from exporters.utils import remove_if_exists, TmpFile
+from exporters.utils import TmpFile
 from exporters.writers.console_writer import ConsoleWriter
 from .utils import valid_config_with_updates
 
@@ -24,6 +23,9 @@ def fail(*a, **kw):
 class FakeBypass(BaseBypass):
     bypass_called = False
     fake_meet_conditions = True
+
+    def __init__(self, options, metadata=None):
+        super(FakeBypass, self).__init__(options, metadata)
 
     def meets_conditions(self):
         if not self.fake_meet_conditions:
@@ -54,7 +56,7 @@ class BaseExportManagerTest(unittest.TestCase):
     def test_simple_export(self):
         self.exporter = exporter = BaseExporter(self.build_config())
         exporter.export()
-        self.assertEquals(10, exporter.writer.writer_metadata['items_count'])
+        self.assertEquals(10, exporter.writer.get_metadata('items_count'))
 
     def test_export_with_csv_formatter(self):
         config = self.build_config()
@@ -68,7 +70,7 @@ class BaseExportManagerTest(unittest.TestCase):
         self.exporter = exporter = BaseExporter(config)
         exporter.export()
         expected_count = 10
-        self.assertEquals(expected_count, exporter.writer.writer_metadata['items_count'])
+        self.assertEquals(expected_count, exporter.writer.get_metadata('items_count'))
 
     def test_bypass_should_be_called(self):
         # given:
@@ -161,8 +163,8 @@ class BaseExportManagerTest(unittest.TestCase):
             exporter._init_export_job()
 
             # then:
-            self.assertEqual(30, exporter.writer.writer_metadata['items_count'])
-            self.assertFalse(exporter.stats_manager.stats['accurate_items_count'],
+            self.assertEqual(30, exporter.writer.get_metadata('items_count'))
+            self.assertFalse(exporter.metadata.accurate_items_count,
                              "Couldn't get accurate count from last_position")
 
 
@@ -207,8 +209,8 @@ class BasicExportManagerTest(unittest.TestCase):
             exporter.persistence.delete()
 
     def test_from_file_configuration(self):
+        test_manager = BasicExporter.from_file_configuration('./tests/data/basic_config.json')
         try:
-            test_manager = BasicExporter.from_file_configuration('./tests/data/basic_config.json')
             self.assertIsInstance(test_manager, BasicExporter)
             test_manager._clean_export_job()
         finally:

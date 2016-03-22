@@ -7,8 +7,8 @@ class BasicStatsManager(BaseStatsManager):
     reports, and only prints a debug log message with final stats
     """
 
-    def iteration_report(self, times, stats):
+    def iteration_report(self, times):
         pass
 
-    def final_report(self, stats):
-        self.logger.debug(repr(stats))
+    def final_report(self):
+        self.logger.debug(repr(self.metadata.to_dict()))

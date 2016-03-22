@@ -32,8 +32,8 @@ class BaseWriter(BasePipelineItem):
         'check_consistency': {'type': bool, 'default': False}
     }
 
-    def __init__(self, options, *args, **kwargs):
-        super(BaseWriter, self).__init__(options, *args, **kwargs)
+    def __init__(self, options, metadata, *args, **kwargs):
+        super(BaseWriter, self).__init__(options, metadata, *args, **kwargs)
         self.finished = False
         self.check_options()
         self.items_limit = self.read_option('items_limit')
@@ -43,9 +43,7 @@ class BaseWriter(BasePipelineItem):
         items_per_buffer_write = self.read_option('items_per_buffer_write')
         size_per_buffer_write = self.read_option('size_per_buffer_write')
         self.write_buffer = WriteBuffer(items_per_buffer_write, size_per_buffer_write, self.export_formatter)
-        self.writer_metadata = {
-            'items_count': 0
-        }
+        self.set_metadata('items_count', 0)
 
     def write(self, path, key):
         """
@@ -64,17 +62,15 @@ class BaseWriter(BasePipelineItem):
                 self._write(key)
             self.increment_written_items()
             self._check_items_limit()
-        self.stats.update(self.write_buffer.stats)
 
     def _check_items_limit(self):
         """
         Check if a writer has reached the items limit. If so, it raises an ItemsLimitReached
         exception
         """
-        if self.items_limit and self.items_limit == self.writer_metadata['items_count']:
-            self.stats.update(self.write_buffer.stats)
+        if self.items_limit and self.items_limit == self.get_metadata('items_count'):
             raise ItemsLimitReached('Finishing job after items_limit reached:'
-                                    ' {} items written.'.format(self.writer_metadata['items_count']))
+                                    ' {} items written.'.format(self.get_metadata('items_count')))
 
     def flush(self):
         """
@@ -104,7 +100,7 @@ class BaseWriter(BasePipelineItem):
         self.logger.warning('Not checking write consistency')
 
     def increment_written_items(self):
-        self.writer_metadata['items_count'] += 1
+        self.set_metadata('items_count', self.get_metadata('items_count') + 1)
 
     def _write(self, key):
         write_info = self.write_buffer.pack_buffer(key)
@@ -117,3 +113,15 @@ class BaseWriter(BasePipelineItem):
         """
         if self.read_option('check_consistency'):
             self._check_write_consistency()
+
+    def set_metadata(self, key, value, module='writer'):
+        super(BaseWriter, self).set_metadata(key, value, module)
+
+    def update_metadata(self, data, module='writer'):
+        super(BaseWriter, self).update_metadata(data, module)
+
+    def get_metadata(self, key, module='writer'):
+        return super(BaseWriter, self).get_metadata(key, module)
+
+    def get_all_metadata(self, module='writer'):
+        return super(BaseWriter, self).get_all_metadata(module)

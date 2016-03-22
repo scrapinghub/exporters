@@ -2,10 +2,10 @@ import datetime
 import traceback
 from collections import OrderedDict
 from exporters.writers.base_writer import ItemsLimitReached
-from exporters.export_managers import MODULES
 from exporters.export_managers.base_bypass import RequisitesNotMet
 from exporters.logger.base_logger import ExportManagerLogger
 from exporters.notifications.notifiers_list import NotifiersList
+from exporters.meta import ExportMeta
 from exporters.module_loader import ModuleLoader
 from exporters.exporter_config import ExporterConfig
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
@@ -16,29 +16,28 @@ class BaseExporter(object):
         self.config = ExporterConfig(configuration)
         self.logger = ExportManagerLogger(self.config.log_options)
         self.module_loader = ModuleLoader()
-        self.reader = self.module_loader.load_reader(self.config.reader_options)
+        metadata = ExportMeta(configuration)
+        self.metadata = metadata
+        self.reader = self.module_loader.load_reader(
+            self.config.reader_options, metadata)
         self.filter_before = self.module_loader.load_filter(
-            self.config.filter_before_options)
+            self.config.filter_before_options, metadata)
         self.filter_after = self.module_loader.load_filter(
-            self.config.filter_after_options)
-        self.transform = self.module_loader.load_transform(self.config.transform_options)
-        self.export_formatter = self.module_loader.load_formatter(self.config.formatter_options)
-        self.writer = self.module_loader.load_writer(self.config.writer_options, export_formatter=self.export_formatter)
+            self.config.filter_after_options, metadata)
+        self.transform = self.module_loader.load_transform(
+            self.config.transform_options, metadata)
+        self.export_formatter = self.module_loader.load_formatter(
+            self.config.formatter_options, metadata)
+        self.writer = self.module_loader.load_writer(
+            self.config.writer_options, metadata, export_formatter=self.export_formatter)
         self.persistence = self.module_loader.load_persistence(
-            self.config.persistence_options)
-        self.grouper = self.module_loader.load_grouper(self.config.grouper_options)
-        self.notifiers = NotifiersList(self.config.notifiers)
+            self.config.persistence_options, metadata)
+        self.grouper = self.module_loader.load_grouper(
+            self.config.grouper_options, metadata)
+        self.notifiers = NotifiersList(self.config.notifiers, metadata)
         self.logger.debug('{} has been initiated'.format(self.__class__.__name__))
-        job_info = {
-            'configuration': configuration,
-            'items_count': 0,
-            'accurate_items_count': True,
-            'start_time': datetime.datetime.now(),
-            'script_name': 'export'
-        }
         self.stats_manager = self.module_loader.load_stats_manager(
-            self.config.stats_options)
-        self.stats_manager.stats = job_info
+            self.config.stats_options, metadata)
         self.bypass_cases = []
 
     def _run_pipeline_iteration(self):
@@ -49,7 +48,6 @@ class BaseExporter(object):
         else:
             next_batch = self.reader.get_next_batch()
         times.update(read=datetime.datetime.now())
-        last_position = self.reader.get_last_position()
         next_batch = self.filter_before.filter_batch(next_batch)
         times.update(filtered=datetime.datetime.now())
         next_batch = self.transform.transform_batch(next_batch)
@@ -61,9 +59,7 @@ class BaseExporter(object):
         try:
             self.writer.write_batch(batch=next_batch)
             times.update(written=datetime.datetime.now())
-            self.stats_manager.stats['items_count'] = self.writer.writer_metadata['items_count']
-            last_position['accurate_items_count'] = self.stats_manager.stats['accurate_items_count']
-            last_position['writer_metadata'] = self.writer.writer_metadata
+            last_position = self._get_last_position()
             self.persistence.commit_position(last_position)
             times.update(persisted=datetime.datetime.now())
         except ItemsLimitReached:
@@ -74,14 +70,17 @@ class BaseExporter(object):
         else:
             self._iteration_stats_report(times)
 
+    def _get_last_position(self):
+        last_position = self.reader.get_last_position()
+        last_position['writer_metadata'] = self.writer.get_all_metadata()
+        return last_position
+
     def _init_export_job(self):
-        self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM],
-                                         info=self.stats_manager.stats)
+        self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM])
         last_position = self.persistence.get_last_position()
         if last_position is not None:
-            self.writer.writer_metadata = last_position.get('writer_metadata')
-            self.stats_manager.stats['items_count'] = last_position.get('writer_metadata').get('items_count', 0)
-            self.stats_manager.stats['accurate_items_count'] = last_position.get('accurate_items_count', False)
+            self.writer.update_metadata(last_position.get('writer_metadata'))
+            self.metadata.accurate_items_count = last_position.get('accurate_items_count', False)
         self.reader.set_last_position(last_position)
 
     def _clean_export_job(self):
@@ -89,26 +88,23 @@ class BaseExporter(object):
 
     def _finish_export_job(self):
         self.writer.finish_writing()
-        self.stats_manager.stats['items_count'] = self.writer.writer_metadata['items_count']
-        self.stats_manager.stats['end_time'] = datetime.datetime.now()
-        self.stats_manager.stats['elapsed_time'] = self.stats_manager.stats['end_time'] - \
-                                                   self.stats_manager.stats['start_time']
+        self.metadata.end_time = datetime.datetime.now()
 
     def bypass_exporter(self, bypass_script):
         self.logger.info('Executing bypass {}.'.format(bypass_script.__class__.__name__))
-        self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM],
-                                         info=self.stats_manager.stats)
+        self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM])
         if not self.config.exporter_options.get('resume'):
             self.persistence.close()
             self.persistence.delete()
         bypass_script.bypass()
         if not bypass_script.valid_total_count:
-            self.stats_manager.stats['accurate_items_count'] = False
+            self.metadata.accurate_items_count = False
             self.logger.warning('No accurate items count info can be retrieved')
-        self.stats_manager.stats['items_count'] += bypass_script.total_items
+        self.writer.set_metadata(
+            'items_count', self.writer.get_metadata('items_count') + bypass_script.total_items)
         self.logger.info(
             'Finished executing bypass {}.'.format(bypass_script.__class__.__name__))
-        self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM], info=self.stats_manager.stats)
+        self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM])
 
     def bypass(self):
         if self.config.prevent_bypass:
@@ -127,17 +123,12 @@ class BaseExporter(object):
     def _handle_export_exception(self, exception):
         self.logger.error(traceback.format_exc(exception))
         self.logger.error(str(exception))
-        self.notifiers.notify_failed_job(str(exception),
-                                         str(traceback.format_exc(exception)),
-                                         receivers=[TEAM], info=self.stats_manager.stats)
-
-    def _collect_stats(self):
-        return {mod: getattr(self, mod).stats for mod in MODULES}
+        self.notifiers.notify_failed_job(
+            str(exception), str(traceback.format_exc(exception)), receivers=[TEAM])
 
     def _iteration_stats_report(self, times):
         try:
-            stats = self._collect_stats()
-            self.stats_manager.iteration_report(times, stats)
+            self.stats_manager.iteration_report(times)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -145,8 +136,7 @@ class BaseExporter(object):
 
     def _final_stats_report(self):
         try:
-            stats = self._collect_stats()
-            self.stats_manager.final_report(stats)
+            self.stats_manager.final_report()
         except Exception as e:
             self.logger.error('Error making final stats report: {}'.format(str(e)))
 
@@ -167,11 +157,9 @@ class BaseExporter(object):
                 self._finish_export_job()
                 self._final_stats_report()
                 self.persistence.close()
-                self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM],
-                                                    info=self.stats_manager.stats)
+                self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM])
             except Exception as e:
                 self._handle_export_exception(e)
                 raise e
             finally:
                 self._clean_export_job()
-        self.logger.info(str(self.stats_manager.stats))

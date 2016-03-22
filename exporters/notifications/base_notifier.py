@@ -9,20 +9,32 @@ class BaseNotifier(BasePipelineItem):
     methods:
     """
 
-    def notify_start_dump(self, receivers=None, info=None):
+    def notify_start_dump(self, receivers=None):
         """
         Notifies the start of a dump to the receivers
         """
         raise NotImplementedError
 
-    def notify_complete_dump(self, receivers=None, info=None):
+    def notify_complete_dump(self, receivers=None):
         """
         Notifies the end of a dump to the receivers
         """
         raise NotImplementedError
 
-    def notify_failed_job(self, mgs, stack_trace, receivers=None, info=None):
+    def notify_failed_job(self, mgs, stack_trace, receivers=None):
         """
         Notifies the failure of a dump to the receivers
         """
         raise NotImplementedError
+
+    def set_metadata(self, key, value, module='notifier'):
+        super(BaseNotifier, self).set_metadata(key, value, module)
+
+    def update_metadata(self, data, module='notifier'):
+        super(BaseNotifier, self).update_metadata(data, module)
+
+    def get_metadata(self, key, module='notifier'):
+        return super(BaseNotifier, self).get_metadata(key, module)
+
+    def get_all_metadata(self, module='notifier'):
+        return super(BaseNotifier, self).get_all_metadata(module)

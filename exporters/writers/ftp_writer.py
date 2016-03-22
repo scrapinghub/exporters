@@ -45,7 +45,7 @@ class FTPWriter(FilebaseBaseWriter):
         self.ftp_port = self.read_option('port')
         self.ftp_user = self.read_option('ftp_user')
         self.ftp_password = self.read_option('ftp_password')
-        self.writer_metadata['files_written'] = []
+        self.set_metadata('files_written', [])
         self.logger.info(
             'FTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(
                 self.ftp_host, self.ftp_port,
@@ -88,7 +88,7 @@ class FTPWriter(FilebaseBaseWriter):
             'filename': destination,
             'size': buffer_info.get('size'),
         }
-        self.writer_metadata['files_written'].append(file_info)
+        self.get_metadata('files_written').append(file_info)
 
     @retry_long
     def write(self, dump_path, group_key=None, file_name=None):
@@ -112,7 +112,7 @@ class FTPWriter(FilebaseBaseWriter):
         self.ftp = self.build_ftp_instance()
         self.ftp.connect(self.ftp_host, self.ftp_port)
         self.ftp.login(self.ftp_user, self.ftp_password)
-        for file_info in self.writer_metadata['files_written']:
+        for file_info in self.get_metadata('files_written'):
             ftp_size = self.ftp.size(file_info['filename'])
             if ftp_size < 0:
                 raise InconsistentWriteState(

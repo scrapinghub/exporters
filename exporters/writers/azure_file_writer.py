@@ -28,9 +28,9 @@ class AzureFileWriter(FilebaseBaseWriter):
         'share': {'type': basestring}
     }
 
-    def __init__(self, options, *args, **kw):
+    def __init__(self, options, meta, *args, **kw):
         from azure.storage.file import FileService
-        super(AzureFileWriter, self).__init__(options, *args, **kw)
+        super(AzureFileWriter, self).__init__(options, meta, *args, **kw)
         account_name = self.read_option('account_name')
         account_key = self.read_option('account_key')
         self.azure_service = FileService(account_name, account_key)
@@ -38,8 +38,8 @@ class AzureFileWriter(FilebaseBaseWriter):
         self.azure_service.create_share(self.share)
         self.logger.info('AzureWriter has been initiated.'
                          'Writing to share {}'.format(self.share))
-        self.writer_metadata['files_counter'] = Counter()
-        self.writer_metadata['files_written'] = []
+        self.set_metadata('files_counter', Counter())
+        self.set_metadata('files_written', [])
 
     def write(self, dump_path, group_key=None):
         if group_key is None:
@@ -54,7 +54,7 @@ class AzureFileWriter(FilebaseBaseWriter):
             'size': buffer_info['size'],
             'number_of_records': buffer_info['number_of_records']
         }
-        self.writer_metadata['files_written'].append(file_info)
+        self.get_metadata('files_written').append(file_info)
 
     def _ensure_path(self, filebase):
         path = filebase.split('/')
@@ -78,17 +78,16 @@ class AzureFileWriter(FilebaseBaseWriter):
             dump_path,
             max_connections=5,
         )
-        self._update_metadata(dump_path, filebase_path, file_name)
-        self.writer_metadata['files_counter'][filebase_path] += 1
+        self.get_metadata('files_counter')[filebase_path] += 1
 
     def get_file_suffix(self, path, prefix):
-        number_of_keys = self.writer_metadata['files_counter'].get(path, 0)
+        number_of_keys = self.get_metadata('files_counter').get(path, 0)
         suffix = '{}'.format(str(number_of_keys))
         return suffix
 
     def _check_write_consistency(self):
         from azure.common import AzureMissingResourceHttpError
-        for file_info in self.writer_metadata['files_written']:
+        for file_info in self.get_metadata('files_written'):
             try:
                 file_properties = self.azure_service.get_file_properties(self.share, file_info['filebase_path'], file_info['file_name'])
                 file_size = file_properties.get('content-length')
