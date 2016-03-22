@@ -16,3 +16,15 @@ class BaseTransform(BasePipelineItem):
         Receives the batch, transforms it, and returns it.
         """
         raise NotImplementedError
+
+    def set_metadata(self, key, value, module='transform'):
+        super(BaseTransform, self).set_metadata(key, value, module)
+
+    def update_metadata(self, data, module='transform'):
+        super(BaseTransform, self).update_metadata(data, module)
+
+    def get_metadata(self, key, module='transform'):
+        return super(BaseTransform, self).get_metadata(key, module)
+
+    def get_all_metadata(self, module='transform'):
+        return super(BaseTransform, self).get_all_metadata(module)

@@ -19,3 +19,15 @@ class BaseGrouper(BasePipelineItem):
         Yields items with group_membership attribute filled
         """
         raise NotImplementedError
+
+    def set_metadata(self, key, value, module='grouper'):
+        super(BaseGrouper, self).set_metadata(key, value, module)
+
+    def update_metadata(self, data, module='grouper'):
+        super(BaseGrouper, self).update_metadata(data, module)
+
+    def get_metadata(self, key, module='grouper'):
+        return super(BaseGrouper, self).get_metadata(key, module)
+
+    def get_all_metadata(self, module='grouper'):
+        return super(BaseGrouper, self).get_all_metadata(module)
