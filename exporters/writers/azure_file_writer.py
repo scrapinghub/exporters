@@ -54,7 +54,10 @@ class AzureFileWriter(FilebaseBaseWriter):
             'size': buffer_info['size'],
             'number_of_records': buffer_info['number_of_records']
         }
-        self.get_metadata('files_written').append(file_info)
+        files_written = self.get_metadata('files_written')
+        files_written.append(file_info)
+        self.set_metadata('files_written', files_written)
+        self.get_metadata('files_counter')[filebase_path] += 1
 
     def _ensure_path(self, filebase):
         path = filebase.split('/')
@@ -78,7 +81,7 @@ class AzureFileWriter(FilebaseBaseWriter):
             dump_path,
             max_connections=5,
         )
-        self.get_metadata('files_counter')[filebase_path] += 1
+        self._update_metadata(dump_path, filebase_path, file_name)
 
     def get_file_suffix(self, path, prefix):
         number_of_keys = self.get_metadata('files_counter').get(path, 0)

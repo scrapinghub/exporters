@@ -161,7 +161,7 @@ class AzureFileWriterTest(unittest.TestCase):
             writer.close()
 
         with self.assertRaises(InconsistentWriteState):
-                writer.finish_writing()
+            writer.finish_writing()
 
     @mock.patch('azure.storage.file.FileService.get_file_properties')
     @mock.patch('azure.storage.file.FileService.put_file_from_path')
