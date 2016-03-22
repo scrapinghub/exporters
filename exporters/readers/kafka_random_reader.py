@@ -36,9 +36,9 @@ class KafkaRandomReader(BaseReader):
         'group': {'type': basestring}
     }
 
-    def __init__(self, options):
+    def __init__(self, *args, **kwargs):
         import kafka
-        super(KafkaRandomReader, self).__init__(options)
+        super(KafkaRandomReader, self).__init__(*args, **kwargs)
         brokers = self.read_option('brokers')
         group = self.read_option('group')
         topic = self.read_option('topic')
@@ -103,7 +103,7 @@ class KafkaRandomReader(BaseReader):
         if messages:
             for message in messages:
                 item = BaseRecord(message)
-                self.stats['read_items'] += 1
+                self.increase_read()
                 yield item
 
         self.logger.debug('Done reading batch')

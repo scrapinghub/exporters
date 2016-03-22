@@ -12,8 +12,8 @@ class FileKeyGrouper(BaseGrouper):
         'keys': {'type': list}
     }
 
-    def __init__(self, options):
-        super(FileKeyGrouper, self).__init__(options)
+    def __init__(self, *args, **kwargs):
+        super(FileKeyGrouper, self).__init__(*args, **kwargs)
         self.keys = self.read_option('keys', [])
 
     def _get_nested_value(self, item, key):

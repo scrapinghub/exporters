@@ -10,6 +10,10 @@ class ConfigurationError(ValueError):
     "Configuration provided isn't valid."
 
 
+class InvalidDateRangeError(ValueError):
+    pass
+
+
 class ConfigCheckError(ConfigurationError):
     def __init__(self, message="Configuration provided isn't valid.", errors={}):
         super(ConfigCheckError, self).__init__(message)

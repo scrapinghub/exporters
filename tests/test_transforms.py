@@ -5,6 +5,8 @@ from exporters.transform.no_transform import NoTransform
 from exporters.transform.pythonexp_transform import PythonexpTransform
 from exporters.module_loader import ModuleLoader
 
+from .utils import meta
+
 
 class BaseTransformTest(unittest.TestCase):
     def setUp(self):
@@ -51,7 +53,7 @@ class NoTransformTest(unittest.TestCase):
         self.assertEquals(self.transform.transform_batch([]), [])
 
     def test_transform_batch(self):
-        reader = ModuleLoader().load_reader(self.options['reader'])
+        reader = ModuleLoader().load_reader(self.options['reader'], meta())
         # FIXME inline batch, without a reader
         batch = reader.get_next_batch()
         self.assertEquals(self.transform.transform_batch(batch), batch)

@@ -34,11 +34,14 @@ class FilebaseBaseWriter(BaseWriter):
     def __init__(self, options, *args, **kwargs):
         super(FilebaseBaseWriter, self).__init__(options, *args, **kwargs)
         self.filebase = self.get_filebase_with_date()
-        self.writer_metadata['filebase'] = self.filebase
+        self.set_metadata('effective_filebase', self.filebase)
         self.written_files = {}
         self.md5_file_name = None
         self.last_written_file = None
         self.generate_md5 = self.read_option('generate_md5')
+
+        filebase_path, prefix = os.path.split(self.filebase)
+        self.write_buffer.items_group_files.base_filename = prefix
 
     def write(self, path, key, file_name=False):
         """

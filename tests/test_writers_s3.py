@@ -1,4 +1,3 @@
-import re
 import unittest
 
 import boto
@@ -9,6 +8,8 @@ from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
 from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.s3_writer import S3Writer
+
+from .utils import meta
 
 
 def create_fake_key():
@@ -52,8 +53,9 @@ class S3WriterTest(unittest.TestCase):
         options = self.get_writer_config()
 
         # when:
+        writer = S3Writer(
+            options, meta(), export_formatter=JsonExportFormatter(dict()))
         try:
-            writer = S3Writer(options, export_formatter=JsonExportFormatter(dict()))
             writer.write_batch(items_to_write)
             writer.flush()
         finally:
@@ -75,7 +77,8 @@ class S3WriterTest(unittest.TestCase):
         options['options']['bucket'] = 'another_fake_bucket'
 
         # when:
-        writer = S3Writer(options, export_formatter=JsonExportFormatter(dict()))
+        writer = S3Writer(
+            options, meta(), export_formatter=JsonExportFormatter(dict()))
 
         # then:
         self.assertEquals('eu-west-1', writer.aws_region)
@@ -94,7 +97,8 @@ class S3WriterTest(unittest.TestCase):
 
         # when:
         try:
-            writer = S3Writer(options, export_formatter=JsonExportFormatter(dict()))
+            writer = S3Writer(
+                options, meta(), export_formatter=JsonExportFormatter(dict()))
             writer.write_batch(items_to_write)
             writer.flush()
         finally:
@@ -121,7 +125,8 @@ class S3WriterTest(unittest.TestCase):
 
         mock_get_bucket.side_effect = reject_validated_get_bucket
 
-        S3Writer(self.get_writer_config(), export_formatter=JsonExportFormatter(dict()))
+        S3Writer(self.get_writer_config(), meta(),
+                 export_formatter=JsonExportFormatter(dict()))
 
     def test_connect_to_bucket_location(self):
         # given:
@@ -132,7 +137,8 @@ class S3WriterTest(unittest.TestCase):
         options['options']['bucket'] = 'another_fake_bucket'
 
         # when:
-        writer = S3Writer(options, export_formatter=JsonExportFormatter(dict()))
+        writer = S3Writer(options, meta(),
+                          export_formatter=JsonExportFormatter(dict()))
 
         # then:
         self.assertEquals('eu-west-1', writer.aws_region)

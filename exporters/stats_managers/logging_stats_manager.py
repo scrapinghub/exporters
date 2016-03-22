@@ -9,7 +9,7 @@ class LoggingStatsManager(BasicStatsManager):
     pipeline iteration.
     """
 
-    def iteration_report(self, times, stats):
+    def iteration_report(self, times):
         prev = times['started']
         times.pop('started')
         data = OrderedDict()

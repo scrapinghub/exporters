@@ -1,4 +1,5 @@
 from copy import deepcopy
+from exporters.meta import ExportMeta
 
 
 VALID_EXPORTER_CONFIG = {
@@ -35,3 +36,7 @@ def valid_config_with_updates(updates):
     config = deepcopy(VALID_EXPORTER_CONFIG)
     config.update(updates)
     return config
+
+
+def meta():
+    return ExportMeta(None)

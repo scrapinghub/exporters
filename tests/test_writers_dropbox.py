@@ -4,6 +4,8 @@ from exporters.records.base_record import BaseRecord
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.writers.dropbox_writer import DropboxWriter
 
+from .utils import meta
+
 
 class DropboxWriterTest(unittest.TestCase):
 
@@ -34,7 +36,8 @@ class DropboxWriterTest(unittest.TestCase):
         options = self.get_writer_config()
 
         # when:
-        writer = DropboxWriter(options, export_formatter=JsonExportFormatter(dict()))
+        writer = DropboxWriter(
+            options, meta(), export_formatter=JsonExportFormatter(dict()))
         try:
             writer.write_batch(items_to_write)
             writer.flush()
@@ -42,4 +45,4 @@ class DropboxWriterTest(unittest.TestCase):
             writer.close()
 
         # then:
-        self.assertEqual(writer.writer_metadata['items_count'], 2)
+        self.assertEqual(writer.get_metadata('items_count'), 2)

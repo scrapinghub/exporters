@@ -46,7 +46,7 @@ class ReduceWriter(BaseWriter):
         for item in batch:
             self._accumulator = self.reduce_function(item, self._accumulator)
             self.increment_written_items()
-        self.logger.info('Reduced {} items, accumulator is: {}'.format(self.writer_metadata['items_count'],
+        self.logger.info('Reduced {} items, accumulator is: {}'.format(self.get_metadata('items_count'),
                                                                        self._accumulator))
 
     @property

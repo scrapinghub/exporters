@@ -12,6 +12,8 @@ import moto
 from exporters.readers.s3_reader import S3Reader, S3BucketKeysFetcher, get_bucket
 from exporters.exceptions import ConfigurationError
 
+from .utils import meta
+
 NO_KEYS = ['test_list/test_key_1', 'test_list/test_key_2', 'test_list/test_key_3',
            'test_list/test_key_4', 'test_list/test_key_5', 'test_list/test_key_6',
            'test_list/test_key_7', 'test_list/test_key_8', 'test_list/test_key_9']
@@ -139,23 +141,70 @@ class S3ReaderTest(unittest.TestCase):
             }
         }
 
+        self.options_dateparser_range_3_days = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'valid_keys_bucket',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
+                'prefix': 'test_prefix/%Y-%m-%d',
+                'prefix_format_using_date': ['2 days ago', 'today']
+            }
+        }
+
+        self.options_date_prefix_list = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'valid_keys_bucket',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
+                'prefix': ['a_prefix/daily/%Y-%m-%d',
+                           'b_prefix/daily/%Y-%m-%d',
+                           'c_prefix/daily/%Y-%m-%d']
+            }
+        }
+
+        self.options_prefix_list_using_date = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'valid_keys_bucket',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
+                'prefix': ['a_prefix/daily/%Y-%m-%d',
+                           'b_prefix/daily/%Y-%m-%d',
+                           'c_prefix/daily/%Y-%m-%d'],
+                'prefix_format_using_date': 'yesterday'
+            }
+        }
+
+        self.options_with_invalid_date_range = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'valid_keys_bucket',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
+                'prefix': 'test_prefix/%Y-%m-%d',
+                'prefix_format_using_date': ['today', '2 days ago']
+            }
+        }
+
     def tearDown(self):
         self.mock_s3.stop()
 
     def test_list_no_keys(self):
-        reader = S3Reader(self.options_no_keys)
+        reader = S3Reader(self.options_no_keys, meta())
         self.assertEqual([], reader.keys)
         shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_list_keys(self):
-        reader = S3Reader(self.options_valid)
+        reader = S3Reader(self.options_valid, meta())
         expected = ['test_list/dump_p1_US_a', 'test_list/dump_p1_US_b',
                     'test_list/dump_p2_US_a', 'test_list/dump_p_US_a']
         self.assertEqual(expected, reader.keys)
         shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_no_pattern_keys(self):
-        reader = S3Reader(self.options_no_pattern)
+        reader = S3Reader(self.options_no_pattern, meta())
         expected = ['test_list/dump_p1_ES_a', 'test_list/dump_p1_FR_a',
                     'test_list/dump_p1_UK_a', 'test_list/dump_p1_US_a',
                     'test_list/dump_p1_US_b', 'test_list/dump_p2_US_a',
@@ -164,7 +213,7 @@ class S3ReaderTest(unittest.TestCase):
         shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_no_prefix_list_keys(self):
-        reader = S3Reader(self.options_no_prefix)
+        reader = S3Reader(self.options_no_prefix, meta())
         expected = ['test_list/dump_p1_US_a', 'test_list/dump_p1_US_b',
                     'test_list/dump_p2_US_a', 'test_list/dump_p_US_a']
         self.assertEqual(expected, reader.keys)
@@ -172,27 +221,61 @@ class S3ReaderTest(unittest.TestCase):
 
     def test_prefix_and_prefix_pointer_list_keys(self):
         self.assertRaises(ConfigurationError, S3Reader,
-                          self.options_prefix_and_prefix_pointer)
+                          self.options_prefix_and_prefix_pointer, meta())
 
     def test_get_batch(self):
-        reader = S3Reader(self.options_no_pattern)
+        reader = S3Reader(self.options_no_pattern, meta())
         reader.set_last_position(None)
         batch = list(reader.get_next_batch())
         expected_batch = [{u'name': u'test_list/dump_p1_ES_a'}]
         self.assertEqual(batch, expected_batch)
 
     def test_date_prefix(self):
-        reader = S3Reader(self.options_date_prefix)
+        reader = S3Reader(self.options_date_prefix, meta())
         expected = [datetime.datetime.now().strftime('test_prefix/%Y-%m-%d')]
         self.assertEqual(expected, reader.keys_fetcher.prefixes)
         shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_date_prefix_yesterday(self):
-        reader = S3Reader(self.options_dateparser)
+        reader = S3Reader(self.options_dateparser, meta())
         yesterday = dateparser.parse('yesterday').strftime('%Y-%m-%d')
         expected = ['test_prefix/{yesterday}'.format(yesterday=yesterday)]
         self.assertEqual(expected, reader.keys_fetcher.prefixes)
         shutil.rmtree(reader.tmp_folder, ignore_errors=True)
+
+    def test_date_range_prefixes(self):
+        reader = S3Reader(self.options_dateparser_range_3_days, meta())
+        expected = ['test_prefix/{}'.format(dateparser.parse('2 days ago').strftime('%Y-%m-%d')),
+                    'test_prefix/{}'.format(dateparser.parse('yesterday').strftime('%Y-%m-%d')),
+                    'test_prefix/{}'.format(dateparser.parse('today').strftime('%Y-%m-%d'))]
+        self.assertEqual(expected, reader.keys_fetcher.prefixes)
+        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
+
+    def test_date_prefix_list(self):
+        reader = S3Reader(self.options_date_prefix_list, meta())
+        today = datetime.datetime.now().strftime('%Y-%m-%d')
+        expected = ['a_prefix/daily/{}'.format(today),
+                    'b_prefix/daily/{}'.format(today),
+                    'c_prefix/daily/{}'.format(today)]
+        self.assertEqual(expected, reader.keys_fetcher.prefixes)
+        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
+
+    def test_prefix_list_using_date(self):
+        reader = S3Reader(self.options_prefix_list_using_date, meta())
+        yesterday = dateparser.parse('yesterday').strftime('%Y-%m-%d')
+        expected = ['a_prefix/daily/{}'.format(yesterday),
+                    'b_prefix/daily/{}'.format(yesterday),
+                    'c_prefix/daily/{}'.format(yesterday)]
+        self.assertEqual(expected, reader.keys_fetcher.prefixes)
+        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
+
+    def test_invalid_date_range(self):
+        self.assertRaisesRegexp(ConfigurationError,
+                                'The end date should be greater or equal to '
+                                'the start date for the '
+                                'prefix_format_using_date option',
+                                S3Reader,
+                                self.options_with_invalid_date_range, meta())
 
 
 class TestS3BucketKeysFetcher(unittest.TestCase):

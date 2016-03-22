@@ -9,8 +9,8 @@ class PythonMapTransform(BaseTransform):
         "map": {'type': basestring},
     }
 
-    def __init__(self, options, *args, **kwargs):
-        super(PythonMapTransform, self).__init__(options, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(PythonMapTransform, self).__init__(*args, **kwargs)
         self.map_expression = self.read_option('map')
         self.interpreter = Interpreter()
         self.interpreter.check(self.map_expression)

@@ -1,6 +1,8 @@
 import glob
 import os
 import shutil
+
+from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 
@@ -21,6 +23,7 @@ class FSWriter(FilebaseBaseWriter):
         super(FSWriter, self).__init__(options, *args, **kwargs)
         self.logger.info(
             'FSWriter has been initiated. Writing to: {}'.format(self.filebase))
+        self.set_metadata('files_written', [])
 
     def _create_path_if_not_exist(self, path):
         """
@@ -39,6 +42,15 @@ class FSWriter(FilebaseBaseWriter):
             number_of_files = 0
         return '{0:04}'.format(number_of_files)
 
+    def _update_metadata(self, dump_path, destination):
+        buffer_info = self.write_buffer.metadata[dump_path]
+        file_info = {
+            'filename': destination,
+            'size': buffer_info['size'],
+            'number_of_records': buffer_info['number_of_records']
+        }
+        self.get_metadata('files_written').append(file_info)
+
     def write(self, dump_path, group_key=None, file_name=None):
         if group_key is None:
             group_key = []
@@ -48,3 +60,16 @@ class FSWriter(FilebaseBaseWriter):
         shutil.copy(dump_path, destination)
         self.last_written_file = destination
         self.logger.info('Saved {}'.format(dump_path))
+        self._update_metadata(dump_path, destination)
+
+    def _check_write_consistency(self):
+        for file_info in self.get_metadata('files_written'):
+            if not os.path.isfile(file_info['filename']):
+                raise InconsistentWriteState(
+                    '{} file is not present at destination'.format(file_info['filename']))
+            if os.path.getsize(file_info['filename']) != file_info['size']:
+                raise InconsistentWriteState('Wrong size for file {}. Extected: {} - got {}'
+                                             .format(file_info['filename'], file_info['size'],
+                                                     os.path.getsize(file_info['filename'])))
+        self.logger.info('Consistency check passed')
+

@@ -20,8 +20,8 @@ class XMLExportFormatter(BaseExportFormatter):
         'xml_header': {'type': basestring, 'default': DEFAULT_XML_HEADER}
     }
 
-    def __init__(self, options):
-        super(XMLExportFormatter, self).__init__(options)
+    def __init__(self, *args, **kwargs):
+        super(XMLExportFormatter, self).__init__(*args, **kwargs)
         self.attr_type = self.read_option('attr_type')
         self.item_name = self.read_option('item_name')
         self.root_name = self.read_option('root_name')

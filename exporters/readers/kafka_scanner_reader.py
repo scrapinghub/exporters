@@ -35,9 +35,9 @@ class KafkaScannerReader(BaseReader):
         'partitions': {'type': list, 'default': None}
     }
 
-    def __init__(self, options):
+    def __init__(self, *args, **kwargs):
         from kafka_scanner import KafkaScanner, KafkaScannerSimple
-        super(KafkaScannerReader, self).__init__(options)
+        super(KafkaScannerReader, self).__init__(*args, **kwargs)
         brokers = self.read_option('brokers')
         group = self.read_option('group')
         topic = self.read_option('topic')
@@ -49,7 +49,7 @@ class KafkaScannerReader(BaseReader):
 
         scanner = scanner_class(brokers, topic, group, partitions=partitions,
                                 batchsize=self.read_option('batch_size'),
-                                keep_offsets=options.get('RESUME'))
+                                keep_offsets=self.read_option('RESUME'))
 
         self.batches = scanner.scan_topic_batches()
 
@@ -73,7 +73,7 @@ class KafkaScannerReader(BaseReader):
             batch = self.get_from_kafka()
             for message in batch:
                 item = BaseRecord(message)
-                self.stats['read_items'] += 1
+                self.increase_read()
                 yield item
         except:
             self.finished = True

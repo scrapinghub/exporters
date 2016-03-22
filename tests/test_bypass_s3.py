@@ -6,9 +6,13 @@ import datetime
 import moto
 import mock
 from boto.exception import S3ResponseError
+from boto.utils import compute_md5
+
 from exporters.export_managers.s3_to_s3_bypass import S3Bypass, RequisitesNotMet
 from exporters.exporter_config import ExporterConfig
-from exporters.utils import remove_if_exists
+from exporters.utils import remove_if_exists, TmpFile
+
+from .utils import meta
 
 
 def create_fake_key():
@@ -55,7 +59,7 @@ def create_s3_bypass_simple_config(**kwargs):
 
 class S3BypassConditionsTest(unittest.TestCase):
     def test_should_meet_conditions(self):
-        bypass = S3Bypass(create_s3_bypass_simple_config())
+        bypass = S3Bypass(create_s3_bypass_simple_config(), meta())
         # shouldn't raise any exception
         bypass.meets_conditions()
 
@@ -67,7 +71,7 @@ class S3BypassConditionsTest(unittest.TestCase):
         })
 
         # when:
-        bypass = S3Bypass(config)
+        bypass = S3Bypass(config, meta())
 
         # then:
         with self.assertRaises(RequisitesNotMet):
@@ -80,7 +84,7 @@ class S3BypassConditionsTest(unittest.TestCase):
         })
 
         # when:
-        bypass = S3Bypass(config)
+        bypass = S3Bypass(config, meta())
 
         # then:
         with self.assertRaises(RequisitesNotMet):
@@ -92,7 +96,7 @@ class S3BypassConditionsTest(unittest.TestCase):
         config.writer_options['options']['items_limit'] = 10
 
         # when:
-        bypass = S3Bypass(config)
+        bypass = S3Bypass(config, meta())
 
         # then:
         with self.assertRaises(RequisitesNotMet):
@@ -113,7 +117,12 @@ class S3BypassTest(unittest.TestCase):
             {'name': 'Claudia', 'birthday': '21/12/1985'},
         ]
         key = self.source_bucket.new_key('some_prefix/test_key')
-        key.metadata = {'total': 2}
+        with TmpFile() as tmp_filename:
+            with open(tmp_filename, 'w') as f:
+                f.write(json.dumps(self.data))
+            with open(tmp_filename) as f:
+                self.key_md5 = compute_md5(f)
+        key.metadata = {'total': 2, 'md5': self.key_md5}
         key.set_contents_from_string(json.dumps(self.data))
         key.close()
         self.tmp_bypass_resume_file = 'tests/data/tmp_s3_bypass_resume_persistence.pickle'
@@ -129,7 +138,7 @@ class S3BypassTest(unittest.TestCase):
         options = create_s3_bypass_simple_config()
 
         # when:
-        bypass = S3Bypass(options)
+        bypass = S3Bypass(options, meta())
         bypass.bypass()
 
         # then:
@@ -141,13 +150,13 @@ class S3BypassTest(unittest.TestCase):
 
     @mock.patch('boto.s3.bucket.Bucket.copy_key', autospec=True)
     def test_copy_mode_bypass(self, copy_key_mock):
-        copy_key_mock.side_effect = S3ResponseError(None, None)
+        copy_key_mock.side_effect = S3ResponseError(None, meta())
         # given
         self.s3_conn.create_bucket('dest_bucket')
         options = create_s3_bypass_simple_config()
 
         # when:
-        bypass = S3Bypass(options)
+        bypass = S3Bypass(options, meta())
         bypass.bypass()
 
         # then:
@@ -159,13 +168,13 @@ class S3BypassTest(unittest.TestCase):
 
     @mock.patch('boto.s3.connection.S3Connection.get_canonical_user_id', autospec=True)
     def test_copy_mode_bypass_when_cant_get_user_id(self, get_user_id_mock):
-        get_user_id_mock.side_effect = S3ResponseError('Fake 403 Forbidden Error', None)
+        get_user_id_mock.side_effect = S3ResponseError('Fake 403 Forbidden Error', meta())
         # given
         bucket = self.s3_conn.create_bucket('dest_bucket')
         options = create_s3_bypass_simple_config()
 
         # when:
-        bypass = S3Bypass(options)
+        bypass = S3Bypass(options, meta())
         bypass.bypass()
 
         # then:
@@ -205,7 +214,7 @@ class S3BypassTest(unittest.TestCase):
         expected_final_keys = ['some_prefix/key1', 'some_prefix/key2', 'some_prefix/key3']
 
         # when:
-        bypass = S3Bypass(options)
+        bypass = S3Bypass(options, meta())
         bypass.bypass()
 
         # then:
@@ -233,7 +242,7 @@ class S3BypassTest(unittest.TestCase):
         options = create_s3_bypass_simple_config(writer=writer)
 
         # when:
-        bypass = S3Bypass(options)
+        bypass = S3Bypass(options, meta())
 
         # then:
         filebase = bypass._get_filebase(options.writer_options['options'])
@@ -256,7 +265,7 @@ class S3BypassTest(unittest.TestCase):
         self.s3_conn.create_bucket('pointer_fake_bucket')
 
         # when:
-        bypass = S3Bypass(options)
+        bypass = S3Bypass(options, meta())
         bypass.bypass()
         bypass.close()
 
@@ -302,7 +311,7 @@ class S3BypassTest(unittest.TestCase):
         expected_keys = ['some_prefix/key1', 'some_prefix/key2', 'some_prefix/key3']
 
         #when
-        bypass = S3Bypass(options)
+        bypass = S3Bypass(options, meta())
         bypass.bypass()
 
         # then
@@ -313,3 +322,20 @@ class S3BypassTest(unittest.TestCase):
             keys_list.append(key.name)
         self.assertEqual(expected_keys, keys_list)
 
+    def test_get_md5(self):
+         # given
+        self.s3_conn.create_bucket('dest_bucket')
+        options = create_s3_bypass_simple_config()
+        options.writer_options['options']['save_metadata'] = True
+
+        # when:
+        bypass = S3Bypass(options, meta())
+        bucket = self.s3_conn.get_bucket('source_bucket')
+        key = bucket.get_key('some_prefix/test_key')
+
+        with TmpFile() as tmp_filename:
+            key.get_contents_to_filename(tmp_filename)
+            metadata_md5 = bypass._get_md5(key, tmp_filename)
+
+        # then:
+        self.assertEqual(metadata_md5, self.key_md5)

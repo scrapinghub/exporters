@@ -7,17 +7,18 @@ import unittest
 import csv
 
 import mock
-from mock import patch
 
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
 from exporters.records.base_record import BaseRecord
 from exporters.write_buffer import WriteBuffer
 from exporters.writers import FSWriter
-from exporters.writers.base_writer import BaseWriter
+from exporters.writers.base_writer import BaseWriter, InconsistentWriteState
 from exporters.writers.console_writer import ConsoleWriter
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
+
+from .utils import meta
 
 
 class BaseWriterTest(unittest.TestCase):
@@ -26,7 +27,8 @@ class BaseWriterTest(unittest.TestCase):
             'log_level': 'DEBUG',
             'logger_name': 'export-pipeline'
         }
-        self.writer = BaseWriter(self.options, export_formatter=JsonExportFormatter(dict()))
+        self.writer = BaseWriter(
+            self.options, meta(), export_formatter=JsonExportFormatter(dict()))
 
     def tearDown(self):
         self.writer.close()
@@ -41,11 +43,11 @@ class FakeWriter(BaseWriter):
     to test BaseWriter extensibility
     """
 
-    def __init__(self, *args, **kwargs):
-        super(FakeWriter, self).__init__(*args, **kwargs)
+    def __init__(self, options, *args, **kwargs):
+        super(FakeWriter, self).__init__(options, meta(), *args, **kwargs)
         self.custom_output = {}
         self.fake_files_already_written = []
-        self.writer_metadata['written_files'] = self.fake_files_already_written
+        self.set_metadata('written_files', self.fake_files_already_written)
 
     def write(self, path, key):
         with gzip.open(path) as f:
@@ -58,11 +60,11 @@ class FakeFilebaseWriter(FilebaseBaseWriter):
     to test BaseWriter extensibility
     """
 
-    def __init__(self, *args, **kwargs):
-        super(FakeFilebaseWriter, self).__init__(*args, **kwargs)
+    def __init__(self, options, *args, **kwargs):
+        super(FakeFilebaseWriter, self).__init__(options, meta(), *args, **kwargs)
         self.custom_output = {}
         self.fake_files_already_written = []
-        self.writer_metadata['written_files'] = self.fake_files_already_written
+        self.set_metadata('written_files', self.fake_files_already_written)
 
     def write(self, path, key, file_name=None):
         if file_name:
@@ -85,7 +87,7 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_custom_writer(self):
         # given:
-        writer = FakeWriter({}, export_formatter=JsonExportFormatter(dict()))
+        writer = FakeWriter({}, {}, export_formatter=JsonExportFormatter(dict()))
 
         # when:
         try:
@@ -102,7 +104,7 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_write_buffer_removes_files(self):
         # given:
-        writer = FakeWriter({}, export_formatter=JsonExportFormatter(dict()))
+        writer = FakeWriter({}, {}, export_formatter=JsonExportFormatter(dict()))
         writer.write_buffer.items_per_buffer_write = 1
 
         # when:
@@ -124,7 +126,7 @@ class CustomWriterTest(unittest.TestCase):
             'options': {'show_titles': False, 'fields': ['key1', 'key2']}
         }
         formatter = CSVExportFormatter(options)
-        writer = FakeWriter({}, export_formatter=formatter)
+        writer = FakeWriter({}, {}, export_formatter=formatter)
 
         # when:
         try:
@@ -155,7 +157,7 @@ class CustomWriterTest(unittest.TestCase):
             }
         }
         formatter = XMLExportFormatter(options)
-        writer = FakeWriter({}, export_formatter=formatter)
+        writer = FakeWriter({}, {}, export_formatter=formatter)
 
         # when:
         try:
@@ -201,7 +203,7 @@ class CustomWriterTest(unittest.TestCase):
                        'root_name': 'RootItem'}
                    }
         formatter = XMLExportFormatter(options)
-        writer = FakeWriter({}, export_formatter=formatter)
+        writer = FakeWriter({}, {}, export_formatter=formatter)
 
         # when:
         try:
@@ -233,23 +235,13 @@ class CustomWriterTest(unittest.TestCase):
         self.assertEquals(expected, out)
         self.assertEquals('xml', writer.write_buffer.items_group_files.file_extension)
 
-    def test_writer_stats(self):
-        # given:
-        writer = FakeWriter({}, export_formatter=JsonExportFormatter(dict()))
-        # when:
-        try:
-            writer.write_batch(self.batch)
-            writer.flush()
-        finally:
-            writer.close()
-        self.assertEqual([writer.writer_metadata['items_count'], writer.stats['written_items']], [3, 3])
-
     def test_md5sum_file(self):
         # given:
         formatter = JsonExportFormatter({})
         with tempfile.NamedTemporaryFile() as tmp:
-            writer = FakeFilebaseWriter({'options': {'filebase': tmp.name, 'generate_md5': True}}
-                                        , export_formatter=formatter)
+            writer = FakeFilebaseWriter(
+                {'options': {'filebase': tmp.name, 'generate_md5': True}},  {},
+                export_formatter=formatter)
             # when:
             try:
                 writer.write_batch(self.batch)
@@ -262,7 +254,8 @@ class CustomWriterTest(unittest.TestCase):
     @mock.patch('exporters.writers.base_writer.BaseWriter._check_write_consistency')
     def test_consistency_check(self, consistency_mock):
         # given:
-        writer = FakeWriter({'options': {'check_consistency': True}}, export_formatter=JsonExportFormatter(dict()))
+        writer = FakeWriter({'options': {'check_consistency': True}},
+                            export_formatter=JsonExportFormatter(dict()))
 
         # when:
         try:
@@ -299,7 +292,9 @@ class ConsoleWriterTest(unittest.TestCase):
             'log_level': 'DEBUG',
             'logger_name': 'export-pipeline'
         }
-        self.writer = ConsoleWriter(self.options, export_formatter=JsonExportFormatter(dict()))
+        self.writer = ConsoleWriter(
+            self.options, meta(),
+            export_formatter=JsonExportFormatter(dict()))
 
     def tearDown(self):
         self.writer.close()
@@ -313,7 +308,7 @@ class ConsoleWriterTest(unittest.TestCase):
             items_to_write.append(item)
 
         self.writer.write_batch(items_to_write)
-        self.assertEqual(self.writer.writer_metadata['items_count'], 10)
+        self.assertEqual(self.writer.get_metadata('items_count'), 10)
 
 
 class FilebaseBaseWriterTest(unittest.TestCase):
@@ -323,7 +318,8 @@ class FilebaseBaseWriterTest(unittest.TestCase):
                 'filebase': '/tmp/',
             }
         }
-        writer = FilebaseBaseWriter(writer_config, export_formatter=JsonExportFormatter(dict()))
+        writer = FilebaseBaseWriter(writer_config, meta(),
+                                    export_formatter=JsonExportFormatter(dict()))
         self.assertIsInstance(writer.get_file_suffix('', ''), basestring)
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')
@@ -331,15 +327,55 @@ class FilebaseBaseWriterTest(unittest.TestCase):
 
 
 class FSWriterTest(unittest.TestCase):
-    def test_get_file_number(self):
-        writer_config = {
+
+    def get_batch(self):
+        data = [
+            {'name': 'Roberto', 'birthday': '12/05/1987'},
+            {'name': 'Claudia', 'birthday': '21/12/1985'},
+        ]
+        return [BaseRecord(d) for d in data]
+
+    def get_writer_config(self):
+        return {
+            'name': 'exporters.writers.fs_writer.FSWriter',
             'options': {
                 'filebase': '/tmp/exporter_test',
             }
         }
-        writer = FSWriter(writer_config, export_formatter=JsonExportFormatter(dict()))
+
+    def test_get_file_number(self):
+        writer_config = self.get_writer_config()
+        writer = FSWriter(writer_config, meta(),
+                          export_formatter=JsonExportFormatter(dict()))
         self.assertEqual(writer.get_file_suffix('test', 'test'), '0000')
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')
         self.assertEqual(file_name, 'exporter_test0000.gz')
         writer.close()
+
+    def test_check_writer_consistency(self):
+
+        # given
+        options = self.get_writer_config()
+        options['options']['check_consistency'] = True
+
+        # when:
+        writer = FSWriter(options, meta(),
+                          export_formatter=JsonExportFormatter(dict()))
+        try:
+            writer.write_batch(self.get_batch())
+            writer.flush()
+
+        finally:
+            writer.close()
+
+        # Consistency check passes
+        writer.finish_writing()
+
+        with open('/tmp/exporter_test0000.gz', 'w'):
+            with self.assertRaisesRegexp(InconsistentWriteState, 'Wrong size for file'):
+                writer.finish_writing()
+
+        os.remove('/tmp/exporter_test0000.gz')
+        with self.assertRaisesRegexp(InconsistentWriteState, 'file is not present at destination'):
+            writer.finish_writing()

@@ -43,10 +43,10 @@ def key_permissions(user_id, key):
 
 class S3BypassState(object):
 
-    def __init__(self, config):
+    def __init__(self, config, metadata):
         self.config = config
         module_loader = ModuleLoader()
-        self.state = module_loader.load_persistence(config.persistence_options)
+        self.state = module_loader.load_persistence(config.persistence_options, metadata)
         self.state_position = self.state.get_last_position()
         aws_key = self.config.reader_options['options']['aws_access_key_id']
         aws_secret = self.config.reader_options['options']['aws_secret_access_key']
@@ -105,8 +105,8 @@ class S3Bypass(BaseBypass):
     and directly upload it to the write bucket.
     """
 
-    def __init__(self, config):
-        super(S3Bypass, self).__init__(config)
+    def __init__(self, config, metadata):
+        super(S3Bypass, self).__init__(config, metadata)
         self.copy_mode = True
         self.tmp_folder = None
         self.bypass_state = None
@@ -157,7 +157,7 @@ class S3Bypass(BaseBypass):
         dest_bucket = get_bucket(**writer_options)
         dest_filebase = self._get_filebase(writer_options)
         self._fill_config_with_env()
-        self.bypass_state = S3BypassState(self.config)
+        self.bypass_state = S3BypassState(self.config, self.metadata)
         self.total_items = self.bypass_state.stats['total_count']
         source_bucket = get_bucket(**reader_options)
         pending_keys = deepcopy(self.bypass_state.pending_keys())
@@ -213,7 +213,15 @@ class S3Bypass(BaseBypass):
 
     def _get_md5(self, key, tmp_filename):
         from boto.utils import compute_md5
-        md5 = key.get_metadata('md5')
+        import re
+        md5 = None
+        md5_from_metadata = key.get_metadata('md5')
+        if md5_from_metadata:
+            match = re.match("\(\'(.*)\', u\'(.*)\', (.*)\)", str(md5_from_metadata))
+            if match:
+                groups = match.groups()
+                md5 = (groups[0], unicode(groups[1]), int(groups[2]))
+        # If it's not in metadata, let's compute it
         if md5 is None:
             with open(tmp_filename) as f:
                 md5 = compute_md5(f)

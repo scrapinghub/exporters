@@ -53,8 +53,8 @@ class HubstorageReader(BaseReader):
         'endts': {'type': (basestring, int), 'default': None},
     }
 
-    def __init__(self, options):
-        super(HubstorageReader, self).__init__(options)
+    def __init__(self, *args, **kwargs):
+        super(HubstorageReader, self).__init__(*args, **kwargs)
         self.batch_size = self.read_option('batch_size')
         self.collection_scanner = self._create_collection_scanner()
         self.logger.info('HubstorageReader has been initiated. Project id: {}. Collection name: {}'.format(
@@ -85,7 +85,7 @@ class HubstorageReader(BaseReader):
             batch = self.collection_scanner.get_new_batch()
             for item in batch:
                 base_item = BaseRecord(item)
-                self.stats['read_items'] += 1
+                self.increase_read()
                 self.last_position['last_key'] = item['_key']
                 yield base_item
             self.logger.debug('Done reading batch')

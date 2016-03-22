@@ -25,8 +25,8 @@ class PythonexpFilter(BaseFilter):
         'imports': {'type': dict, 'default': {}},
     }
 
-    def __init__(self, options):
-        super(PythonexpFilter, self).__init__(options)
+    def __init__(self, *args, **kwargs):
+        super(PythonexpFilter, self).__init__(*args, **kwargs)
         self.logger.warning('PythonexpFilter can import insecure code'
                             ' -- only use it in contained environments')
         self.expression = self.read_option('python_expression')

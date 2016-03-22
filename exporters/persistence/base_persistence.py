@@ -8,9 +8,9 @@ class BasePersistence(BasePipelineItem):
     Base module for persistence modules
     """
 
-    def __init__(self, options):
-        super(BasePersistence, self).__init__(options)
-        self.stats['commited_positions'] = 0
+    def __init__(self, options, metadata):
+        super(BasePersistence, self).__init__(options, metadata)
+        self.set_metadata('commited_positions', 0)
         self.configuration = json.loads(options.get('configuration', '{}'))
         self.logger = PersistenceLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
         self._load_persistence_options()
@@ -69,3 +69,15 @@ class BasePersistence(BasePipelineItem):
 
     def delete(self):
         pass
+
+    def set_metadata(self, key, value, module='persistence'):
+        super(BasePersistence, self).set_metadata(key, value, module)
+
+    def update_metadata(self, data, module='persistence'):
+        super(BasePersistence, self).update_metadata(data, module)
+
+    def get_metadata(self, key, module='persistence'):
+        return super(BasePersistence, self).get_metadata(key, module)
+
+    def get_all_metadata(self, module='persistence'):
+        return super(BasePersistence, self).get_all_metadata(module)
