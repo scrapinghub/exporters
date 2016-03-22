@@ -5,6 +5,7 @@ import shutil
 
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
+from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.readers.s3_reader import get_bucket
 from exporters.utils import TmpFile
@@ -67,8 +68,7 @@ class AzureFileS3Bypass(BaseBypass):
     def bypass(self):
         from copy import deepcopy
         reader_options = self.config.reader_options['options']
-        writer_options = self.config.writer_options['options']
-        self.writer = AzureFileWriter(writer_options, {})
+        self.writer = AzureFileWriter(self.config.writer_options, self.metadata, export_formatter=JsonExportFormatter({}))
         self._fill_config_with_env()
         self.bypass_state = S3BypassState(self.config, self.metadata)
         self.total_items = self.bypass_state.stats['total_count']
