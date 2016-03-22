@@ -5,6 +5,7 @@ import moto
 import mock
 
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
+from exporters.meta import ExportMeta
 from exporters.records.base_record import BaseRecord
 from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.s3_writer import S3Writer
@@ -163,7 +164,7 @@ class S3WriterTest(unittest.TestCase):
 
         # when:
         try:
-            writer = S3Writer(options, export_formatter=JsonExportFormatter(dict()))
+            writer = S3Writer(options, ExportMeta(options), export_formatter=JsonExportFormatter(dict()))
             writer.write_batch(items_to_write)
             writer.flush()
         finally:
@@ -183,7 +184,7 @@ class S3WriterTest(unittest.TestCase):
 
         # when:
         try:
-            writer = S3Writer(options, export_formatter=JsonExportFormatter(dict()))
+            writer = S3Writer(options, ExportMeta(options), export_formatter=JsonExportFormatter(dict()))
             writer.write_batch(items_to_write)
             writer.flush()
         finally:
@@ -204,7 +205,7 @@ class S3WriterTest(unittest.TestCase):
 
         # when:
         try:
-            writer = S3Writer(options, export_formatter=JsonExportFormatter(dict()))
+            writer = S3Writer(options, ExportMeta(options), export_formatter=JsonExportFormatter(dict()))
             writer.write_batch(items_to_write)
             writer.flush()
         finally:

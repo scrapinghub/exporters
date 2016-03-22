@@ -66,6 +66,7 @@ class S3Writer(FilebaseBaseWriter):
         self.logger.info('S3Writer has been initiated.'
                          'Writing to s3://{}/{}'.format(self.bucket.name, self.filebase))
         self.set_metadata('files_counter', Counter())
+        self.set_metadata('keys_written', [])
 
     def _get_bucket_location(self, access_key, secret_key, bucket):
         import boto
@@ -148,7 +149,7 @@ class S3Writer(FilebaseBaseWriter):
 
     def _check_write_consistency(self):
         from boto.exception import S3ResponseError
-        for key_info in self.writer_metadata['keys_written']:
+        for key_info in self.get_metadata('keys_written'):
             try:
                 key = self.bucket.get_key(key_info['key_name'])
                 if not key:
