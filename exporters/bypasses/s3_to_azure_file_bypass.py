@@ -84,7 +84,7 @@ class AzureFileS3Bypass(BaseBypass):
                 self._copy_key(source_bucket, key)
                 self.bypass_state.commit_copied_key(key)
                 logging.log(logging.INFO,
-                            'Copied key {}'.format(key.name))
+                            'Copied key {}'.format(key))
         finally:
             if self.tmp_folder:
                 shutil.rmtree(self.tmp_folder)
