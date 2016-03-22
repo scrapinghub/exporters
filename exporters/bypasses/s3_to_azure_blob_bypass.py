@@ -2,6 +2,9 @@ import datetime
 import logging
 import os
 import shutil
+
+from azure.storage.blob import BlobService
+
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
@@ -67,10 +70,12 @@ class AzureBlobS3Bypass(BaseBypass):
     def bypass(self):
         from copy import deepcopy
         reader_options = self.config.reader_options['options']
-        self.writer = AzureBlobWriter(self.config.writer_options, self.metadata, export_formatter=JsonExportFormatter({}))
+        writer_options = self.config.writer_options['options']
         self._fill_config_with_env()
         self.bypass_state = S3BypassState(self.config, self.metadata)
         self.total_items = self.bypass_state.stats['total_count']
+        self.container = writer_options['container']
+        self.azure_service = BlobService(writer_options['account_name'], writer_options['account_key'])
         source_bucket = get_bucket(**reader_options)
         pending_keys = deepcopy(self.bypass_state.pending_keys())
         try:
@@ -95,10 +100,13 @@ class AzureBlobS3Bypass(BaseBypass):
         key = source_bucket.get_key(key_name)
         with TmpFile() as tmp_filename:
             key.get_contents_to_filename(tmp_filename)
-            self.writer.write(tmp_filename)
+            blob_name = key.name.split('/')[-1]
+            self.azure_service.put_block_blob_from_path(
+                self.container,
+                blob_name,
+                tmp_filename,
+                max_connections=5,
+            )
 
     def close(self):
         self.bypass_state.delete()
-        self.writer.flush()
-        self.writer.finish_writing()
-        self.writer.close()
