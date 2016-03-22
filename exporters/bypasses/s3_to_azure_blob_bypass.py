@@ -84,7 +84,7 @@ class AzureBlobS3Bypass(BaseBypass):
             if self.tmp_folder:
                 shutil.rmtree(self.tmp_folder)
 
-    # @retry_long
+    @retry_long
     def _copy_key(self, source_bucket, key_name):
         akey = source_bucket.get_key(key_name)
         if akey.get_metadata('total'):
