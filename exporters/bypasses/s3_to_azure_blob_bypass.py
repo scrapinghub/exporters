@@ -83,7 +83,7 @@ class AzureBlobS3Bypass(BaseBypass):
                 self._copy_key(source_bucket, key)
                 self.bypass_state.commit_copied_key(key)
                 logging.log(logging.INFO,
-                            'Copied key {}'.format(key.name))
+                            'Copied key {}'.format(key))
 
         finally:
             if self.tmp_folder:
@@ -100,7 +100,7 @@ class AzureBlobS3Bypass(BaseBypass):
         key = source_bucket.get_key(key_name)
         with TmpFile() as tmp_filename:
             key.get_contents_to_filename(tmp_filename)
-            blob_name = key.name.split('/')[-1]
+            blob_name = key_name.split('/')[-1]
             self.azure_service.put_block_blob_from_path(
                 self.container,
                 blob_name,

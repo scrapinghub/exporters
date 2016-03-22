@@ -3,6 +3,8 @@ import logging
 import os
 import shutil
 
+from azure.storage.file import FileService
+
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
@@ -68,7 +70,10 @@ class AzureFileS3Bypass(BaseBypass):
     def bypass(self):
         from copy import deepcopy
         reader_options = self.config.reader_options['options']
-        self.writer = AzureFileWriter(self.config.writer_options, self.metadata, export_formatter=JsonExportFormatter({}))
+        writer_options = self.config.writer_options['options']
+        self.share = writer_options['share']
+        self.filebase = self.create_filebase_name(writer_options['filebase'])
+        self.azure_service = FileService(writer_options['account_name'], writer_options['account_key'])
         self._fill_config_with_env()
         self.bypass_state = S3BypassState(self.config, self.metadata)
         self.total_items = self.bypass_state.stats['total_count']
@@ -80,10 +85,25 @@ class AzureFileS3Bypass(BaseBypass):
                 self.bypass_state.commit_copied_key(key)
                 logging.log(logging.INFO,
                             'Copied key {}'.format(key.name))
-
         finally:
             if self.tmp_folder:
                 shutil.rmtree(self.tmp_folder)
+
+    def create_filebase_name(self, filebase):
+        formatted_filebase = datetime.datetime.now().strftime(filebase)
+        filebase_path, prefix = os.path.split(formatted_filebase)
+        return filebase_path
+
+    def _ensure_path(self, filebase):
+        path = filebase.split('/')
+        folders_added = []
+        for sub_path in path:
+            folders_added.append(sub_path)
+            parent = '/'.join(folders_added)
+            self.azure_service.create_directory(
+                    self.share,
+                    parent,
+            )
 
     @retry_long
     def _copy_key(self, source_bucket, key_name):
@@ -95,11 +115,16 @@ class AzureFileS3Bypass(BaseBypass):
             self.valid_total_count = False
         key = source_bucket.get_key(key_name)
         with TmpFile() as tmp_filename:
+            file_name = key_name.split('/')[-1]
             key.get_contents_to_filename(tmp_filename)
-            self.writer.write(tmp_filename)
+            self._ensure_path(self.filebase)
+            self.azure_service.put_file_from_path(
+                self.share,
+                self.filebase,
+                file_name,
+                tmp_filename,
+                max_connections=5,
+            )
 
     def close(self):
         self.bypass_state.delete()
-        self.writer.flush()
-        self.writer.finish_writing()
-        self.writer.close()
