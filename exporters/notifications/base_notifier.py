@@ -26,3 +26,15 @@ class BaseNotifier(BasePipelineItem):
         Notifies the failure of a dump to the receivers
         """
         raise NotImplementedError
+
+    def set_metadata(self, key, value, module='notifier'):
+        super(BaseNotifier, self).set_metadata(key, value, module)
+
+    def update_metadata(self, data, module='notifier'):
+        super(BaseNotifier, self).update_metadata(data, module)
+
+    def get_metadata(self, key, module='notifier'):
+        return super(BaseNotifier, self).get_metadata(key, module)
+
+    def get_all_metadata(self, module='notifier'):
+        return super(BaseNotifier, self).get_all_metadata(module)

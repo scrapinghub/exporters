@@ -19,3 +19,15 @@ class BaseStatsManager(BasePipelineItem):
 
     def final_report(self):
         raise NotImplementedError
+
+    def set_metadata(self, key, value, module='stats'):
+        super(BaseStatsManager, self).set_metadata(key, value, module)
+
+    def update_metadata(self, data, module='stats'):
+        super(BaseStatsManager, self).update_metadata(data, module)
+
+    def get_metadata(self, key, module='stats'):
+        return super(BaseStatsManager, self).get_metadata(key, module)
+
+    def get_all_metadata(self, module='stats'):
+        return super(BaseStatsManager, self).get_all_metadata(module)
