@@ -2,7 +2,7 @@ import os
 import pickle
 import mock
 import unittest
-from mock import DEFAULT
+from mock import DEFAULT, MagicMock
 from exporters.export_managers.base_exporter import BaseExporter
 from exporters.export_managers.basic_exporter import BasicExporter
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
@@ -266,6 +266,75 @@ class BaseExportManagerTest(unittest.TestCase):
             self.assertEquals(args[0], ErrorWriter.msg)
             self.assertEquals(len(m['notify_complete_dump'].mock_calls), 0,
                               msg='There should be no complete dump notification')
+
+    def test_valid_bypass(self):
+        notifier_class_path = 'exporters.notifications.base_notifier.BaseNotifier'
+        options = {
+            'reader': {
+                # error reader and writer should give
+                # failed test if they get used
+                'name': 'tests.utils.ErrorReader'
+            },
+            'writer': {
+                'name': 'tests.utils.ErrorWriter'
+            },
+            'exporter_options': {
+                'notifications': [
+                    {
+                        'name': notifier_class_path
+                    }
+                ]
+            },
+            'persistence': {
+                'name': 'tests.utils.NullPersistence',
+            }
+        }
+        with mock.patch.multiple(notifier_class_path,
+                                 notify_start_dump=DEFAULT,
+                                 notify_failed_job=DEFAULT,
+                                 notify_complete_dump=DEFAULT) as m:
+            exporter = BasicExporter(options)
+            bypass = MagicMock()
+            exporter.bypass_cases.append(bypass)
+            exporter.export()
+            self.assertGreaterEqual(
+                len, 2,
+                msg=('bypass class should have at least `meets_conditions` '
+                     'and `bypass` methods called'))
+            self.assertEquals(len(m['notify_start_dump'].mock_calls), 1,
+                              msg='There was 1 start dump notification')
+            self.assertEquals(len(m['notify_failed_job'].mock_calls), 0,
+                              msg='There should be no failed job notification')
+            self.assertEquals(len(m['notify_complete_dump'].mock_calls), 1,
+                              msg='There was 1 complete dump notification')
+
+    def test_skipped_bypass(self):
+        class SkippedBypass(BaseBypass):
+            def meets_conditions(self):
+                raise RequisitesNotMet()
+
+        options = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {
+                    'number_of_items': 10,
+                    'batch_size': 3
+                }
+            },
+            'writer': {
+                'name': 'tests.utils.NullWriter'
+            },
+            'persistence': {
+                'name': 'tests.utils.NullPersistence',
+            }
+        }
+        exporter = BasicExporter(options)
+        exporter.bypass_cases.append(SkippedBypass(None, None))
+        exporter.export()
+        self.assertEqual(exporter.reader.get_metadata('read_items'), 10,
+                         msg='There should be 10 read items')
+        self.assertEqual(exporter.writer.get_metadata('items_count'), 10,
+                         msg='There should be 10 written items')
 
 
 class BasicExportManagerTest(unittest.TestCase):

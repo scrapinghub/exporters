@@ -1,6 +1,7 @@
 from copy import deepcopy
 from exporters.meta import ExportMeta
 from exporters.persistence.base_persistence import BasePersistence
+from exporters.readers.base_reader import BaseReader
 from exporters.writers.base_writer import BaseWriter
 
 
@@ -55,6 +56,13 @@ class ErrorWriter(BaseWriter):
     msg = "ErrorWriter error"
 
     def write(self, *args, **kwargs):
+        raise RuntimeError(self.msg)
+
+
+class ErrorReader(BaseReader):
+    msg = "ErrorReader error"
+
+    def get_next_batch(self, *args, **kwargs):
         raise RuntimeError(self.msg)
 
 
