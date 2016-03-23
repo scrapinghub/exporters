@@ -336,6 +336,30 @@ class BaseExportManagerTest(unittest.TestCase):
         self.assertEqual(exporter.writer.get_metadata('items_count'), 10,
                          msg='There should be 10 written items')
 
+    def test_writer_items_limit(self):
+        options = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {
+                    'number_of_items': 17,
+                    'batch_size': 3
+                }
+            },
+            'writer': {
+                'name': 'tests.utils.NullWriter',
+                'options': {
+                    'items_limit': 5
+                }
+            },
+            'persistence': {
+                'name': 'tests.utils.NullPersistence',
+            }
+        }
+        exporter = BasicExporter(options)
+        exporter.export()
+        self.assertEqual(exporter.writer.get_metadata('items_count'), 5,
+                         msg='There should be only 5 written items')
+
 
 class BasicExportManagerTest(unittest.TestCase):
 
