@@ -31,8 +31,8 @@ class FilebaseBaseWriter(BaseWriter):
         'generate_md5': {'type': bool, 'default': False}
     }
 
-    def __init__(self, options, *args, **kwargs):
-        super(FilebaseBaseWriter, self).__init__(options, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(FilebaseBaseWriter, self).__init__(*args, **kwargs)
         self.filebase = self.get_filebase_with_date()
         self.set_metadata('effective_filebase', self.filebase)
         self.written_files = {}
