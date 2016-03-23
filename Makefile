@@ -32,8 +32,7 @@ compile:
 	python -m compileall ${SRC_DIRS}
 
 test: compile
-	nosetests -v tests --with-coverage --cover-package=exporters,bin --cover-branches
-
+	py.test -v tests --cov=exporters --cov=bin --cov-report term-missing
 
 clean-pyc:
 	find . -name \*.pyc -delete
