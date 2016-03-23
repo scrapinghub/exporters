@@ -2,6 +2,7 @@ import os
 import pickle
 import mock
 import unittest
+from mock import DEFAULT
 from exporters.export_managers.base_exporter import BaseExporter
 from exporters.export_managers.basic_exporter import BasicExporter
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
@@ -9,7 +10,7 @@ from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
 from exporters.utils import TmpFile
 from exporters.writers.console_writer import ConsoleWriter
-from .utils import valid_config_with_updates
+from .utils import valid_config_with_updates, ErrorWriter
 
 
 def get_filename(path, persistence_id):
@@ -166,6 +167,105 @@ class BaseExportManagerTest(unittest.TestCase):
             self.assertEqual(30, exporter.writer.get_metadata('items_count'))
             self.assertFalse(exporter.metadata.accurate_items_count,
                              "Couldn't get accurate count from last_position")
+
+    def test_read_goes_into_written(self):
+        options = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {
+                    'number_of_items': 123,
+                    'batch_size': 7
+                }
+            },
+            'writer': {
+                'name': 'tests.utils.NullWriter'
+            },
+            'persistence': {
+                'name': 'tests.utils.NullPersistence',
+            }
+        }
+        exporter = BasicExporter(options)
+        exporter.export()
+        self.assertEquals(exporter.reader.get_metadata('read_items'),
+                          exporter.writer.get_metadata('items_count'),
+                          msg="Export should write the same number items as it has read")
+
+    def test_notifier_integration_ok(self):
+        notifier_class_path = 'exporters.notifications.base_notifier.BaseNotifier'
+        options = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {
+                    'number_of_items': 10,
+                    'batch_size': 3
+                }
+            },
+            'writer': {
+                'name': 'tests.utils.NullWriter'
+            },
+            'exporter_options': {
+                'notifications': [
+                    {
+                        'name': notifier_class_path
+                    }
+                ]
+            },
+            'persistence': {
+                'name': 'tests.utils.NullPersistence',
+            }
+        }
+        with mock.patch.multiple(notifier_class_path,
+                                 notify_start_dump=DEFAULT,
+                                 notify_failed_job=DEFAULT,
+                                 notify_complete_dump=DEFAULT) as m:
+            exporter = BasicExporter(options)
+            exporter.export()
+            self.assertEquals(len(m['notify_start_dump'].mock_calls), 1,
+                              msg='There was 1 start dump notification')
+            self.assertEquals(len(m['notify_failed_job'].mock_calls), 0,
+                              msg='There should be no failed job notification')
+            self.assertEquals(len(m['notify_complete_dump'].mock_calls), 1,
+                              msg='There was 1 complete dump notification')
+
+    def test_notifier_integration_export_fail(self):
+        notifier_class_path = 'exporters.notifications.base_notifier.BaseNotifier'
+        options = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {
+                    'number_of_items': 10,
+                    'batch_size': 3
+                }
+            },
+            'writer': {
+                'name': 'tests.utils.ErrorWriter'
+            },
+            'exporter_options': {
+                'notifications': [
+                    {
+                        'name': notifier_class_path
+                    }
+                ]
+            },
+            'persistence': {
+                'name': 'tests.utils.NullPersistence',
+            }
+        }
+        with mock.patch.multiple(notifier_class_path,
+                                 notify_start_dump=DEFAULT,
+                                 notify_failed_job=DEFAULT,
+                                 notify_complete_dump=DEFAULT) as m:
+            exporter = BasicExporter(options)
+            with self.assertRaisesRegexp(RuntimeError, ErrorWriter.msg):
+                exporter.export()
+            self.assertEquals(len(m['notify_start_dump'].mock_calls), 1,
+                              msg='There was 1 start dump notification')
+            self.assertEquals(len(m['notify_failed_job'].mock_calls), 1,
+                              msg='There was 1 failed job notification')
+            _, args, _ = m['notify_failed_job'].mock_calls[0]
+            self.assertEquals(args[0], ErrorWriter.msg)
+            self.assertEquals(len(m['notify_complete_dump'].mock_calls), 0,
+                              msg='There should be no complete dump notification')
 
 
 class BasicExportManagerTest(unittest.TestCase):

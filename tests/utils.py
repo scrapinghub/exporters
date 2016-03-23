@@ -1,5 +1,7 @@
 from copy import deepcopy
 from exporters.meta import ExportMeta
+from exporters.persistence.base_persistence import BasePersistence
+from exporters.writers.base_writer import BaseWriter
 
 
 VALID_EXPORTER_CONFIG = {
@@ -40,3 +42,33 @@ def valid_config_with_updates(updates):
 
 def meta():
     return ExportMeta(None)
+
+
+class NullWriter(BaseWriter):
+    def write(self, *args, **kwargs):
+        """
+        Everything goes into /dev/null though items should be counted
+        """
+
+
+class ErrorWriter(BaseWriter):
+    msg = "ErrorWriter error"
+
+    def write(self, *args, **kwargs):
+        raise RuntimeError(self.msg)
+
+
+class NullPersistence(BasePersistence):
+    def generate_new_job(self):
+        return None
+
+    def commit_position(self, *args, **kwargs):
+        """
+        Just ignoring position
+        """
+
+    def get_last_position(self):
+        return None
+
+    def close(self):
+        pass
