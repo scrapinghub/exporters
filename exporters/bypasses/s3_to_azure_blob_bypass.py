@@ -3,8 +3,6 @@ import logging
 import os
 import shutil
 
-from azure.storage.blob import BlobService
-
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
@@ -68,6 +66,7 @@ class AzureBlobS3Bypass(BaseBypass):
             self.config.reader_options['options']['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3READER_AWS_SECRET')
 
     def bypass(self):
+        from azure.storage.blob import BlobService
         from copy import deepcopy
         reader_options = self.config.reader_options['options']
         writer_options = self.config.writer_options['options']
