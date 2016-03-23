@@ -3,15 +3,11 @@ import logging
 import os
 import shutil
 
-from azure.storage.file import FileService
-
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
-from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.readers.s3_reader import get_bucket
 from exporters.utils import TmpFile
-from exporters.writers.azure_file_writer import AzureFileWriter
 
 
 class AzureFileS3Bypass(BaseBypass):
@@ -39,7 +35,8 @@ class AzureFileS3Bypass(BaseBypass):
         raise RequisitesNotMet
 
     def meets_conditions(self):
-        if not self.config.reader_options['name'].endswith('S3Reader') or not self.config.writer_options['name'].endswith('AzureFileWriter'):
+        if (not self.config.reader_options['name'].endswith('S3Reader')
+                or not self.config.writer_options['name'].endswith('AzureFileWriter')):
             raise RequisitesNotMet
         if not self.config.filter_before_options['name'].endswith('NoFilter'):
             self._raise_conditions_not_met('custom filter configured')
@@ -68,6 +65,7 @@ class AzureFileS3Bypass(BaseBypass):
             self.config.reader_options['options']['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3READER_AWS_SECRET')
 
     def bypass(self):
+        from azure.storage.file import FileService
         from copy import deepcopy
         reader_options = self.config.reader_options['options']
         writer_options = self.config.writer_options['options']
