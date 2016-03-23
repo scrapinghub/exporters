@@ -27,9 +27,9 @@ class AzureFileWriter(FilebaseBaseWriter):
         'share': {'type': basestring}
     }
 
-    def __init__(self, options, *args, **kw):
+    def __init__(self, *args, **kw):
         from azure.storage.file import FileService
-        super(AzureFileWriter, self).__init__(options, *args, **kw)
+        super(AzureFileWriter, self).__init__(*args, **kw)
         account_name = self.read_option('account_name')
         account_key = self.read_option('account_key')
         self.azure_service = FileService(account_name, account_key)
@@ -37,7 +37,7 @@ class AzureFileWriter(FilebaseBaseWriter):
         self.azure_service.create_share(self.share)
         self.logger.info('AzureWriter has been initiated.'
                          'Writing to share {}'.format(self.share))
-        self.writer_metadata['files_counter'] = Counter()
+        self.set_metadata('files_counter', Counter())
 
     def write(self, dump_path, group_key=None):
         if group_key is None:
@@ -66,9 +66,9 @@ class AzureFileWriter(FilebaseBaseWriter):
             dump_path,
             max_connections=5,
         )
-        self.writer_metadata['files_counter'][filebase_path] += 1
+        self.get_metadata('files_counter')[filebase_path] += 1
 
     def get_file_suffix(self, path, prefix):
-        number_of_keys = self.writer_metadata['files_counter'].get(path, 0)
+        number_of_keys = self.get_metadata('files_counter').get(path, 0)
         suffix = '{}'.format(str(number_of_keys))
         return suffix

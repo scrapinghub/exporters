@@ -5,6 +5,8 @@ from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
 from exporters.writers.gstorage_writer import GStorageWriter
 
+from .utils import meta
+
 
 class GStorageWriterTest(unittest.TestCase):
     def test_write(self):
@@ -28,7 +30,8 @@ class GStorageWriterTest(unittest.TestCase):
         }
 
         with mock.patch('gcloud.storage.Client.from_service_account_json') as mocked:
-            writer = GStorageWriter(options, export_formatter=JsonExportFormatter(dict()))
+            writer = GStorageWriter(
+                options, meta(), export_formatter=JsonExportFormatter(dict()))
             writer.write_batch(items_to_write)
             writer.flush()
             writer.close()

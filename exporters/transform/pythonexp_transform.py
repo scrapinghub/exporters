@@ -14,8 +14,8 @@ class PythonexpTransform(BaseTransform):
         'python_expressions': {'type': list}
     }
 
-    def __init__(self, options):
-        super(PythonexpTransform, self).__init__(options)
+    def __init__(self, *args, **kwargs):
+        super(PythonexpTransform, self).__init__(*args, **kwargs)
         self.python_expressions = self.read_option('python_expressions')
         if not self.is_valid_python_expression(self.python_expressions):
             raise ValueError('Python expression is not valid')

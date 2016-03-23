@@ -4,6 +4,8 @@ import unittest
 from exporters.filters.pythonexp_filter import PythonexpFilter
 from exporters.records.base_record import BaseRecord
 
+from .utils import meta
+
 
 class PythonexpFilterFilterTest(unittest.TestCase):
 
@@ -13,7 +15,8 @@ class PythonexpFilterFilterTest(unittest.TestCase):
             BaseRecord({'name': 'item2', 'country_code': 'uk'}),
         ]
         python_filter = PythonexpFilter(
-            {'options': {'python_expression': 'item[\'country_code\']==\'uk\''}}
+            {'options': {'python_expression': 'item[\'country_code\']==\'uk\''}},
+            meta()
         )
         result = list(python_filter.filter_batch(batch))
         self.assertEqual(1, len(result))
@@ -27,7 +30,8 @@ class PythonexpFilterFilterTest(unittest.TestCase):
             BaseRecord({'name': 'item3', 'updated': str(now)}),
         ]
         expr = "item.get('updated') and item['updated'] >= str(datetime.datetime.now() - datetime.timedelta(days=1))[:10]"
-        python_filter = PythonexpFilter({'options': {'python_expression': expr}})
+        python_filter = PythonexpFilter(
+            {'options': {'python_expression': expr}}, meta())
         result = list(python_filter.filter_batch(batch))
         self.assertEqual(['item2', 'item3'],
                          [d['name'] for d in result])
@@ -40,12 +44,13 @@ class PythonexpFilterFilterTest(unittest.TestCase):
             BaseRecord({'name': 'New York Giants', 'country_code': 'us'}),
         ]
         expr = "fuzz.ratio('New York', item.get('name')) > 50"
-        python_filter = PythonexpFilter({
-            'options': {
+        python_filter = PythonexpFilter(
+            {'options': {
                 'python_expression': expr,
-                'imports': {'fuzz': 'fuzzywuzzy.fuzz'},
-            }
-        })
+                'imports': {'fuzz': 'fuzzywuzzy.fuzz'}
+            }},
+            meta()
+        )
         result = list(python_filter.filter_batch(batch))
         self.assertEqual(['New York Jets', 'New York Giants'],
                          [d['name'] for d in result])

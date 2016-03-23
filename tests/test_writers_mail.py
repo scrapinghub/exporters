@@ -3,13 +3,14 @@ import unittest
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.writers import MailWriter
 
+from .utils import meta
 
 
 class FakeMailWriter(MailWriter):
 
-    def __init__(self, options, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         self.send_called_number = 0
-        super(FakeMailWriter, self).__init__(options, *args, **kwargs)
+        super(FakeMailWriter, self).__init__(*args, **kwargs)
 
     def _write_mail(self, dump_path, group_key):
         self.send_called_number += 1
@@ -30,10 +31,11 @@ class MailWriterTest(unittest.TestCase):
         self.batch_path = 'some_path'
 
     def test_write_no_items(self):
-        writer = FakeMailWriter(self.writer_config, export_formatter=JsonExportFormatter(dict()))
+        writer = FakeMailWriter(
+            self.writer_config, meta(), export_formatter=JsonExportFormatter(dict()))
         writer.write(self.batch_path, [])
         self.assertEqual(writer.send_called_number, 0)
-        writer.writer_metadata['items_count'] = 1
+        writer.set_metadata('items_count', 1)
         writer.write(self.batch_path, [])
         self.assertEqual(writer.send_called_number, 1)
         writer.close()

@@ -25,8 +25,8 @@ class GDriveWriter(FilebaseBaseWriter):
         'client_secret': {'type': object},
     }
 
-    def __init__(self, options, *args, **kwargs):
-        super(GDriveWriter, self).__init__(options, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(GDriveWriter, self).__init__(*args, **kwargs)
         from pydrive.auth import GoogleAuth
         from pydrive.drive import GoogleDrive
         gauth = GoogleAuth()
@@ -43,7 +43,7 @@ class GDriveWriter(FilebaseBaseWriter):
         self.drive = GoogleDrive(gauth)
         self.logger.info(
             'GDriveWriter has been initiated. Writing to: {}'.format(self.filebase))
-
+        self.set_metadata('files_counter', Counter())
 
     def get_file_suffix(self, path, prefix):
         """
@@ -84,5 +84,5 @@ class GDriveWriter(FilebaseBaseWriter):
         file = self.drive.CreateFile({'title': filename, 'parents': [parent]})
         file.SetContentFile(dump_path)
         file.Upload()
-        self.writer_metadata['written_files'].append(filename)
+        self.get_metadata('written_files').append(filename)
         self.logger.info('Uploaded file {}'.format(file['title']))

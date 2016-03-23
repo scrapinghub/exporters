@@ -15,9 +15,9 @@ class KeyValueRegexFilter(BaseFilter):
         'keys': {'type': list}
     }
 
-    def __init__(self, options):
+    def __init__(self, *args, **kwargs):
         # List of options
-        super(KeyValueRegexFilter, self).__init__(options)
+        super(KeyValueRegexFilter, self).__init__(*args, **kwargs)
         self.keys = self.read_option('keys')
         self.logger.info('KeyValueRegexFilter has been initiated. Keys: {}'.format(self.keys))
 

@@ -13,8 +13,8 @@ class PythonExpGrouper(BaseGrouper):
         'python_expressions': {'type': list}
     }
 
-    def __init__(self, options):
-        super(PythonExpGrouper, self).__init__(options)
+    def __init__(self, *args, **kwargs):
+        super(PythonExpGrouper, self).__init__(*args, **kwargs)
         self.expressions = self.read_option('python_expressions', [])
         self.interpreter = Interpreter()
 

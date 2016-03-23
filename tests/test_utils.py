@@ -40,18 +40,18 @@ class BasePipelineItemTest(unittest.TestCase):
             supported_options = {'opt1': {'type': int}}
 
         with self.assertRaisesRegexp(ValueError, 'Value for option .* should be of type'):
-            MyPipelineItem({'options': {'opt1': 'string'}})
+            MyPipelineItem({'options': {'opt1': 'string'}}, None)
 
     def test_pipeline_item_with_env_fallback(self):
         class MyPipelineItem(BasePipelineItem):
             supported_options = {'opt1': {'type': basestring, 'env_fallback': 'ENV_TEST'}}
 
         with environment({'ENV_TEST': 'test'}):
-            instance = MyPipelineItem({})
+            instance = MyPipelineItem({}, None)
             self.assertIs(instance.read_option('opt1'), 'test')
 
         with self.assertRaisesRegexp(ConfigurationError, "Missing value for option"):
-            MyPipelineItem({})
+            MyPipelineItem({}, None)
 
     def test_pipeline_item_with_env_fallback_and_default(self):
         class MyPipelineItem(BasePipelineItem):
@@ -63,26 +63,26 @@ class BasePipelineItemTest(unittest.TestCase):
                 },
             }
 
-        instance = MyPipelineItem({})
+        instance = MyPipelineItem({}, None)
         self.assertIs(instance.read_option('opt1'), 'default_value')
 
         with environment({'ENV_TEST': 'test'}):
-            instance = MyPipelineItem({})
+            instance = MyPipelineItem({}, None)
             self.assertIs(instance.read_option('opt1'), 'test')
 
         with environment({'ENV_TEST': 'test'}):
-            instance = MyPipelineItem({'options': {'opt1': 'given_value'}})
+            instance = MyPipelineItem({'options': {'opt1': 'given_value'}}, None)
             self.assertIs(instance.read_option('opt1'), 'given_value')
 
         with environment({'ENV_TEST': ''}):
-            instance = MyPipelineItem({})
+            instance = MyPipelineItem({}, None)
             self.assertIs(instance.read_option('opt1'), '')
 
     def test_pipeline_item_with_no_env_fallback_and_default_and_value(self):
         class MyPipelineItem(BasePipelineItem):
             supported_options = {'opt1': {'type': basestring, 'default': 'default_value'}}
 
-        instance = MyPipelineItem({'options': {'opt1': 'given_value'}})
+        instance = MyPipelineItem({'options': {'opt1': 'given_value'}}, None)
 
         self.assertIs(instance.read_option('opt1'), 'given_value')
 
@@ -90,11 +90,11 @@ class BasePipelineItemTest(unittest.TestCase):
         class MyPipelineItem(BasePipelineItem):
             supported_options = {'opt1': {'type': basestring}}
 
-        instance = MyPipelineItem({'options': {'opt1': 'given_value'}})
+        instance = MyPipelineItem({'options': {'opt1': 'given_value'}}, None)
         self.assertIs(instance.read_option('opt1'), 'given_value')
 
         with self.assertRaisesRegexp(ValueError, "Missing value for option"):
-            MyPipelineItem({'options': {}})
+            MyPipelineItem({'options': {}}, None)
 
 
 class ConfigModuleOptionsTest(unittest.TestCase):
@@ -279,7 +279,7 @@ class ModuleLoaderTest(unittest.TestCase):
                     'keys': ['country_code', 'state', 'city']
             }
         }
-        self.assertIsInstance(self.module_loader.load_grouper(grouper),
+        self.assertIsInstance(self.module_loader.load_grouper(grouper, None),
                               BaseGrouper)
 
 
@@ -300,7 +300,7 @@ class PythonInterpreterTest(unittest.TestCase):
 
 class BaseByPassTest(unittest.TestCase):
     def test_not_implemented(self):
-        bypass_script = BaseBypass({})
+        bypass_script = BaseBypass({}, None)
         with self.assertRaises(NotImplementedError):
             bypass_script.meets_conditions()
         with self.assertRaises(NotImplementedError):
@@ -316,7 +316,7 @@ class S3ByPassTest(unittest.TestCase):
                 'exporter_options': {'formatter': {}}
             })
         )
-        bypass = S3Bypass(exporter_options)
+        bypass = S3Bypass(exporter_options, None)
         with self.assertRaises(RequisitesNotMet):
             bypass.meets_conditions()
 
@@ -330,5 +330,5 @@ class S3ByPassTest(unittest.TestCase):
                 'exporter_options': {'formatter': {}}
             })
         )
-        bypass_script = S3Bypass(exporter_options)
+        bypass_script = S3Bypass(exporter_options, None)
         bypass_script.meets_conditions()

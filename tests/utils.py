@@ -1,6 +1,7 @@
 import contextlib
 import os
 from copy import deepcopy
+from exporters.meta import ExportMeta
 
 
 VALID_EXPORTER_CONFIG = {
@@ -47,3 +48,7 @@ def environment(env):
         yield
     finally:
         os.environ = old_env
+
+
+def meta():
+    return ExportMeta(None)

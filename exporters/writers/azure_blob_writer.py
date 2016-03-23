@@ -1,8 +1,7 @@
 import re
 import warnings
-from collections import Counter
 from exporters.default_retries import retry_long
-from exporters.writers.base_writer import BaseWriter
+from exporters.writers.base_writer import BaseWriter, InconsistentWriteState
 
 
 class AzureBlobWriter(BaseWriter):
@@ -25,9 +24,9 @@ class AzureBlobWriter(BaseWriter):
     }
     VALID_CONTAINER_NAME_RE = r'[a-zA-Z0-9-]{3,63}'
 
-    def __init__(self, options, *args, **kw):
+    def __init__(self, *args, **kw):
         from azure.storage.blob import BlobService
-        super(AzureBlobWriter, self).__init__(options, *args, **kw)
+        super(AzureBlobWriter, self).__init__(*args, **kw)
         account_name = self.read_option('account_name')
         account_key = self.read_option('account_key')
 
@@ -42,12 +41,13 @@ class AzureBlobWriter(BaseWriter):
         self.azure_service.create_container(self.container)
         self.logger.info('AzureBlobWriter has been initiated.'
                          'Writing to container {}'.format(self.container))
-        self.writer_metadata['files_counter'] = Counter()
+        self.set_metadata('files_counter', 0)
+        self.set_metadata('blobs_written', [])
 
     def write(self, dump_path, group_key=None):
         self.logger.info('Start uploading {} to {}'.format(dump_path, self.container))
         self._write_blob(dump_path)
-        self.writer_metadata['files_counter'][''] += 1
+        self.set_metadata('files_counter', self.get_metadata('files_counter') + 1)
 
     @retry_long
     def _write_blob(self, dump_path):
@@ -59,3 +59,26 @@ class AzureBlobWriter(BaseWriter):
             max_connections=5,
         )
         self.logger.info('Saved {}'.format(blob_name))
+        self._update_metadata(dump_path, blob_name)
+
+    def _update_metadata(self, dump_path, blob_name):
+        buffer_info = self.write_buffer.metadata[dump_path]
+        file_info = {
+            'blob_name': blob_name,
+            'size': buffer_info['size'],
+            'number_of_records': buffer_info['number_of_records']
+        }
+        self.get_metadata('blobs_written').append(file_info)
+
+    def _check_write_consistency(self):
+        from azure.common import AzureMissingResourceHttpError
+        for blob_info in self.get_metadata('blobs_written'):
+            try:
+                blob_properties = self.azure_service.get_blob_properties(self.read_option('container'), blob_info['blob_name'])
+                blob_size = blob_properties.get('content-length')
+                if str(blob_size) != str(blob_info['size']):
+                    raise InconsistentWriteState('File {} has unexpected size. (expected {} - got {})'.format(
+                                blob_info['blob_name'], blob_info['size'], blob_size))
+            except AzureMissingResourceHttpError:
+                raise InconsistentWriteState('Missing blob {}'.format(blob_info['blob_name']))
+        self.logger.info('Consistency check passed')

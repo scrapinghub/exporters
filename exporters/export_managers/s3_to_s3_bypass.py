@@ -42,9 +42,10 @@ def key_permissions(user_id, key):
 
 class S3BypassState(object):
 
-    def __init__(self, config, aws_key, aws_secret):
+    def __init__(self, config, metadata, aws_key, aws_secret):
+        self.config = config
         module_loader = ModuleLoader()
-        self.state = module_loader.load_persistence(config.persistence_options)
+        self.state = module_loader.load_persistence(config.persistence_options, metadata)
         self.state_position = self.state.get_last_position()
         if not self.state_position:
             self.pending = S3BucketKeysFetcher(config.reader_options['options'], aws_key, aws_secret).pending_keys()
@@ -101,8 +102,8 @@ class S3Bypass(BaseBypass):
     and directly upload it to the write bucket.
     """
 
-    def __init__(self, config):
-        super(S3Bypass, self).__init__(config)
+    def __init__(self, config, metadata):
+        super(S3Bypass, self).__init__(config, metadata)
         self.copy_mode = True
         self.tmp_folder = None
         self.bypass_state = None
@@ -147,7 +148,7 @@ class S3Bypass(BaseBypass):
         writer_options = self.config.writer_options['options']
         dest_bucket = get_bucket(self.read_option('writer', 'bucket'), writer_aws_key, writer_aws_secret)
         dest_filebase = self._get_filebase(writer_options)
-        self.bypass_state = S3BypassState(self.config, reader_aws_key, reader_aws_secret)
+        self.bypass_state = S3BypassState(self.config, self.metadata, reader_aws_key, reader_aws_secret)
         self.total_items = self.bypass_state.stats['total_count']
 
         source_bucket = get_bucket(self.read_option('reader', 'bucket'), reader_aws_key, reader_aws_secret)

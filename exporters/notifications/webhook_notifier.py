@@ -23,15 +23,14 @@ class WebhookNotifier(BaseNotifier):
             Endpoints waiting for a start notification
 
     """
-    def __init__(self, options):
+    def __init__(self, *args, **kwargs):
         # List of options
         self.supported_options = {
             'endpoints': {'type': list, 'default': []}
         }
 
-        super(WebhookNotifier, self).__init__(options)
-        self.options = options['options']
-        self.endpoints = self.options.get('endpoints', [])
+        super(WebhookNotifier, self).__init__(*args, **kwargs)
+        self.endpoints = self.read_option('endpoints', [])
 
     def notify_start_dump(self, receivers=None, info=None):
         payload = self._get_info(info, STARTED_JOB)

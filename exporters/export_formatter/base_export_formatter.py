@@ -5,6 +5,9 @@ class BaseExportFormatter(BasePipelineItem):
 
     file_extension = None
 
+    def __init__(self, options, metadata=None):
+        super(BaseExportFormatter, self).__init__(options, metadata)
+
     def format(self, item):
         raise NotImplementedError
 
