@@ -1,17 +1,17 @@
+import datetime
 import json
 import shutil
 import unittest
+
 import boto
-import datetime
-import moto
 import mock
+import moto
 from boto.exception import S3ResponseError
 from boto.utils import compute_md5
 
-from exporters.export_managers.s3_to_s3_bypass import S3Bypass, RequisitesNotMet
+from exporters.bypasses.s3_to_s3_bypass import S3Bypass, RequisitesNotMet
 from exporters.exporter_config import ExporterConfig
 from exporters.utils import remove_if_exists, TmpFile
-
 from .utils import meta
 
 

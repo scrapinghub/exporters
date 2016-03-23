@@ -1,6 +1,9 @@
 import yaml
+
+from exporters.bypasses.s3_to_azure_blob_bypass import AzureBlobS3Bypass
+from exporters.bypasses.s3_to_azure_file_bypass import AzureFileS3Bypass
+from exporters.bypasses.s3_to_s3_bypass import S3Bypass
 from exporters.export_managers.base_exporter import BaseExporter
-from exporters.export_managers.s3_to_s3_bypass import S3Bypass
 from exporters.persistence.persistence_config_dispatcher import PersistenceConfigDispatcher
 
 
@@ -13,6 +16,8 @@ class BasicExporter(BaseExporter):
         super(BasicExporter, self).__init__(configuration)
         self.bypass_cases = [
             S3Bypass(self.config, self.metadata),
+            AzureBlobS3Bypass(self.config, self.metadata),
+            AzureFileS3Bypass(self.config, self.metadata),
         ]
 
     @staticmethod
