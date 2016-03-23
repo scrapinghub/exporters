@@ -1,6 +1,15 @@
+import datetime
+import json
+
 import yaml
 from exporters.records.base_record import BaseRecord
 from exporters.transform.base_transform import BaseTransform
+
+
+def default(o):
+    if isinstance(o, datetime.datetime):
+        return o.isoformat()
+    return json.JSONEncoder.default(o)
 
 
 class JQTransform(BaseTransform):
@@ -22,11 +31,15 @@ class JQTransform(BaseTransform):
         if not self.is_valid_jq_expression(self.jq_expression):
             raise ValueError('JQ expression is not valid')
 
+    def _curate_item(self, item):
+        return json.loads(json.dumps(item, default=default))
+
     def transform_batch(self, batch):
         from jq import jq
         jq_program = jq(self.jq_expression)
         for item in batch:
             try:
+                item = self._curate_item(item)
                 transformed_item = jq_program.transform(item)
             except StopIteration:
                 # jq.transform() raise StopIteration for filtered items
