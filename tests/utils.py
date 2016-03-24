@@ -1,3 +1,4 @@
+import mock
 from copy import deepcopy
 from exporters.meta import ExportMeta
 from exporters.persistence.base_persistence import BasePersistence
@@ -80,3 +81,9 @@ class NullPersistence(BasePersistence):
 
     def close(self):
         pass
+
+
+class CopyingMagicMock(mock.MagicMock):
+    def _mock_call(_mock_self, *args, **kwargs):
+        return super(CopyingMagicMock, _mock_self)._mock_call(
+            *deepcopy(args), **deepcopy(kwargs))

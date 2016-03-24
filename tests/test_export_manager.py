@@ -10,7 +10,7 @@ from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
 from exporters.utils import TmpFile
 from exporters.writers.console_writer import ConsoleWriter
-from .utils import valid_config_with_updates, ErrorWriter
+from .utils import valid_config_with_updates, ErrorWriter, CopyingMagicMock
 
 
 def get_filename(path, persistence_id):
@@ -359,6 +359,30 @@ class BaseExportManagerTest(unittest.TestCase):
         exporter.export()
         self.assertEqual(exporter.writer.get_metadata('items_count'), 5,
                          msg='There should be only 5 written items')
+
+    @mock.patch("mock.MagicMock", new=CopyingMagicMock)
+    def test_persisted_positions(self):
+        pers_class_path = 'tests.utils.NullPersistence'
+        options = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {
+                    'number_of_items': 17,
+                    'batch_size': 3
+                }
+            },
+            'writer': {
+                'name': 'tests.utils.NullWriter'
+            },
+            'persistence': {
+                'name': pers_class_path,
+            }
+        }
+        exporter = BasicExporter(options)
+        with mock.patch.object(exporter.persistence, 'commit_position') as m:
+            exporter.export()
+            last_read = [args[0]['last_read'] for name, args, kwargs in m.mock_calls]
+            self.assertEqual(last_read, [2, 5, 8, 11, 14, 16])
 
 
 class BasicExportManagerTest(unittest.TestCase):
