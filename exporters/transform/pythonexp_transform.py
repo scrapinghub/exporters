@@ -20,7 +20,9 @@ class PythonexpTransform(BaseTransform):
         if not self.is_valid_python_expression(self.python_expressions):
             raise ValueError('Python expression is not valid')
         self.interpreter = Interpreter()
-        self.logger.info('PythonexpTransform has been initiated. Expressions: {!r}'.format(self.python_expressions))
+        self.logger.info('PythonexpTransform has been initiated. Expressions: {!r}'.format(
+            self.python_expressions)
+        )
 
     def transform_batch(self, batch):
         for item in batch:

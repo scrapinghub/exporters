@@ -1,3 +1,5 @@
+from .pickle_persistence import PicklePersistence
+
 PERSISTENCE_LIST = []
 
 try:
@@ -13,6 +15,4 @@ except ImportError:
     pass
 
 
-from .pickle_persistence import PicklePersistence
 PERSISTENCE_LIST.append(PicklePersistence)
-

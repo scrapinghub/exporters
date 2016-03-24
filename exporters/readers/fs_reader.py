@@ -101,7 +101,7 @@ class FSReader(BaseReader):
         all_files = []
         for root, directories, filenames in os.walk(self.path):
             for filename in filenames:
-                all_files.append(os.path.join(root,filename))
+                all_files.append(os.path.join(root, filename))
         return all_files
 
     def _add_file_if_matches(self, file):
@@ -113,7 +113,8 @@ class FSReader(BaseReader):
 
     def get_next_batch(self):
         """
-        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        This method is called from the manager. It must return a list or a generator
+        of BaseRecord objects.
         When it has nothing else to read, it must set class variable "finished" to True.
         """
         count = 0
@@ -124,8 +125,8 @@ class FSReader(BaseReader):
 
     def set_last_position(self, last_position):
         """
-        Called from the manager, it is in charge of updating the last position of data commited by the writer, in order to
-        have resume support
+        Called from the manager, it is in charge of updating the last position of data commited
+        by the writer, in order to have resume support
         """
         if last_position is None:
             self.last_position = {}

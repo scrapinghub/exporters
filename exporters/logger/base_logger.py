@@ -49,6 +49,7 @@ class TransformLogger(CategoryLogger):
     def _log(self, msg, level):
         self.logger.log(msg=' -- TRANSFORM -- '+msg, level=level)
 
+
 class FilterLogger(CategoryLogger):
 
     def _log(self, msg, level):

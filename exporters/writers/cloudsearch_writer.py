@@ -46,7 +46,8 @@ def create_document_batches(jsonlines, id_field, max_batch_size=CLOUDSEARCH_MAX_
 
 class CloudSearchWriter(BaseWriter):
     """
-    This writer stores items in CloudSearch Amazon Web Services service (https://aws.amazon.com/es/cloudsearch/)
+    This writer stores items in CloudSearch Amazon Web Services service
+    (https://aws.amazon.com/es/cloudsearch/)
 
     - endpoint_url
         Document Endpoint (e.g.: http://doc-movies-123456789012.us-east-1.cloudsearch.amazonaws.com)
@@ -93,10 +94,11 @@ class CloudSearchWriter(BaseWriter):
 
     @retry_short
     def _post_document_batch(self, batch):
-        """Send a batch to Cloudsearch endpoint
+        """
+        Send a batch to Cloudsearch endpoint
 
         See: http://docs.aws.amazon.com/cloudsearch/latest/developerguide/submitting-doc-requests.html
-        """
+        """  # noqa
         target_batch = '/2013-01-01/documents/batch'
         url = self.endpoint_url + target_batch
         return requests.post(url, data=batch, headers={'Content-type': 'application/json'})

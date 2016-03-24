@@ -65,10 +65,7 @@ class AzureFileWriter(FilebaseBaseWriter):
         for sub_path in path:
             folders_added.append(sub_path)
             parent = '/'.join(folders_added)
-            self.azure_service.create_directory(
-                    self.share,
-                    parent,
-            )
+            self.azure_service.create_directory(self.share, parent)
 
     @retry_long
     def _write_file(self, dump_path, group_key, file_name=None):
@@ -92,11 +89,14 @@ class AzureFileWriter(FilebaseBaseWriter):
         from azure.common import AzureMissingResourceHttpError
         for file_info in self.get_metadata('files_written'):
             try:
-                file_properties = self.azure_service.get_file_properties(self.share, file_info['filebase_path'], file_info['file_name'])
+                file_properties = self.azure_service.get_file_properties(
+                    self.share, file_info['filebase_path'], file_info['file_name'])
                 file_size = file_properties.get('content-length')
                 if str(file_size) != str(file_info['size']):
-                    raise InconsistentWriteState('File {} has unexpected size. (expected {} - got {})'.format(
-                                file_info['file_name'], file_info['size'], file_size))
+                    raise InconsistentWriteState(
+                        'File {} has unexpected size. (expected {} - got {})'.format(
+                            file_info['file_name'], file_info['size'], file_size)
+                    )
             except AzureMissingResourceHttpError:
                 raise InconsistentWriteState('Missing file {}'.format(file_info['file_name']))
         self.logger.info('Consistency check passed')

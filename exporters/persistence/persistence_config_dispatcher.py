@@ -17,6 +17,8 @@ class PersistenceConfigDispatcher(object):
 
         raise ValueError('{} is not a valid persistence uri. Available handlers are {}.'
                          .format(self.uri, [m.uri_regex for m in PERSISTENCE_LIST]))
+
     @property
     def config(self):
-        return self.persistence_dispatcher.configuration_from_uri(self.uri, self.persistence_dispatcher.uri_regex)
+        return self.persistence_dispatcher.configuration_from_uri(
+            self.uri, self.persistence_dispatcher.uri_regex)

@@ -43,7 +43,8 @@ def format_prefixes(prefixes, start, end):
 
 class S3BucketKeysFetcher(object):
     def __init__(self, reader_options, aws_access_key_id, aws_secret_access_key):
-        self.source_bucket = get_bucket(reader_options.get('bucket'), aws_access_key_id, aws_secret_access_key)
+        self.source_bucket = get_bucket(
+            reader_options.get('bucket'), aws_access_key_id, aws_secret_access_key)
         self.pattern = reader_options.get('pattern', None)
 
         prefix = reader_options.get('prefix', '')
@@ -97,11 +98,13 @@ class S3BucketKeysFetcher(object):
                     if self._should_add_key(key):
                         keys.append(key.name)
                     else:
-                        self.logger.info('Skipping S3 key {}. No match with pattern'.format(key.name))
+                        self.logger.info(
+                            'Skipping S3 key {}. No match with pattern'.format(key.name))
                 else:
                     keys.append(key.name)
         if self.pattern and not keys:
-            self.logger.warn('No S3 keys found that match provided pattern: {}'.format(self.pattern))
+            self.logger.warn(
+                'No S3 keys found that match provided pattern: {}'.format(self.pattern))
         return keys
 
     def _should_add_key(self, key):
@@ -148,8 +151,14 @@ class S3Reader(BaseReader):
     supported_options = {
         'batch_size': {'type': int, 'default': 10000},
         'bucket': {'type': basestring},
-        'aws_access_key_id': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_KEY'},
-        'aws_secret_access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_S3READER_AWS_SECRET'},
+        'aws_access_key_id': {
+            'type': basestring,
+            'env_fallback': 'EXPORTERS_S3READER_AWS_KEY'
+        },
+        'aws_secret_access_key': {
+            'type': basestring,
+            'env_fallback': 'EXPORTERS_S3READER_AWS_SECRET'
+        },
         'prefix': {'type': (basestring, list), 'default': ''},
         'prefix_pointer': {'type': basestring, 'default': None},
         'pattern': {'type': basestring, 'default': None},
@@ -186,7 +195,8 @@ class S3Reader(BaseReader):
 
     def get_next_batch(self):
         """
-        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        This method is called from the manager. It must return a list or a generator
+        of BaseRecord objects.
         When it has nothing else to read, it must set class variable "finished" to True.
         """
         if not self.keys:
@@ -228,8 +238,8 @@ class S3Reader(BaseReader):
 
     def set_last_position(self, last_position):
         """
-        Called from the manager, it is in charge of updating the last position of data commited by the writer, in order to
-        have resume support
+        Called from the manager, it is in charge of updating the last position of data commited
+        by the writer, in order to have resume support
         """
         if last_position is None:
             self.last_position = {}

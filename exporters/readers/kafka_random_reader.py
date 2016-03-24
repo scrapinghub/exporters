@@ -60,8 +60,9 @@ class KafkaRandomReader(BaseReader):
         self.processor = self.create_processor()
         self.partitions = client.get_partition_ids_for_topic(topic)
 
-        self.logger.info('KafkaRandomReader has been initiated. Topic: {}. Group: {}'.format(self.read_option('topic'),
-                                                                                             self.read_option('group')))
+        self.logger.info(
+            'KafkaRandomReader has been initiated. '
+            'Topic: {}. Group: {}'.format(self.read_option('topic'), self.read_option('group')))
 
         self.logger.info('Running random sampling')
         self._reservoir = self.fill_reservoir()
@@ -96,7 +97,8 @@ class KafkaRandomReader(BaseReader):
 
     def get_next_batch(self):
         """
-        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        This method is called from the manager. It must return a list or a generator
+        of BaseRecord objects.
         When it has nothing else to read, it must set class variable "finished" to True.
         """
         messages = self.get_from_kafka()
@@ -148,8 +150,8 @@ class KafkaRandomReader(BaseReader):
 
     def set_last_position(self, last_position):
         """
-        Called from the manager, it is in charge of updating the last position of data commited by the writer, in order to
-        have resume support
+        Called from the manager, it is in charge of updating the last position of data commited
+        by the writer, in order to have resume support
         """
         if last_position is None:
             self.last_position = {}

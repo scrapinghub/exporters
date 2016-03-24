@@ -29,7 +29,8 @@ class PythonexpFilterFilterTest(unittest.TestCase):
             BaseRecord({'name': 'item2', 'updated': str(now - datetime.timedelta(days=1))}),
             BaseRecord({'name': 'item3', 'updated': str(now)}),
         ]
-        expr = "item.get('updated') and item['updated'] >= str(datetime.datetime.now() - datetime.timedelta(days=1))[:10]"
+        expr = ("item.get('updated') and item['updated'] >= "
+                "str(datetime.datetime.now() - datetime.timedelta(days=1))[:10]")
         python_filter = PythonexpFilter(
             {'options': {'python_expression': expr}}, meta())
         result = list(python_filter.filter_batch(batch))

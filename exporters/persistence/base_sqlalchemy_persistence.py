@@ -1,7 +1,7 @@
 import datetime
 import json
 import re
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, Text
+from sqlalchemy import create_engine, Column, Integer, DateTime, Boolean, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import yaml
@@ -59,7 +59,8 @@ class BaseAlchemyPersistence(BasePersistence):
             {"last_position": json.dumps(self.last_position),
              "last_committed": datetime.datetime.now()}, synchronize_session='fetch')
         self.session.commit()
-        self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: ' + str(self.persistence_state_id))
+        self.logger.debug('Commited batch number ' + str(self.last_position) +
+                          ' of job: ' + str(self.persistence_state_id))
         self.set_metadata('commited_positions',
                           self.get_metadata('commited_positions') + 1)
 
@@ -70,16 +71,19 @@ class BaseAlchemyPersistence(BasePersistence):
         self.session.add(new_job)
         self.session.commit()
         self.persistence_state_id = new_job.id
-        self.logger.debug('Created persistence job with id {} in database {}. Using protocol {}.'
-                          .format(new_job.id, self.read_option('database'), self.PROTOCOL) + str(new_job.id))
+        self.logger.debug(
+            'Created persistence job with id {} in database {}. Using protocol {}.{}'.format(
+                new_job.id, self.read_option('database'), self.PROTOCOL, str(new_job.id)))
         return new_job.id
 
     def close(self):
         self.session.query(Job).filter(Job.id == self.persistence_state_id).update(
-            {"job_finished": True, "last_committed": datetime.datetime.now()}, synchronize_session='fetch')
+            job_finished=True,
+            last_committed=datetime.datetime.now(),
+            synchronize_session='fetch'
+        )
         self.session.commit()
         self.session.close()
-
 
     @staticmethod
     def configuration_from_uri(uri, uri_regex):

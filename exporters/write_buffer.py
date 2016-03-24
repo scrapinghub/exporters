@@ -74,9 +74,6 @@ class ItemsGroupFilesHandler(object):
     def close(self):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
-    def compress_key_path(self, key):
-        return self.compress_key_path(key)
-
     def get_grouping_info(self):
         return self.grouping_info
 
@@ -112,7 +109,7 @@ class ItemsGroupFilesHandler(object):
     def create_new_group_path_for_key(self, key):
         new_buffer_path = self._get_new_path_name()
         self.grouping_info.add_path_to_group(key, new_buffer_path)
-        with open(new_buffer_path, 'w') as f:
+        with open(new_buffer_path, 'w'):
             pass
         return new_buffer_path
 
@@ -149,7 +146,6 @@ class WriteBuffer(object):
         self.size_per_buffer_write = size_per_buffer_write
         self.metadata = {}
         self.is_new_buffer = True
-
 
     def buffer(self, item):
         """
@@ -194,8 +190,3 @@ class WriteBuffer(object):
 
     def get_grouping_info(self):
         return self.grouping_info
-
-    def close(self):
-        self.items_group_files.close()
-
-

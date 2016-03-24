@@ -1,8 +1,6 @@
 import json
-import os
-import unittest
-
 import mock
+import unittest
 
 from exporters.writers.cloudsearch_writer import (CLOUDSEARCH_MAX_BATCH_SIZE,
                                                   create_document_batches)
@@ -64,6 +62,7 @@ class CreateDocumentBatches(unittest.TestCase):
             self.assertEquals(expected_batch, json.loads(resulting_batch))
             self.assertLessEqual(len(resulting_batch), max_batch_size)
 
+
 class CloudsearchWriterTest(unittest.TestCase):
     @mock.patch('exporters.writers.cloudsearch_writer.requests', autospec=True)
     def test_run_exporter_integration(self, mock_requests):
@@ -88,7 +87,8 @@ class CloudsearchWriterTest(unittest.TestCase):
             "transform": {
                 "name": "exporters.transform.jq_transform.JQTransform",
                 "options": {
-                    "jq_filter": "{key: .key, country: .country_code, value: .value} | del(.[] | select(. == null))"
+                    "jq_filter": ("{key: .key, country: .country_code, value: .value} |"
+                                  " del(.[] | select(. == null))")
                 }
             },
             "writer": {

@@ -115,5 +115,6 @@ class MailWriter(BaseWriter):
     @retry_short
     def send_mail(self, m, destination):
         self.logger.info('Sending email. Sending to: {}'.format(destination))
-        self.ses.send_raw_email(source=m['From'], raw_message=m.as_string(), destinations=destination)
+        self.ses.send_raw_email(
+            source=m['From'], raw_message=m.as_string(), destinations=destination)
         self.logger.info('Email sent to {}'.format(destination))

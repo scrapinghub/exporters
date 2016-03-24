@@ -5,6 +5,7 @@ import collections
 
 DEFAULT_XML_HEADER = '<?xml version="1.0" encoding="UTF-8"?>'
 
+
 class XMLExportFormatter(BaseExportFormatter):
     """
     This export formatter provides a way of exporting items in XML format
@@ -46,5 +47,6 @@ class XMLExportFormatter(BaseExportFormatter):
             sorted(item.items(),
                    key=lambda kv: self.fields_order.get(kv[0], fields_len))
         )
-        return '<{0}>{1}</{0}>'.format(self.item_name, dicttoxml.dicttoxml(ordered_item, root=False,
-                                                                           attr_type=self.attr_type))
+        return '<{0}>{1}</{0}>'.format(
+            self.item_name, dicttoxml.dicttoxml(ordered_item, root=False,
+                                                attr_type=self.attr_type))

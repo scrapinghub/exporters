@@ -126,7 +126,8 @@ class S3BypassTest(unittest.TestCase):
         key.set_contents_from_string(json.dumps(self.data))
         key.close()
         self.tmp_bypass_resume_file = 'tests/data/tmp_s3_bypass_resume_persistence.pickle'
-        shutil.copyfile('tests/data/s3_bypass_resume_persistence.pickle', self.tmp_bypass_resume_file)
+        shutil.copyfile('tests/data/s3_bypass_resume_persistence.pickle',
+                        self.tmp_bypass_resume_file)
 
     def tearDown(self):
         self.mock_s3.stop()
@@ -198,8 +199,10 @@ class S3BypassTest(unittest.TestCase):
         options = create_s3_bypass_simple_config()
         options.reader_options['options']['bucket'] = 'resume_bucket'
         options.writer_options['options']['bucket'] = 'resume_dest_bucket'
-        options.persistence_options['resume'] = True
-        options.persistence_options['persistence_state_id'] = 'tmp_s3_bypass_resume_persistence.pickle'
+        options.persistence_options.update(
+            resume=True,
+            persistence_state_id='tmp_s3_bypass_resume_persistence.pickle'
+        )
         options.persistence_options['options']['file_path'] = 'tests/data/'
         # Initial state is:
         # copied = ['some_prefix/key1']
@@ -228,13 +231,13 @@ class S3BypassTest(unittest.TestCase):
     def test_filebase_format_bypass(self):
         # given
         writer = {
-              'name': 'exporters.writers.s3_writer.S3Writer',
-              'options': {
+            'name': 'exporters.writers.s3_writer.S3Writer',
+            'options': {
                 'bucket': 'a',
                 'aws_access_key_id': 'a',
                 'aws_secret_access_key': 'a',
                 'filebase': 'some_path/%Y-%m-%d/'
-              }
+            }
         }
 
         expected = 'some_path/%Y-%m-%d/'.format(datetime.datetime.now())
@@ -277,7 +280,7 @@ class S3BypassTest(unittest.TestCase):
         self.assertEqual('tests/', key.get_contents_as_string())
 
     def test_prefix_pointer_list_keys(self):
-        #given
+        # given
         reader = {
             'name': 'exporters.readers.s3_reader.S3Reader',
             'options': {
@@ -310,7 +313,7 @@ class S3BypassTest(unittest.TestCase):
         options = create_s3_bypass_simple_config(reader=reader, writer=writer)
         expected_keys = ['some_prefix/key1', 'some_prefix/key2', 'some_prefix/key3']
 
-        #when
+        # when
         bypass = S3Bypass(options, meta())
         bypass.bypass()
 
@@ -323,7 +326,7 @@ class S3BypassTest(unittest.TestCase):
         self.assertEqual(expected_keys, keys_list)
 
     def test_get_md5(self):
-         # given
+        # given
         self.s3_conn.create_bucket('dest_bucket')
         options = create_s3_bypass_simple_config()
         options.writer_options['options']['save_metadata'] = True

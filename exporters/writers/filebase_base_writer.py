@@ -77,9 +77,11 @@ class FilebaseBaseWriter(BaseWriter):
 
     def _write(self, key):
         write_info = self.write_buffer.pack_buffer(key)
-        self.write(write_info.get('compressed_path'), self.write_buffer.grouping_info[key]['membership'])
+        self.write(write_info.get('compressed_path'),
+                   self.write_buffer.grouping_info[key]['membership'])
         write_info['md5'] = self._get_md5(write_info.get('compressed_path'))
-        self.logger.info('Checksum for file {}: {}'.format(write_info['compressed_path'], write_info['md5']))
+        self.logger.info(
+            'Checksum for file {}: {}'.format(write_info['compressed_path'], write_info['md5']))
         self.written_files[self.last_written_file] = write_info
         self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
 
