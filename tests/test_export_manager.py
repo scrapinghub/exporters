@@ -415,7 +415,7 @@ class BaseExportManagerTest(unittest.TestCase):
                 'disable_retries': True
             },
         }
-        
+
         def count_and_raise(*args, **kwargs):
             count_holder[0] += 1
             raise RuntimeError('test exception')
