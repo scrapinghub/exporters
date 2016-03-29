@@ -124,8 +124,9 @@ class S3WriterTest(unittest.TestCase):
 
         mock_get_bucket.side_effect = reject_validated_get_bucket
 
-        S3Writer(self.get_writer_config(), meta(),
+        writer = S3Writer(self.get_writer_config(), meta(),
                  export_formatter=JsonExportFormatter(dict()))
+        writer.close()
 
     def test_connect_to_bucket_location(self):
         # given:
