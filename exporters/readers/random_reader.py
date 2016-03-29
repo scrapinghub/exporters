@@ -27,7 +27,7 @@ class RandomReader(BaseReader):
 
     def __init__(self, *args, **kwargs):
         super(RandomReader, self).__init__(*args, **kwargs)
-        self.last_key = self.last_position.get('last_key', 0) * self.read_option('batch_size')
+        self.last_read = self.last_position.get('last_read', -1)
         self.logger.info('RandomReader has been initiated')
         self.country_codes = [u'es', u'uk', u'us']
         self.states = [u'valéncia', u'madrid', u'barcelona']
@@ -46,21 +46,22 @@ class RandomReader(BaseReader):
         """
         number_of_items = self.read_option('number_of_items')
         for i in range(0, self.batch_size):
-            if self.last_key >= number_of_items:
+            to_read = self.last_read + 1
+            if to_read >= number_of_items:
                 self.finished = True
                 break
             else:
-                self.last_key += 1
                 item = BaseRecord()
-                item['key'] = self.last_key
+                self.last_read = to_read
+                item['key'] = self.last_read
                 item['country_code'] = random.choice(self.country_codes)
                 item['state'] = random.choice(self.states)
                 item['city'] = random.choice(self.cities)
                 item['value'] = random.randint(0, 10000)
                 self.increase_read()
+                self.last_position['last_read'] = self.last_read
                 yield item
         self.logger.debug('Done reading batch')
-        self.last_position['last_key'] += 1
 
     def set_last_position(self, last_position):
         """
@@ -68,10 +69,10 @@ class RandomReader(BaseReader):
         have resume support
         """
         self.last_position = last_position
-        if last_position is not None and last_position.get('last_key') is not None:
-            self.last_key = last_position.get('last_key', 0) * self.read_option('batch_size')
+        if last_position is not None and last_position.get('last_read') is not None:
+            self.last_read = last_position['last_read']
         else:
-            self.last_key = 0
+            self.last_read = -1
             self.last_position = {
-                'last_key': 0
+                'last_read': self.last_read
             }

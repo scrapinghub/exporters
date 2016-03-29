@@ -61,8 +61,8 @@ class RandomReaderTest(unittest.TestCase):
         self.assertEqual(total_items, self.options['reader']['options']['number_of_items'])
 
     def test_set_last_position_none(self):
-        self.reader.set_last_position({'last_key': 0})
-        self.assertEqual({'last_key': 0}, self.reader.last_position)
+        self.reader.set_last_position({'last_read': 123})
+        self.assertEqual({'last_read': 123}, self.reader.last_position)
 
 
 class KafkaScannerReaderTest(unittest.TestCase):

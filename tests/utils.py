@@ -1,5 +1,9 @@
+import mock
 from copy import deepcopy
 from exporters.meta import ExportMeta
+from exporters.persistence.base_persistence import BasePersistence
+from exporters.readers.base_reader import BaseReader
+from exporters.writers.base_writer import BaseWriter
 
 
 VALID_EXPORTER_CONFIG = {
@@ -40,3 +44,46 @@ def valid_config_with_updates(updates):
 
 def meta():
     return ExportMeta(None)
+
+
+class NullWriter(BaseWriter):
+    def write(self, *args, **kwargs):
+        """
+        Everything goes into /dev/null though items should be counted
+        """
+
+
+class ErrorWriter(BaseWriter):
+    msg = "ErrorWriter error"
+
+    def write(self, *args, **kwargs):
+        raise RuntimeError(self.msg)
+
+
+class ErrorReader(BaseReader):
+    msg = "ErrorReader error"
+
+    def get_next_batch(self, *args, **kwargs):
+        raise RuntimeError(self.msg)
+
+
+class NullPersistence(BasePersistence):
+    def generate_new_job(self):
+        return None
+
+    def commit_position(self, *args, **kwargs):
+        """
+        Just ignoring position
+        """
+
+    def get_last_position(self):
+        return None
+
+    def close(self):
+        pass
+
+
+class CopyingMagicMock(mock.MagicMock):
+    def _mock_call(_mock_self, *args, **kwargs):
+        return super(CopyingMagicMock, _mock_self)._mock_call(
+            *deepcopy(args), **deepcopy(kwargs))
