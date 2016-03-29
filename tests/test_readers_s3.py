@@ -229,6 +229,7 @@ class S3ReaderTest(unittest.TestCase):
         batch = list(reader.get_next_batch())
         expected_batch = [{u'name': u'test_list/dump_p1_ES_a'}]
         self.assertEqual(batch, expected_batch)
+        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_date_prefix(self):
         reader = S3Reader(self.options_date_prefix, meta())
