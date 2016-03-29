@@ -81,6 +81,7 @@ class BaseExportManagerTest(unittest.TestCase):
 
         # when:
         exporter.export()
+        exporter.writer.close()
 
         # then:
         self.assertTrue(bypass_instance.bypass_called, "Bypass should have been called")
@@ -160,13 +161,14 @@ class BaseExportManagerTest(unittest.TestCase):
             )
 
             # when:
-            exporter = BaseExporter(config)
+            self.exporter = exporter = BaseExporter(config)
             exporter._init_export_job()
 
             # then:
             self.assertEqual(30, exporter.writer.get_metadata('items_count'))
             self.assertFalse(exporter.metadata.accurate_items_count,
                              "Couldn't get accurate count from last_position")
+            exporter.writer.close()
 
     def test_read_goes_into_written(self):
         options = {
@@ -184,7 +186,7 @@ class BaseExportManagerTest(unittest.TestCase):
                 'name': 'tests.utils.NullPersistence',
             }
         }
-        exporter = BasicExporter(options)
+        self.exporter = exporter = BaseExporter(options)
         exporter.export()
         self.assertEquals(exporter.reader.get_metadata('read_items'),
                           exporter.writer.get_metadata('items_count'),
@@ -218,7 +220,7 @@ class BaseExportManagerTest(unittest.TestCase):
                                  notify_start_dump=DEFAULT,
                                  notify_failed_job=DEFAULT,
                                  notify_complete_dump=DEFAULT) as m:
-            exporter = BasicExporter(options)
+            self.exporter = exporter = BaseExporter(options)
             exporter.export()
             self.assertEquals(len(m['notify_start_dump'].mock_calls), 1,
                               msg='There was 1 start dump notification')
@@ -255,9 +257,10 @@ class BaseExportManagerTest(unittest.TestCase):
                                  notify_start_dump=DEFAULT,
                                  notify_failed_job=DEFAULT,
                                  notify_complete_dump=DEFAULT) as m:
-            exporter = BasicExporter(options)
+            self.exporter = exporter = BaseExporter(options)
             with self.assertRaisesRegexp(RuntimeError, ErrorWriter.msg):
                 exporter.export()
+                exporter.writer.close()
             self.assertEquals(len(m['notify_start_dump'].mock_calls), 1,
                               msg='There was 1 start dump notification')
             self.assertEquals(len(m['notify_failed_job'].mock_calls), 1,
@@ -293,10 +296,11 @@ class BaseExportManagerTest(unittest.TestCase):
                                  notify_start_dump=DEFAULT,
                                  notify_failed_job=DEFAULT,
                                  notify_complete_dump=DEFAULT) as m:
-            exporter = BasicExporter(options)
+            self.exporter = exporter = BaseExporter(options)
             bypass = MagicMock()
             exporter.bypass_cases.append(bypass)
             exporter.export()
+            exporter.writer.close()
             self.assertGreaterEqual(
                 len, 2,
                 msg=('bypass class should have at least `meets_conditions` '
@@ -328,7 +332,7 @@ class BaseExportManagerTest(unittest.TestCase):
                 'name': 'tests.utils.NullPersistence',
             }
         }
-        exporter = BasicExporter(options)
+        self.exporter = exporter = BaseExporter(options)
         exporter.bypass_cases.append(SkippedBypass(None, None))
         exporter.export()
         self.assertEqual(exporter.reader.get_metadata('read_items'), 10,
@@ -355,7 +359,7 @@ class BaseExportManagerTest(unittest.TestCase):
                 'name': 'tests.utils.NullPersistence',
             }
         }
-        exporter = BasicExporter(options)
+        self.exporter = exporter = BaseExporter(options)
         exporter.export()
         self.assertEqual(exporter.writer.get_metadata('items_count'), 5,
                          msg='There should be only 5 written items')
@@ -378,7 +382,7 @@ class BaseExportManagerTest(unittest.TestCase):
                 'name': pers_class_path,
             }
         }
-        exporter = BasicExporter(options)
+        self.exporter = exporter = BaseExporter(options)
         with mock.patch.object(exporter.persistence, 'commit_position') as m:
             exporter.export()
             last_read = [args[0]['last_read'] for name, args, kwargs in m.mock_calls]
@@ -420,9 +424,9 @@ class BaseExportManagerTest(unittest.TestCase):
             count_holder[0] += 1
             raise RuntimeError('test exception')
 
-        export = BaseExporter(options)
+        self.exporter = exporter = BaseExporter(options)
         with mock.patch('requests.post', side_effect=count_and_raise):
-            export.export()
+            exporter.export()
 
         # there should be 2 posts: for started and completed dump
         self.assertEqual(count_holder[0], 2, "Retries should be disabled")
