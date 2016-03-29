@@ -78,7 +78,8 @@ class S3Bypass(BaseBypass):
         raise RequisitesNotMet
 
     def meets_conditions(self):
-        if not self.config.reader_options['name'].endswith('S3Reader') or not self.config.writer_options['name'].endswith('S3Writer'):
+        if not self.config.reader_options['name'].endswith('S3Reader') or \
+           not self.config.writer_options['name'].endswith('S3Writer'):
             raise RequisitesNotMet
         if not self.config.filter_before_options['name'].endswith('NoFilter'):
             self._raise_conditions_not_met('custom filter configured')
@@ -101,14 +102,16 @@ class S3Bypass(BaseBypass):
         return dest_filebase
 
     def _fill_config_with_env(self):
-        if 'aws_access_key_id' not in self.config.reader_options['options']:
-            self.config.reader_options['options']['aws_access_key_id'] = os.environ.get('EXPORTERS_S3READER_AWS_KEY')
-        if 'aws_access_key_id' not in self.config.writer_options['options']:
-            self.config.writer_options['options']['aws_access_key_id'] = os.environ.get('EXPORTERS_S3WRITER_AWS_LOGIN')
-        if 'aws_secret_access_key' not in self.config.reader_options['options']:
-            self.config.reader_options['options']['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3READER_AWS_SECRET')
-        if 'aws_secret_access_key' not in self.config.writer_options['options']:
-            self.config.writer_options['options']['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3WRITER_AWS_SECRET')
+        reader_opts = self.config.reader_options['options']
+        writer_opts = self.config.writer_options['options']
+        if 'aws_access_key_id' not in reader_opts:
+            reader_opts['aws_access_key_id'] = os.environ.get('EXPORTERS_S3READER_AWS_KEY')
+        if 'aws_access_key_id' not in writer_opts:
+            writer_opts['aws_access_key_id'] = os.environ.get('EXPORTERS_S3WRITER_AWS_LOGIN')
+        if 'aws_secret_access_key' not in reader_opts:
+            reader_opts['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3READER_AWS_SECRET')
+        if 'aws_secret_access_key' not in writer_opts:
+            writer_opts['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3WRITER_AWS_SECRET')
 
     def bypass(self):
         from copy import deepcopy
@@ -126,10 +129,11 @@ class S3Bypass(BaseBypass):
                 dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
                 self._copy_key(dest_bucket, dest_key_name, source_bucket, key)
                 self.bypass_state.commit_copied_key(key)
-                logging.log(logging.INFO,
-                            'Copied key {} to dest: s3://{}/{}'.format(key, dest_bucket.name, dest_key_name))
+                logging.info('Copied key {} to dest: s3://{}/{}'.format(
+                    key, dest_bucket.name, dest_key_name))
             if writer_options.get('save_pointer'):
-                self._update_last_pointer(dest_bucket, writer_options.get('save_pointer'), writer_options.get('filebase'))
+                self._update_last_pointer(
+                    dest_bucket, writer_options.get('save_pointer'), writer_options.get('filebase'))
 
         finally:
             if self.tmp_folder:
@@ -165,8 +169,9 @@ class S3Bypass(BaseBypass):
 
     def _check_copy_integrity(self, source_key, dest_bucket, dest_key):
         if source_key.etag != dest_key.etag:
-            raise InvalidKeyIntegrityCheck('Key {} and key {} md5 checksums are different. {} != {}'
-                                           .format(source_key.name, dest_key.name, source_key.etag, dest_key.etag))
+            raise InvalidKeyIntegrityCheck(
+                'Key {} and key {} md5 checksums are different. {} != {}'.format(
+                    source_key.name, dest_key.name, source_key.etag, dest_key.etag))
 
     def _ensure_proper_key_permissions(self, key):
         key.set_acl('bucket-owner-full-control')

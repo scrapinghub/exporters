@@ -12,7 +12,8 @@ from exporters.utils import TmpFile
 
 class AzureFileS3Bypass(BaseBypass):
     """
-    Bypass executed by default when data source is an S3 bucket and data destination is an Azure share.
+    Bypass executed by default when data source is an S3 bucket and data destination
+    is an Azure share.
     It should be transparent to user. Conditions are:
 
         - S3Reader and AzureFileWriter are used on configuration.
@@ -35,8 +36,8 @@ class AzureFileS3Bypass(BaseBypass):
         raise RequisitesNotMet
 
     def meets_conditions(self):
-        if (not self.config.reader_options['name'].endswith('S3Reader')
-                or not self.config.writer_options['name'].endswith('AzureFileWriter')):
+        if (not self.config.reader_options['name'].endswith('S3Reader') or
+                not self.config.writer_options['name'].endswith('AzureFileWriter')):
             raise RequisitesNotMet
         if not self.config.filter_before_options['name'].endswith('NoFilter'):
             self._raise_conditions_not_met('custom filter configured')
@@ -59,10 +60,11 @@ class AzureFileS3Bypass(BaseBypass):
         return dest_filebase
 
     def _fill_config_with_env(self):
-        if 'aws_access_key_id' not in self.config.reader_options['options']:
-            self.config.reader_options['options']['aws_access_key_id'] = os.environ.get('EXPORTERS_S3READER_AWS_KEY')
+        reader_opts = self.config.reader_options['options']
+        if 'aws_access_key_id' not in reader_opts:
+            reader_opts['aws_access_key_id'] = os.environ.get('EXPORTERS_S3READER_AWS_KEY')
         if 'aws_secret_access_key' not in self.config.reader_options['options']:
-            self.config.reader_options['options']['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3READER_AWS_SECRET')
+            reader_opts['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3READER_AWS_SECRET')
 
     def bypass(self):
         from azure.storage.file import FileService
@@ -71,7 +73,8 @@ class AzureFileS3Bypass(BaseBypass):
         writer_options = self.config.writer_options['options']
         self.share = writer_options['share']
         self.filebase = self.create_filebase_name(writer_options['filebase'])
-        self.azure_service = FileService(writer_options['account_name'], writer_options['account_key'])
+        self.azure_service = FileService(
+            writer_options['account_name'], writer_options['account_key'])
         self._fill_config_with_env()
         self.bypass_state = S3BypassState(self.config, self.metadata)
         self.total_items = self.bypass_state.stats['total_count']
@@ -98,10 +101,7 @@ class AzureFileS3Bypass(BaseBypass):
         for sub_path in path:
             folders_added.append(sub_path)
             parent = '/'.join(folders_added)
-            self.azure_service.create_directory(
-                    self.share,
-                    parent,
-            )
+            self.azure_service.create_directory(self.share, parent)
 
     @retry_long
     def _copy_key(self, source_bucket, key_name):

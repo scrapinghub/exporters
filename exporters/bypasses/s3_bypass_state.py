@@ -12,7 +12,8 @@ class S3BypassState(object):
         aws_key = self.config.reader_options['options']['aws_access_key_id']
         aws_secret = self.config.reader_options['options']['aws_secret_access_key']
         if not self.state_position:
-            self.pending = S3BucketKeysFetcher(self.config.reader_options['options'], aws_key, aws_secret).pending_keys()
+            self.pending = S3BucketKeysFetcher(
+                self.config.reader_options['options'], aws_key, aws_secret).pending_keys()
             self.done = []
             self.skipped = []
             self.stats = {'total_count': 0}

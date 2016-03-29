@@ -7,3 +7,8 @@ from .mail_writer import MailWriter
 from .cloudsearch_writer import CloudSearchWriter
 from .reduce_writer import ReduceWriter
 from .hs_reduce_writer import HubstorageReduceWriter
+
+__all__ = [
+    'ConsoleWriter', 'FSWriter', 'FTPWriter', 'SFTPWriter', 'S3Writer',
+    'MailWriter', 'CloudSearchWriter', 'ReduceWriter', 'HubstorageReduceWriter'
+]

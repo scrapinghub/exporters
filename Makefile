@@ -32,6 +32,7 @@ compile:
 	python -m compileall ${SRC_DIRS}
 
 test: compile
+	flake8
 	py.test -v tests --cov=exporters --cov=bin --cov-report term-missing
 
 clean-pyc:

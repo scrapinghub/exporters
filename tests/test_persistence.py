@@ -109,7 +109,7 @@ class MysqlPersistenceTest(unittest.TestCase):
                 'resume': False,
                 'formatter': {}
             },
-            'persistence':{
+            'persistence': {
                 'name': 'exporters.persistence.alchemy_persistence.MysqlPersistence',
                 'options': {
                     'user': 'user',
@@ -139,7 +139,7 @@ class MysqlPersistenceTest(unittest.TestCase):
                 'persistence_state_id': '',
                 'formatter': {}
             },
-            'persistence':{
+            'persistence': {
                 'name': 'exporters.persistence.alchemy_persistence.MysqlPersistence',
                 'options': {
                     'user': 'user',
@@ -158,33 +158,6 @@ class MysqlPersistenceTest(unittest.TestCase):
         persistence = MysqlPersistence(exporter_config.persistence_options, meta())
         self.assertIsInstance(persistence, MysqlPersistence)
 
-    @patch('sqlalchemy.schema.MetaData.create_all')
-    @patch('sqlalchemy.orm.session.SessionTransaction.commit')
-    def test_create_persistence_job(self, mock_commit, mock_metadata):
-        options = valid_config_with_updates({
-            'exporter_options': {
-                'log_level': 'DEBUG',
-                'logger_name': 'export-pipeline',
-                'resume': False,
-                'formatter': {}
-            },
-            'persistence':{
-                'name': 'exporters.persistence.alchemy_persistence.MysqlPersistence',
-                'options': {
-                    'user': 'user',
-                    'password': 'password',
-                    'host': 'localhost',
-                    'port': 3306,
-                    'database': 'test_persistence'
-                }
-            }
-        })
-        mock_metadata.return_value = True
-        mock_commit.return_value = {}
-        exporter_config = ExporterConfig(options)
-        persistence = MysqlPersistence(exporter_config.persistence_options, meta())
-        self.assertIsInstance(persistence, MysqlPersistence)
-
     @patch('sqlalchemy.orm.session.Session.query')
     @patch('sqlalchemy.schema.MetaData.create_all')
     @patch('sqlalchemy.orm.session.SessionTransaction.commit')
@@ -196,7 +169,7 @@ class MysqlPersistenceTest(unittest.TestCase):
                 'resume': False,
                 'formatter': {}
             },
-            'persistence':{
+            'persistence': {
                 'name': 'exporters.persistence.alchemy_persistence.MysqlPersistence',
                 'options': {
                     'user': 'user',
@@ -226,7 +199,7 @@ class MysqlPersistenceTest(unittest.TestCase):
                 'resume': False,
                 'formatter': {}
             },
-            'persistence':{
+            'persistence': {
                 'name': 'exporters.persistence.alchemy_persistence.MysqlPersistence',
                 'options': {
                     'user': 'user',
@@ -255,7 +228,7 @@ class MysqlPersistenceTest(unittest.TestCase):
                 'resume': False,
                 'formatter': {}
             },
-            'persistence':{
+            'persistence': {
                 'name': 'exporters.persistence.alchemy_persistence.MysqlPersistence',
                 'options': {
                     'user': 'user',
@@ -284,7 +257,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
                 'resume': False,
                 'formatter': {}
             },
-            'persistence':{
+            'persistence': {
                 'name': 'exporters.persistence.alchemy_persistence.PostgresqlPersistence',
                 'options': {
                     'user': 'user',
@@ -329,7 +302,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
                 'persistence_state_id': '',
                 'formatter': {}
             },
-            'persistence':{
+            'persistence': {
                 'name': 'exporters.persistence.alchemy_persistence.PostgresqlPersistence',
                 'options': {
                     'user': 'user',
@@ -359,7 +332,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
                 'resume': False,
                 'formatter': {}
             },
-            'persistence':{
+            'persistence': {
                 'name': 'exporters.persistence.alchemy_persistence.PostgresqlPersistence',
                 'options': {
                     'user': 'user',
@@ -389,7 +362,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
                 'resume': False,
                 'formatter': {}
             },
-            'persistence':{
+            'persistence': {
                 'name': 'exporters.persistence.alchemy_persistence.PostgresqlPersistence',
                 'options': {
                     'user': 'user',

@@ -66,7 +66,8 @@ class KafkaScannerReader(BaseReader):
 
     def get_next_batch(self):
         """
-        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        This method is called from the manager. It must return a list or a generator
+        of BaseRecord objects.
         When it has nothing else to read, it must set class variable "finished" to True.
         """
         try:
@@ -81,8 +82,8 @@ class KafkaScannerReader(BaseReader):
 
     def set_last_position(self, last_position):
         """
-        Called from the manager, it is in charge of updating the last position of data commited by the writer, in order to
-        have resume support
+        Called from the manager, it is in charge of updating the last position of data commited
+        by the writer, in order to have resume support
         """
         if last_position is None:
             self.last_position = {}

@@ -36,7 +36,8 @@ class ReduceWriter(BaseWriter):
     def __init__(self, *args, **kwargs):
         super(ReduceWriter, self).__init__(*args, **kwargs)
         code = self.read_option('code')
-        self.logger.warning('ReduceWriter uses Python exec() -- only use it in contained environments')
+        self.logger.warning(
+            'ReduceWriter uses Python exec() -- only use it in contained environments')
         source_path = self.read_option('source_path')
         self.reduce_function = compile_reduce_function(code, source_path)
         self.logger.info('ReduceWriter configured with code:\n%s\n' % code)
@@ -46,8 +47,8 @@ class ReduceWriter(BaseWriter):
         for item in batch:
             self._accumulator = self.reduce_function(item, self._accumulator)
             self.increment_written_items()
-        self.logger.info('Reduced {} items, accumulator is: {}'.format(self.get_metadata('items_count'),
-                                                                       self._accumulator))
+        self.logger.info('Reduced {} items, accumulator is: {}'.format(
+            self.get_metadata('items_count'), self._accumulator))
 
     @property
     def reduced_result(self):

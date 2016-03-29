@@ -22,7 +22,10 @@ class PythonExpGrouper(BaseGrouper):
         membership = []
         try:
             context = create_context(item=item)
-            membership = [self.interpreter.eval(expression, context=context) for expression in self.expressions]
+            membership = [
+                self.interpreter.eval(expression, context=context)
+                for expression in self.expressions
+            ]
         except Exception as ex:
             self.logger.error(str(ex))
             raise

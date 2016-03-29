@@ -45,7 +45,8 @@ class DropboxWriter(FilebaseBaseWriter):
             self.client.files_upload_session_append(data, session_id.session_id, current_offset)
             current_offset += len(data)
         cursor = files.UploadSessionCursor(session_id.session_id, current_offset)
-        self.client.files_upload_session_finish('', cursor, files.CommitInfo(path='{}'.format(filepath)))
+        self.client.files_upload_session_finish(
+            '', cursor, files.CommitInfo(path='{}'.format(filepath)))
 
     def _write_file(self, dump_path, group_key, file_name=None):
         filebase_path, file_name = self.create_filebase_name(group_key, file_name=file_name)

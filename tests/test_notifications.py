@@ -150,7 +150,8 @@ class SESMailNotifierTest(unittest.TestCase):
             DEFAULT_MAIN_FROM,
             'Customer export job finished',
             u'\nExport job finished successfully.\n\nTotal records exported: 2.\n\n'
-            'If you have any questions or concerns about the data you have received, email us at help@scrapinghub.com.\n',
+            'If you have any questions or concerns about the data you have received, '
+            'email us at help@scrapinghub.com.\n',
             ['client@example.com', 'team@example.com']
         )
 
@@ -163,7 +164,8 @@ class SESMailNotifierTest(unittest.TestCase):
             DEFAULT_MAIN_FROM,
             'Customer export job finished',
             u'\nExport job finished successfully.\n\n\n\n'
-            'If you have any questions or concerns about the data you have received, email us at help@scrapinghub.com.\n',
+            'If you have any questions or concerns about the data you have received, '
+            'email us at help@scrapinghub.com.\n',
             mock.ANY
         )
 

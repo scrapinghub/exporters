@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 import tempfile
+from collections import Counter
 from exporters.default_retries import retry_long
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
@@ -51,8 +52,9 @@ class GDriveWriter(FilebaseBaseWriter):
         """
         parent = self._ensure_folder_path(path)
 
-        file_list = self.drive.ListFile({'q': "'{}' in parents and trashed=false and title contains '{}'".format(
-                                            parent['id'], prefix)}).GetList()
+        file_list = self.drive.ListFile({
+            'q': "'{}' in parents and trashed=false and title contains '{}'".format(
+                parent['id'], prefix)}).GetList()
         try:
             number_of_files = len(file_list)
         except:
@@ -65,8 +67,9 @@ class GDriveWriter(FilebaseBaseWriter):
         folders = filebase_path.split('/')
         parent = {"id": "root"}
         for folder in folders:
-            file_list = self.drive.ListFile({'q': "'{}' in parents and trashed=false and title = '{}'".format(
-                                                    parent['id'], folder)}).GetList()
+            file_list = self.drive.ListFile(
+                {'q': "'{}' in parents and trashed=false and title = '{}'".format(
+                    parent['id'], folder)}).GetList()
             if not len(file_list):
                 f = self.drive.CreateFile({'title': folder, 'parents': [parent],
                                            'mimeType': 'application/vnd.google-apps.folder'})

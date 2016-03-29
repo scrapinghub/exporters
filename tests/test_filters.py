@@ -86,7 +86,10 @@ class KeyValueFilterTest(unittest.TestCase):
         self.assertEqual('es', dict(batch[0])['country_code'])
 
     def test_filter_logs(self):
-        batch = [{'country': random.choice(['es', 'uk']), 'value': random.randint(0, 1000)} for i in range(5000)]
+        batch = [
+            {'country': random.choice(['es', 'uk']), 'value': random.randint(0, 1000)}
+            for i in range(5000)
+        ]
         # No exception should be raised
         self.filter.filter_batch(batch)
 

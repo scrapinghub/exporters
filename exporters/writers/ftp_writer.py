@@ -1,4 +1,3 @@
-import datetime
 import os
 
 from exporters.default_retries import retry_long

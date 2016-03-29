@@ -1,4 +1,3 @@
-import hashlib
 from exporters.write_buffer import WriteBuffer
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
@@ -42,7 +41,8 @@ class BaseWriter(BasePipelineItem):
         self.export_formatter = kwargs.get('export_formatter')
         items_per_buffer_write = self.read_option('items_per_buffer_write')
         size_per_buffer_write = self.read_option('size_per_buffer_write')
-        self.write_buffer = WriteBuffer(items_per_buffer_write, size_per_buffer_write, self.export_formatter)
+        self.write_buffer = WriteBuffer(
+            items_per_buffer_write, size_per_buffer_write, self.export_formatter)
         self.set_metadata('items_count', 0)
 
     def write(self, path, key):
@@ -104,7 +104,8 @@ class BaseWriter(BasePipelineItem):
 
     def _write(self, key):
         write_info = self.write_buffer.pack_buffer(key)
-        self.write(write_info.get('compressed_path'), self.write_buffer.grouping_info[key]['membership'])
+        self.write(write_info.get('compressed_path'),
+                   self.write_buffer.grouping_info[key]['membership'])
         self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
 
     def finish_writing(self):

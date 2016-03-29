@@ -26,7 +26,8 @@ class ProgressCallbackTest(unittest.TestCase):
     def test_ftp_download_progress(self):
         cbk = FtpDownloadProgress(self.logger, 0)
         cbk(b'four')
-        self.assertIn('(bytes downloaded: 4 of unknown, download elapsed time: ', self.logger.messages[-1])
+        self.assertIn('(bytes downloaded: 4 of unknown, download elapsed time: ',
+                      self.logger.messages[-1])
 
     def test_boto_upload_progress(self):
         cbk = BotoUploadProgress(self.logger, 0)

@@ -32,7 +32,8 @@ class Interpreter(object):
         'expr', 'name', 'load', 'call', 'store',
         'str', 'unicode', 'num', 'list', 'dict', 'set', 'tuple',  # Data types
         'unaryop', 'usub',  # Unary arithmetic operators
-        'binop', 'add', 'sub', 'div', 'mult', 'mod', 'pow', 'floordiv',  # Binary arithmetic operators
+        # Binary arithmetic operators
+        'binop', 'add', 'sub', 'div', 'mult', 'mod', 'pow', 'floordiv',
         'compare', 'eq', 'noteq', 'gt', 'lt', 'gte', 'lte',  # Comparison operators
         'bitand', 'bitor', 'bitxor', 'invert', 'lshift', 'rshift',  # Bitwise operators
         'boolop', 'and', 'or', 'not',  # Logical operators

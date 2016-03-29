@@ -135,6 +135,7 @@ class ConfigCheckErrorTest(unittest.TestCase):
                      'batch_size': 'very bad'},
             'sec3': {'single_field': 'invalid'}
         }
+
         def sorted_lines(s):
             return sorted(s.split())
         # dicts are not ordered, so we use not quite exact comparison

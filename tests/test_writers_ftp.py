@@ -1,5 +1,3 @@
-import os
-
 import mock
 import tempfile
 import unittest
@@ -21,7 +19,6 @@ class FTPWriterTest(unittest.TestCase):
             {'name': 'Claudia', 'birthday': '21/12/1985'},
         ]
         return [BaseRecord(d) for d in data]
-
 
     def test_default_port_is_21(self):
         options = dict(options=dict(
@@ -75,7 +72,6 @@ class FTPWriterTest(unittest.TestCase):
             mock.call('some/long/dir/with'),
         ], mock_mkd.mock_calls)
 
-
     @mock.patch('exporters.writers.FTPWriter.build_ftp_instance')
     def test_check_writer_consistency_unexpected_size(self, mock_ftp):
 
@@ -114,5 +110,6 @@ class FTPWriterTest(unittest.TestCase):
             writer.write_batch(self.get_batch())
             writer.flush()
             # then
-            with self.assertRaisesRegexp(InconsistentWriteState, 'file is not present at destination'):
+            with self.assertRaisesRegexp(InconsistentWriteState,
+                                         'file is not present at destination'):
                 writer.finish_writing()

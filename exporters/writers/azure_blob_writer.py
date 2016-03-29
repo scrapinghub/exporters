@@ -74,11 +74,15 @@ class AzureBlobWriter(BaseWriter):
         from azure.common import AzureMissingResourceHttpError
         for blob_info in self.get_metadata('blobs_written'):
             try:
-                blob_properties = self.azure_service.get_blob_properties(self.read_option('container'), blob_info['blob_name'])
+                blob_properties = self.azure_service.get_blob_properties(
+                    self.read_option('container'), blob_info['blob_name'])
                 blob_size = blob_properties.get('content-length')
                 if str(blob_size) != str(blob_info['size']):
-                    raise InconsistentWriteState('File {} has unexpected size. (expected {} - got {})'.format(
-                                blob_info['blob_name'], blob_info['size'], blob_size))
+                    raise InconsistentWriteState(
+                        'File {} has unexpected size. (expected {} - got {})'.format(
+                            blob_info['blob_name'], blob_info['size'], blob_size
+                        )
+                    )
             except AzureMissingResourceHttpError:
                 raise InconsistentWriteState('Missing blob {}'.format(blob_info['blob_name']))
         self.logger.info('Consistency check passed')

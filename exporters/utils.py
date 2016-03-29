@@ -6,8 +6,10 @@ from contextlib import contextmanager
 
 
 def remove_if_exists(file_name):
-    try: os.remove(file_name)
-    except: pass
+    try:
+        os.remove(file_name)
+    except:
+        pass
 
 
 @contextmanager

@@ -57,8 +57,11 @@ class HubstorageReader(BaseReader):
         super(HubstorageReader, self).__init__(*args, **kwargs)
         self.batch_size = self.read_option('batch_size')
         self.collection_scanner = self._create_collection_scanner()
-        self.logger.info('HubstorageReader has been initiated. Project id: {}. Collection name: {}'.format(
-            self.read_option('project_id'), self.read_option('collection_name')))
+        self.logger.info(
+            'HubstorageReader has been initiated. '
+            'Project id: {}. Collection name: {}'.format(
+                self.read_option('project_id'), self.read_option('collection_name'))
+        )
         self.last_position = {}
 
     def _create_collection_scanner(self):
@@ -78,7 +81,8 @@ class HubstorageReader(BaseReader):
 
     def get_next_batch(self):
         """
-        This method is called from the manager. It must return a list or a generator of BaseRecord objects.
+        This method is called from the manager. It must return a list or a generator
+        of BaseRecord objects.
         When it has nothing else to read, it must set class variable "finished" to True.
         """
         if self.collection_scanner.is_enabled:
@@ -95,8 +99,8 @@ class HubstorageReader(BaseReader):
 
     def set_last_position(self, last_position):
         """
-        Called from the manager, it is in charge of updating the last position of data commited by the writer, in order to
-        have resume support
+        Called from the manager, it is in charge of updating the last position of data commited
+        by the writer, in order to have resume support
         """
         if last_position:
             if isinstance(last_position, six.string_types):

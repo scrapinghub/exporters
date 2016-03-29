@@ -12,7 +12,10 @@ class BasePersistence(BasePipelineItem):
         super(BasePersistence, self).__init__(options, metadata)
         self.set_metadata('commited_positions', 0)
         self.configuration = json.loads(options.get('configuration', '{}'))
-        self.logger = PersistenceLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
+        self.logger = PersistenceLogger({
+            'log_level': options.get('log_level'),
+            'logger_name': options.get('logger_name')
+        })
         self._load_persistence_options()
         self._start_persistence(options)
 
@@ -43,14 +46,17 @@ class BasePersistence(BasePipelineItem):
 
     def commit_position(self, last_position):
         """
-        Commits a position that has been through all the pipeline. Position can be any serializable object. This support both
-        usual position abstractions (number of batch) of specific abstractions such as offsets in Kafka (which are a dict).
+        Commits a position that has been through all the pipeline.
+        Position can be any serializable object. This support both
+        usual position abstractions (number of batch) of specific abstractions
+        such as offsets in Kafka (which are a dict).
         """
         raise NotImplementedError
 
     def generate_new_job(self):
         """
-        Creates and instantiates all that is needed to keep persistence (tmp files, remote connections...).
+        Creates and instantiates all that is needed to keep
+        persistence (tmp files, remote connections...).
         """
         raise NotImplementedError
 

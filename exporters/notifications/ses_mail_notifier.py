@@ -68,7 +68,7 @@ Total records exported: {{ writer.items_count }}.
 {%- endif %}
 
 If you have any questions or concerns about the data you have received, email us at help@scrapinghub.com.\n
-"""
+"""  # noqa
     return render(subject_tmpl, **data), render(body_tmpl, **data)
 
 

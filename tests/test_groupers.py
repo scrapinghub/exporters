@@ -126,7 +126,10 @@ class PythonExpGrouperTest(unittest.TestCase):
             'grouper': {
                 'name': 'exporters.groupers.python_exp_grouper.PythonExpGrouper',
                 'options': {
-                    'python_expressions': ['item[\'country_code\'] in [\'uk\', \'us\']', 'item[\'value\'] % 5']
+                    'python_expressions': [
+                        'item[\'country_code\'] in [\'uk\', \'us\']',
+                        'item[\'value\'] % 5'
+                    ]
                 }
             }
         }

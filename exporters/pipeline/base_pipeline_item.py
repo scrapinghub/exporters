@@ -33,8 +33,10 @@ class BasePipelineItem(object):
                 continue
             if 'env_fallback' in option_spec and option_value is None:
                 if not os.environ.get(option_spec['env_fallback']):
-                    raise ConfigurationError('Missing value for option {}. (tried also: {} from env)'
-                                             .format(option_name, option_spec['env_fallback']))
+                    raise ConfigurationError(
+                        'Missing value for option {}. (tried also: {} from env)'.format(
+                            option_name, option_spec['env_fallback'])
+                    )
             elif option_value is None:
                 raise ConfigurationError('Missing value for option %s' % option_name)
 

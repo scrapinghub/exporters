@@ -4,3 +4,8 @@ from .hubstorage_reader import HubstorageReader
 from .kafka_scanner_reader import KafkaScannerReader
 from .kafka_random_reader import KafkaRandomReader
 from .fs_reader import FSReader
+
+__all__ = [
+    'S3Reader', 'RandomReader', 'HubstorageReader', 'KafkaScannerReader',
+    'KafkaRandomReader', 'FSReader'
+]
