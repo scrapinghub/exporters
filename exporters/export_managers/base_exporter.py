@@ -1,6 +1,7 @@
 import datetime
 import traceback
 from collections import OrderedDict
+from exporters.default_retries import disable_retries
 from exporters.writers.base_writer import ItemsLimitReached
 from exporters.export_managers.base_bypass import RequisitesNotMet
 from exporters.logger.base_logger import ExportManagerLogger
@@ -35,6 +36,8 @@ class BaseExporter(object):
         self.grouper = self.module_loader.load_grouper(
             self.config.grouper_options, metadata)
         self.notifiers = NotifiersList(self.config.notifiers, metadata)
+        if self.config.disable_retries:
+            disable_retries()
         self.logger.debug('{} has been initiated'.format(self.__class__.__name__))
         self.stats_manager = self.module_loader.load_stats_manager(
             self.config.stats_options, metadata)

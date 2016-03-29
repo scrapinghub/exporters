@@ -49,6 +49,10 @@ class ExporterConfig(object):
     def prevent_bypass(self):
         return self.exporter_options.get('prevent_bypass', False)
 
+    @property
+    def disable_retries(self):
+        return self.exporter_options.get('disable_retries', False)
+
 
 MODULE_TYPES = ['readers', 'writers', 'transform', 'groupers',
                 'persistence', 'filters', 'stats_managers']

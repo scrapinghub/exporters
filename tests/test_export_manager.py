@@ -384,6 +384,49 @@ class BaseExportManagerTest(unittest.TestCase):
             last_read = [args[0]['last_read'] for name, args, kwargs in m.mock_calls]
             self.assertEqual(last_read, [2, 5, 8, 11, 14, 16])
 
+    def test_disabling_retries(self):
+        count_holder = [0]
+        options = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {
+                    'number_of_items': 17,
+                    'batch_size': 3
+                }
+            },
+            'writer': {
+                'name': 'tests.utils.NullWriter',
+                'options': {
+                    'items_limit': 5
+                }
+            },
+            'persistence': {
+                'name': 'tests.utils.NullPersistence',
+            },
+            'exporter_options': {
+                'notifications': [
+                    {
+                        'name': 'exporters.notifications.webhook_notifier.WebhookNotifier',
+                        'options': {
+                            'endpoints': ['http://endpoint']
+                        }
+                    }
+                ],
+                'disable_retries': True
+            },
+        }
+        
+        def count_and_raise(*args, **kwargs):
+            count_holder[0] += 1
+            raise RuntimeError('test exception')
+
+        export = BaseExporter(options)
+        with mock.patch('requests.post', side_effect=count_and_raise):
+            export.export()
+
+        # there should be 2 posts: for started and completed dump
+        self.assertEqual(count_holder[0], 2, "Retries should be disabled")
+
 
 class BasicExportManagerTest(unittest.TestCase):
 
