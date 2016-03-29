@@ -1,3 +1,4 @@
+import os
 import unittest
 from mock import patch, Mock
 from exporters.exporter_config import ExporterConfig
@@ -71,7 +72,7 @@ class PicklePersistenceTest(unittest.TestCase):
             self.assertIsInstance(persistence, PicklePersistence)
             persistence.close()
         finally:
-            remove_if_exists(file_name)
+            remove_if_exists('/tmp/'+file_name)
 
     @patch('os.path.isfile', autospec=True)
     @patch('__builtin__.open', autospec=True)
