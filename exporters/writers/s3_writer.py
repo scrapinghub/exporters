@@ -3,6 +3,7 @@ from contextlib import closing
 import datetime
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
+from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 DEFAULT_BUCKET_REGION = 'us-east-1'
@@ -71,6 +72,7 @@ class S3Writer(FilebaseBaseWriter):
         self.logger.info('S3Writer has been initiated.'
                          'Writing to s3://{}/{}'.format(self.bucket.name, self.filebase))
         self.set_metadata('files_counter', Counter())
+        self.set_metadata('keys_written', [])
 
     def _get_bucket_location(self, access_key, secret_key, bucket):
         import boto
@@ -79,6 +81,17 @@ class S3Writer(FilebaseBaseWriter):
             return conn.get_bucket(bucket).get_location() or DEFAULT_BUCKET_REGION
         except:
             return DEFAULT_BUCKET_REGION
+
+    def _update_metadata(self, dump_path, key_name):
+        buffer_info = self.write_buffer.metadata[dump_path]
+        key_info = {
+            'key_name': key_name,
+            'size': buffer_info['size'],
+            'number_of_records': buffer_info['number_of_records']
+        }
+        keys_written = self.get_metadata('keys_written')
+        keys_written.append(key_info)
+        self.set_metadata('keys_written', keys_written)
 
     def _get_total_count(self, dump_path):
         return self.write_buffer.get_metadata(dump_path, 'number_of_records') or 0
@@ -112,6 +125,7 @@ class S3Writer(FilebaseBaseWriter):
         filebase_path, file_name = self.create_filebase_name(group_key, file_name=file_name)
         key_name = filebase_path + '/' + file_name
         self._write_s3_key(dump_path, key_name)
+        self._update_metadata(dump_path, key_name)
         self.get_metadata('files_counter')[filebase_path] += 1
 
     @retry_long
@@ -130,9 +144,6 @@ class S3Writer(FilebaseBaseWriter):
         """
         Called to clean all possible tmp files created during the process.
         """
-        if self.write_buffer is not None:
-            self.write_buffer.close()
-        self._check_write_consistency()
         if self.read_option('save_pointer'):
             self._update_last_pointer()
         super(S3Writer, self).close()
@@ -141,3 +152,25 @@ class S3Writer(FilebaseBaseWriter):
         number_of_keys = self.get_metadata('files_counter').get(path, 0)
         suffix = '{}'.format(str(number_of_keys))
         return suffix
+
+    def _check_write_consistency(self):
+        from boto.exception import S3ResponseError
+        for key_info in self.get_metadata('keys_written'):
+            try:
+                key = self.bucket.get_key(key_info['key_name'])
+                if not key:
+                    raise InconsistentWriteState('Key {} not found in bucket'.format(key_info['key_name']))
+                if str(key.content_length) != str(key_info['size']):
+                    raise InconsistentWriteState('Key {} has unexpected size. (expected {} - got {})'.format(
+                            key_info['key_name'], key_info['size'], key.content_length))
+                if self.save_metadata:
+                    if str(key.get_metadata('total')) != str(key_info['number_of_records']):
+                        raise InconsistentWriteState(
+                                'Unexpected number of records for key {}. (expected {} - got {})'.format(
+                                        key_info['key_name'], key_info['number_of_records'],
+                                        key.get_metadata('total')))
+            except S3ResponseError:
+                self.logger.warning(
+                        'Skipping consistency check for key {}. Probably due to lack of read permissions'.format(
+                                key_info['key_name']))
+        self.logger.info('Consistency check passed')
