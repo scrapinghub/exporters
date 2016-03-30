@@ -55,6 +55,10 @@ class PicklePersistenceTest(unittest.TestCase):
                 'logger_name': 'export-pipeline',
                 'resume': False,
                 'formatter':  {}
+            },
+            'persistence': {
+                'name': 'exporters.persistence.pickle_persistence.PicklePersistence',
+                'options': {'file_path': '/tmp'}
             }
         })
 
@@ -71,7 +75,7 @@ class PicklePersistenceTest(unittest.TestCase):
             self.assertIsInstance(persistence, PicklePersistence)
             persistence.close()
         finally:
-            remove_if_exists(file_name)
+            remove_if_exists('/tmp/'+file_name)
 
     @patch('os.path.isfile', autospec=True)
     @patch('__builtin__.open', autospec=True)

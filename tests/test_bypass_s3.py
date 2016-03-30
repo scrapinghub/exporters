@@ -2,13 +2,12 @@ import datetime
 import json
 import shutil
 import unittest
-
+from contextlib import closing
 import boto
 import mock
 import moto
 from boto.exception import S3ResponseError
 from boto.utils import compute_md5
-
 from exporters.bypasses.s3_to_s3_bypass import S3Bypass, RequisitesNotMet
 from exporters.exporter_config import ExporterConfig
 from exporters.utils import remove_if_exists, TmpFile
@@ -139,8 +138,8 @@ class S3BypassTest(unittest.TestCase):
         options = create_s3_bypass_simple_config()
 
         # when:
-        bypass = S3Bypass(options, meta())
-        bypass.bypass()
+        with closing(S3Bypass(options, meta())) as bypass:
+            bypass.bypass()
 
         # then:
         bucket = self.s3_conn.get_bucket('dest_bucket')
@@ -157,8 +156,8 @@ class S3BypassTest(unittest.TestCase):
         options = create_s3_bypass_simple_config()
 
         # when:
-        bypass = S3Bypass(options, meta())
-        bypass.bypass()
+        with closing(S3Bypass(options, meta())) as bypass:
+            bypass.bypass()
 
         # then:
         bucket = self.s3_conn.get_bucket('dest_bucket')
@@ -175,8 +174,8 @@ class S3BypassTest(unittest.TestCase):
         options = create_s3_bypass_simple_config()
 
         # when:
-        bypass = S3Bypass(options, meta())
-        bypass.bypass()
+        with closing(S3Bypass(options, meta())) as bypass:
+            bypass.bypass()
 
         # then:
         key = next(iter(bucket.list('some_prefix/')))
@@ -217,8 +216,8 @@ class S3BypassTest(unittest.TestCase):
         expected_final_keys = ['some_prefix/key1', 'some_prefix/key2', 'some_prefix/key3']
 
         # when:
-        bypass = S3Bypass(options, meta())
-        bypass.bypass()
+        with closing(S3Bypass(options, meta())) as bypass:
+            bypass.bypass()
 
         # then:
         dest_bucket = self.s3_conn.get_bucket('resume_bucket')
@@ -268,9 +267,8 @@ class S3BypassTest(unittest.TestCase):
         self.s3_conn.create_bucket('pointer_fake_bucket')
 
         # when:
-        bypass = S3Bypass(options, meta())
-        bypass.bypass()
-        bypass.close()
+        with closing(S3Bypass(options, meta())) as bypass:
+            bypass.bypass()
 
         # then:
         bucket = self.s3_conn.get_bucket('pointer_fake_bucket')
@@ -314,8 +312,8 @@ class S3BypassTest(unittest.TestCase):
         expected_keys = ['some_prefix/key1', 'some_prefix/key2', 'some_prefix/key3']
 
         # when
-        bypass = S3Bypass(options, meta())
-        bypass.bypass()
+        with closing(S3Bypass(options, meta())) as bypass:
+            bypass.bypass()
 
         # then
         dest_bucket = self.s3_conn.get_bucket('dest_pointer_bucket')

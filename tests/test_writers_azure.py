@@ -37,10 +37,11 @@ class AzureBlobWriterTest(unittest.TestCase):
         options['options']['container'] = 'invalid--container--name'
         warnings.simplefilter('always')
         with warnings.catch_warnings(record=True) as w:
-            AzureBlobWriter(
+            writer = AzureBlobWriter(
                 options, meta(), export_formatter=JsonExportFormatter(dict()))
             self.assertIn("Container name invalid--container--name doesn't conform",
                           str(w[0].message))
+            writer.close()
 
     @mock.patch('azure.storage.blob.BlobService.create_container')
     @mock.patch('azure.storage.blob.BlobService.put_block_blob_from_path')
