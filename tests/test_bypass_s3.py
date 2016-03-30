@@ -141,12 +141,12 @@ class S3BypassTest(unittest.TestCase):
         with closing(S3Bypass(options, meta())) as bypass:
             bypass.bypass()
 
-            # then:
-            bucket = self.s3_conn.get_bucket('dest_bucket')
-            key = next(iter(bucket.list('some_prefix/')))
-            self.assertEquals('some_prefix/test_key', key.name)
-            self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
-            self.assertEqual(bypass.total_items, 2, 'Bypass got an incorrect number of total items')
+        # then:
+        bucket = self.s3_conn.get_bucket('dest_bucket')
+        key = next(iter(bucket.list('some_prefix/')))
+        self.assertEquals('some_prefix/test_key', key.name)
+        self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
+        self.assertEqual(bypass.total_items, 2, 'Bypass got an incorrect number of total items')
 
     @mock.patch('boto.s3.bucket.Bucket.copy_key', autospec=True)
     def test_copy_mode_bypass(self, copy_key_mock):
@@ -159,12 +159,12 @@ class S3BypassTest(unittest.TestCase):
         with closing(S3Bypass(options, meta())) as bypass:
             bypass.bypass()
 
-            # then:
-            bucket = self.s3_conn.get_bucket('dest_bucket')
-            key = next(iter(bucket.list('some_prefix/')))
-            self.assertEquals('some_prefix/test_key', key.name)
-            self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
-            self.assertEqual(bypass.total_items, 2, 'Bypass got an incorrect number of total items')
+        # then:
+        bucket = self.s3_conn.get_bucket('dest_bucket')
+        key = next(iter(bucket.list('some_prefix/')))
+        self.assertEquals('some_prefix/test_key', key.name)
+        self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
+        self.assertEqual(bypass.total_items, 2, 'Bypass got an incorrect number of total items')
 
     @mock.patch('boto.s3.connection.S3Connection.get_canonical_user_id', autospec=True)
     def test_copy_mode_bypass_when_cant_get_user_id(self, get_user_id_mock):
@@ -177,9 +177,9 @@ class S3BypassTest(unittest.TestCase):
         with closing(S3Bypass(options, meta())) as bypass:
             bypass.bypass()
 
-            # then:
-            key = next(iter(bucket.list('some_prefix/')))
-            self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
+        # then:
+        key = next(iter(bucket.list('some_prefix/')))
+        self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
 
     def _create_and_populate_bucket(self, bucket_name, number_of_items=3):
         self.s3_conn.create_bucket(bucket_name)
@@ -219,13 +219,13 @@ class S3BypassTest(unittest.TestCase):
         with closing(S3Bypass(options, meta())) as bypass:
             bypass.bypass()
 
-            # then:
-            dest_bucket = self.s3_conn.get_bucket('resume_bucket')
-            key1 = dest_bucket.get_key('some_prefix/key1')
-            self.assertEqual(key1.get_contents_as_string(), 'not overwritten')
-            bucket_keynames = [k.name for k in list(dest_bucket.list('some_prefix/'))]
-            self.assertEquals(expected_final_keys, bucket_keynames)
-            self.assertEquals(bypass.total_items, 6, 'Wrong number of items written')
+        # then:
+        dest_bucket = self.s3_conn.get_bucket('resume_bucket')
+        key1 = dest_bucket.get_key('some_prefix/key1')
+        self.assertEqual(key1.get_contents_as_string(), 'not overwritten')
+        bucket_keynames = [k.name for k in list(dest_bucket.list('some_prefix/'))]
+        self.assertEquals(expected_final_keys, bucket_keynames)
+        self.assertEquals(bypass.total_items, 6, 'Wrong number of items written')
 
     def test_filebase_format_bypass(self):
         # given
@@ -270,12 +270,12 @@ class S3BypassTest(unittest.TestCase):
         with closing(S3Bypass(options, meta())) as bypass:
             bypass.bypass()
 
-            # then:
-            bucket = self.s3_conn.get_bucket('pointer_fake_bucket')
-            saved_keys = [k for k in bucket.list('pointer/')]
-            self.assertEquals(1, len(saved_keys))
-            key = saved_keys[0]
-            self.assertEqual('tests/', key.get_contents_as_string())
+        # then:
+        bucket = self.s3_conn.get_bucket('pointer_fake_bucket')
+        saved_keys = [k for k in bucket.list('pointer/')]
+        self.assertEquals(1, len(saved_keys))
+        key = saved_keys[0]
+        self.assertEqual('tests/', key.get_contents_as_string())
 
     def test_prefix_pointer_list_keys(self):
         # given
@@ -315,13 +315,13 @@ class S3BypassTest(unittest.TestCase):
         with closing(S3Bypass(options, meta())) as bypass:
             bypass.bypass()
 
-            # then
-            dest_bucket = self.s3_conn.get_bucket('dest_pointer_bucket')
-            keys = dest_bucket.list(prefix='some_prefix/')
-            keys_list = []
-            for key in keys:
-                keys_list.append(key.name)
-            self.assertEqual(expected_keys, keys_list)
+        # then
+        dest_bucket = self.s3_conn.get_bucket('dest_pointer_bucket')
+        keys = dest_bucket.list(prefix='some_prefix/')
+        keys_list = []
+        for key in keys:
+            keys_list.append(key.name)
+        self.assertEqual(expected_keys, keys_list)
 
     def test_get_md5(self):
         # given
