@@ -164,7 +164,8 @@ class S3WriterTest(unittest.TestCase):
 
         # when:
         try:
-            writer = S3Writer(options, ExportMeta(options), export_formatter=JsonExportFormatter(dict()))
+            writer = S3Writer(
+                    options, ExportMeta(options), export_formatter=JsonExportFormatter(dict()))
             writer.write_batch(items_to_write)
             writer.flush()
         finally:
@@ -184,7 +185,8 @@ class S3WriterTest(unittest.TestCase):
 
         # when:
         try:
-            writer = S3Writer(options, ExportMeta(options), export_formatter=JsonExportFormatter(dict()))
+            writer = S3Writer(
+                    options, ExportMeta(options), export_formatter=JsonExportFormatter(dict()))
             writer.write_batch(items_to_write)
             writer.flush()
         finally:
@@ -205,7 +207,8 @@ class S3WriterTest(unittest.TestCase):
 
         # when:
         try:
-            writer = S3Writer(options, ExportMeta(options), export_formatter=JsonExportFormatter(dict()))
+            writer = S3Writer(
+                    options, ExportMeta(options), export_formatter=JsonExportFormatter(dict()))
             writer.write_batch(items_to_write)
             writer.flush()
         finally:

@@ -160,18 +160,21 @@ class S3Writer(FilebaseBaseWriter):
             try:
                 key = self.bucket.get_key(key_info['key_name'])
                 if not key:
-                    raise InconsistentWriteState('Key {} not found in bucket'.format(key_info['key_name']))
+                    raise InconsistentWriteState('Key {} not found in bucket'.format(
+                            key_info['key_name']))
                 if str(key.content_length) != str(key_info['size']):
-                    raise InconsistentWriteState('Key {} has unexpected size. (expected {} - got {})'.format(
-                            key_info['key_name'], key_info['size'], key.content_length))
+                    raise InconsistentWriteState(
+                            'Key {} has unexpected size. (expected {} - got {})'.format(
+                                    key_info['key_name'], key_info['size'], key.content_length))
                 if self.save_metadata:
                     if str(key.get_metadata('total')) != str(key_info['number_of_records']):
                         raise InconsistentWriteState(
-                                'Unexpected number of records for key {}. (expected {} - got {})'.format(
-                                        key_info['key_name'], key_info['number_of_records'],
-                                        key.get_metadata('total')))
+                                'Unexpected number of records for key {}. ('
+                                'expected {} - got {})'.format(key_info['key_name'],
+                                                               key_info['number_of_records'],
+                                                               key.get_metadata('total')))
             except S3ResponseError:
                 self.logger.warning(
-                        'Skipping consistency check for key {}. Probably due to lack of read permissions'.format(
-                                key_info['key_name']))
+                        'Skipping consistency check for key {}. Probably due to lack of '
+                        'read permissions'.format(key_info['key_name']))
         self.logger.info('Consistency check passed')
