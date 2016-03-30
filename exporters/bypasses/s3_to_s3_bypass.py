@@ -77,7 +77,8 @@ class S3Bypass(BaseBypass):
         raise RequisitesNotMet
 
     def meets_conditions(self):
-        if not self.config.reader_options['name'].endswith('S3Reader') or not self.config.writer_options['name'].endswith('S3Writer'):
+        if not self.config.reader_options['name'].endswith('S3Reader') or \
+           not self.config.writer_options['name'].endswith('S3Writer'):
             raise RequisitesNotMet
         if not self.config.filter_before_options['name'].endswith('NoFilter'):
             self._raise_conditions_not_met('custom filter configured')
@@ -101,29 +102,37 @@ class S3Bypass(BaseBypass):
 
     def bypass(self):
         from copy import deepcopy
-        reader_aws_key = self.read_option('reader', 'aws_access_key_id', 'EXPORTERS_S3READER_AWS_KEY')
-        reader_aws_secret = self.read_option('reader', 'aws_secret_access_key', 'EXPORTERS_S3READER_AWS_SECRET')
+        reader_aws_key = self.read_option(
+                'reader', 'aws_access_key_id', 'EXPORTERS_S3READER_AWS_KEY')
+        reader_aws_secret = self.read_option(
+                'reader', 'aws_secret_access_key', 'EXPORTERS_S3READER_AWS_SECRET')
 
-        writer_aws_key = self.read_option('writer', 'aws_access_key_id', 'EXPORTERS_S3WRITER_AWS_LOGIN')
-        writer_aws_secret = self.read_option('writer', 'aws_secret_access_key', 'EXPORTERS_S3WRITER_AWS_SECRET')
+        writer_aws_key = self.read_option(
+                'writer', 'aws_access_key_id', 'EXPORTERS_S3WRITER_AWS_LOGIN')
+        writer_aws_secret = self.read_option(
+                'writer', 'aws_secret_access_key', 'EXPORTERS_S3WRITER_AWS_SECRET')
 
         writer_options = self.config.writer_options['options']
-        dest_bucket = get_bucket(self.read_option('writer', 'bucket'), writer_aws_key, writer_aws_secret)
+        dest_bucket = get_bucket(
+                self.read_option('writer', 'bucket'), writer_aws_key, writer_aws_secret)
         dest_filebase = self._get_filebase(writer_options)
-        self.bypass_state = S3BypassState(self.config, self.metadata, reader_aws_key, reader_aws_secret)
+        self.bypass_state = S3BypassState(
+                self.config, self.metadata, reader_aws_key, reader_aws_secret)
         self.total_items = self.bypass_state.stats['total_count']
 
-        source_bucket = get_bucket(self.read_option('reader', 'bucket'), reader_aws_key, reader_aws_secret)
+        source_bucket = get_bucket(
+                self.read_option('reader', 'bucket'), reader_aws_key, reader_aws_secret)
         pending_keys = deepcopy(self.bypass_state.pending_keys())
         try:
             for key in pending_keys:
                 dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
                 self._copy_key(dest_bucket, dest_key_name, source_bucket, key)
                 self.bypass_state.commit_copied_key(key)
-                logging.log(logging.INFO,
-                            'Copied key {} to dest: s3://{}/{}'.format(key, dest_bucket.name, dest_key_name))
+                logging.info('Copied key {} to dest: s3://{}/{}'.format(
+                    key, dest_bucket.name, dest_key_name))
             if writer_options.get('save_pointer'):
-                self._update_last_pointer(dest_bucket, writer_options.get('save_pointer'), writer_options.get('filebase'))
+                self._update_last_pointer(
+                    dest_bucket, writer_options.get('save_pointer'), writer_options.get('filebase'))
 
         finally:
             if self.tmp_folder:
@@ -159,8 +168,9 @@ class S3Bypass(BaseBypass):
 
     def _check_copy_integrity(self, source_key, dest_bucket, dest_key):
         if source_key.etag != dest_key.etag:
-            raise InvalidKeyIntegrityCheck('Key {} and key {} md5 checksums are different. {} != {}'
-                                           .format(source_key.name, dest_key.name, source_key.etag, dest_key.etag))
+            raise InvalidKeyIntegrityCheck(
+                'Key {} and key {} md5 checksums are different. {} != {}'.format(
+                    source_key.name, dest_key.name, source_key.etag, dest_key.etag))
 
     def _ensure_proper_key_permissions(self, key):
         key.set_acl('bucket-owner-full-control')

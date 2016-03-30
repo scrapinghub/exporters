@@ -10,7 +10,8 @@ class S3BypassState(object):
         self.state = module_loader.load_persistence(config.persistence_options, metadata)
         self.state_position = self.state.get_last_position()
         if not self.state_position:
-            self.pending = S3BucketKeysFetcher(self.config.reader_options['options'], aws_key, aws_secret).pending_keys()
+            self.pending = S3BucketKeysFetcher(
+                self.config.reader_options['options'], aws_key, aws_secret).pending_keys()
             self.done = []
             self.skipped = []
             self.stats = {'total_count': 0}

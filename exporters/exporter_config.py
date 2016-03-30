@@ -3,9 +3,11 @@ from importlib import import_module
 from inspect import getmembers, isclass
 import json
 from exporters.exceptions import ConfigCheckError
-from exporters.defaults import DEFAULT_FILTER_CONFIG, DEFAULT_GROUPER_CONFIG, DEFAULT_PERSISTENCE_CONFIG, \
-    DEFAULT_STATS_MANAGER_CCONFIG, DEFAULT_FORMATTER_CONFIG, DEFAULT_LOGGER_LEVEL, DEFAULT_LOGGER_NAME, \
-    DEFAULT_TRANSFORM_CONFIG
+from exporters.defaults import (
+    DEFAULT_FILTER_CONFIG, DEFAULT_GROUPER_CONFIG, DEFAULT_PERSISTENCE_CONFIG,
+    DEFAULT_STATS_MANAGER_CCONFIG, DEFAULT_FORMATTER_CONFIG, DEFAULT_LOGGER_LEVEL,
+    DEFAULT_LOGGER_NAME, DEFAULT_TRANSFORM_CONFIG
+)
 
 
 class ExporterConfig(object):
@@ -23,11 +25,14 @@ class ExporterConfig(object):
         self.transform_options = self._merge_options('transform', DEFAULT_TRANSFORM_CONFIG)
         self.grouper_options = self._merge_options('grouper', DEFAULT_GROUPER_CONFIG)
         self.writer_options = self._merge_options('writer')
-        # Persistence module needs to know about the full configuration, in order to retrieve it if needed
+        # Persistence module needs to know about the full configuration,
+        # in order to retrieve it if needed
         self.persistence_options = self._merge_options('persistence', DEFAULT_PERSISTENCE_CONFIG)
-        self.persistence_options['configuration'] = json.dumps(configuration)
-        self.persistence_options['resume'] = exporter_options.get('resume', False)
-        self.persistence_options['persistence_state_id'] = exporter_options.get('persistence_state_id', None)
+        self.persistence_options.update(
+            configuration=json.dumps(configuration),
+            resume=exporter_options.get('resume', False),
+            persistence_state_id=exporter_options.get('persistence_state_id', None)
+        )
         self.stats_options = self._merge_options('stats_manager', DEFAULT_STATS_MANAGER_CCONFIG)
         self.formatter_options = exporter_options.get('formatter', DEFAULT_FORMATTER_CONFIG)
         self.notifiers = exporter_options.get('notifications', [])
@@ -48,6 +53,10 @@ class ExporterConfig(object):
     @property
     def prevent_bypass(self):
         return self.exporter_options.get('prevent_bypass', False)
+
+    @property
+    def disable_retries(self):
+        return self.exporter_options.get('disable_retries', False)
 
 
 MODULE_TYPES = ['readers', 'writers', 'transform', 'groupers',

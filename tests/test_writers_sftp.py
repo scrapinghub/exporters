@@ -62,4 +62,3 @@ class SFTPWriterTest(unittest.TestCase):
         mock_sftp.return_value.__enter__.return_value.stat.side_effect = exception
         with self.assertRaisesRegexp(InconsistentWriteState, 'is not present at destination'):
             writer.finish_writing()
-

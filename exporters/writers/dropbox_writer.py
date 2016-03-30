@@ -1,6 +1,7 @@
 from collections import Counter
 from exporters.default_retries import retry_long
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
+import six
 
 
 class DropboxWriter(FilebaseBaseWriter):
@@ -16,7 +17,7 @@ class DropboxWriter(FilebaseBaseWriter):
 
     """
     supported_options = {
-        'access_token': {'type': basestring, 'env_fallback': 'EXPORTERS_DROPBOXWRITER_TOKEN'},
+        'access_token': {'type': six.string_types, 'env_fallback': 'EXPORTERS_DROPBOXWRITER_TOKEN'},
     }
 
     def __init__(self, *args, **kw):
@@ -45,7 +46,8 @@ class DropboxWriter(FilebaseBaseWriter):
             self.client.files_upload_session_append(data, session_id.session_id, current_offset)
             current_offset += len(data)
         cursor = files.UploadSessionCursor(session_id.session_id, current_offset)
-        self.client.files_upload_session_finish('', cursor, files.CommitInfo(path='{}'.format(filepath)))
+        self.client.files_upload_session_finish(
+            '', cursor, files.CommitInfo(path='{}'.format(filepath)))
 
     def _write_file(self, dump_path, group_key, file_name=None):
         filebase_path, file_name = self.create_filebase_name(group_key, file_name=file_name)

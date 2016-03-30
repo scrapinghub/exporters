@@ -9,7 +9,10 @@ class BaseTransform(BasePipelineItem):
 
     def __init__(self, options, metadata=None):
         super(BaseTransform, self).__init__(options, metadata)
-        self.logger = TransformLogger({'log_level': options.get('log_level'), 'logger_name': options.get('logger_name')})
+        self.logger = TransformLogger({
+            'log_level': options.get('log_level'),
+            'logger_name': options.get('logger_name')
+        })
 
     def transform_batch(self, batch):
         """

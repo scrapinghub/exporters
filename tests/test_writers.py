@@ -111,7 +111,8 @@ class CustomWriterTest(unittest.TestCase):
         try:
             writer.write_batch(self.batch)
             # then
-            self.assertEqual(len(writer.fake_files_already_written), 3, 'Wrong number of files written')
+            self.assertEqual(len(writer.fake_files_already_written), 3,
+                             'Wrong number of files written')
             for f in writer.fake_files_already_written:
                 self.assertFalse(os.path.exists(f))
                 self.assertFalse(os.path.exists(f[:-3]))
@@ -138,12 +139,13 @@ class CustomWriterTest(unittest.TestCase):
         # then:
         output = writer.custom_output[()].splitlines()
         self.assertEquals(
-                [
-                    ['value11', 'value21'],
-                    ['value12', 'value22'],
-                    ['value13', 'value23'],
-                ],
-                [l for l in csv.reader(output)])
+            [
+                ['value11', 'value21'],
+                ['value12', 'value22'],
+                ['value13', 'value23'],
+            ],
+            [l for l in csv.reader(output)]
+        )
 
         self.assertEquals('csv', writer.write_buffer.items_group_files.file_extension)
 
@@ -228,8 +230,13 @@ class CustomWriterTest(unittest.TestCase):
                      for item in expected_list]
         expected += ['</RootItem>']
         out = [output[0], output[1]]
-        out += [[node.localName for node in parseString(l).getElementsByTagName('XmlItem')[0].childNodes]
-                for l in output[2:-1]]
+        out += [
+            [
+                node.localName
+                for node in parseString(l).getElementsByTagName('XmlItem')[0].childNodes
+            ]
+            for l in output[2:-1]
+        ]
         out += [output[-1]]
 
         self.assertEquals(expected, out)

@@ -8,7 +8,8 @@ def get_transmission_names(is_upload):
         return 'download', 'downloaded'
 
 
-def format_log_progress_mesg(speed, transmitted_bytes, total_transfer_time, is_upload, total_size=None):
+def format_log_progress_mesg(speed, transmitted_bytes, total_transfer_time,
+                             is_upload, total_size=None):
     transmission_type, transmitted = get_transmission_names(is_upload)
     eta_string = ''
     if total_size and speed:
@@ -46,8 +47,9 @@ class BaseProgressCallback(object):
         reached_log_interval_limit = (now - self.lastlog_ts) > self.log_interval
         if reached_log_interval_limit:
             self.lastlog_ts = now
-            self.logger.info(format_log_progress_mesg(speed, transmitted_bytes,
-                                              total_transfer_time, is_upload, total_size))
+            self.logger.info(
+                format_log_progress_mesg(speed, transmitted_bytes,
+                                         total_transfer_time, is_upload, total_size))
 
 
 class BotoUploadProgress(BaseProgressCallback):

@@ -3,7 +3,8 @@ from exporters.persistence.base_sqlalchemy_persistence import BaseAlchemyPersist
 
 class MysqlPersistence(BaseAlchemyPersistence):
     """
-    Manages persistence using a mysql database as a backend. It will add a row for every job in a table called Jobs.
+    Manages persistence using a mysql database as a backend.
+    It will add a row for every job in a table called Jobs.
 
         - user (str)
             Username with access to mysql database
@@ -27,7 +28,8 @@ class MysqlPersistence(BaseAlchemyPersistence):
 
 class PostgresqlPersistence(BaseAlchemyPersistence):
     """
-    Manages persistence using a postgresql database as a backend. It will add a row for every job in a table called Jobs.
+    Manages persistence using a postgresql database as a backend.
+    It will add a row for every job in a table called Jobs.
 
         - user (str)
             Username with access to mysql database

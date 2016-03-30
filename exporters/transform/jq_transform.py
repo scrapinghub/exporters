@@ -5,7 +5,8 @@ from exporters.transform.base_transform import BaseTransform
 
 class JQTransform(BaseTransform):
     """
-    It applies jq transformations to items. To see documentation about possible jq transformations please refer to its
+    It applies jq transformations to items. To see documentation
+    about possible jq transformations please refer to its
     `official documentation <http://stedolan.github.io/jq/manual/>`_.
 
         - jq_filter (str)
@@ -18,7 +19,8 @@ class JQTransform(BaseTransform):
     def __init__(self, *args, **kwargs):
         super(JQTransform, self).__init__(*args, **kwargs)
         self.jq_expression = self.read_option('jq_filter')
-        self.logger.info('JQTransform has been initiated. Expression: {}'.format(self.jq_expression))
+        self.logger.info('JQTransform has been initiated. Expression: {}'.format(
+            self.jq_expression))
         if not self.is_valid_jq_expression(self.jq_expression):
             raise ValueError('JQ expression is not valid')
 

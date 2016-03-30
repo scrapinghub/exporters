@@ -1,5 +1,6 @@
 import re
 import warnings
+import six
 from exporters.default_retries import retry_long
 from exporters.writers.base_writer import BaseWriter, InconsistentWriteState
 
@@ -18,9 +19,9 @@ class AzureBlobWriter(BaseWriter):
             Blob container name.
     """
     supported_options = {
-        'account_name': {'type': basestring, 'env_fallback': 'EXPORTERS_AZUREWRITER_NAME'},
-        'account_key': {'type': basestring, 'env_fallback': 'EXPORTERS_AZUREWRITER_KEY'},
-        'container': {'type': basestring}
+        'account_name': {'type': six.string_types, 'env_fallback': 'EXPORTERS_AZUREWRITER_NAME'},
+        'account_key': {'type': six.string_types, 'env_fallback': 'EXPORTERS_AZUREWRITER_KEY'},
+        'container': {'type': six.string_types}
     }
     VALID_CONTAINER_NAME_RE = r'[a-zA-Z0-9-]{3,63}'
 
@@ -74,11 +75,15 @@ class AzureBlobWriter(BaseWriter):
         from azure.common import AzureMissingResourceHttpError
         for blob_info in self.get_metadata('blobs_written'):
             try:
-                blob_properties = self.azure_service.get_blob_properties(self.read_option('container'), blob_info['blob_name'])
+                blob_properties = self.azure_service.get_blob_properties(
+                    self.read_option('container'), blob_info['blob_name'])
                 blob_size = blob_properties.get('content-length')
                 if str(blob_size) != str(blob_info['size']):
-                    raise InconsistentWriteState('File {} has unexpected size. (expected {} - got {})'.format(
-                                blob_info['blob_name'], blob_info['size'], blob_size))
+                    raise InconsistentWriteState(
+                        'File {} has unexpected size. (expected {} - got {})'.format(
+                            blob_info['blob_name'], blob_info['size'], blob_size
+                        )
+                    )
             except AzureMissingResourceHttpError:
                 raise InconsistentWriteState('Missing blob {}'.format(blob_info['blob_name']))
         self.logger.info('Consistency check passed')

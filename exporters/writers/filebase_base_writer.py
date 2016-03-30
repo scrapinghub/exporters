@@ -4,6 +4,7 @@ import os
 import re
 import uuid
 from exporters.writers.base_writer import BaseWriter
+import six
 
 MD5_FILE_NAME = 'md5checksum.md5'
 
@@ -27,12 +28,12 @@ class FilebaseBaseWriter(BaseWriter):
 
     """
     supported_options = {
-        'filebase': {'type': basestring},
+        'filebase': {'type': six.string_types},
         'generate_md5': {'type': bool, 'default': False}
     }
 
-    def __init__(self, options, *args, **kwargs):
-        super(FilebaseBaseWriter, self).__init__(options, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(FilebaseBaseWriter, self).__init__(*args, **kwargs)
         self.filebase = self.get_filebase_with_date()
         self.set_metadata('effective_filebase', self.filebase)
         self.written_files = {}
@@ -77,9 +78,11 @@ class FilebaseBaseWriter(BaseWriter):
 
     def _write(self, key):
         write_info = self.write_buffer.pack_buffer(key)
-        self.write(write_info.get('compressed_path'), self.write_buffer.grouping_info[key]['membership'])
+        self.write(write_info.get('compressed_path'),
+                   self.write_buffer.grouping_info[key]['membership'])
         write_info['md5'] = self._get_md5(write_info.get('compressed_path'))
-        self.logger.info('Checksum for file {}: {}'.format(write_info['compressed_path'], write_info['md5']))
+        self.logger.info(
+            'Checksum for file {}: {}'.format(write_info['compressed_path'], write_info['md5']))
         self.written_files[self.last_written_file] = write_info
         self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
 

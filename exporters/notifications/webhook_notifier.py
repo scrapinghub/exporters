@@ -59,8 +59,8 @@ class WebhookNotifier(BaseNotifier):
             try:
                 self._make_request(url, payload)
             except Exception as e:
-                logging.log(logging.WARNING, 'There was an error running export webhook to endpoint {}. '
-                                             'Exception: {!r}'.format(url, str(e)))
+                logging.warn('There was an error running export webhook to endpoint {}. '
+                             'Exception: {!r}'.format(url, str(e)))
 
     @retry_short
     def _make_request(self, url, payload):

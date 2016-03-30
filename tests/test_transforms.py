@@ -68,7 +68,10 @@ class PythonexpTransformTest(unittest.TestCase):
             },
         }
 
-        self.batch = [BaseRecord({'name': 'item1', 'country_code': 'es'}), BaseRecord({'name': 'item2', 'country_code': 'uk'})]
+        self.batch = [
+            BaseRecord({'name': 'item1', 'country_code': 'es'}),
+            BaseRecord({'name': 'item2', 'country_code': 'uk'})
+        ]
 
         self.transform = PythonexpTransform({'options': {'python_expressions': [
             "item.update({'new_field': item.get('country_code')+'-'+item.get('name')})"]}})
@@ -82,4 +85,3 @@ class PythonexpTransformTest(unittest.TestCase):
             self.assertIn('name', item)
             self.assertIn('new_field', item)
             self.assertEqual(item['new_field'], item['country_code'] + '-' + item['name'])
-

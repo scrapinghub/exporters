@@ -72,4 +72,3 @@ class FSWriter(FilebaseBaseWriter):
                                              .format(file_info['filename'], file_info['size'],
                                                      os.path.getsize(file_info['filename'])))
         self.logger.info('Consistency check passed')
-

@@ -1,5 +1,6 @@
 import gzip
 import json
+import six
 
 import requests
 from exporters.default_retries import retry_short, retry_long
@@ -46,7 +47,8 @@ def create_document_batches(jsonlines, id_field, max_batch_size=CLOUDSEARCH_MAX_
 
 class CloudSearchWriter(BaseWriter):
     """
-    This writer stores items in CloudSearch Amazon Web Services service (https://aws.amazon.com/es/cloudsearch/)
+    This writer stores items in CloudSearch Amazon Web Services service
+    (https://aws.amazon.com/es/cloudsearch/)
 
     - endpoint_url
         Document Endpoint (e.g.: http://doc-movies-123456789012.us-east-1.cloudsearch.amazonaws.com)
@@ -63,22 +65,22 @@ class CloudSearchWriter(BaseWriter):
 
     supported_options = {
         'endpoint_url': {
-            'type': basestring,
+            'type': six.string_types,
             'help_text': 'Document Endpoint'
             ' (e.g.: http://doc-movies-123456789012.us-east-1.cloudsearch.amazonaws.com)'
         },
         'id_field': {
-            'type': basestring,
+            'type': six.string_types,
             'help_text': 'Field to use as identifier',
             'default': '_key',
         },
         'access_key': {
-            'type': basestring,
+            'type': six.string_types,
             'env_fallback': 'EXPORTERS_CLOUDSEARCH_ACCESS_KEY',
             'default': None,
         },
         'secret_key': {
-            'type': basestring,
+            'type': six.string_types,
             'env_fallback': 'EXPORTERS_CLOUDSEARCH_SECRET_KEY',
             'default': None,
         },
@@ -93,10 +95,11 @@ class CloudSearchWriter(BaseWriter):
 
     @retry_short
     def _post_document_batch(self, batch):
-        """Send a batch to Cloudsearch endpoint
+        """
+        Send a batch to Cloudsearch endpoint
 
         See: http://docs.aws.amazon.com/cloudsearch/latest/developerguide/submitting-doc-requests.html
-        """
+        """  # noqa
         target_batch = '/2013-01-01/documents/batch'
         url = self.endpoint_url + target_batch
         return requests.post(url, data=batch, headers={'Content-type': 'application/json'})

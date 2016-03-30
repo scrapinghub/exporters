@@ -1,8 +1,9 @@
+# flake8: noqa
 from setuptools import setup, find_packages
 
 setup(
     name = 'exporters',
-    version = '0.1.16',
+    version = '0.1.18',
     packages = find_packages(exclude=['tests']),
     install_requires = ['six', 'retrying', 'requests', 'PyYAML'],
     dependency_links = [

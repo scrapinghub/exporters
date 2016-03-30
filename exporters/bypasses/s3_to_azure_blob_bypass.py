@@ -3,20 +3,17 @@ import logging
 import os
 import shutil
 
-from azure.storage.blob import BlobService
-
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
-from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.readers.s3_reader import get_bucket
 from exporters.utils import TmpFile
-from exporters.writers.azure_blob_writer import AzureBlobWriter
 
 
 class AzureBlobS3Bypass(BaseBypass):
     """
-    Bypass executed by default when data source is an S3 bucket and data destination is an Azure blob container.
+    Bypass executed by default when data source is an S3 bucket and data destination is
+    an Azure blob container.
     It should be transparent to user. Conditions are:
 
         - S3Reader and AzureBlobWriter are used on configuration.
@@ -39,7 +36,8 @@ class AzureBlobS3Bypass(BaseBypass):
         raise RequisitesNotMet
 
     def meets_conditions(self):
-        if not self.config.reader_options['name'].endswith('S3Reader') or not self.config.writer_options['name'].endswith('AzureBlobWriter'):
+        if not self.config.reader_options['name'].endswith('S3Reader') or \
+           not self.config.writer_options['name'].endswith('AzureBlobWriter'):
             raise RequisitesNotMet
         if not self.config.filter_before_options['name'].endswith('NoFilter'):
             self._raise_conditions_not_met('custom filter configured')
@@ -62,12 +60,14 @@ class AzureBlobS3Bypass(BaseBypass):
         return dest_filebase
 
     def _fill_config_with_env(self):
-        if 'aws_access_key_id' not in self.config.reader_options['options']:
-            self.config.reader_options['options']['aws_access_key_id'] = os.environ.get('EXPORTERS_S3READER_AWS_KEY')
-        if 'aws_secret_access_key' not in self.config.reader_options['options']:
-            self.config.reader_options['options']['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3READER_AWS_SECRET')
+        reader_opts = self.config.reader_options['options']
+        if 'aws_access_key_id' not in reader_opts:
+            reader_opts['aws_access_key_id'] = os.environ.get('EXPORTERS_S3READER_AWS_KEY')
+        if 'aws_secret_access_key' not in reader_opts:
+            reader_opts['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3READER_AWS_SECRET')
 
     def bypass(self):
+        from azure.storage.blob import BlobService
         from copy import deepcopy
         reader_options = self.config.reader_options['options']
         writer_options = self.config.writer_options['options']
@@ -75,7 +75,8 @@ class AzureBlobS3Bypass(BaseBypass):
         self.bypass_state = S3BypassState(self.config, self.metadata)
         self.total_items = self.bypass_state.stats['total_count']
         self.container = writer_options['container']
-        self.azure_service = BlobService(writer_options['account_name'], writer_options['account_key'])
+        self.azure_service = BlobService(
+            writer_options['account_name'], writer_options['account_key'])
         source_bucket = get_bucket(**reader_options)
         pending_keys = deepcopy(self.bypass_state.pending_keys())
         try:

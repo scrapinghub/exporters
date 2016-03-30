@@ -29,8 +29,11 @@ class PicklePersistence(BasePersistence):
 
     def get_last_position(self):
         if not os.path.isfile(self._get_persistence_file_name()):
-            raise ValueError('Trying to resume job {}, but path {} does not exist or is a directory.'
-                             .format(self.persistence_state_id, self._get_persistence_file_name()))
+            raise ValueError(
+                'Trying to resume job {}, but path {}'
+                'does not exist or is a directory.'.format(
+                    self.persistence_state_id, self._get_persistence_file_name())
+            )
 
         persistence_file = open(self._get_persistence_file_name(), 'r')
         persistence_object = pickle.load(persistence_file)
@@ -47,8 +50,8 @@ class PicklePersistence(BasePersistence):
         }
         with open(self._get_persistence_file_name(), 'w') as persistence_file:
             pickle.dump(persistence_object, persistence_file)
-        self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: '
-                          + self.persistence_state_id)
+        self.logger.debug('Commited batch number ' + str(self.last_position) + ' of job: ' +
+                          self.persistence_state_id)
         self.set_metadata('commited_positions',
                           self.get_metadata('commited_positions') + 1)
 
