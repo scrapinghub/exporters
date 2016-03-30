@@ -43,11 +43,11 @@ class FSWriter(FilebaseBaseWriter):
         return '{0:04}'.format(number_of_files)
 
     def _update_metadata(self, dump_path, destination):
-        buffer_info = self.write_buffer.metadata[dump_path]
+        buffer_info = self.write_buffer.metadata.get(dump_path)
         file_info = {
             'filename': destination,
-            'size': buffer_info['size'],
-            'number_of_records': buffer_info['number_of_records']
+            'size': buffer_info.get('size'),
+            'number_of_records': buffer_info.get('number_of_records')
         }
         self.get_metadata('files_written').append(file_info)
 

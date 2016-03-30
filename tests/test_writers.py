@@ -2,6 +2,7 @@ import gzip
 import json
 import os
 import random
+import shutil
 import tempfile
 import unittest
 import csv
@@ -346,9 +347,18 @@ class FSWriterTest(unittest.TestCase):
         return {
             'name': 'exporters.writers.fs_writer.FSWriter',
             'options': {
-                'filebase': '/tmp/exporter_test',
+                'filebase': '{}/exporter_test'.format(self.tmp_dir),
             }
         }
+
+    def setUp(self):
+        self.tmp_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        try:
+            shutil.rmtree(self.tmp_dir)
+        except OSError:
+            pass
 
     def test_get_file_number(self):
         writer_config = self.get_writer_config()
@@ -356,7 +366,7 @@ class FSWriterTest(unittest.TestCase):
                           export_formatter=JsonExportFormatter(dict()))
         self.assertEqual(writer.get_file_suffix('test', 'test'), '0000')
         path, file_name = writer.create_filebase_name([])
-        self.assertEqual(path, '/tmp')
+        self.assertEqual(path, self.tmp_dir)
         self.assertEqual(file_name, 'exporter_test0000.gz')
         writer.close()
 
@@ -379,10 +389,27 @@ class FSWriterTest(unittest.TestCase):
         # Consistency check passes
         writer.finish_writing()
 
-        with open('/tmp/exporter_test0000.gz', 'w'):
+        with open(os.path.join(self.tmp_dir, 'exporter_test0000.gz'), 'w'):
             with self.assertRaisesRegexp(InconsistentWriteState, 'Wrong size for file'):
                 writer.finish_writing()
 
-        os.remove('/tmp/exporter_test0000.gz')
+        os.remove(os.path.join(self.tmp_dir, 'exporter_test0000.gz'))
         with self.assertRaisesRegexp(InconsistentWriteState, 'file is not present at destination'):
             writer.finish_writing()
+
+    def test_writer_md5_generation(self):
+        # given
+        options = self.get_writer_config()
+        options['options']['generate_md5'] = True
+
+        # when:
+        writer = FSWriter(options, meta(),
+                          export_formatter=JsonExportFormatter(dict()))
+        try:
+            writer.write_batch(self.get_batch())
+            writer.flush()
+            writer.finish_writing()
+        finally:
+            writer.close()
+
+        self.assertTrue(os.path.isfile(os.path.join(self.tmp_dir, 'md5checksum.md5')))
