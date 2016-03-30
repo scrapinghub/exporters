@@ -2,6 +2,7 @@ import re
 from .reduce_writer import ReduceWriter
 from exporters.exceptions import ConfigurationError
 from collections import MutableMapping
+import six
 
 
 COLLECTION_REGEX = '.*[.]scrapinghub[.]com/p/(\d+)/collections/s/([^/]+)/?$'
@@ -28,14 +29,14 @@ class HubstorageReduceWriter(ReduceWriter):
 
     supported_options = {
         "collection_url": {
-            'type': basestring,
+            'type': six.string_types,
             'help': 'Hubstorage Collection URL'
         },
         'key': {
-            'type': basestring,
+            'type': six.string_types,
             'help': 'Element key where to push the accumulated result'
         },
-        'apikey': {'type': basestring, 'help': 'Hubstorage API key'},
+        'apikey': {'type': six.string_types, 'help': 'Hubstorage API key'},
     }
     supported_options.update(ReduceWriter.supported_options)
 

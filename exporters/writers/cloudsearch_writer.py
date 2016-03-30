@@ -1,5 +1,6 @@
 import gzip
 import json
+import six
 
 import requests
 from exporters.default_retries import retry_short, retry_long
@@ -64,22 +65,22 @@ class CloudSearchWriter(BaseWriter):
 
     supported_options = {
         'endpoint_url': {
-            'type': basestring,
+            'type': six.string_types,
             'help_text': 'Document Endpoint'
             ' (e.g.: http://doc-movies-123456789012.us-east-1.cloudsearch.amazonaws.com)'
         },
         'id_field': {
-            'type': basestring,
+            'type': six.string_types,
             'help_text': 'Field to use as identifier',
             'default': '_key',
         },
         'access_key': {
-            'type': basestring,
+            'type': six.string_types,
             'env_fallback': 'EXPORTERS_CLOUDSEARCH_ACCESS_KEY',
             'default': None,
         },
         'secret_key': {
-            'type': basestring,
+            'type': six.string_types,
             'env_fallback': 'EXPORTERS_CLOUDSEARCH_SECRET_KEY',
             'default': None,
         },

@@ -1,6 +1,7 @@
 from collections import Counter
 from contextlib import closing
 import datetime
+import six
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
@@ -35,17 +36,17 @@ class S3Writer(FilebaseBaseWriter):
             Path to store the exported files
     """
     supported_options = {
-        'bucket': {'type': basestring},
+        'bucket': {'type': six.string_types},
         'aws_access_key_id': {
-            'type': basestring,
+            'type': six.string_types,
             'env_fallback': 'EXPORTERS_S3WRITER_AWS_LOGIN'
         },
         'aws_secret_access_key': {
-            'type': basestring,
+            'type': six.string_types,
             'env_fallback': 'EXPORTERS_S3WRITER_AWS_SECRET'
         },
-        'aws_region': {'type': basestring, 'default': None},
-        'save_pointer': {'type': basestring, 'default': None},
+        'aws_region': {'type': six.string_types, 'default': None},
+        'save_pointer': {'type': six.string_types, 'default': None},
         'save_metadata': {'type': bool, 'default': True, 'required': False}
     }
 

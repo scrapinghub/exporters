@@ -1,4 +1,5 @@
 import errno
+import six
 
 from exporters.default_retries import retry_long
 from exporters.progress_callback import SftpUploadProgress
@@ -28,9 +29,9 @@ class SFTPWriter(FilebaseBaseWriter):
             Path to store the exported files
     """
     supported_options = {
-        'host': {'type': basestring},
-        'sftp_user': {'type': basestring, 'env_fallback': 'EXPORTERS_SFTP_USER'},
-        'sftp_password': {'type': basestring, 'env_fallback': 'EXPORTERS_SFTP_PASSWORD'},
+        'host': {'type': six.string_types},
+        'sftp_user': {'type': six.string_types, 'env_fallback': 'EXPORTERS_SFTP_USER'},
+        'sftp_password': {'type': six.string_types, 'env_fallback': 'EXPORTERS_SFTP_PASSWORD'},
         'port': {'type': int, 'default': 22},
     }
 
@@ -83,7 +84,7 @@ class SFTPWriter(FilebaseBaseWriter):
             for file_info in self.get_metadata('files_written'):
                 try:
                     sftp_info = sftp.stat(file_info['filename'])
-                except IOError, e:
+                except IOError as e:
                     if e.errno == errno.ENOENT:
                         raise InconsistentWriteState(
                             '{} file is not present at destination'.format(file_info['filename']))

@@ -1,5 +1,6 @@
 import json
 import os
+import six
 
 from exporters.default_retries import retry_long
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
@@ -26,8 +27,8 @@ class GStorageWriter(FilebaseBaseWriter):
     """
 
     supported_options = {
-        'project': {'type': basestring},
-        'bucket': {'type': basestring},
+        'project': {'type': six.string_types},
+        'bucket': {'type': six.string_types},
         'credentials': {'type': dict}
     }
 
