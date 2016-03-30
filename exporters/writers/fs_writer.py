@@ -44,13 +44,12 @@ class FSWriter(FilebaseBaseWriter):
 
     def _update_metadata(self, dump_path, destination):
         buffer_info = self.write_buffer.metadata.get(dump_path)
-        if buffer_info:
-            file_info = {
-                'filename': destination,
-                'size': buffer_info['size'],
-                'number_of_records': buffer_info['number_of_records']
-            }
-            self.get_metadata('files_written').append(file_info)
+        file_info = {
+            'filename': destination,
+            'size': buffer_info.get('size'),
+            'number_of_records': buffer_info.get('number_of_records')
+        }
+        self.get_metadata('files_written').append(file_info)
 
     def write(self, dump_path, group_key=None, file_name=None):
         if group_key is None:

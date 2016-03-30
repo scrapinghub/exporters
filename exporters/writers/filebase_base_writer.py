@@ -93,6 +93,8 @@ class FilebaseBaseWriter(BaseWriter):
                     for file_name, write_info in self.written_files.iteritems():
                         write_info = self.written_files[file_name]
                         f.write('{} {}'.format(write_info['md5'], file_name)+'\n')
+                self.write_buffer.set_metadata_for_file(
+                        MD5_FILE_NAME, size=os.path.getsize(MD5_FILE_NAME))
                 self.write(MD5_FILE_NAME, None, file_name=MD5_FILE_NAME)
             finally:
                 os.remove(MD5_FILE_NAME)

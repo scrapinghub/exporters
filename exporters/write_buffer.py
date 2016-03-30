@@ -190,3 +190,8 @@ class WriteBuffer(object):
 
     def get_grouping_info(self):
         return self.grouping_info
+
+    def set_metadata_for_file(self, file_name, **kwargs):
+        if file_name not in self.metadata:
+            self.metadata[file_name] = {}
+        self.metadata[file_name].update(**kwargs)
