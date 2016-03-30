@@ -1,4 +1,5 @@
 import os
+import six
 
 from exporters.default_retries import retry_long
 from exporters.progress_callback import FtpUploadProgress
@@ -31,9 +32,9 @@ class FTPWriter(FilebaseBaseWriter):
             Path to store the exported files
     """
     supported_options = {
-        'host': {'type': basestring},
-        'ftp_user': {'type': basestring, 'env_fallback': 'EXPORTERS_FTP_USER'},
-        'ftp_password': {'type': basestring, 'env_fallback': 'EXPORTERS_FTP_PASSWORD'},
+        'host': {'type': six.string_types},
+        'ftp_user': {'type': six.string_types, 'env_fallback': 'EXPORTERS_FTP_USER'},
+        'ftp_password': {'type': six.string_types, 'env_fallback': 'EXPORTERS_FTP_PASSWORD'},
         'port': {'type': int, 'default': 21},
     }
 

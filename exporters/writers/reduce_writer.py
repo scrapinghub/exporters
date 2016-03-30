@@ -1,3 +1,4 @@
+import six
 from .base_writer import BaseWriter
 from exporters.exceptions import ConfigurationError
 
@@ -23,11 +24,11 @@ class ReduceWriter(BaseWriter):
 
     supported_options = {
         "code": {
-            'type': basestring,
+            'type': six.string_types,
             'help': "Python code defining a reduce_function(item, accumulator=None)"
         },
         "source_path": {
-            'type': basestring,
+            'type': six.string_types,
             'default': None,
             'help': 'Source path, useful for debugging/inspecting tools',
         }

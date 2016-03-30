@@ -1,5 +1,6 @@
 import re
 import warnings
+import six
 from exporters.default_retries import retry_long
 from exporters.writers.base_writer import BaseWriter, InconsistentWriteState
 
@@ -18,9 +19,9 @@ class AzureBlobWriter(BaseWriter):
             Blob container name.
     """
     supported_options = {
-        'account_name': {'type': basestring, 'env_fallback': 'EXPORTERS_AZUREWRITER_NAME'},
-        'account_key': {'type': basestring, 'env_fallback': 'EXPORTERS_AZUREWRITER_KEY'},
-        'container': {'type': basestring}
+        'account_name': {'type': six.string_types, 'env_fallback': 'EXPORTERS_AZUREWRITER_NAME'},
+        'account_key': {'type': six.string_types, 'env_fallback': 'EXPORTERS_AZUREWRITER_KEY'},
+        'container': {'type': six.string_types}
     }
     VALID_CONTAINER_NAME_RE = r'[a-zA-Z0-9-]{3,63}'
 

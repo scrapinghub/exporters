@@ -3,7 +3,7 @@ import os
 import shutil
 import tempfile
 import uuid
-from UserDict import UserDict
+from six.moves import UserDict
 
 import errno
 

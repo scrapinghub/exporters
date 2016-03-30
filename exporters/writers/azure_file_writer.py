@@ -1,3 +1,4 @@
+import six
 from collections import Counter
 from exporters.default_retries import retry_long
 from exporters.writers.base_writer import InconsistentWriteState
@@ -23,9 +24,9 @@ class AzureFileWriter(FilebaseBaseWriter):
 
     """
     supported_options = {
-        'account_name': {'type': basestring, 'env_fallback': 'EXPORTERS_AZUREWRITER_NAME'},
-        'account_key': {'type': basestring, 'env_fallback': 'EXPORTERS_AZUREWRITER_KEY'},
-        'share': {'type': basestring}
+        'account_name': {'type': six.string_types, 'env_fallback': 'EXPORTERS_AZUREWRITER_NAME'},
+        'account_key': {'type': six.string_types, 'env_fallback': 'EXPORTERS_AZUREWRITER_KEY'},
+        'share': {'type': six.string_types}
     }
 
     def __init__(self, options, meta, *args, **kw):

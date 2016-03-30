@@ -4,6 +4,7 @@ import os
 import re
 import uuid
 from exporters.writers.base_writer import BaseWriter
+import six
 
 MD5_FILE_NAME = 'md5checksum.md5'
 
@@ -27,7 +28,7 @@ class FilebaseBaseWriter(BaseWriter):
 
     """
     supported_options = {
-        'filebase': {'type': basestring},
+        'filebase': {'type': six.string_types},
         'generate_md5': {'type': bool, 'default': False}
     }
 

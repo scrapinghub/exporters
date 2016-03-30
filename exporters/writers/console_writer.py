@@ -14,11 +14,11 @@ class ConsoleWriter(BaseWriter):
         self.pretty_print = self.options.get('pretty_print', False)
         header = self.export_formatter.format_header()
         if header:
-            print header
+            print(header)
 
     def write_batch(self, batch):
         for item in batch:
-            print self.export_formatter.format(item)
+            print(self.export_formatter.format(item))
             self.increment_written_items()
             if self.items_limit and self.items_limit == self.get_metadata('items_count'):
                 raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'
@@ -29,4 +29,4 @@ class ConsoleWriter(BaseWriter):
         super(ConsoleWriter, self).close()
         footer = self.export_formatter.format_footer()
         if footer:
-            print footer
+            print(footer)

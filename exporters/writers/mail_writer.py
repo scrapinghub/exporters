@@ -1,6 +1,7 @@
 import email
 import os
 import datetime
+import six
 from exporters.writers.base_writer import BaseWriter
 from exporters.default_retries import retry_short
 
@@ -30,18 +31,18 @@ class MailWriter(BaseWriter):
 
     supported_options = {
         'emails': {'type': list},
-        'subject': {'type': basestring},
-        'from': {'type': basestring},
+        'subject': {'type': six.string_types},
+        'from': {'type': six.string_types},
         'max_mails_sent': {'type': int, 'default': 5},
         'access_key': {
-            'type': basestring,
+            'type': six.string_types,
             'env_fallback': 'EXPORTERS_MAIL_AWS_ACCESS_KEY',
         },
         'secret_key': {
-            'type': basestring,
+            'type': six.string_types,
             'env_fallback': 'EXPORTERS_MAIL_AWS_SECRET_KEY',
         },
-        'file_name': {'type': basestring, 'default': None}
+        'file_name': {'type': six.string_types, 'default': None}
     }
 
     def __init__(self, options, *args, **kwargs):
