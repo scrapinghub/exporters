@@ -377,9 +377,11 @@ class FSWriterTest(unittest.TestCase):
     def test_get_file_number_with_date(self):
         file_path = '/tmp/%Y%m%d/'
         file_name = '{}_exporter_test_%m%d%y'
+        start_file_count = 1
         writer_config = self.get_writer_config()
         writer_config.update({'options': {
-            'filebase': file_path + file_name
+            'filebase': file_path + file_name,
+            'start_file_count': start_file_count
         }})
         writer = FSWriter(writer_config, meta(),
                           export_formatter=JsonExportFormatter(dict()))
@@ -390,7 +392,7 @@ class FSWriterTest(unittest.TestCase):
         finally:
             writer.close()
         file_path = datetime.datetime.now().strftime(file_path)
-        file_name = datetime.datetime.now().strftime(file_name).format(0)
+        file_name = datetime.datetime.now().strftime(file_name).format(start_file_count)
         self.assertTrue(file_path + file_name + '.jl.gz' in writer.written_files)
 
     def test_check_writer_consistency(self):

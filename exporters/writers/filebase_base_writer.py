@@ -31,6 +31,7 @@ class FilebaseBaseWriter(BaseWriter):
     """
     supported_options = {
         'filebase': {'type': six.string_types},
+        'start_file_count': {'type': int, 'default': 0},
         'generate_md5': {'type': bool, 'default': False}
     }
 
@@ -45,7 +46,10 @@ class FilebaseBaseWriter(BaseWriter):
 
     def _items_group_files_handler(self):
         _, filename = os.path.split(self.read_option('filebase'))
-        return CustomNameItemsGroupFilesHandler(self.export_formatter, filename)
+        start_file_count = self.read_option('start_file_count')
+        return CustomNameItemsGroupFilesHandler(self.export_formatter,
+                                                filename,
+                                                start_file_count)
 
     def write(self, path, key, file_name=False):
         """

@@ -123,10 +123,10 @@ class ItemsGroupFilesHandler(object):
 
 class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
 
-    def __init__(self, formatter, base_filename):
+    def __init__(self, formatter, base_filename, start_file_count=0):
         super(CustomNameItemsGroupFilesHandler, self).__init__(formatter)
         self.base_filename = self._format_date(base_filename)
-        self.file_count = 0
+        self.file_count = start_file_count
 
     def _get_new_path_name(self):
         name = self.base_filename.format(self.file_count)
