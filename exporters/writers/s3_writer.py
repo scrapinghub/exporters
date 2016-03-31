@@ -1,7 +1,8 @@
 from collections import Counter
 from contextlib import closing
-import datetime
+
 import six
+
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.writers.base_writer import InconsistentWriteState
@@ -136,10 +137,7 @@ class S3Writer(FilebaseBaseWriter):
 
     def _update_last_pointer(self):
         save_pointer = self.read_option('save_pointer')
-        filebase = self.read_option('filebase')
-        filebase = filebase.format(date=datetime.datetime.now())
-        filebase = datetime.datetime.now().strftime(filebase)
-        self._write_s3_pointer(save_pointer, filebase)
+        self._write_s3_pointer(save_pointer, self.filebase + '/')
 
     def close(self):
         """

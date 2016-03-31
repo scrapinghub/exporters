@@ -7,12 +7,13 @@ import tempfile
 import unittest
 import csv
 
+import datetime
 import mock
 
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
 from exporters.records.base_record import BaseRecord
-from exporters.write_buffer import WriteBuffer
+from exporters.write_buffer import WriteBuffer, ItemsGroupFilesHandler
 from exporters.writers import FSWriter
 from exporters.writers.base_writer import BaseWriter, InconsistentWriteState
 from exporters.writers.console_writer import ConsoleWriter
@@ -279,8 +280,8 @@ class CustomWriterTest(unittest.TestCase):
 
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
-        self.formatter = JsonExportFormatter({})
-        self.write_buffer = WriteBuffer(1000, 1000, self.formatter)
+        item_writer = ItemsGroupFilesHandler(JsonExportFormatter({}))
+        self.write_buffer = WriteBuffer(1000, 1000, item_writer)
 
     def tearDown(self):
         self.write_buffer.close()
@@ -364,11 +365,35 @@ class FSWriterTest(unittest.TestCase):
         writer_config = self.get_writer_config()
         writer = FSWriter(writer_config, meta(),
                           export_formatter=JsonExportFormatter(dict()))
-        self.assertEqual(writer.get_file_suffix('test', 'test'), '0000')
-        path, file_name = writer.create_filebase_name([])
-        self.assertEqual(path, self.tmp_dir)
-        self.assertEqual(file_name, 'exporter_test0000.gz')
-        writer.close()
+        try:
+            writer.write_batch(self.get_batch())
+            writer.flush()
+
+        finally:
+            writer.close()
+        expected_file = '{}/exporter_test0000.jl.gz'.format(self.tmp_dir)
+        self.assertTrue(expected_file in writer.written_files)
+
+    def test_get_file_number_with_date(self):
+        file_path = '/tmp/%Y%m%d/'
+        file_name = '{}_exporter_test_%m%d%y'
+        start_file_count = 1
+        writer_config = self.get_writer_config()
+        writer_config.update({'options': {
+            'filebase': file_path + file_name,
+            'start_file_count': start_file_count
+        }})
+        writer = FSWriter(writer_config, meta(),
+                          export_formatter=JsonExportFormatter(dict()))
+        try:
+            writer.write_batch(self.get_batch())
+            writer.flush()
+
+        finally:
+            writer.close()
+        file_path = datetime.datetime.now().strftime(file_path)
+        file_name = datetime.datetime.now().strftime(file_name).format(start_file_count)
+        self.assertTrue(file_path + file_name + '.jl.gz' in writer.written_files)
 
     def test_check_writer_consistency(self):
 
@@ -389,11 +414,11 @@ class FSWriterTest(unittest.TestCase):
         # Consistency check passes
         writer.finish_writing()
 
-        with open(os.path.join(self.tmp_dir, 'exporter_test0000.gz'), 'w'):
+        with open(os.path.join(self.tmp_dir, 'exporter_test0000.jl.gz'), 'w'):
             with self.assertRaisesRegexp(InconsistentWriteState, 'Wrong size for file'):
                 writer.finish_writing()
 
-        os.remove(os.path.join(self.tmp_dir, 'exporter_test0000.gz'))
+        os.remove(os.path.join(self.tmp_dir, 'exporter_test0000.jl.gz'))
         with self.assertRaisesRegexp(InconsistentWriteState, 'file is not present at destination'):
             writer.finish_writing()
 

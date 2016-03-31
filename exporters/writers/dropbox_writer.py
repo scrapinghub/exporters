@@ -29,10 +29,10 @@ class DropboxWriter(FilebaseBaseWriter):
         self.set_metadata('files_counter', Counter())
         self.client = Dropbox(access_token)
 
-    def write(self, dump_path, group_key=None):
+    def write(self, dump_path, group_key=None, file_name=False):
         if group_key is None:
             group_key = []
-        self._write_file(dump_path, group_key)
+        self._write_file(dump_path, group_key, file_name)
 
     @retry_long
     def _upload_file(self, input_file, filepath):

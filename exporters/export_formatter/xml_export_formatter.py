@@ -1,3 +1,5 @@
+import logging
+
 import dicttoxml
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 import collections
@@ -28,6 +30,7 @@ class XMLExportFormatter(BaseExportFormatter):
         self.root_name = self.read_option('root_name')
         self.xml_header = self.read_option('xml_header')
         self.fields_order = self._get_fields()
+        dicttoxml.LOG.setLevel(logging.WARNING)
 
     def _get_fields(self):
         fields = self.read_option('fields_order')
