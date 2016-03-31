@@ -69,10 +69,14 @@ class KeyValueFilterTest(unittest.TestCase):
             }
         }
         self.keys = [
-            {'name': 'country_code', 'value': 'es'}
-            ]
-
-        items = [{'name': 'item1', 'country_code': 'es'}, {'name': 'item2', 'country_code': 'uk'}]
+                {'name': 'age', 'value': 25},
+                {'name': 'country_code', 'value': ['es', 'pt']}
+                ]
+        items = [
+                {'age': 25, 'country_code': 'es'},
+                {'age': 18, 'country_code': 'us'},
+                {'country_code': 'pt'}
+                ]
         self.batch = []
         for item in items:
             record = BaseRecord(item)
