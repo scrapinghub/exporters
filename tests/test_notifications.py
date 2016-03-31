@@ -1,27 +1,16 @@
-import contextlib
 import datetime
 import json
-import os
 import unittest
 
 import mock
 from exporters.meta import ExportMeta
 from exporters.notifications.base_notifier import BaseNotifier
+from exporters.notifications.receiver_groups import CLIENTS, TEAM
 from exporters.notifications.ses_mail_notifier import (DEFAULT_MAIN_FROM,
                                                        InvalidMailProvided,
                                                        SESMailNotifier)
 from exporters.notifications.webhook_notifier import WebhookNotifier
-from exporters.notifications.receiver_groups import CLIENTS, TEAM
-
-
-@contextlib.contextmanager
-def environment(env):
-    old_env = os.environ
-    try:
-        os.environ = env
-        yield
-    finally:
-        os.environ = old_env
+from tests.utils import environment
 
 
 class BaseNotifierTest(unittest.TestCase):

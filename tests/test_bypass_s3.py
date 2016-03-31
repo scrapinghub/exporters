@@ -7,6 +7,7 @@ import boto
 import mock
 import moto
 from boto.exception import S3ResponseError
+from tests.utils import environment
 from boto.utils import compute_md5
 from exporters.bypasses.s3_to_s3_bypass import S3Bypass, RequisitesNotMet
 from exporters.exporter_config import ExporterConfig
@@ -322,6 +323,73 @@ class S3BypassTest(unittest.TestCase):
         for key in keys:
             keys_list.append(key.name)
         self.assertEqual(expected_keys, keys_list)
+
+    def test_load_from_env(self):
+        # given
+        reader = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'source_bucket',
+                'prefix': 'some_prefix/'
+            }
+        }
+        options = create_s3_bypass_simple_config(reader=reader)
+        # when:
+        bypass = S3Bypass(options, meta())
+
+        # then
+        expected = '123'
+        with environment({'aws_key': expected}):
+            self.assertEqual(bypass.read_option('reader', 'aws_access_key_id', 'aws_key'), expected)
+        self.assertIsNone(bypass.read_option('reader', 'aws_access_key_id', 'aws_key'))
+
+    def test_load_from_config(self):
+        # given
+        reader = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'source_bucket',
+                'prefix': 'some_prefix/',
+                'aws_access_key_id': '123'
+            }
+        }
+        options = create_s3_bypass_simple_config(reader=reader)
+        # when:
+        bypass = S3Bypass(options, meta())
+
+        # then
+        expected = '123'
+        self.assertEqual(bypass.read_option('reader', 'aws_access_key_id', 'aws_key'), expected)
+
+    def test_copy_bypass_s3_with_env(self):
+        # given
+        self.s3_conn.create_bucket('dest_bucket')
+        reader = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'source_bucket',
+                'prefix': 'some_prefix/'
+            }
+        }
+        options = create_s3_bypass_simple_config(reader=reader)
+        env = {
+            'EXPORTERS_S3READER_AWS_KEY': 'a',
+            'EXPORTERS_S3READER_AWS_SECRET': 'b'
+        }
+
+        # when:
+
+        bypass = S3Bypass(options, meta())
+        with environment(env):
+            bypass.bypass()
+
+        # then:
+        bucket = self.s3_conn.get_bucket('dest_bucket')
+        key = next(iter(bucket.list('some_prefix/')))
+        self.assertEquals('some_prefix/test_key', key.name)
+        self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
+        self.assertEqual(
+                bypass.total_items, len(self.data), 'Bypass got an incorrect number of total items')
 
     def test_get_md5(self):
         # given

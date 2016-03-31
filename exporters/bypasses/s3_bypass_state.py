@@ -4,13 +4,11 @@ from exporters.readers.s3_reader import S3BucketKeysFetcher
 
 class S3BypassState(object):
 
-    def __init__(self, config, metadata):
+    def __init__(self, config, metadata, aws_key, aws_secret):
         self.config = config
         module_loader = ModuleLoader()
         self.state = module_loader.load_persistence(config.persistence_options, metadata)
         self.state_position = self.state.get_last_position()
-        aws_key = self.config.reader_options['options']['aws_access_key_id']
-        aws_secret = self.config.reader_options['options']['aws_secret_access_key']
         if not self.state_position:
             self.pending = S3BucketKeysFetcher(
                 self.config.reader_options['options'], aws_key, aws_secret).pending_keys()

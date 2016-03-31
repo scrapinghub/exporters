@@ -1,8 +1,4 @@
-import os
 import unittest
-
-from decorator import contextmanager
-
 from exporters.bypasses.s3_to_s3_bypass import S3Bypass
 from exporters.exceptions import (InvalidExpression, ConfigurationError,
                                   ConfigCheckError)
@@ -15,6 +11,7 @@ from exporters.logger.base_logger import CategoryLogger
 from exporters.module_loader import ModuleLoader
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 from exporters.python_interpreter import Interpreter
+from .utils import environment
 from .utils import valid_config_with_updates
 
 
@@ -33,16 +30,6 @@ class BaseLoggerTest(unittest.TestCase):
         options = ExporterConfig(self.options)
         logger = CategoryLogger(options.log_options)
         logger.critical('Critial message')
-
-
-@contextmanager
-def environment(env):
-    original_env = os.environ
-    os.environ = env
-    try:
-        yield
-    finally:
-        os.environ = original_env
 
 
 class BasePipelineItemTest(unittest.TestCase):

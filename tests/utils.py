@@ -1,3 +1,5 @@
+import contextlib
+import os
 import mock
 from copy import deepcopy
 from exporters.meta import ExportMeta
@@ -40,6 +42,16 @@ def valid_config_with_updates(updates):
     config = deepcopy(VALID_EXPORTER_CONFIG)
     config.update(updates)
     return config
+
+
+@contextlib.contextmanager
+def environment(env):
+    old_env = os.environ
+    try:
+        os.environ = env
+        yield
+    finally:
+        os.environ = old_env
 
 
 def meta():
