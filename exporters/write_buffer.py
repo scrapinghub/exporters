@@ -7,8 +7,6 @@ from six.moves import UserDict
 
 import errno
 
-import datetime
-
 
 class GroupingInfo(UserDict):
 
@@ -119,26 +117,6 @@ class ItemsGroupFilesHandler(object):
         with gzip.open(compressed_path, 'wb') as dump_file, open(path) as fl:
             shutil.copyfileobj(fl, dump_file)
         return compressed_path
-
-
-class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
-
-    def __init__(self, formatter, base_filename, start_file_count=0):
-        super(CustomNameItemsGroupFilesHandler, self).__init__(formatter)
-        self.base_filename = self._format_date(base_filename)
-        self.file_count = start_file_count
-
-    def _get_new_path_name(self):
-        name = self.base_filename.format(self.file_count)
-        if name == self.base_filename:
-            name += '{:04d}'.format(self.file_count)
-        filename = '{}.{}'.format(name, self.file_extension)
-        self.file_count += 1
-        return os.path.join(self.tmp_folder, filename)
-
-    def _format_date(self, value):
-        date = datetime.datetime.now()
-        return date.strftime(value)
 
 
 class WriteBuffer(object):

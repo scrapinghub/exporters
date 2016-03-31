@@ -4,7 +4,7 @@ import os
 import re
 import uuid
 
-from exporters.write_buffer import CustomNameItemsGroupFilesHandler
+from exporters.write_buffer import ItemsGroupFilesHandler
 from exporters.writers.base_writer import BaseWriter
 import six
 
@@ -19,6 +19,26 @@ def md5_for_file(f, block_size=2**20):
             break
         md5.update(data)
     return md5.hexdigest()
+
+
+class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
+
+    def __init__(self, formatter, base_filename, start_file_count=0):
+        super(CustomNameItemsGroupFilesHandler, self).__init__(formatter)
+        self.base_filename = self._format_date(base_filename)
+        self.file_count = start_file_count
+
+    def _get_new_path_name(self):
+        name = self.base_filename.format(self.file_count)
+        if name == self.base_filename:
+            name += '{:04d}'.format(self.file_count)
+        filename = '{}.{}'.format(name, self.file_extension)
+        self.file_count += 1
+        return os.path.join(self.tmp_folder, filename)
+
+    def _format_date(self, value):
+        date = datetime.datetime.now()
+        return date.strftime(value)
 
 
 class FilebaseBaseWriter(BaseWriter):
