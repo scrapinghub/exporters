@@ -2,7 +2,7 @@ import unittest
 from exporters.bypasses.s3_to_s3_bypass import S3Bypass
 from exporters.exceptions import (InvalidExpression, ConfigurationError,
                                   ConfigCheckError)
-from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
+from exporters.export_managers.base_bypass import BaseBypass
 from exporters.exporter_config import ExporterConfig
 from exporters.exporter_config import (module_options,
                                        MODULE_TYPES)
@@ -316,8 +316,7 @@ class S3ByPassTest(unittest.TestCase):
             })
         )
         bypass = S3Bypass(exporter_options, None)
-        with self.assertRaises(RequisitesNotMet):
-            bypass.meets_conditions()
+        self.assertFalse(bypass.meets_conditions())
 
     def test_meet_supported_options(self):
         exporter_options = ExporterConfig(
@@ -330,4 +329,4 @@ class S3ByPassTest(unittest.TestCase):
             })
         )
         bypass_script = S3Bypass(exporter_options, None)
-        bypass_script.meets_conditions()
+        self.assertTrue(bypass_script.meets_conditions())

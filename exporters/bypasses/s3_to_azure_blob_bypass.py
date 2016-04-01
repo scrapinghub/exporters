@@ -5,7 +5,7 @@ import shutil
 
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
-from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
+from exporters.export_managers.base_bypass import BaseBypass
 from exporters.readers.s3_reader import get_bucket
 from exporters.utils import TmpFile
 
@@ -31,28 +31,31 @@ class AzureBlobS3Bypass(BaseBypass):
         self.logger = logging.getLogger('bypass_logger')
         self.logger.setLevel(logging.INFO)
 
-    def _raise_conditions_not_met(self, reason):
+    def _handle_conditions_not_met(self, reason):
         self.logger.warning('Skipping Azure file copy optimization bypass because of %s' % reason)
-        raise RequisitesNotMet
+        return False
 
     def meets_conditions(self):
         if not self.config.reader_options['name'].endswith('S3Reader') or \
            not self.config.writer_options['name'].endswith('AzureBlobWriter'):
-            raise RequisitesNotMet
+            return False
         if not self.config.filter_before_options['name'].endswith('NoFilter'):
-            self._raise_conditions_not_met('custom filter configured')
+            return self._handle_conditions_not_met('custom filter configured')
         if not self.config.filter_after_options['name'].endswith('NoFilter'):
-            self._raise_conditions_not_met('custom filter configured')
+            return self._handle_conditions_not_met('custom filter configured')
         if not self.config.transform_options['name'].endswith('NoTransform'):
-            self._raise_conditions_not_met('custom transform configured')
+            return self._handle_conditions_not_met('custom transform configured')
         if not self.config.grouper_options['name'].endswith('NoGrouper'):
-            self._raise_conditions_not_met('custom grouper configured')
+            return self._handle_conditions_not_met('custom grouper configured')
         if self.config.writer_options['options'].get('items_limit'):
-            self._raise_conditions_not_met('items limit configuration (items_limit)')
+            return self._handle_conditions_not_met('items limit configuration (items_limit)')
         if self.config.writer_options['options'].get('items_per_buffer_write'):
-            self._raise_conditions_not_met('buffer limit configuration (items_per_buffer_write)')
+            return self._handle_conditions_not_met(
+                    'buffer limit configuration (items_per_buffer_write)')
         if self.config.writer_options['options'].get('size_per_buffer_write'):
-            self._raise_conditions_not_met('buffer limit configuration (size_per_buffer_write)')
+            return self._handle_conditions_not_met(
+                    'buffer limit configuration (size_per_buffer_write)')
+        return True
 
     def _get_filebase(self, writer_options):
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
