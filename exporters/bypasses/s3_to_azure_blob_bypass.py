@@ -6,8 +6,9 @@ import shutil
 from exporters.bypasses.base_bypass import BaseBypass
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
-from exporters.readers.s3_reader import get_bucket
+from exporters.readers.s3_reader import get_bucket, S3Reader
 from exporters.utils import TmpFile
+from exporters.writers.azure_blob_writer import AzureBlobWriter
 
 
 class AzureBlobS3Bypass(BaseBypass):
@@ -23,6 +24,11 @@ class AzureBlobS3Bypass(BaseBypass):
         - AzureBlobWriter has not a items_limit set in configuration.
         - AzureBlobWriter has default items_per_buffer_write and size_per_buffer_write per default.
     """
+
+    replace_modules = {
+        'reader': S3Reader,
+        'writer': AzureBlobWriter
+    }
 
     def __init__(self, config, metadata):
         super(AzureBlobS3Bypass, self).__init__(config, metadata)
@@ -72,15 +78,18 @@ class AzureBlobS3Bypass(BaseBypass):
     def bypass(self):
         from azure.storage.blob import BlobService
         from copy import deepcopy
-        reader_options = self.config.reader_options['options']
-        writer_options = self.config.writer_options['options']
+
+        reader_aws_key = self.read_reader_option('aws_access_key_id')
+        reader_aws_secret = self.read_reader_option('aws_secret_access_key')
+        reader_bucket = self.read_reader_option('bucket')
+
         self._fill_config_with_env()
         self.bypass_state = S3BypassState(self.config, self.metadata)
         self.total_items = self.bypass_state.stats['total_count']
-        self.container = writer_options['container']
+        self.container = self.read_writer_option('container')
         self.azure_service = BlobService(
-            writer_options['account_name'], writer_options['account_key'])
-        source_bucket = get_bucket(**reader_options)
+            self.read_writer_option('account_name'), self.read_writer_option('account_key'))
+        source_bucket = get_bucket(reader_bucket, reader_aws_key, reader_aws_secret)
         pending_keys = deepcopy(self.bypass_state.pending_keys())
         try:
             for key in pending_keys:

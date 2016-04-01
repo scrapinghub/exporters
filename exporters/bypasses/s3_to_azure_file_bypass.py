@@ -6,8 +6,9 @@ import shutil
 from exporters.bypasses.base_bypass import BaseBypass
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
-from exporters.readers.s3_reader import get_bucket
+from exporters.readers.s3_reader import get_bucket, S3Reader
 from exporters.utils import TmpFile
+from exporters.writers.azure_file_writer import AzureFileWriter
 
 
 class AzureFileS3Bypass(BaseBypass):
@@ -23,6 +24,11 @@ class AzureFileS3Bypass(BaseBypass):
         - AzureFileWriter has not a items_limit set in configuration.
         - AzureFileWriter has default items_per_buffer_write and size_per_buffer_write per default.
     """
+
+    replace_modules = {
+        'reader': S3Reader,
+        'writer': AzureFileWriter
+    }
 
     def __init__(self, config, metadata):
         super(AzureFileS3Bypass, self).__init__(config, metadata)
@@ -62,26 +68,19 @@ class AzureFileS3Bypass(BaseBypass):
         dest_filebase = datetime.datetime.now().strftime(dest_filebase)
         return dest_filebase
 
-    def _fill_config_with_env(self):
-        reader_opts = self.config.reader_options['options']
-        if 'aws_access_key_id' not in reader_opts:
-            reader_opts['aws_access_key_id'] = os.environ.get('EXPORTERS_S3READER_AWS_KEY')
-        if 'aws_secret_access_key' not in self.config.reader_options['options']:
-            reader_opts['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3READER_AWS_SECRET')
-
     def bypass(self):
         from azure.storage.file import FileService
         from copy import deepcopy
-        reader_options = self.config.reader_options['options']
-        writer_options = self.config.writer_options['options']
-        self.share = writer_options['share']
-        self.filebase = self.create_filebase_name(writer_options['filebase'])
+        reader_aws_key = self.read_reader_option('aws_access_key_id')
+        reader_aws_secret = self.read_reader_option('aws_secret_access_key')
+        reader_bucket = self.read_reader_option('bucket')
+        self.share = self.read_writer_option('share')
+        self.filebase = self._create_filebase_name(self.read_writer_option('filebase'))
         self.azure_service = FileService(
-            writer_options['account_name'], writer_options['account_key'])
-        self._fill_config_with_env()
+            self.read_writer_option('account_name'), self.read_writer_option('account_key'))
         self.bypass_state = S3BypassState(self.config, self.metadata)
         self.total_items = self.bypass_state.stats['total_count']
-        source_bucket = get_bucket(**reader_options)
+        source_bucket = get_bucket(reader_bucket, reader_aws_key, reader_aws_secret)
         pending_keys = deepcopy(self.bypass_state.pending_keys())
         try:
             for key in pending_keys:
@@ -93,7 +92,7 @@ class AzureFileS3Bypass(BaseBypass):
             if self.tmp_folder:
                 shutil.rmtree(self.tmp_folder)
 
-    def create_filebase_name(self, filebase):
+    def _create_filebase_name(self, filebase):
         formatted_filebase = datetime.datetime.now().strftime(filebase)
         filebase_path, prefix = os.path.split(formatted_filebase)
         return filebase_path

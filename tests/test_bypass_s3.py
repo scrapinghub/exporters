@@ -244,7 +244,7 @@ class S3BypassTest(unittest.TestCase):
         bypass = S3Bypass(options, meta())
 
         # then:
-        filebase = bypass._get_filebase(options.writer_options['options'])
+        filebase = bypass._get_filebase(bypass.read_writer_option('filebase'))
         self.assertEqual(expected, filebase)
 
     def test_write_pointer(self):
@@ -335,9 +335,9 @@ class S3BypassTest(unittest.TestCase):
 
         # then
         expected = '123'
-        with environment({'aws_key': expected}):
-            self.assertEqual(bypass.read_option('reader', 'aws_access_key_id', 'aws_key'), expected)
-        self.assertIsNone(bypass.read_option('reader', 'aws_access_key_id', 'aws_key'))
+        with environment({'EXPORTERS_S3READER_AWS_KEY': expected}):
+            self.assertEqual(bypass.read_reader_option('aws_access_key_id'), expected)
+        self.assertIsNone(bypass.read_reader_option('aws_access_key_id'))
 
     def test_load_from_config(self):
         # given
@@ -355,7 +355,7 @@ class S3BypassTest(unittest.TestCase):
 
         # then
         expected = '123'
-        self.assertEqual(bypass.read_option('reader', 'aws_access_key_id', 'aws_key'), expected)
+        self.assertEqual(bypass.read_reader_option('aws_access_key_id'), expected)
 
     def test_copy_bypass_s3_with_env(self):
         # given
