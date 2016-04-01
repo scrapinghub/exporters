@@ -70,6 +70,10 @@ class BaseBypass(object):
     def bypass(self):
         raise NotImplementedError
 
+    def _handle_conditions_not_met(self, reason):
+        self.logger.warning('Skipping file copy optimization bypass because of %s' % reason)
+        return False
+
     def increment_items(self, number_of_items):
         self.total_items += number_of_items
 
