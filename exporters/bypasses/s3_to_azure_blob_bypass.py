@@ -78,11 +78,9 @@ class AzureBlobS3Bypass(BaseBypass):
     def bypass(self):
         from azure.storage.blob import BlobService
         from copy import deepcopy
-
         reader_aws_key = self.read_reader_option('aws_access_key_id')
         reader_aws_secret = self.read_reader_option('aws_secret_access_key')
         reader_bucket = self.read_reader_option('bucket')
-
         self._fill_config_with_env()
         self.bypass_state = S3BypassState(self.config, self.metadata)
         self.total_items = self.bypass_state.stats['total_count']

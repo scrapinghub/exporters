@@ -63,11 +63,6 @@ class AzureFileS3Bypass(BaseBypass):
                     'buffer limit configuration (size_per_buffer_write)')
         return True
 
-    def _get_filebase(self, writer_options):
-        dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
-        dest_filebase = datetime.datetime.now().strftime(dest_filebase)
-        return dest_filebase
-
     def bypass(self):
         from azure.storage.file import FileService
         from copy import deepcopy
