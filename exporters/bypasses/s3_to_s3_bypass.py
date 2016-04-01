@@ -3,9 +3,9 @@ import logging
 import shutil
 from contextlib import closing, contextmanager
 
+from exporters.bypasses.base_bypass import BaseBypass
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
-from exporters.export_managers.base_bypass import BaseBypass
 from exporters.progress_callback import BotoUploadProgress
 from exporters.readers.s3_reader import get_bucket
 from exporters.utils import TmpFile
