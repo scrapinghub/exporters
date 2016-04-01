@@ -82,28 +82,6 @@ class S3Bypass(BaseBypass):
         self.logger.warning('Skipping S3 file copy optimization bypass because of %s' % reason)
         return False
 
-    def meets_conditions(self):
-        if not self.config.reader_options['name'].endswith('S3Reader') or \
-           not self.config.writer_options['name'].endswith('S3Writer'):
-            return False
-        if not self.config.filter_before_options['name'].endswith('NoFilter'):
-            return self._handle_conditions_not_met('custom filter configured')
-        if not self.config.filter_after_options['name'].endswith('NoFilter'):
-            return self._handle_conditions_not_met('custom filter configured')
-        if not self.config.transform_options['name'].endswith('NoTransform'):
-            return self._handle_conditions_not_met('custom transform configured')
-        if not self.config.grouper_options['name'].endswith('NoGrouper'):
-            return self._handle_conditions_not_met('custom grouper configured')
-        if self.config.writer_options['options'].get('items_limit'):
-            return self._handle_conditions_not_met('items limit configuration (items_limit)')
-        if self.config.writer_options['options'].get('items_per_buffer_write'):
-            return self._handle_conditions_not_met(
-                    'buffer limit configuration (items_per_buffer_write)')
-        if self.config.writer_options['options'].get('size_per_buffer_write'):
-            return self._handle_conditions_not_met(
-                    'buffer limit configuration (size_per_buffer_write)')
-        return True
-
     def _get_filebase(self, filebase):
         dest_filebase = filebase.format(datetime.datetime.now())
         dest_filebase = datetime.datetime.now().strftime(dest_filebase)

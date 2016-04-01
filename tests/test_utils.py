@@ -302,8 +302,6 @@ class BaseByPassTest(unittest.TestCase):
     def test_not_implemented(self):
         bypass_script = BaseBypass({}, None)
         with self.assertRaises(NotImplementedError):
-            bypass_script.meets_conditions()
-        with self.assertRaises(NotImplementedError):
             bypass_script.bypass()
 
 

@@ -58,6 +58,27 @@ class ExporterConfig(object):
     def disable_retries(self):
         return self.exporter_options.get('disable_retries', False)
 
+    def module_options(self, module_name):
+        if module_name == 'reader':
+            return self.reader_options
+        if module_name == 'writer':
+            return self.writer_options
+        if module_name == 'filter_after':
+            return self.filter_after_options
+        if module_name == 'filter_before':
+            return self.filter_before_options
+        if module_name == 'grouper':
+            return self.grouper_options
+        if module_name == 'transform':
+            return self.transform_options
+        if module_name == 'persistence':
+            return self.persistence_options
+        if module_name == 'stats':
+            return self.stats_options
+        if module_name == 'notifiers':
+            return self.notifiers_options
+        if module_name == 'formatter':
+            return self.formatter_options
 
 MODULE_TYPES = ['readers', 'writers', 'transform', 'groupers',
                 'persistence', 'filters', 'stats_managers']
