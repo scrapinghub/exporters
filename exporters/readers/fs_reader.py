@@ -69,6 +69,9 @@ class FSReader(BaseReader):
         Open and reads files from self.files variable, and yields the items extracted from them.
 
         """
+        if not self.files:
+            self.logger.warning('Files not found for reading')
+
         for fpath in self.files:
             with gzip.open(fpath) as f:
                 for line in f:
@@ -80,12 +83,12 @@ class FSReader(BaseReader):
             self.read_files.append(fpath)
             self.files.remove(fpath)
             self.current_file = None
-            if len(self.files) == 0:
-                self.finished = True
             self.last_position['files'] = self.files
             self.last_position['read_files'] = self.read_files
             self.last_position['current_file'] = self.current_file
             self.last_position['last_line'] = self.last_line
+
+        self.finished = True
 
     def _get_pointer(self, path_pointer):
         """
