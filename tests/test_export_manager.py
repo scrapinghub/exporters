@@ -1,11 +1,13 @@
 import os
 import pickle
-import mock
 import unittest
+
+import mock
 from mock import DEFAULT, MagicMock
+
+from exporters.bypasses.base_bypass import BaseBypass
 from exporters.export_managers.base_exporter import BaseExporter
 from exporters.export_managers.basic_exporter import BasicExporter
-from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
 from exporters.utils import TmpFile
@@ -30,7 +32,8 @@ class FakeBypass(BaseBypass):
 
     def meets_conditions(self):
         if not self.fake_meet_conditions:
-            raise RequisitesNotMet
+            return False
+        return True
 
     def bypass(self):
         self.bypass_called = True
@@ -315,7 +318,7 @@ class BaseExportManagerTest(unittest.TestCase):
     def test_skipped_bypass(self):
         class SkippedBypass(BaseBypass):
             def meets_conditions(self):
-                raise RequisitesNotMet()
+                return False
 
         options = {
             'reader': {

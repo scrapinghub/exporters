@@ -3,7 +3,6 @@ import traceback
 from collections import OrderedDict
 from exporters.default_retries import disable_retries
 from exporters.writers.base_writer import ItemsLimitReached
-from exporters.export_managers.base_bypass import RequisitesNotMet
 from exporters.logger.base_logger import ExportManagerLogger
 from exporters.notifications.notifiers_list import NotifiersList
 from exporters.meta import ExportMeta
@@ -114,11 +113,11 @@ class BaseExporter(object):
             return False
 
         for bypass_script in self.bypass_cases:
-            try:
-                bypass_script.meets_conditions()
+            if bypass_script.meets_conditions():
+
                 self.bypass_exporter(bypass_script)
                 return True
-            except RequisitesNotMet:
+            else:
                 self.logger.debug(
                     '{} bypass skipped.'.format(bypass_script.__class__.__name__))
         return False

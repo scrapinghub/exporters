@@ -3,11 +3,12 @@ import logging
 import os
 import shutil
 
+from exporters.bypasses.base_bypass import BaseBypass
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
-from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
-from exporters.readers.s3_reader import get_bucket
+from exporters.readers.s3_reader import get_bucket, S3Reader
 from exporters.utils import TmpFile
+from exporters.writers.azure_blob_writer import AzureBlobWriter
 
 
 class AzureBlobS3Bypass(BaseBypass):
@@ -24,6 +25,11 @@ class AzureBlobS3Bypass(BaseBypass):
         - AzureBlobWriter has default items_per_buffer_write and size_per_buffer_write per default.
     """
 
+    replace_modules = {
+        'reader': S3Reader,
+        'writer': AzureBlobWriter
+    }
+
     def __init__(self, config, metadata):
         super(AzureBlobS3Bypass, self).__init__(config, metadata)
         self.tmp_folder = None
@@ -31,28 +37,9 @@ class AzureBlobS3Bypass(BaseBypass):
         self.logger = logging.getLogger('bypass_logger')
         self.logger.setLevel(logging.INFO)
 
-    def _raise_conditions_not_met(self, reason):
+    def _handle_conditions_not_met(self, reason):
         self.logger.warning('Skipping Azure file copy optimization bypass because of %s' % reason)
-        raise RequisitesNotMet
-
-    def meets_conditions(self):
-        if not self.config.reader_options['name'].endswith('S3Reader') or \
-           not self.config.writer_options['name'].endswith('AzureBlobWriter'):
-            raise RequisitesNotMet
-        if not self.config.filter_before_options['name'].endswith('NoFilter'):
-            self._raise_conditions_not_met('custom filter configured')
-        if not self.config.filter_after_options['name'].endswith('NoFilter'):
-            self._raise_conditions_not_met('custom filter configured')
-        if not self.config.transform_options['name'].endswith('NoTransform'):
-            self._raise_conditions_not_met('custom transform configured')
-        if not self.config.grouper_options['name'].endswith('NoGrouper'):
-            self._raise_conditions_not_met('custom grouper configured')
-        if self.config.writer_options['options'].get('items_limit'):
-            self._raise_conditions_not_met('items limit configuration (items_limit)')
-        if self.config.writer_options['options'].get('items_per_buffer_write'):
-            self._raise_conditions_not_met('buffer limit configuration (items_per_buffer_write)')
-        if self.config.writer_options['options'].get('size_per_buffer_write'):
-            self._raise_conditions_not_met('buffer limit configuration (size_per_buffer_write)')
+        return False
 
     def _get_filebase(self, writer_options):
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
@@ -69,15 +56,16 @@ class AzureBlobS3Bypass(BaseBypass):
     def bypass(self):
         from azure.storage.blob import BlobService
         from copy import deepcopy
-        reader_options = self.config.reader_options['options']
-        writer_options = self.config.writer_options['options']
+        reader_aws_key = self.read_reader_option('aws_access_key_id')
+        reader_aws_secret = self.read_reader_option('aws_secret_access_key')
+        reader_bucket = self.read_reader_option('bucket')
         self._fill_config_with_env()
         self.bypass_state = S3BypassState(self.config, self.metadata)
         self.total_items = self.bypass_state.stats['total_count']
-        self.container = writer_options['container']
+        self.container = self.read_writer_option('container')
         self.azure_service = BlobService(
-            writer_options['account_name'], writer_options['account_key'])
-        source_bucket = get_bucket(**reader_options)
+            self.read_writer_option('account_name'), self.read_writer_option('account_key'))
+        source_bucket = get_bucket(reader_bucket, reader_aws_key, reader_aws_secret)
         pending_keys = deepcopy(self.bypass_state.pending_keys())
         try:
             for key in pending_keys:
