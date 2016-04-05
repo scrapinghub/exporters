@@ -3,6 +3,7 @@ import shutil
 import tempfile
 import uuid
 from contextlib import contextmanager
+from copy import deepcopy
 
 
 def remove_if_exists(file_name):
@@ -29,3 +30,10 @@ def TmpFile():
         yield name
     finally:
         shutil.rmtree(tmp_folder)
+
+
+def nested_dict_value(d, path):
+    final_value = deepcopy(d)
+    for k in path:
+        final_value = final_value[k]
+    return final_value

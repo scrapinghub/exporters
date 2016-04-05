@@ -1,6 +1,6 @@
 from exporters.filters.base_filter import BaseFilter
 import re
-from tests.utils import nested_dict_value
+from exporters.utils import nested_dict_value
 
 
 class KeyValueRegexFilter(BaseFilter):

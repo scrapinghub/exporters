@@ -1,5 +1,5 @@
 from exporters.filters.base_filter import BaseFilter
-from tests.utils import nested_dict_value
+from exporters.utils import nested_dict_value
 
 
 class KeyValueFilter(BaseFilter):
