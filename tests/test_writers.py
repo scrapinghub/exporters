@@ -321,6 +321,7 @@ class ConsoleWriterTest(unittest.TestCase):
 
 
 class FilebaseBaseWriterTest(unittest.TestCase):
+
     def test_get_file_number_not_implemented(self):
         writer_config = {
             'options': {
@@ -333,6 +334,17 @@ class FilebaseBaseWriterTest(unittest.TestCase):
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')
         writer.close()
+
+    def test_get_full_filebase(self):
+        writer_config = {
+            'options': {
+                'filebase': '/tmp/some_file_',
+            }
+        }
+        writer = FilebaseBaseWriter(writer_config, meta(),
+                                    export_formatter=JsonExportFormatter(dict()))
+        writer.close()
+        self.assertEqual(writer.filebase, '/tmp/some_file_')
 
 
 class FSWriterTest(unittest.TestCase):
@@ -393,6 +405,8 @@ class FSWriterTest(unittest.TestCase):
             writer.close()
         file_path = datetime.datetime.now().strftime(file_path).format(file_number=start_file_count)
         file_name = datetime.datetime.now().strftime(file_name).format(file_number=start_file_count)
+        print file_path + file_name + '.jl.gz'
+        print writer.written_files
         self.assertTrue(file_path + file_name + '.jl.gz' in writer.written_files)
 
     def test_check_writer_consistency(self):
