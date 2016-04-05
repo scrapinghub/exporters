@@ -1,3 +1,4 @@
+import os
 from collections import Counter
 from contextlib import closing
 
@@ -137,7 +138,8 @@ class S3Writer(FilebaseBaseWriter):
 
     def _update_last_pointer(self):
         save_pointer = self.read_option('save_pointer')
-        self._write_s3_pointer(save_pointer, self.filebase + '/')
+        filebase, _ = os.path.split(self.filebase)
+        self._write_s3_pointer(save_pointer, filebase + '/')
 
     def close(self):
         """
