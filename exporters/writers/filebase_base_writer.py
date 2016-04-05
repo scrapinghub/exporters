@@ -88,16 +88,17 @@ class FilebaseBaseWriter(BaseWriter):
 
     def get_date_formatted_file_path(self):
         self.logger.debug('Extracting path from filebase option')
-        file_path, _ = os.path.split(self.read_option('filebase'))
-        file_path = datetime.datetime.now().strftime(file_path)
-        return file_path
+        filebase = self.read_option('filebase')
+        filebase = datetime.datetime.now().strftime(filebase)
+        return filebase
 
     def create_filebase_name(self, group_info, extension='gz', file_name=None):
         """
         Returns filebase and file valid name
         """
         normalized = [re.sub('\W', '_', s) for s in group_info]
-        filebase = self.filebase.format(groups=normalized)
+        path, _ = os.path.split(self.filebase)
+        filebase = path.format(groups=normalized)
         if not file_name:
             file_name = self.get_file_suffix(filebase, '') + '.' + extension
         return filebase, file_name
