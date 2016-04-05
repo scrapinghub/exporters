@@ -94,13 +94,13 @@ class ItemsGroupFilesHandler(object):
         return path
 
     def create_new_group_path_for_key(self, key):
-        new_buffer_path = self._get_new_path_name()
+        new_buffer_path = self._get_new_path_name(key)
         self.grouping_info.add_path_to_group(key, new_buffer_path)
         with open(new_buffer_path, 'w'):
             pass
         return new_buffer_path
 
-    def _get_new_path_name(self):
+    def _get_new_path_name(self, key):
         filename = '{}.{}'.format(uuid.uuid4(), self.file_extension)
         return os.path.join(self.tmp_folder, filename)
 

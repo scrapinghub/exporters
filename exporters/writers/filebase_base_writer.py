@@ -28,8 +28,8 @@ class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
         self.base_filename = self._format_date(base_filename)
         self.file_count = start_file_count
 
-    def _get_new_path_name(self):
-        name = self.base_filename.format(self.file_count)
+    def _get_new_path_name(self, key):
+        name = self.base_filename.format(file_number=self.file_count, groups=key)
         if name == self.base_filename:
             name += '{:04d}'.format(self.file_count)
         filename = '{}.{}'.format(name, self.file_extension)
