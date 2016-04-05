@@ -1,5 +1,8 @@
 import os
 import pickle
+import shutil
+import tempfile
+
 import mock
 import unittest
 from mock import DEFAULT, MagicMock
@@ -58,6 +61,31 @@ class BaseExportManagerTest(unittest.TestCase):
         self.exporter = exporter = BaseExporter(self.build_config())
         exporter.export()
         self.assertEquals(10, exporter.writer.get_metadata('items_count'))
+
+    def test_simple_grouped_export(self):
+        tmp_dir = tempfile.mkdtemp()
+        config = self.build_config(
+            writer={
+                'name': 'exporters.writers.fs_writer.FSWriter',
+                'options': {
+                    'filebase': os.path.join(tmp_dir, 'ds_dump_{groups[0]}')
+                }
+            },
+            grouper={
+                'name': 'exporters.groupers.file_key_grouper.FileKeyGrouper',
+                'options': {
+                    'keys': ['country_code']
+                }
+            }
+        )
+        expected_written_files = set(
+                [os.path.join(tmp_dir, 'ds_dump_us.jl.gz'),
+                 os.path.join(tmp_dir, 'ds_dump_es.jl.gz'),
+                 os.path.join(tmp_dir, 'ds_dump_uk.jl.gz')])
+        self.exporter = exporter = BaseExporter(config)
+        exporter.export()
+        self.assertEqual(expected_written_files, set(exporter.writer.written_files.keys()))
+        shutil.rmtree(tmp_dir)
 
     def test_export_with_csv_formatter(self):
         config = self.build_config()
