@@ -1,6 +1,8 @@
 import datetime
+import random
 import unittest
 
+from exporters.filters import KeyValueRegexFilter
 from exporters.filters.pythonexp_filter import PythonexpFilter
 from exporters.records.base_record import BaseRecord
 
@@ -55,3 +57,21 @@ class PythonexpFilterFilterTest(unittest.TestCase):
         result = list(python_filter.filter_batch(batch))
         self.assertEqual(['New York Jets', 'New York Giants'],
                          [d['name'] for d in result])
+
+    def test_filter_with_nested_key_value(self):
+        keys = [
+            {'name': 'country.state.city', 'value': 'val'}
+        ]
+        batch = [
+            {'country': {
+                'state': {
+                    'city': random.choice(['val', 'es', 'uk'])
+                }
+            }, 'value': random.randint(0, 1000)} for i in range(10)
+        ]
+        filter = KeyValueRegexFilter({'options': {'keys': keys}}, meta())
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertGreater(len(batch), 0)
+        for item in batch:
+            self.assertEqual(item['country']['state']['city'], 'val')
