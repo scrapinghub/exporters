@@ -1,4 +1,5 @@
 from exporters.filters.base_filter import BaseFilter
+from tests.utils import nested_dict_value
 
 
 class KeyValueFilter(BaseFilter):
@@ -21,5 +22,8 @@ class KeyValueFilter(BaseFilter):
         self.logger.info('KeyValueFilter has been initiated. Keys: {}'.format(self.keys))
 
     def filter(self, item):
-        return all(kv['name'] in item and item[kv['name']] == kv['value']
-                   for kv in self.keys)
+        for key in self.keys:
+            nested_fields = key['name'].split('.')
+            if nested_dict_value(item, nested_fields) != key['value']:
+                return
+        return item

@@ -99,3 +99,10 @@ class CopyingMagicMock(mock.MagicMock):
     def _mock_call(_mock_self, *args, **kwargs):
         return super(CopyingMagicMock, _mock_self)._mock_call(
             *deepcopy(args), **deepcopy(kwargs))
+
+
+def nested_dict_value(d, path):
+    final_value = deepcopy(d)
+    for k in path:
+        final_value = final_value[k]
+    return final_value

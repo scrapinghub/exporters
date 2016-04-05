@@ -1,5 +1,6 @@
 from exporters.filters.base_filter import BaseFilter
 import re
+from tests.utils import nested_dict_value
 
 
 class KeyValueRegexFilter(BaseFilter):
@@ -22,5 +23,8 @@ class KeyValueRegexFilter(BaseFilter):
         self.logger.info('KeyValueRegexFilter has been initiated. Keys: {}'.format(self.keys))
 
     def filter(self, item):
-        return all(kv['name'] in item and re.match(kv['value'], u'%s' % item[kv['name']])
-                   for kv in self.keys)
+        for key in self.keys:
+            nested_fields = key['name'].split('.')
+            if not re.match(key['value'], nested_dict_value(item, nested_fields)):
+                return
+        return item
