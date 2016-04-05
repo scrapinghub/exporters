@@ -26,14 +26,17 @@ class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
     def __init__(self, formatter, base_filename, start_file_count=0):
         super(CustomNameItemsGroupFilesHandler, self).__init__(formatter)
         self.base_filename = self._format_date(base_filename)
-        self.file_count = start_file_count
+        self.start_file_count = start_file_count
+        self.file_count = {}
 
     def _get_new_path_name(self, key):
-        name = self.base_filename.format(file_number=self.file_count, groups=key)
+        if key not in self.file_count:
+            self.file_count[key] = self.start_file_count
+        name = self.base_filename.format(file_number=self.file_count[key], groups=key)
         if name == self.base_filename:
-            name += '{:04d}'.format(self.file_count)
+            name += '{:04d}'.format(self.file_count[key])
         filename = '{}.{}'.format(name, self.file_extension)
-        self.file_count += 1
+        self.file_count[key] += 1
         return os.path.join(self.tmp_folder, filename)
 
     def _format_date(self, value):

@@ -71,7 +71,7 @@ class BaseExportManagerTest(unittest.TestCase):
             writer={
                 'name': 'exporters.writers.fs_writer.FSWriter',
                 'options': {
-                    'filebase': os.path.join(self.tmp_dir, 'ds_dump_{groups[0]}'),
+                    'filebase': os.path.join(self.tmp_dir, '{file_number}_ds_dump_{groups[0]}'),
                     'items_per_buffer_write': 100,
                 }
             },
@@ -84,9 +84,9 @@ class BaseExportManagerTest(unittest.TestCase):
         )
         config['reader']['options']['number_of_items'] = 1000
         expected_written_files = set([
-            'ds_dump_us.jl.gz',
-            'ds_dump_es.jl.gz',
-            'ds_dump_uk.jl.gz',
+            '0_ds_dump_us.jl.gz',
+            '0_ds_dump_es.jl.gz',
+            '0_ds_dump_uk.jl.gz',
         ])
         self.exporter = exporter = BaseExporter(config)
         exporter.export()
