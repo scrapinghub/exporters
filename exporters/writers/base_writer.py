@@ -1,8 +1,3 @@
-import six
-
-from exporters.compression import FILE_COMPRESSION, get_compress_func
-from exporters.exceptions import ConfigurationError, \
-    UnsupportedCompressionFormat
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 from exporters.write_buffer import WriteBuffer, ItemsGroupFilesHandler

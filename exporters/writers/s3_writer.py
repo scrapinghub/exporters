@@ -55,6 +55,7 @@ class S3Writer(FilebaseBaseWriter):
 
     def __init__(self, options, *args, **kwargs):
         import boto
+        kwargs['hash_algorithm'] = 'md5'
 
         super(S3Writer, self).__init__(options, *args, **kwargs)
         access_key = self.read_option('aws_access_key_id')
@@ -108,11 +109,11 @@ class S3Writer(FilebaseBaseWriter):
 
     @retry_long
     def _write_s3_key(self, dump_path, key_name):
-        from boto.utils import compute_md5
         destination = 's3://{}/{}'.format(self.bucket.name, key_name)
         self.logger.info('Start uploading {} to {}'.format(dump_path, destination))
         with closing(self.bucket.new_key(key_name)) as key, open(dump_path, 'r') as f:
-            md5 = compute_md5(f)
+            buffer_info = self.write_buffer.metadata[dump_path]
+            md5 = buffer_info['compressed_hash']
             if self.save_metadata:
                 key.set_metadata('total', self._get_total_count(dump_path))
                 key.set_metadata('md5', md5)

@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 import uuid
+import hashlib
 
 from six.moves import UserDict
 
@@ -38,6 +39,23 @@ class GroupingInfo(UserDict):
 
     def reset_key(self, key):
         self[key]['buffered_items'] = 0
+
+
+class HashFile(object):
+    """
+    file-like object that wraps around a file-like object and calculates
+    the writed content hash.
+    """
+    def __init__(self, fl, algorithm):
+        self._file = fl
+        self.hash = hashlib.new(algorithm)
+
+    def write(self, data):
+        self._file.write(data)
+        self.hash.update(data)
+
+    def __getattr__(self, attr):
+         return getattr(self._file, attr)
 
 
 class ItemsGroupFilesHandler(object):
@@ -123,10 +141,12 @@ class ItemsGroupFilesHandler(object):
 class WriteBuffer(object):
 
     def __init__(self, items_per_buffer_write, size_per_buffer_write,
-                 items_group_files_handler, compression_func=compress_gzip):
+                 items_group_files_handler, compression_func=compress_gzip,
+                 hash_algorithm=None):
         self.files = []
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
+        self.hash_algorithm = hash_algorithm
         self.items_group_files = items_group_files_handler
         self.compression_func = compression_func
         self.metadata = {}
@@ -153,9 +173,9 @@ class WriteBuffer(object):
         compressed_size = os.path.getsize(compressed_path)
         write_info = {
             'number_of_records': self.grouping_info[key]['buffered_items'],
-            'path': path,
             'compressed_path': compressed_path,
             'size': compressed_size
+            'compressed_hash': hash,
         }
         self.metadata[compressed_path] = write_info
         return write_info
@@ -163,9 +183,8 @@ class WriteBuffer(object):
     def add_new_buffer_for_group(self, key):
         self.items_group_files.create_new_group_file(key)
 
-    def clean_tmp_files(self, write_info):
-        remove_if_exists(write_info.get('path'))
-        remove_if_exists(write_info.get('compressed_path'))
+    def clean_tmp_files(self, key, compressed_path):
+        self.items_group_files.clean_tmp_files(compressed_path)
 
     def should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(
