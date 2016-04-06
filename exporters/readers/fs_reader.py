@@ -72,7 +72,7 @@ class FSReader(BaseReader):
         if not self.files:
             self.logger.warning('Files not found for reading')
 
-        for fpath in self.files:
+        for fpath in sorted(self.files):
             with gzip.open(fpath) as f:
                 for line in f:
                     self.last_line += 1
