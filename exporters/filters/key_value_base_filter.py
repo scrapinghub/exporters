@@ -3,15 +3,8 @@ from exporters.utils import nested_dict_value
 
 
 class KeyValueBaseFilter(BaseFilter):
-    """
-    Filter items depending on keys and values
+    "Base class to key-value filters"
 
-        - keys (list)
-            It is a list of dicts with the following structure: {"key": "value"}.
-            The filter will delete those items that do not contain a
-            key "key" or, if they do, that key is not the same as "value".
-    """
-    # List of options
     supported_options = {
         'keys': {'type': list},
         'nested_field_separator': {'type': basestring, 'default': '.'}
@@ -21,6 +14,8 @@ class KeyValueBaseFilter(BaseFilter):
         super(KeyValueBaseFilter, self).__init__(*args, **kwargs)
         self.keys = self.read_option('keys')
         self.nested_field_separator = self.read_option('nested_field_separator')
+        self.logger.info('{} has been initiated. Keys: {}'.format(
+            self.__class__.__name__, self.keys))
 
     def filter(self, item):
         for key in self.keys:
@@ -29,9 +24,12 @@ class KeyValueBaseFilter(BaseFilter):
                 value = nested_dict_value(item, nested_fields)
             else:
                 value = item[key['name']]
-            if not self.meets_condition(value, key['value']):
+            if not self._match_value(value, key['value']):
                 return
         return item
 
-    def meets_condition(self, value, key_value):
+    def _match_value(self, value_found, value_expected):
+        """Return True if value found matches the expected.
+        Should be overriden by derived classes implementing custom match.
+        """
         raise NotImplementedError

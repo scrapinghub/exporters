@@ -10,10 +10,5 @@ class KeyValueFilter(KeyValueBaseFilter):
             The filter will delete those items that do not contain a
             key "key" or, if they do, that key is not the same as "value".
     """
-
-    def __init__(self, *args, **kwargs):
-        super(KeyValueFilter, self).__init__(*args, **kwargs)
-        self.logger.info('KeyValueFilter has been initiated. Keys: {}'.format(self.keys))
-
-    def meets_condition(self, value, key_value):
-        return value == key_value
+    def _match_value(self, found, expected):
+        return found == expected
