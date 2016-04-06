@@ -133,3 +133,21 @@ class KeyValueRegexFilterTest(unittest.TestCase):
 
         # then:
         self.assertEqual(['es', 'egypt', u'españa'], [d['country'] for d in result])
+
+    def test_filter_with_nested_key_value(self):
+        keys = [
+            {'name': 'country.state.city', 'value': 'val'}
+        ]
+        batch = [
+            {'country': {
+                'state': {
+                    'city': random.choice(['val', 'es', 'uk'])
+                }
+            }, 'value': random.randint(0, 1000)} for i in range(10)
+        ]
+        filter = KeyValueRegexFilter({'options': {'keys': keys}}, meta())
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertGreater(len(batch), 0)
+        for item in batch:
+            self.assertEqual(item['country']['state']['city'], 'val')
