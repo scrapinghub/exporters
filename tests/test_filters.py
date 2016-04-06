@@ -103,7 +103,7 @@ class KeyValueFilterTest(unittest.TestCase):
                 'state': {
                     'city': random.choice(['val', 'es', 'uk'])
                 }
-            }, 'value': random.randint(0, 1000)} for i in range(10)
+            }, 'value': random.randint(0, 1000)} for i in range(100)
         ]
         filter = KeyValueFilter({'options': {'keys': keys}}, meta())
         batch = filter.filter_batch(batch)
@@ -121,7 +121,7 @@ class KeyValueFilterTest(unittest.TestCase):
                 'state': {
                     'city': random.choice(['val', 'es', 'uk'])
                 }
-            }, 'value': random.randint(0, 1000)} for i in range(10)
+            }, 'value': random.randint(0, 1000)} for i in range(100)
         ]
         filter = KeyValueFilter(
                 {'options': {'keys': keys, 'nested_field_character': ','}}, meta())
@@ -162,7 +162,7 @@ class KeyValueRegexFilterTest(unittest.TestCase):
                 'state': {
                     'city': random.choice(['val', 'es', 'uk'])
                 }
-            }, 'value': random.randint(0, 1000)} for i in range(10)
+            }, 'value': random.randint(0, 1000)} for i in range(100)
         ]
         filter = KeyValueRegexFilter({'options': {'keys': keys}}, meta())
         batch = filter.filter_batch(batch)
@@ -180,7 +180,7 @@ class KeyValueRegexFilterTest(unittest.TestCase):
                 'state': {
                     'city': random.choice(['val', 'es', 'uk'])
                 }
-            }, 'value': random.randint(0, 1000)} for i in range(10)
+            }, 'value': random.randint(0, 1000)} for i in range(100)
         ]
         filter = KeyValueRegexFilter(
                 {'options': {'keys': keys, 'nested_field_character': ','}}, meta())
