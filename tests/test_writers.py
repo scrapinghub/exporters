@@ -356,8 +356,20 @@ class FilebaseBaseWriterTest(unittest.TestCase):
                                     export_formatter=JsonExportFormatter(dict()))
         writer.close()
         date = datetime.datetime.now()
-        expected = (date.strftime('/tmp%m/%Y-some_folder_g1'), 'g2_{file_number}_.gz')
-        self.assertEqual(writer.create_filebase_name(('g1', 'g2')), expected)
+        expected = (date.strftime('/tmp%m/%Y-some_folder_g1'), 'filename')
+        self.assertEqual(writer.create_filebase_name(('g1', 'g2'), file_name='filename'), expected)
+
+    def test_wrong_file_number_in_filebase(self):
+        writer_config = {
+            'options': {
+                'filebase': '/tmp%m/%Y-some_folder_{file_number}/{groups[1]}_',
+            }
+        }
+        writer = FilebaseBaseWriter(writer_config, meta(),
+                                    export_formatter=JsonExportFormatter(dict()))
+        writer.close()
+        with self.assertRaisesRegexp(KeyError, 'filebase option should not contain'):
+            writer.create_filebase_name(('g1', 'g2'), file_name='filename')
 
 
 class FSWriterTest(unittest.TestCase):
