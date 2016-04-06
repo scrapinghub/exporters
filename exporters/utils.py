@@ -34,5 +34,9 @@ def TmpFile():
 def nested_dict_value(d, path):
     final_value = d
     for k in path:
-        final_value = final_value[k]
+        if k in final_value:
+            final_value = final_value[k]
+        else:
+            raise ValueError('{} index could not be found for nested path {} in {}'.format(
+                    k, path, d))
     return final_value
