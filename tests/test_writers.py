@@ -346,6 +346,19 @@ class FilebaseBaseWriterTest(unittest.TestCase):
         writer.close()
         self.assertEqual(writer.filebase, '/tmp/some_file_')
 
+    def test_create_filebase_name(self):
+        writer_config = {
+            'options': {
+                'filebase': '/tmp%m/%Y-some_folder_{groups[0]}/{groups[1]}_{file_number}_',
+            }
+        }
+        writer = FilebaseBaseWriter(writer_config, meta(),
+                                    export_formatter=JsonExportFormatter(dict()))
+        writer.close()
+        date = datetime.datetime.now()
+        expected = (date.strftime('/tmp%m/%Y-some_folder_g1'), 'g2_{file_number}_.gz')
+        self.assertEqual(writer.create_filebase_name(('g1', 'g2')), expected)
+
 
 class FSWriterTest(unittest.TestCase):
 
