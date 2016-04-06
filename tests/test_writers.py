@@ -414,7 +414,21 @@ class FSWriterTest(unittest.TestCase):
         expected_file = '{}/exporter_test0000.jl.gz'.format(self.tmp_dir)
         self.assertTrue(expected_file in writer.written_files)
 
-    def test_compression_format(self):
+    def test_compression_gzip_format(self):
+        writer_config = self.get_writer_config()
+        writer_config['options'].update({'compression_format': 'gzip'})
+        writer = FSWriter(writer_config, meta(),
+                          export_formatter=JsonExportFormatter(dict()))
+        try:
+            writer.write_batch(self.get_batch())
+            writer.flush()
+
+        finally:
+            writer.close()
+        expected_file = '{}/exporter_test0000.jl.gz'.format(self.tmp_dir)
+        self.assertTrue(expected_file in writer.written_files)
+
+    def test_compression_zip_format(self):
         writer_config = self.get_writer_config()
         writer_config['options'].update({'compression_format': 'zip'})
         writer = FSWriter(writer_config, meta(),
@@ -426,6 +440,34 @@ class FSWriterTest(unittest.TestCase):
         finally:
             writer.close()
         expected_file = '{}/exporter_test0000.jl.zip'.format(self.tmp_dir)
+        self.assertTrue(expected_file in writer.written_files)
+
+    def test_compression_bz2_format(self):
+        writer_config = self.get_writer_config()
+        writer_config['options'].update({'compression_format': 'bz2'})
+        writer = FSWriter(writer_config, meta(),
+                          export_formatter=JsonExportFormatter(dict()))
+        try:
+            writer.write_batch(self.get_batch())
+            writer.flush()
+
+        finally:
+            writer.close()
+        expected_file = '{}/exporter_test0000.jl.bz2'.format(self.tmp_dir)
+        self.assertTrue(expected_file in writer.written_files)
+
+    def test_compression_tar_gzip_format(self):
+        writer_config = self.get_writer_config()
+        writer_config['options'].update({'compression_format': 'tgz'})
+        writer = FSWriter(writer_config, meta(),
+                          export_formatter=JsonExportFormatter(dict()))
+        try:
+            writer.write_batch(self.get_batch())
+            writer.flush()
+
+        finally:
+            writer.close()
+        expected_file = '{}/exporter_test0000.jl.tar.gz'.format(self.tmp_dir)
         self.assertTrue(expected_file in writer.written_files)
 
     def test_invalid_compression_format(self):
