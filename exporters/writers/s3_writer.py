@@ -113,7 +113,7 @@ class S3Writer(FilebaseBaseWriter):
         self.logger.info('Start uploading {} to {}'.format(dump_path, destination))
         with closing(self.bucket.new_key(key_name)) as key, open(dump_path, 'r') as f:
             buffer_info = self.write_buffer.metadata[dump_path]
-            md5 = buffer_info['compressed_hash']
+            md5 = key.get_md5_from_hexdigest(buffer_info['compressed_hash'])
             if self.save_metadata:
                 key.set_metadata('total', self._get_total_count(dump_path))
                 key.set_metadata('md5', md5)
