@@ -97,12 +97,11 @@ class FilebaseBaseWriter(BaseWriter):
         Returns filebase and file valid name
         """
         normalized = [re.sub('\W', '_', s) for s in group_info]
-        filebase = self.filebase
-        subs_uuid = str(uuid.uuid4())
-        filebase = filebase.replace('{file_number}', subs_uuid)
-        filebase = filebase.format(groups=normalized)
-        filebase = filebase.replace(subs_uuid, '{file_number}')
-        filebase, prefix = os.path.split(filebase)
+        filebase, prefix = os.path.split(self.filebase)
+        try:
+            filebase = filebase.format(groups=normalized)
+        except KeyError as e:
+            raise KeyError('filebase option should not contain {} key'.format(str(e)))
         if not file_name:
             file_name = prefix + '.' + extension
         return filebase, file_name
