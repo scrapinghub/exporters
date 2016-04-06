@@ -65,8 +65,11 @@ class FilebaseBaseWriter(BaseWriter):
         'generate_md5': {'type': bool, 'default': False}
     }
 
+    hash_algorithm = 'md5'
+
     def __init__(self, *args, **kwargs):
         super(FilebaseBaseWriter, self).__init__(*args, **kwargs)
+        self.generate_md5 = self.read_option('generate_md5')
         self.filebase = self.get_date_formatted_file_path()
         self.set_metadata('effective_filebase', self.filebase)
         self.written_files = {}

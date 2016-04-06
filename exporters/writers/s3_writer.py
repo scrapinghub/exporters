@@ -55,8 +55,6 @@ class S3Writer(FilebaseBaseWriter):
 
     def __init__(self, options, *args, **kwargs):
         import boto
-        kwargs['hash_algorithm'] = 'md5'
-
         super(S3Writer, self).__init__(options, *args, **kwargs)
         access_key = self.read_option('aws_access_key_id')
         secret_key = self.read_option('aws_secret_access_key')

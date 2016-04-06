@@ -32,6 +32,8 @@ class BaseWriter(BasePipelineItem):
         'compression': {'type': six.string_types, 'default': 'gz'}
     }
 
+    hash_algorithm = None
+
     def __init__(self, options, metadata, *args, **kwargs):
         super(BaseWriter, self).__init__(options, metadata, *args, **kwargs)
         self.finished = False
@@ -47,6 +49,7 @@ class BaseWriter(BasePipelineItem):
         self.write_buffer = WriteBuffer(items_per_buffer_write,
                                         size_per_buffer_write,
                                         self._items_group_files_handler(),
+                                        hash_algorithm=self.hash_algorithm,
                                         compression_func)
         self.set_metadata('items_count', 0)
 
@@ -139,7 +142,7 @@ class BaseWriter(BasePipelineItem):
         write_info = self.write_buffer.pack_buffer(key)
         self.write(write_info.get('compressed_path'),
                    self.write_buffer.grouping_info[key]['membership'])
-        self.write_buffer.clean_tmp_files(write_info)
+        self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
         self.write_buffer.add_new_buffer_for_group(key)
 
     def finish_writing(self):

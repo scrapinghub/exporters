@@ -3,7 +3,6 @@ import shutil
 import tempfile
 import uuid
 import hashlib
-
 from six.moves import UserDict
 
 from exporters.compression import compress_gzip
@@ -110,6 +109,18 @@ class ItemsGroupFilesHandler(object):
     def close(self):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
+    def clean_tmp_files(self, compressed_path):
+        path = compressed_path[:-3]
+        remove_if_exists(path)
+        remove_if_exists(compressed_path)
+
+    def get_current_buffer_path_for_group(self, key):
+        if self.grouping_info[key]['group_file']:
+            path = self.grouping_info[key]['group_file'][-1]
+        else:
+            path = self.create_new_group_file(key)
+        return path
+
     def create_new_group_file(self, key):
         path = self.create_new_group_path_for_key(key)
         self.grouping_info.reset_key(key)
@@ -117,13 +128,6 @@ class ItemsGroupFilesHandler(object):
         if header:
             with open(path, 'w') as f:
                 f.write(header)
-        return path
-
-    def get_current_buffer_path_for_group(self, key):
-        if self.grouping_info[key]['group_file']:
-            path = self.grouping_info[key]['group_file'][-1]
-        else:
-            path = self.create_new_group_file(key)
         return path
 
     def create_new_group_path_for_key(self, key):
@@ -144,6 +148,7 @@ class WriteBuffer(object):
                  items_group_files_handler, compression_func=compress_gzip,
                  hash_algorithm=None):
         self.files = []
+        self.items_group_files = items_group_files_handler
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
         self.hash_algorithm = hash_algorithm

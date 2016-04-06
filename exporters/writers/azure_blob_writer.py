@@ -25,10 +25,10 @@ class AzureBlobWriter(BaseWriter):
         'account_key': {'type': six.string_types, 'env_fallback': 'EXPORTERS_AZUREWRITER_KEY'},
         'container': {'type': six.string_types}
     }
+    hash_algorithm = 'md5'
     VALID_CONTAINER_NAME_RE = r'[a-zA-Z0-9-]{3,63}'
 
     def __init__(self, *args, **kw):
-        kw['hash_algorithm'] = 'md5'
         from azure.storage.blob import BlockBlobService
         super(AzureBlobWriter, self).__init__(*args, **kw)
         account_name = self.read_option('account_name')
