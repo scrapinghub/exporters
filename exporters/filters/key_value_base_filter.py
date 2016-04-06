@@ -14,18 +14,18 @@ class KeyValueBaseFilter(BaseFilter):
     # List of options
     supported_options = {
         'keys': {'type': list},
-        'nested_field_character': {'type': basestring, 'default': '.'}
+        'nested_field_separator': {'type': basestring, 'default': '.'}
     }
 
     def __init__(self, *args, **kwargs):
         super(KeyValueBaseFilter, self).__init__(*args, **kwargs)
         self.keys = self.read_option('keys')
-        self.nested_field_character = self.read_option('nested_field_character')
+        self.nested_field_separator = self.read_option('nested_field_separator')
 
     def filter(self, item):
         for key in self.keys:
-            if self.nested_field_character:
-                nested_fields = key['name'].split(self.nested_field_character)
+            if self.nested_field_separator:
+                nested_fields = key['name'].split(self.nested_field_separator)
                 value = nested_dict_value(item, nested_fields)
             else:
                 value = item[key['name']]
