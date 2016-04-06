@@ -97,10 +97,14 @@ class FilebaseBaseWriter(BaseWriter):
         Returns filebase and file valid name
         """
         normalized = [re.sub('\W', '_', s) for s in group_info]
-        path, _ = os.path.split(self.filebase)
-        filebase = path.format(groups=normalized)
+        filebase = self.filebase
+        subs_uuid = str(uuid.uuid4())
+        filebase = filebase.replace('{file_number}', subs_uuid)
+        filebase = filebase.format(groups=normalized)
+        filebase = filebase.replace(subs_uuid, '{file_number}')
+        filebase, prefix = os.path.split(filebase)
         if not file_name:
-            file_name = self.get_file_suffix(filebase, '') + '.' + extension
+            file_name = prefix + '.' + extension
         return filebase, file_name
 
     def _get_md5(self, path):
