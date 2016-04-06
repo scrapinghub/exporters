@@ -11,6 +11,7 @@ import datetime
 import mock
 
 from contextlib import closing
+from exporters.exceptions import ConfigurationError
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
 from exporters.records.base_record import BaseRecord
@@ -412,6 +413,28 @@ class FSWriterTest(unittest.TestCase):
             writer.close()
         expected_file = '{}/exporter_test0000.jl.gz'.format(self.tmp_dir)
         self.assertTrue(expected_file in writer.written_files)
+
+    def test_compression_format(self):
+        writer_config = self.get_writer_config()
+        writer_config['options'].update({'compression_format': 'zip'})
+        writer = FSWriter(writer_config, meta(),
+                          export_formatter=JsonExportFormatter(dict()))
+        try:
+            writer.write_batch(self.get_batch())
+            writer.flush()
+
+        finally:
+            writer.close()
+        expected_file = '{}/exporter_test0000.jl.zip'.format(self.tmp_dir)
+        self.assertTrue(expected_file in writer.written_files)
+
+    def test_invalid_compression_format(self):
+        self.assertRaisesRegexp(ConfigurationError,
+                                'The compression format can only be '
+                                'one of the following:',
+                                ItemsGroupFilesHandler,
+                                JsonExportFormatter(dict()),
+                                'unknown')
 
     def test_get_file_number_with_date(self):
         file_path = '/tmp/%Y%m%d/'

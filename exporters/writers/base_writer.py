@@ -1,3 +1,5 @@
+import six
+
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 from exporters.write_buffer import WriteBuffer, ItemsGroupFilesHandler
@@ -28,7 +30,8 @@ class BaseWriter(BasePipelineItem):
         'items_per_buffer_write': {'type': int, 'default': ITEMS_PER_BUFFER_WRITE},
         'size_per_buffer_write': {'type': int, 'default': SIZE_PER_BUFFER_WRITE},
         'items_limit': {'type': int, 'default': 0},
-        'check_consistency': {'type': bool, 'default': False}
+        'check_consistency': {'type': bool, 'default': False},
+        'compression_format': {'type': six.string_types, 'default': 'gzip'}
     }
 
     def __init__(self, options, metadata, *args, **kwargs):
@@ -48,7 +51,8 @@ class BaseWriter(BasePipelineItem):
         self.set_metadata('items_count', 0)
 
     def _items_group_files_handler(self):
-        return ItemsGroupFilesHandler(self.export_formatter)
+        compression_format = self.read_option('compression_format')
+        return ItemsGroupFilesHandler(self.export_formatter, compression_format)
 
     def write(self, path, key):
         """

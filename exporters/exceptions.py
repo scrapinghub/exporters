@@ -14,6 +14,10 @@ class InvalidDateRangeError(ValueError):
     pass
 
 
+class InvalidCompressionFormat(ValueError):
+    pass
+
+
 class ConfigCheckError(ConfigurationError):
     def __init__(self, message="Configuration provided isn't valid.", errors={}):
         super(ConfigCheckError, self).__init__(message)
