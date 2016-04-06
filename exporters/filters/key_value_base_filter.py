@@ -25,7 +25,7 @@ class KeyValueBaseFilter(BaseFilter):
     def filter(self, item):
         for key in self.keys:
             if self.nested_field_character:
-                nested_fields = key['name'].split('.')
+                nested_fields = key['name'].split(self.nested_field_character)
                 value = nested_dict_value(item, nested_fields)
             else:
                 value = item[key['name']]
