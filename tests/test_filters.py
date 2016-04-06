@@ -112,6 +112,25 @@ class KeyValueFilterTest(unittest.TestCase):
         for item in batch:
             self.assertEqual(item['country']['state']['city'], 'val')
 
+    def test_filter_with_nested_key_value_with_comma(self):
+        keys = [
+            {'name': 'country,state,city', 'value': 'val'}
+        ]
+        batch = [
+            {'country': {
+                'state': {
+                    'city': random.choice(['val', 'es', 'uk'])
+                }
+            }, 'value': random.randint(0, 1000)} for i in range(10)
+        ]
+        filter = KeyValueFilter(
+                {'options': {'keys': keys, 'nested_field_character': ','}}, meta())
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertGreater(len(batch), 0)
+        for item in batch:
+            self.assertEqual(item['country']['state']['city'], 'val')
+
 
 class KeyValueRegexFilterTest(unittest.TestCase):
 
@@ -146,6 +165,25 @@ class KeyValueRegexFilterTest(unittest.TestCase):
             }, 'value': random.randint(0, 1000)} for i in range(10)
         ]
         filter = KeyValueRegexFilter({'options': {'keys': keys}}, meta())
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertGreater(len(batch), 0)
+        for item in batch:
+            self.assertEqual(item['country']['state']['city'], 'val')
+
+    def test_filter_with_nested_key_value_with_comma(self):
+        keys = [
+            {'name': 'country,state,city', 'value': 'val'}
+        ]
+        batch = [
+            {'country': {
+                'state': {
+                    'city': random.choice(['val', 'es', 'uk'])
+                }
+            }, 'value': random.randint(0, 1000)} for i in range(10)
+        ]
+        filter = KeyValueRegexFilter(
+                {'options': {'keys': keys, 'nested_field_character': ','}}, meta())
         batch = filter.filter_batch(batch)
         batch = list(batch)
         self.assertGreater(len(batch), 0)
