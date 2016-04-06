@@ -1,6 +1,5 @@
 import datetime
 import unittest
-
 from exporters.filters.pythonexp_filter import PythonexpFilter
 from exporters.records.base_record import BaseRecord
 
