@@ -110,7 +110,7 @@ class FilebaseBaseWriter(BaseWriter):
         with open(path, 'r') as f:
             return md5_for_file(f)
 
-    def _write(self, key):
+    def _write_current_buffer_for_group_key(self, key):
         write_info = self.write_buffer.pack_buffer(key)
         compressed_path = write_info.get('compressed_path')
         self.write(compressed_path,
