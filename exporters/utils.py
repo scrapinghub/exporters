@@ -4,6 +4,8 @@ import tempfile
 import uuid
 from contextlib import contextmanager
 
+import collections
+
 
 def remove_if_exists(file_name):
     try:
@@ -34,9 +36,9 @@ def TmpFile():
 def nested_dict_value(d, path):
     final_value = d
     for k in path:
-        if k in final_value:
+        if isinstance(final_value, collections.Mapping) and k in final_value:
             final_value = final_value[k]
         else:
-            raise ValueError('{} index could not be found for nested path {} in {}'.format(
+            raise KeyError('{} Key could not be found for nested path {} in {}'.format(
                     k, path, d))
     return final_value

@@ -366,5 +366,9 @@ class NesteDictReadTest(unittest.TestCase):
         nested_dict = self.get_nested_dict()
 
         # when
-        with self.assertRaisesRegexp(ValueError, 'could not be found for nested path'):
+        with self.assertRaisesRegexp(KeyError, 'could not be found for nested path'):
             nested_dict_value(nested_dict, 'address.postal_code'.split('.'))
+
+    def test_get_none_value(self):
+        with self.assertRaisesRegexp(KeyError, 'could not be found for nested path'):
+            nested_dict_value({'something': None}, ['something', 'in', 'the', 'way'])
