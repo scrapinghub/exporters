@@ -79,10 +79,10 @@ class GDriveWriter(FilebaseBaseWriter):
         return parent
 
     @retry_long
-    def write(self, dump_path, group_key=None):
+    def write(self, dump_path, group_key=None, file_name=None):
         if group_key is None:
             group_key = []
-        filebase_path, filename = self.create_filebase_name(group_key)
+        filebase_path, filename = self.create_filebase_name(group_key, file_name=file_name)
         parent = self._ensure_folder_path(filebase_path)
         file = self.drive.CreateFile({'title': filename, 'parents': [parent]})
         file.SetContentFile(dump_path)

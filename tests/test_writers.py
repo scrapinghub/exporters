@@ -321,6 +321,7 @@ class ConsoleWriterTest(unittest.TestCase):
 
 
 class FilebaseBaseWriterTest(unittest.TestCase):
+
     def test_get_file_number_not_implemented(self):
         writer_config = {
             'options': {
@@ -333,6 +334,42 @@ class FilebaseBaseWriterTest(unittest.TestCase):
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')
         writer.close()
+
+    def test_get_full_filebase(self):
+        writer_config = {
+            'options': {
+                'filebase': '/tmp/some_file_',
+            }
+        }
+        writer = FilebaseBaseWriter(writer_config, meta(),
+                                    export_formatter=JsonExportFormatter(dict()))
+        writer.close()
+        self.assertEqual(writer.filebase, '/tmp/some_file_')
+
+    def test_create_filebase_name(self):
+        writer_config = {
+            'options': {
+                'filebase': '/tmp/%m/%Y-some_folder_{groups[0]}/{groups[1]}_{file_number}_',
+            }
+        }
+        writer = FilebaseBaseWriter(writer_config, meta(),
+                                    export_formatter=JsonExportFormatter(dict()))
+        writer.close()
+        date = datetime.datetime.now()
+        expected = (date.strftime('/tmp/%m/%Y-some_folder_g1'), 'filename')
+        self.assertEqual(writer.create_filebase_name(('g1', 'g2'), file_name='filename'), expected)
+
+    def test_wrong_file_number_in_filebase(self):
+        writer_config = {
+            'options': {
+                'filebase': '/tmp/%m/%Y-some_folder_{file_number}/{groups[1]}_',
+            }
+        }
+        writer = FilebaseBaseWriter(writer_config, meta(),
+                                    export_formatter=JsonExportFormatter(dict()))
+        writer.close()
+        with self.assertRaisesRegexp(KeyError, 'filebase option should not contain'):
+            writer.create_filebase_name(('g1', 'g2'), file_name='filename')
 
 
 class FSWriterTest(unittest.TestCase):
@@ -393,10 +430,9 @@ class FSWriterTest(unittest.TestCase):
             writer.close()
         file_path = datetime.datetime.now().strftime(file_path).format(file_number=start_file_count)
         file_name = datetime.datetime.now().strftime(file_name).format(file_number=start_file_count)
-        self.assertTrue(file_path + file_name + '.jl.gz' in writer.written_files)
+        self.assertIn(file_path + file_name + '.jl.gz', writer.written_files)
 
     def test_check_writer_consistency(self):
-
         # given
         options = self.get_writer_config()
         options['options']['check_consistency'] = True

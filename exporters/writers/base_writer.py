@@ -52,26 +52,34 @@ class BaseWriter(BasePipelineItem):
 
     def write(self, path, key):
         """
-        Receive path to temp dump file and group key, and write it to the proper location.
+        Receive path to buffer file and group key and write its contents
+        to the configured destination.
+
+        Should be implemented in derived classes.
+
+        It's called when it's time to flush a buffer, usually by
+        either write_batch() or flush() methods.
         """
         raise NotImplementedError
 
     def write_batch(self, batch):
         """
-        Receives the batch and writes it. This method is usually called from a manager.
+        Buffer a batch of items to be written and update internal counters.
+
+        Calling this method doesn't guarantee that all items have been written.
+        To ensure everything has been written you need to call flush().
         """
         for item in batch:
             self.write_buffer.buffer(item)
             key = self.write_buffer.get_key_from_item(item)
             if self.write_buffer.should_write_buffer(key):
-                self._write(key)
+                self._write_current_buffer_for_group_key(key)
             self.increment_written_items()
             self._check_items_limit()
 
     def _check_items_limit(self):
         """
-        Check if a writer has reached the items limit. If so, it raises an ItemsLimitReached
-        exception
+        Raise ItemsLimitReached if the writer reached the configured items limit.
         """
         if self.items_limit and self.items_limit == self.get_metadata('items_count'):
             raise ItemsLimitReached('Finishing job after items_limit reached:'
@@ -79,14 +87,14 @@ class BaseWriter(BasePipelineItem):
 
     def flush(self):
         """
-        This method trigers a key write.
+        Ensure all remaining buffers are written.
         """
         for key in self.grouping_info.keys():
-            self._write(key)
+            self._write_current_buffer_for_group_key(key)
 
     def close(self):
         """
-        Called to clean all possible tmp files created during the process.
+        Close all buffers, cleaning all temporary files.
         """
         if self.write_buffer is not None:
             self.write_buffer.close()
@@ -100,14 +108,22 @@ class BaseWriter(BasePipelineItem):
 
     def _check_write_consistency(self):
         """
-        This should be overwridden if a write consistency check is needed
+        Should be overidden by derived classes to add support for
+        consistency checks (enabled by option check_consistency).
+
+        The default implementation just logs a warning and
+        doesn't do any checks.
         """
         self.logger.warning('Not checking write consistency')
 
     def increment_written_items(self):
         self.set_metadata('items_count', self.get_metadata('items_count') + 1)
 
-    def _write(self, key):
+    def _write_current_buffer_for_group_key(self, key):
+        """
+        Find the buffer for a given group key, prepare it to be written
+        and writes it calling write() method.
+        """
         write_info = self.write_buffer.pack_buffer(key)
         self.write(write_info.get('compressed_path'),
                    self.write_buffer.grouping_info[key]['membership'])
@@ -115,7 +131,11 @@ class BaseWriter(BasePipelineItem):
 
     def finish_writing(self):
         """
-        Method called to do final writing operations before being closed
+        This method is hook for operations to be done after everything
+        has been written (e.g. consistency checks, write a checkpoint, etc).
+
+        The default implementation calls self._check_write_consistency
+        if option check_consistency is True.
         """
         if self.read_option('check_consistency'):
             self._check_write_consistency()

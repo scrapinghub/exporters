@@ -4,11 +4,17 @@ import shutil
 import tempfile
 import uuid
 from six.moves import UserDict
-
-import errno
+from exporters.utils import remove_if_exists
 
 
 class GroupingInfo(UserDict):
+    """Contains groups metadata for the grouping feature in writers,
+    tracking which group keys being used plus some details for each group:
+
+    * how many items were written
+    * which are the buffer files used
+    * how many items are in the current buffer
+    """
 
     def _init_group_info_key(self, key):
         self[key] = {}
@@ -33,6 +39,29 @@ class GroupingInfo(UserDict):
 
 
 class ItemsGroupFilesHandler(object):
+    """Class responsible for tracking buffer files
+    used for grouping feature in writers components.
+
+    Group buffer files are kept inside a temporary folder
+    that is cleaned up when calling close().
+
+    Problems:
+
+    This class is currently also responsible for formatting
+    items and writing them to the buffer files, which is not
+    cool because it hurts the Single Responsibility Principle.
+
+    It doesn't have a well-defined responsibility, which is
+    its method names aren't immediately understandable
+
+    Also, it's opening and closing the files every time it
+    needs to append something, which is kinda unsafe (and bad
+    for performance too), we could just keep the file opened and
+    keep writing to it until we're done and then we'd close it.
+
+    To aggravate the problem, there is now a derived class
+    in FilebaseBaseWriter that must be considered when refactoring this.
+    """
 
     def __init__(self, formatter):
         self.grouping_info = GroupingInfo()
@@ -66,15 +95,8 @@ class ItemsGroupFilesHandler(object):
 
     def clean_tmp_files(self, compressed_path):
         path = compressed_path[:-3]
-        self._silent_remove(path)
-        self._silent_remove(compressed_path)
-
-    def _silent_remove(self, filename):
-        try:
-            os.remove(filename)
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                raise
+        remove_if_exists(path)
+        remove_if_exists(compressed_path)
 
     def get_group_path(self, key):
         if self.grouping_info[key]['group_file']:
