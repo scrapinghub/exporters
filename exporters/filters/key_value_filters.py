@@ -23,7 +23,10 @@ class KeyValueBaseFilter(BaseFilter):
         for key in self.keys:
             if self.nested_field_separator:
                 nested_fields = key['name'].split(self.nested_field_separator)
-                value = nested_dict_value(item, nested_fields)
+                try:
+                    value = nested_dict_value(item, nested_fields)
+                except:
+                    return
             else:
                 value = item[key['name']]
             if not self._match_value(value, key['value']):
