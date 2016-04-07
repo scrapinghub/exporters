@@ -187,5 +187,4 @@ class KeyValueRegexFilterTest(unittest.TestCase):
         batch = filter.filter_batch(batch)
         batch = list(batch)
         self.assertGreater(len(batch), 0)
-        for item in batch:
-            self.assertEqual(item['country']['state']['city'], 'val')
+        self.assertEqual(['val'] * len(batch), [e['country']['state']['city'] for e in batch])
