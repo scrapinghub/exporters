@@ -222,3 +222,20 @@ class KeyValueRegexFilterTest(unittest.TestCase):
         batch = filter.filter_batch(batch)
         batch = list(batch)
         self.assertEqual(len(batch), 0, 'Resulting filtered batch should be empty')
+
+    def test_filter_with_none_value(self):
+        keys = [
+            {'name': 'country.state.city', 'value': 'val'}
+        ]
+        batch = [
+            {'country': {
+                'state': {
+                    'city': None
+                }
+            }, 'value': random.randint(0, 1000)} for i in range(100)
+        ]
+        filter = KeyValueRegexFilter(
+            {'options': {'keys': keys}}, meta())
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertEqual(len(batch), 0, 'Resulting filtered batch should be empty')
