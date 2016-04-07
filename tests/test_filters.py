@@ -131,6 +131,23 @@ class KeyValueFilterTest(unittest.TestCase):
         for item in batch:
             self.assertEqual(item['country']['state']['city'], 'val')
 
+    def test_filter_with_no_nested_key(self):
+        keys = [
+            {'name': 'not_a_key', 'value': 'val'}
+        ]
+        batch = [
+            {'country': {
+                'state': {
+                    'city': random.choice(['val', 'es', 'uk'])
+                }
+            }, 'value': random.randint(0, 1000)} for i in range(100)
+        ]
+        filter = KeyValueFilter(
+            {'options': {'keys': keys}}, meta())
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertEqual(len(batch), 0, 'Resulting filtered batch should be empty')
+
 
 class KeyValueRegexFilterTest(unittest.TestCase):
 
@@ -188,3 +205,37 @@ class KeyValueRegexFilterTest(unittest.TestCase):
         batch = list(batch)
         self.assertGreater(len(batch), 0)
         self.assertEqual(['val'] * len(batch), [e['country']['state']['city'] for e in batch])
+
+    def test_filter_with_no_nested_key(self):
+        keys = [
+            {'name': 'not_a_key', 'value': 'val'}
+        ]
+        batch = [
+            {'country': {
+                'state': {
+                    'city': random.choice(['val', 'es', 'uk'])
+                }
+            }, 'value': random.randint(0, 1000)} for i in range(100)
+        ]
+        filter = KeyValueRegexFilter(
+            {'options': {'keys': keys}}, meta())
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertEqual(len(batch), 0, 'Resulting filtered batch should be empty')
+
+    def test_filter_with_none_value(self):
+        keys = [
+            {'name': 'country.state.city', 'value': 'val'}
+        ]
+        batch = [
+            {'country': {
+                'state': {
+                    'city': None
+                }
+            }, 'value': random.randint(0, 1000)} for i in range(100)
+        ]
+        filter = KeyValueRegexFilter(
+            {'options': {'keys': keys}}, meta())
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertEqual(len(batch), 0, 'Resulting filtered batch should be empty')

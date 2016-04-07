@@ -23,12 +23,17 @@ class KeyValueBaseFilter(BaseFilter):
         for key in self.keys:
             if self.nested_field_separator:
                 nested_fields = key['name'].split(self.nested_field_separator)
-                value = nested_dict_value(item, nested_fields)
+                try:
+                    value = nested_dict_value(item, nested_fields)
+                except KeyError:
+                    self.logger.warning('Missing path {} from item. Item dismissed'.format(
+                            nested_fields))
+                    return False
             else:
                 value = item[key['name']]
             if not self._match_value(value, key['value']):
-                return
-        return item
+                return False
+        return True
 
     def _match_value(self, value_found, value_expected):
         """Return True if value found matches the expected.
@@ -60,4 +65,4 @@ class KeyValueRegexFilter(KeyValueBaseFilter):
             key "key" or, if they do, that key value does not match "regex".
     """
     def _match_value(self, found, expected):
-        return bool(re.match(expected, found))
+        return bool(re.match(expected, found)) if found is not None else False
