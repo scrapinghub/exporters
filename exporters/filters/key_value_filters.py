@@ -25,13 +25,15 @@ class KeyValueBaseFilter(BaseFilter):
                 nested_fields = key['name'].split(self.nested_field_separator)
                 try:
                     value = nested_dict_value(item, nested_fields)
-                except:
-                    return
+                except KeyError:
+                    self.logger.warning('Missing path {} from item. Item dismissed'.format(
+                            nested_fields))
+                    return False
             else:
                 value = item[key['name']]
             if not self._match_value(value, key['value']):
-                return
-        return item
+                return False
+        return True
 
     def _match_value(self, value_found, value_expected):
         """Return True if value found matches the expected.
