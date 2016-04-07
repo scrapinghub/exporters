@@ -53,9 +53,13 @@ class BaseExportManagerTest(unittest.TestCase):
         defaults.update(**kwargs)
         return valid_config_with_updates(defaults)
 
+    def setUp(self):
+        self.tmp_dir = tempfile.mkdtemp()
+
     def tearDown(self):
         if hasattr(self, 'exporter'):
             self.exporter.persistence.delete()
+        shutil.rmtree(self.tmp_dir)
 
     def test_simple_export(self):
         self.exporter = exporter = BaseExporter(self.build_config())
@@ -63,30 +67,35 @@ class BaseExportManagerTest(unittest.TestCase):
         self.assertEquals(10, exporter.writer.get_metadata('items_count'))
 
     def test_simple_grouped_export(self):
-        tmp_dir = tempfile.mkdtemp()
         config = self.build_config(
             writer={
                 'name': 'exporters.writers.fs_writer.FSWriter',
                 'options': {
-                    'filebase': os.path.join(tmp_dir, 'ds_dump_{groups[0]}')
+                    'filebase': os.path.join(self.tmp_dir, 'ds_dump_{groups[0]}'),
+                    'items_per_buffer_write': 100,
                 }
             },
             grouper={
                 'name': 'exporters.groupers.file_key_grouper.FileKeyGrouper',
                 'options': {
-                    'keys': ['country_code']
+                    'keys': ['country_code'],
                 }
             }
         )
-        expected_written_files = set(
-            [os.path.join(tmp_dir, 'ds_dump_us.jl.gz'),
-             os.path.join(tmp_dir, 'ds_dump_es.jl.gz'),
-             os.path.join(tmp_dir, 'ds_dump_uk.jl.gz')]
-        )
+        config['reader']['options']['number_of_items'] = 1000
+        expected_written_files = set([
+            'ds_dump_us.jl.gz',
+            'ds_dump_es.jl.gz',
+            'ds_dump_uk.jl.gz',
+        ])
         self.exporter = exporter = BaseExporter(config)
         exporter.export()
-        self.assertEqual(expected_written_files, set(exporter.writer.written_files.keys()))
-        shutil.rmtree(tmp_dir)
+        written_files = [os.path.basename(f) for f in exporter.writer.written_files.keys()]
+        self.assertContainsSubset(written_files, expected_written_files)
+
+    def assertContainsSubset(self, iterable, subset):
+        a, b = set(iterable), set(subset)
+        self.assertTrue(a & b == b, "%r is not a subset of %r" % (b, a))
 
     def test_export_with_csv_formatter(self):
         config = self.build_config()
