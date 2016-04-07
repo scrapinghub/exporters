@@ -79,9 +79,10 @@ class BaseExportManagerTest(unittest.TestCase):
             }
         )
         expected_written_files = set(
-                [os.path.join(tmp_dir, 'ds_dump_us.jl.gz'),
-                 os.path.join(tmp_dir, 'ds_dump_es.jl.gz'),
-                 os.path.join(tmp_dir, 'ds_dump_uk.jl.gz')])
+            [os.path.join(tmp_dir, 'ds_dump_us.jl.gz'),
+             os.path.join(tmp_dir, 'ds_dump_es.jl.gz'),
+             os.path.join(tmp_dir, 'ds_dump_uk.jl.gz')]
+        )
         self.exporter = exporter = BaseExporter(config)
         exporter.export()
         self.assertEqual(expected_written_files, set(exporter.writer.written_files.keys()))

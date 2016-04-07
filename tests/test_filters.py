@@ -124,7 +124,7 @@ class KeyValueFilterTest(unittest.TestCase):
             }, 'value': random.randint(0, 1000)} for i in range(100)
         ]
         filter = KeyValueFilter(
-                {'options': {'keys': keys, 'nested_field_separator': ','}}, meta())
+            {'options': {'keys': keys, 'nested_field_separator': ','}}, meta())
         batch = filter.filter_batch(batch)
         batch = list(batch)
         self.assertGreater(len(batch), 0)
@@ -183,7 +183,7 @@ class KeyValueRegexFilterTest(unittest.TestCase):
             }, 'value': random.randint(0, 1000)} for i in range(100)
         ]
         filter = KeyValueRegexFilter(
-                {'options': {'keys': keys, 'nested_field_separator': ','}}, meta())
+            {'options': {'keys': keys, 'nested_field_separator': ','}}, meta())
         batch = filter.filter_batch(batch)
         batch = list(batch)
         self.assertGreater(len(batch), 0)

@@ -389,7 +389,7 @@ class S3BypassTest(unittest.TestCase):
         self.assertEquals('some_prefix/test_key', key.name)
         self.assertEqual(self.data, json.loads(key.get_contents_as_string()))
         self.assertEqual(
-                bypass.total_items, len(self.data), 'Bypass got an incorrect number of total items')
+            bypass.total_items, len(self.data), 'Bypass got an incorrect number of total items')
 
     def test_get_md5(self):
         # given

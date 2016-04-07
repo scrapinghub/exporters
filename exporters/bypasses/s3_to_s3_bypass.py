@@ -103,25 +103,25 @@ class S3Bypass(BaseBypass):
     def bypass(self):
         from copy import deepcopy
         reader_aws_key = self.read_option(
-                'reader', 'aws_access_key_id', 'EXPORTERS_S3READER_AWS_KEY')
+            'reader', 'aws_access_key_id', 'EXPORTERS_S3READER_AWS_KEY')
         reader_aws_secret = self.read_option(
-                'reader', 'aws_secret_access_key', 'EXPORTERS_S3READER_AWS_SECRET')
+            'reader', 'aws_secret_access_key', 'EXPORTERS_S3READER_AWS_SECRET')
 
         writer_aws_key = self.read_option(
-                'writer', 'aws_access_key_id', 'EXPORTERS_S3WRITER_AWS_LOGIN')
+            'writer', 'aws_access_key_id', 'EXPORTERS_S3WRITER_AWS_LOGIN')
         writer_aws_secret = self.read_option(
-                'writer', 'aws_secret_access_key', 'EXPORTERS_S3WRITER_AWS_SECRET')
+            'writer', 'aws_secret_access_key', 'EXPORTERS_S3WRITER_AWS_SECRET')
 
         writer_options = self.config.writer_options['options']
         dest_bucket = get_bucket(
-                self.read_option('writer', 'bucket'), writer_aws_key, writer_aws_secret)
+            self.read_option('writer', 'bucket'), writer_aws_key, writer_aws_secret)
         dest_filebase = self._get_filebase(writer_options)
         self.bypass_state = S3BypassState(
-                self.config, self.metadata, reader_aws_key, reader_aws_secret)
+            self.config, self.metadata, reader_aws_key, reader_aws_secret)
         self.total_items = self.bypass_state.stats['total_count']
 
         source_bucket = get_bucket(
-                self.read_option('reader', 'bucket'), reader_aws_key, reader_aws_secret)
+            self.read_option('reader', 'bucket'), reader_aws_key, reader_aws_secret)
         pending_keys = deepcopy(self.bypass_state.pending_keys())
         try:
             for key in pending_keys:
