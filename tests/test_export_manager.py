@@ -84,7 +84,9 @@ class BaseExportManagerTest(unittest.TestCase):
                  os.path.join(tmp_dir, '0_ds_dump_uk.jl.gz')])
         self.exporter = exporter = BaseExporter(config)
         exporter.export()
-        self.assertEqual(expected_written_files, set(exporter.writer.written_files.keys()))
+
+        for f in exporter.writer.written_files.keys():
+            self.assertIn(f, expected_written_files)
         shutil.rmtree(tmp_dir)
 
     def test_export_with_csv_formatter(self):
