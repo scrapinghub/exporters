@@ -70,7 +70,7 @@ class ItemsGroupFilesHandler(object):
         self.tmp_folder = tempfile.mkdtemp()
 
     def _add_to_file(self, content, key):
-        path = self.get_group_path(key)
+        path = self.get_current_buffer_path_for_group(key)
         with open(path, 'a') as f:
             f.write(content + '\n')
         self.grouping_info.add_to_group(key)
@@ -80,7 +80,7 @@ class ItemsGroupFilesHandler(object):
         self._add_to_file(content, key)
 
     def end_group_file(self, key):
-        path = self.get_group_path(key)
+        path = self.get_current_buffer_path_for_group(key)
         footer = self.formatter.format_footer()
         if footer:
             with open(path, 'a') as f:
@@ -90,15 +90,12 @@ class ItemsGroupFilesHandler(object):
     def close(self):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
-    def get_grouping_info(self):
-        return self.grouping_info
-
     def clean_tmp_files(self, compressed_path):
         path = compressed_path[:-3]
         remove_if_exists(path)
         remove_if_exists(compressed_path)
 
-    def get_group_path(self, key):
+    def get_current_buffer_path_for_group(self, key):
         if self.grouping_info[key]['group_file']:
             path = self.grouping_info[key]['group_file'][-1]
         else:
@@ -126,13 +123,11 @@ class ItemsGroupFilesHandler(object):
         filename = '{}.{}'.format(uuid.uuid4(), self.file_extension)
         return os.path.join(self.tmp_folder, filename)
 
-    def compress_key_path(self, key):
-        path = self.get_group_path(key)
+    def compress_current_buffer_path_for_group(self, key):
+        path = self.get_current_buffer_path_for_group(key)
         compressed_path = self._compress_file(path)
         compressed_size = os.path.getsize(compressed_path)
-        write_info = {'number_of_records': self.grouping_info[key]['buffered_items'],
-                      'size': compressed_size, 'compressed_path': compressed_path}
-        return write_info
+        return compressed_path, compressed_size
 
     def _compress_file(self, path):
         compressed_path = path + '.gz'
@@ -163,11 +158,21 @@ class WriteBuffer(object):
         self.items_group_files.end_group_file(key)
 
     def pack_buffer(self, key):
+        """Prepare current buffer file for group of given key to be written
+        (by compressing and gathering size statistics).
+        """
         self.finish_buffer_write(key)
-        write_info = self.items_group_files.compress_key_path(key)
-        self.metadata[write_info['compressed_path']] = write_info
-        self.items_group_files.create_new_group_file(key)
+        path, size = self.items_group_files.compress_current_buffer_path_for_group(key)
+        write_info = {
+            'number_of_records': self.grouping_info[key]['buffered_items'],
+            'size': size,
+            'compressed_path': path,
+        }
+        self.metadata[path] = write_info
         return write_info
+
+    def add_new_buffer_for_group(self, key):
+        self.items_group_files.create_new_group_file(key)
 
     def clean_tmp_files(self, key, compressed_path):
         self.items_group_files.clean_tmp_files(compressed_path)
@@ -187,13 +192,10 @@ class WriteBuffer(object):
 
     @property
     def grouping_info(self):
-        return self.items_group_files.get_grouping_info()
+        return self.items_group_files.grouping_info
 
     def get_metadata(self, buffer_path, meta_key):
         return self.metadata.get(buffer_path, {}).get(meta_key)
-
-    def get_grouping_info(self):
-        return self.grouping_info
 
     def set_metadata_for_file(self, file_name, **kwargs):
         if file_name not in self.metadata:

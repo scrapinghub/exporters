@@ -19,17 +19,15 @@ class PythonExpGrouper(BaseGrouper):
         self.interpreter = Interpreter()
 
     def _get_membership(self, item):
-        membership = []
         try:
             context = create_context(item=item)
-            membership = [
+            return [
                 self.interpreter.eval(expression, context=context)
                 for expression in self.expressions
             ]
         except Exception as ex:
             self.logger.error(str(ex))
             raise
-        return membership
 
     def group_batch(self, batch):
         for item in batch:
