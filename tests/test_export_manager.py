@@ -94,6 +94,9 @@ class BaseExportManagerTest(unittest.TestCase):
         self.assertContainsSubset(written_files, expected_written_files)
 
     def assertContainsSubset(self, iterable, subset):
+        """Check if iterable first argument contains
+        all items in second argument
+        """
         a, b = set(iterable), set(subset)
         self.assertTrue(a & b == b, "%r is not a subset of %r" % (b, a))
 
