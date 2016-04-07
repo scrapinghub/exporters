@@ -37,11 +37,14 @@ def nested_dict_value(d, path):
     final_value = d
     for k in path:
         if not isinstance(final_value, collections.Mapping):
-            raise TypeError('Could not get key {} from {} for item {} and value {}'.format(
-                    k, final_value, d, path))
+            raise TypeError(
+                'Could not get key {} from {} for item {} and value {}'.format(
+                    k, final_value, d, path)
+            )
         elif k in final_value:
             final_value = final_value[k]
         else:
-            raise KeyError('{} Key could not be found for nested path {} in {}'.format(
-                    k, path, d))
+            raise KeyError(
+                '{} Key could not be found for nested path {} in {}'.format(k, path, d)
+            )
     return final_value
