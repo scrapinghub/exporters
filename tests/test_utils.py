@@ -11,6 +11,7 @@ from exporters.logger.base_logger import CategoryLogger
 from exporters.module_loader import ModuleLoader
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 from exporters.python_interpreter import Interpreter
+from exporters.utils import nested_dict_value
 from .utils import environment
 from .utils import valid_config_with_updates
 
@@ -331,3 +332,43 @@ class S3ByPassTest(unittest.TestCase):
         )
         bypass_script = S3Bypass(exporter_options, None)
         bypass_script.meets_conditions()
+
+
+class NesteDictReadTest(unittest.TestCase):
+
+    def get_nested_dict(self):
+        nested_dict = {
+            'address': {
+                'street': {
+                    'name': 'some_name',
+                    'number': 123
+                }
+            },
+            'city': 'val',
+            'country': 'us'
+        }
+        return nested_dict
+
+    def test_get_the_right_value(self):
+        # given
+        nested_dict = self.get_nested_dict()
+
+        # when
+        number = nested_dict_value(nested_dict, 'address.street.number'.split('.'))
+        city = nested_dict_value(nested_dict, ['city'])
+
+        # then
+        self.assertEqual(number, 123)
+        self.assertEqual(city, 'val')
+
+    def test_get_not_a_value(self):
+        # given
+        nested_dict = self.get_nested_dict()
+
+        # when
+        with self.assertRaisesRegexp(KeyError, 'could not be found for nested path'):
+            nested_dict_value(nested_dict, 'address.postal_code'.split('.'))
+
+    def test_get_none_value(self):
+        with self.assertRaisesRegexp(TypeError, 'Could not get key'):
+            nested_dict_value({'something': None}, ['something', 'in', 'the', 'way'])

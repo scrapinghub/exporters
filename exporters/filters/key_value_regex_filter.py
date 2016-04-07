@@ -1,26 +1,6 @@
-from exporters.filters.base_filter import BaseFilter
-import re
+import warnings
+from .key_value_filters import KeyValueRegexFilter  # NOQA
 
 
-class KeyValueRegexFilter(BaseFilter):
-    """
-    Filter items depending on keys and values using regular expressions
-
-        - keys (list)
-            It is a list of dicts with the following structure: {"key": "regex"}.
-            The filter will delete those items that do not contain a
-            key "key" or, if they do, that key value does not match "regex".
-    """
-    supported_options = {
-        'keys': {'type': list}
-    }
-
-    def __init__(self, *args, **kwargs):
-        # List of options
-        super(KeyValueRegexFilter, self).__init__(*args, **kwargs)
-        self.keys = self.read_option('keys')
-        self.logger.info('KeyValueRegexFilter has been initiated. Keys: {}'.format(self.keys))
-
-    def filter(self, item):
-        return all(kv['name'] in item and re.match(kv['value'], u'%s' % item[kv['name']])
-                   for kv in self.keys)
+warnings.warn('Module exporters.filters.key_value_regex_filter has been deprecated,'
+              ' use exporters.filters.key_values_filters instead')
