@@ -4,15 +4,7 @@ import shutil
 import tempfile
 import uuid
 from six.moves import UserDict
-
-
-def _silent_remove(filename):
-    import errno
-    try:
-        os.remove(filename)
-    except OSError as e:
-        if e.errno != errno.ENOENT:
-            raise
+from exporters.utils import remove_if_exists
 
 
 class GroupingInfo(UserDict):
@@ -103,8 +95,8 @@ class ItemsGroupFilesHandler(object):
 
     def clean_tmp_files(self, compressed_path):
         path = compressed_path[:-3]
-        _silent_remove(path)
-        _silent_remove(compressed_path)
+        remove_if_exists(path)
+        remove_if_exists(compressed_path)
 
     def get_group_path(self, key):
         if self.grouping_info[key]['group_file']:
