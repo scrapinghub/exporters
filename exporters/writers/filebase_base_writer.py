@@ -23,20 +23,19 @@ def md5_for_file(f, block_size=2**20):
 
 class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
 
-    def __init__(self, formatter, base_filename, start_file_count=0):
+    def __init__(self, formatter, prefix, start_file_count=0):
         super(CustomNameItemsGroupFilesHandler, self).__init__(formatter)
-        self.base_filename = self._format_date(base_filename)
+        self.prefix = self._format_date(prefix)
         self.start_file_count = start_file_count
-        self.file_count = {}
 
     def _get_new_path_name(self, key):
-        if key not in self.file_count:
-            self.file_count[key] = self.start_file_count
-        name = self.base_filename.format(file_number=self.file_count[key], groups=key)
-        if name == self.base_filename:
-            name += '{:04d}'.format(self.file_count[key])
+        current_file_count = len(self.grouping_info[key]['group_file']) + self.start_file_count
+        name = self.prefix.format(file_number=current_file_count, groups=key)
+
+        if name == self.prefix:
+            name += '{:04d}'.format(current_file_count)
+
         filename = '{}.{}'.format(name, self.file_extension)
-        self.file_count[key] += 1
         return os.path.join(self.tmp_folder, filename)
 
     def _format_date(self, value):
@@ -68,10 +67,10 @@ class FilebaseBaseWriter(BaseWriter):
         self.generate_md5 = self.read_option('generate_md5')
 
     def _items_group_files_handler(self):
-        _, filename = os.path.split(self.read_option('filebase'))
+        _, prefix = os.path.split(self.read_option('filebase'))
         start_file_count = self.read_option('start_file_count')
         return CustomNameItemsGroupFilesHandler(self.export_formatter,
-                                                filename,
+                                                prefix,
                                                 start_file_count)
 
     def write(self, path, key, file_name=False):
@@ -97,14 +96,14 @@ class FilebaseBaseWriter(BaseWriter):
         Returns filebase and file valid name
         """
         normalized = [re.sub('\W', '_', s) for s in group_info]
-        filebase, prefix = os.path.split(self.filebase)
+        dirname, prefix = os.path.split(self.filebase)
         try:
-            filebase = filebase.format(groups=normalized)
+            dirname = dirname.format(groups=normalized)
         except KeyError as e:
             raise KeyError('filebase option should not contain {} key'.format(str(e)))
         if not file_name:
             file_name = prefix + '.' + extension
-        return filebase, file_name
+        return dirname, file_name
 
     def _get_md5(self, path):
         with open(path, 'r') as f:

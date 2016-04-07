@@ -430,10 +430,9 @@ class FSWriterTest(unittest.TestCase):
             writer.close()
         file_path = datetime.datetime.now().strftime(file_path).format(file_number=start_file_count)
         file_name = datetime.datetime.now().strftime(file_name).format(file_number=start_file_count)
-        self.assertTrue(file_path + file_name + '.jl.gz' in writer.written_files)
+        self.assertIn(file_path + file_name + '.jl.gz', writer.written_files)
 
     def test_check_writer_consistency(self):
-
         # given
         options = self.get_writer_config()
         options['options']['check_consistency'] = True
