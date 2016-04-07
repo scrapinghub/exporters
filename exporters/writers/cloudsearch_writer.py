@@ -66,12 +66,12 @@ class CloudSearchWriter(BaseWriter):
     supported_options = {
         'endpoint_url': {
             'type': six.string_types,
-            'help_text': 'Document Endpoint'
+            'help': 'Document Endpoint'
             ' (e.g.: http://doc-movies-123456789012.us-east-1.cloudsearch.amazonaws.com)'
         },
         'id_field': {
             'type': six.string_types,
-            'help_text': 'Field to use as identifier',
+            'help': 'Field to use as identifier',
             'default': '_key',
         },
         'access_key': {
