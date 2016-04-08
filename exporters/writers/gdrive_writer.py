@@ -5,6 +5,7 @@ import tempfile
 from collections import Counter
 from exporters.default_retries import retry_long
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
+from exporters.writers.base_writer import InconsistentWriteState
 
 
 class GDriveWriter(FilebaseBaseWriter):
@@ -45,6 +46,7 @@ class GDriveWriter(FilebaseBaseWriter):
         self.logger.info(
             'GDriveWriter has been initiated. Writing to: {}'.format(self.filebase))
         self.set_metadata('files_counter', Counter())
+        self.set_metadata('files_written', [])
 
     def get_file_suffix(self, path, prefix):
         """
@@ -87,5 +89,25 @@ class GDriveWriter(FilebaseBaseWriter):
         file = self.drive.CreateFile({'title': filename, 'parents': [parent]})
         file.SetContentFile(dump_path)
         file.Upload()
-        self.get_metadata('written_files').append(filename)
+        self._update_metadata(dump_path, file)
         self.logger.info('Uploaded file {}'.format(file['title']))
+
+    def _update_metadata(self, dump_path, file):
+        buffer_info = self.write_buffer.metadata[dump_path]
+        key_info = {
+            'size': buffer_info['size'],
+            'remote_size': file['fileSize'],
+            'hash': buffer_info['compressed_hash'],
+            'remote_hash': file['md5Checksum'],
+            'title': file['title'],
+        }
+        self.get_metadata('files_written').append(key_info)
+
+    def _check_write_consistency(self):
+        for file_info in self.get_metadata('files_written'):
+            if file_info['size'] != file_info['remote_size']:
+                raise InconsistentWriteState(('Unexpected size of file {title}.'
+                    'expected {size} - got {remote_size}').format(file_info))
+            if file_info['hash'] != file_info['remote_hash']:
+                raise InconsistentWriteState(('Unexpected hash of file {title}.'
+                    'expected {hash} - got {remote_hash}').format(file_info))
