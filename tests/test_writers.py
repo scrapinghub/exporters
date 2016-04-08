@@ -10,6 +10,7 @@ import csv
 import datetime
 import mock
 
+from contextlib import closing
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
 from exporters.records.base_record import BaseRecord
@@ -19,6 +20,7 @@ from exporters.writers.base_writer import BaseWriter, InconsistentWriteState
 from exporters.writers.console_writer import ConsoleWriter
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
+from exporters.groupers import PythonExpGrouper
 
 from .utils import meta
 
@@ -466,11 +468,59 @@ class FSWriterTest(unittest.TestCase):
         # when:
         writer = FSWriter(options, meta(),
                           export_formatter=JsonExportFormatter(dict()))
-        try:
-            writer.write_batch(self.get_batch())
-            writer.flush()
-            writer.finish_writing()
-        finally:
-            writer.close()
+        with closing(writer) as w:
+            w.write_batch(self.get_batch())
+            w.flush()
+            w.finish_writing()
 
-        self.assertTrue(os.path.isfile(os.path.join(self.tmp_dir, 'md5checksum.md5')))
+        self.assertTrue(os.path.isfile(os.path.join(self.tmp_dir, 'md5checksum.md5')),
+                        "Didn't found an expected md5checksum.md5 file")
+
+    def _build_grouped_batch(self, batch, python_expressions):
+        grouper_options = {
+            'name': 'exporters.groupers.python_exp_grouper.PythonExpGrouper',
+            'options': {'python_expressions': python_expressions}
+        }
+        grouper = PythonExpGrouper(options=grouper_options)
+        return grouper.group_batch(batch)
+
+    def test_writer_with_grouped_data(self):
+        # given:
+        batch = [
+            BaseRecord(city=u'Madrid', country=u'ES', monument='Royal Palace'),
+            BaseRecord(city=u'Valencia', country=u'ES', monument='Torres de Serranos'),
+            BaseRecord(city=u'Paris', country=u'FR', monument='Eiffel Tour'),
+            BaseRecord(city=u'Paris', country=u'FR', monument='Champ de Mars'),
+            BaseRecord(city=u'Paris', country=u'FR', monument='Arc de Triomphe'),
+        ]
+        grouped_batch = self._build_grouped_batch(
+            batch, python_expressions=["item['country']", "item['city']"])
+
+        options = self.get_writer_config()
+        options['options']['filebase'] = os.path.join(self.tmp_dir, '{groups[0]}/{groups[1]}/file')
+        options['options']['items_per_buffer_write'] = 2
+        writer = FSWriter(options=options,
+                          metadata=meta(),
+                          export_formatter=JsonExportFormatter(dict()))
+
+        # when:
+        with closing(writer) as w:
+            w.write_batch(grouped_batch)
+            w.flush()
+            w.finish_writing()
+
+        # then:
+        expected_files = [
+            'ES/Madrid/file0000.jl.gz',
+            'ES/Valencia/file0000.jl.gz',
+            'FR/Paris/file0000.jl.gz',
+            'FR/Paris/file0001.jl.gz',
+        ]
+        expected = [os.path.join(self.tmp_dir, f) for f in expected_files]
+
+        def listdir_recursive(path):
+            return [os.path.join(d, f)
+                    for d, _, fnames in os.walk(path)
+                    for f in fnames]
+
+        self.assertEqual(sorted(expected), sorted(listdir_recursive(self.tmp_dir)))

@@ -128,6 +128,7 @@ class BaseWriter(BasePipelineItem):
         self.write(write_info.get('compressed_path'),
                    self.write_buffer.grouping_info[key]['membership'])
         self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
+        self.write_buffer.add_new_buffer_for_group(key)
 
     def finish_writing(self):
         """

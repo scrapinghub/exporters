@@ -29,14 +29,32 @@ class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
         self.start_file_count = start_file_count
 
     def _get_new_path_name(self, key):
-        current_file_count = len(self.grouping_info[key]['group_file']) + self.start_file_count
-        name = self.prefix.format(file_number=current_file_count, groups=key)
+        """Build a filename for a new file for a given group,
+        considering the existing file count for it and the prefix
+        configured in filebase.
 
-        if name == self.prefix:
-            name += '{:04d}'.format(current_file_count)
+        To ensure unique file names per group, it will use directories
+        with unique names for buffers of the same group
+        """
+        group_files = self.grouping_info[key]['group_file']
+        group_folder = self._get_group_folder(group_files)
 
-        filename = '{}.{}'.format(name, self.file_extension)
-        return os.path.join(self.tmp_folder, filename)
+        current_file_count = len(group_files) + self.start_file_count
+        name_without_ext = self.prefix.format(file_number=current_file_count, groups=key)
+
+        if name_without_ext == self.prefix:
+            name_without_ext += '{:04d}'.format(current_file_count)
+
+        filename = '{}.{}'.format(name_without_ext, self.file_extension)
+        return os.path.join(group_folder, filename)
+
+    def _get_group_folder(self, group_files):
+        if group_files:
+            return os.path.dirname(group_files[0])
+
+        group_folder = os.path.join(self.tmp_folder, str(uuid.uuid4()))
+        os.mkdir(group_folder)
+        return group_folder
 
     def _format_date(self, value):
         date = datetime.datetime.now()
@@ -93,7 +111,7 @@ class FilebaseBaseWriter(BaseWriter):
 
     def create_filebase_name(self, group_info, extension='gz', file_name=None):
         """
-        Returns filebase and file valid name
+        Return tuple of resolved destination folder name and file name
         """
         normalized = [re.sub('\W', '_', s) for s in group_info]
         dirname, prefix = os.path.split(self.filebase)
@@ -112,14 +130,17 @@ class FilebaseBaseWriter(BaseWriter):
     def _write_current_buffer_for_group_key(self, key):
         write_info = self.write_buffer.pack_buffer(key)
         compressed_path = write_info.get('compressed_path')
+
         self.write(compressed_path,
                    self.write_buffer.grouping_info[key]['membership'],
-                   os.path.basename(compressed_path))
+                   file_name=os.path.basename(compressed_path))
         write_info['md5'] = self._get_md5(write_info.get('compressed_path'))
         self.logger.info(
             'Checksum for file {}: {}'.format(write_info['compressed_path'], write_info['md5']))
         self.written_files[self.last_written_file] = write_info
+
         self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
+        self.write_buffer.add_new_buffer_for_group(key)
 
     def finish_writing(self):
         super(FilebaseBaseWriter, self).finish_writing()
