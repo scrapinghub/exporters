@@ -65,4 +65,6 @@ class KeyValueRegexFilter(KeyValueBaseFilter):
             key "key" or, if they do, that key value does not match "regex".
     """
     def _match_value(self, found, expected):
-        return bool(re.match(expected, found)) if found is not None else False
+        if found is None:
+            return False
+        return bool(re.match(expected, u'%s' % found))

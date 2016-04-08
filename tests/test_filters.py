@@ -223,19 +223,27 @@ class KeyValueRegexFilterTest(unittest.TestCase):
         batch = list(batch)
         self.assertEqual(len(batch), 0, 'Resulting filtered batch should be empty')
 
-    def test_filter_with_none_value(self):
-        keys = [
-            {'name': 'country.state.city', 'value': 'val'}
-        ]
+    def test_filter_with_nonstring_values(self):
+        # given:
         batch = [
-            {'country': {
-                'state': {
-                    'city': None
-                }
-            }, 'value': random.randint(0, 1000)} for i in range(100)
+            {'address': {'country': None}},
+            {'address': {'country': 'US'}},
+            {'address': {'country': 3}},
+            {'address': {'country': 'BR'}},
         ]
-        filter = KeyValueRegexFilter(
-            {'options': {'keys': keys}}, meta())
-        batch = filter.filter_batch(batch)
-        batch = list(batch)
-        self.assertEqual(len(batch), 0, 'Resulting filtered batch should be empty')
+        options = {
+            'options': {
+                'keys': [{'name': 'address.country', 'value': 'US|3'}]
+            }
+        }
+        filter = KeyValueRegexFilter(options, meta())
+
+        # when:
+        result = list(filter.filter_batch(batch))
+
+        # then:
+        expected = [
+            {'address': {'country': 'US'}},
+            {'address': {'country': 3}},
+        ]
+        self.assertEqual(expected, result)
