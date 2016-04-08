@@ -498,6 +498,7 @@ class FSWriterTest(unittest.TestCase):
 
         options = self.get_writer_config()
         options['options']['filebase'] = os.path.join(self.tmp_dir, '{groups[0]}/{groups[1]}/file')
+        options['options']['items_per_buffer_write'] = 2
         writer = FSWriter(options=options,
                           metadata=meta(),
                           export_formatter=JsonExportFormatter(dict()))
@@ -509,10 +510,13 @@ class FSWriterTest(unittest.TestCase):
             w.finish_writing()
 
         # then:
-        expected = [
-            os.path.join(self.tmp_dir, f)
-            for f in
-            ('ES/Madrid/file0000.jl.gz', 'ES/Valencia/file0000.jl.gz', 'FR/Paris/file0000.jl.gz')]
+        expected_files = [
+            'ES/Madrid/file0000.jl.gz',
+            'ES/Valencia/file0000.jl.gz',
+            'FR/Paris/file0000.jl.gz',
+            'FR/Paris/file0001.jl.gz',
+        ]
+        expected = [os.path.join(self.tmp_dir, f) for f in expected_files]
 
         def listdir_recursive(path):
             return [os.path.join(d, f)

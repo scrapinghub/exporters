@@ -100,7 +100,6 @@ class ItemsGroupFilesHandler(object):
             path = self.grouping_info[key]['group_file'][-1]
         else:
             path = self.create_new_group_file(key)
-            self.grouping_info.add_path_to_group(key, path)
         return path
 
     def create_new_group_file(self, key):
