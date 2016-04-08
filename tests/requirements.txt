@@ -7,5 +7,6 @@ flake8==2.5.4
 pytest-cov==2.2.1
 vcrpy==1.7.4
 fuzzywuzzy==0.8.0
+responses==0.5.1
 
 -r ../lazy_requirements.txt
