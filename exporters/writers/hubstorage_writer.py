@@ -34,7 +34,11 @@ class HubstorageWriter(BaseWriter):
             'type': six.string_types,
             'help': 'Record field which should be used as Hubstorage item key'
         },
-        'apikey': {'type': six.string_types, 'help': 'Hubstorage API key'}
+        'apikey': {
+            'type': six.string_types,
+            'help': 'Hubstorage API key',
+            'env_fallback': 'EXPORTERS_HS_APIKEY'
+        }
     }
 
     def __init__(self, *args, **kwargs):
