@@ -2,6 +2,9 @@ import json
 import os
 import six
 
+from base64 import b64encode
+from binascii import unhexlify
+
 from exporters.default_retries import retry_long
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 from exporters.utils import TemporaryDirectory
@@ -79,17 +82,18 @@ class GStorageWriter(FilebaseBaseWriter):
         key_info = {
             'size': buffer_info['size'],
             'remote_size': blob.size,
-            'hash': buffer_info['compressed_hash'],
+            'hash': b64encode(unhexlify(buffer_info['compressed_hash'])),
             'remote_hash': blob.md5_hash,
             'title': blob.name,
         }
+        print key_info
         self.get_metadata('files_written').append(key_info)
 
     def _check_write_consistency(self):
         for file_info in self.get_metadata('files_written'):
             if file_info['size'] != file_info['remote_size']:
                 raise InconsistentWriteState(('Unexpected size of file {title}.'
-                    'expected {size} - got {remote_size}').format(file_info))
+                    'expected {size} - got {remote_size}').format(**file_info))
             if file_info['hash'] != file_info['remote_hash']:
                 raise InconsistentWriteState(('Unexpected hash of file {title}.'
-                    'expected {hash} - got {remote_hash}').format(file_info))
+                    'expected {hash} - got {remote_hash}').format(**file_info))

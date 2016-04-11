@@ -107,7 +107,7 @@ class GDriveWriter(FilebaseBaseWriter):
         for file_info in self.get_metadata('files_written'):
             if file_info['size'] != file_info['remote_size']:
                 raise InconsistentWriteState(('Unexpected size of file {title}.'
-                    'expected {size} - got {remote_size}').format(file_info))
+                    'expected {size} - got {remote_size}').format(**file_info))
             if file_info['hash'] != file_info['remote_hash']:
                 raise InconsistentWriteState(('Unexpected hash of file {title}.'
-                    'expected {hash} - got {remote_hash}').format(file_info))
+                    'expected {hash} - got {remote_hash}').format(**file_info))
