@@ -54,7 +54,7 @@ class HashFile(object):
         self.hash.update(data)
 
     def __getattr__(self, attr):
-         return getattr(self._file, attr)
+        return getattr(self._file, attr)
 
 
 class ItemsGroupFilesHandler(object):

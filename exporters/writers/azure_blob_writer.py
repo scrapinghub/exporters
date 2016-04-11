@@ -53,7 +53,7 @@ class AzureBlobWriter(BaseWriter):
         self._write_blob(dump_path)
         self.set_metadata('files_counter', self.get_metadata('files_counter') + 1)
 
-    #@retry_long
+    @retry_long
     def _write_blob(self, dump_path):
         blob_name = dump_path.split('/')[-1]
         self.azure_service.create_blob_from_path(

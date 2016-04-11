@@ -1,5 +1,4 @@
 import datetime
-import hashlib
 import os
 import re
 import uuid
@@ -115,7 +114,6 @@ class FilebaseBaseWriter(BaseWriter):
         if not file_name:
             file_name = prefix + '.' + extension
         return dirname, file_name
-
 
     def _write_current_buffer_for_group_key(self, key):
         write_info = self.write_buffer.pack_buffer(key)
