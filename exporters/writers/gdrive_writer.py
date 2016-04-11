@@ -12,11 +12,13 @@ class GDriveWriter(FilebaseBaseWriter):
     """
     Writes items to Google Drive account. It is a File Based writer, so it has filebase
 
-        - client_secret (str)
-            Path to secret file
+        - client_secret (object)
+            JSON object containing client secrets (client-secret.json) file
+            obtained when creating the google drive API key.
 
-        - credentials (str)
-            Path to credentials file
+        - credentials (object)
+            JSON object containing credentials, obtained by authenticating the
+            application using the bin/get_gdrive_credentials.py ds script
 
         - filebase (str)
             Path to store the exported files
@@ -105,7 +107,7 @@ class GDriveWriter(FilebaseBaseWriter):
 
     def _check_write_consistency(self):
         for file_info in self.get_metadata('files_written'):
-            if file_info['size'] != file_info['remote_size']:
+            if str(file_info['size']) != str(file_info['remote_size']):
                 msg = 'Unexpected size of file {title}. Expected {size} - got {remote_size}'
                 raise InconsistentWriteState(msg.format(**file_info))
             if file_info['hash'] != file_info['remote_hash']:
