@@ -13,11 +13,12 @@ from .reduce_writer import ReduceWriter
 from .hs_reduce_writer import HubstorageReduceWriter
 from .gdrive_writer import GDriveWriter
 from .gstorage_writer import GStorageWriter
+from .hubstorage_writer import HubstorageWriter
 
 
 __all__ = [
     'ConsoleWriter', 'FSWriter', 'FTPWriter', 'SFTPWriter', 'S3Writer',
     'MailWriter', 'CloudSearchWriter', 'ReduceWriter', 'HubstorageReduceWriter',
     'AggregationStatsWriter', 'AzureBlobWriter', 'AzureFileWriter',
-    'DropboxWriter', 'GDriveWriter', 'GStorageWriter'
+    'DropboxWriter', 'GDriveWriter', 'GStorageWriter', 'HubstorageWriter'
 ]
