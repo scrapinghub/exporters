@@ -114,7 +114,7 @@ class ItemsGroupFilesHandler(object):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
     def clean_tmp_files(self, compressed_path):
-        path = compressed_path.rstrip(self.file_compressor.extension)
+        path = compressed_path[:-len(self.file_compressor.extension)]
         remove_if_exists(path)
         remove_if_exists(compressed_path)
 
