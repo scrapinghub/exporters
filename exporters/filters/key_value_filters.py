@@ -26,7 +26,7 @@ class KeyValueBaseFilter(BaseFilter):
                 try:
                     value = nested_dict_value(item, nested_fields)
                 except KeyError:
-                    self.logger.warning('Missing path {} from item. Item dismissed'.format(
+                    self.logger.debug('Missing path {} from item. Item dismissed'.format(
                             nested_fields))
                     return False
             else:
