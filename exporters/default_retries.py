@@ -1,3 +1,5 @@
+import logging
+from decorator import decorator
 from retrying import Retrying
 
 
@@ -21,6 +23,15 @@ def disable_retries():
     set_retry_init(_only_one_attempt)
 
 
+@decorator
+def log_errors(f, *args, **kw):
+    try:
+        return f(*args, **kw)
+    except:
+        logging.warning("Failed: %s" % f.__name__)
+        raise
+
+
 def initialized_retry(*dargs, **dkw):
     def wrap(f):
         def wrapped_f(*args, **kw):
@@ -28,11 +39,12 @@ def initialized_retry(*dargs, **dkw):
                 rargs, rkw = _retry_init(dargs, dkw)
             else:
                 rargs, rkw = dargs, dkw
-            return Retrying(*rargs, **rkw).call(f, *args, **kw)
+            return Retrying(*rargs, **rkw).call(log_errors(f), *args, **kw)
 
         return wrapped_f
 
     return wrap
+
 
 # for operations that shouldn't take longer than a few seconds (e.g. HTTP request)
 # will retry after 2s, 4s, 8s, 10s, 10s, 10s ... until the 10th attempt
