@@ -146,7 +146,7 @@ class S3Writer(FilebaseBaseWriter):
             key.set_contents_from_file(f, cb=progress, md5=md5)
             self._ensure_proper_key_permissions(key)
 
-    # @retry_long
+    @retry_long
     def _upload_large_file(self, dump_path, key_name):
         from filechunkio import FileChunkIO
         from boto.utils import compute_md5
