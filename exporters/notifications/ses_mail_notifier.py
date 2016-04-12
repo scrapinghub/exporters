@@ -54,7 +54,10 @@ Email: {{ writer_options.email }}
 {%- if writer_options.endpoint_url %}
 Endpoint URL: {{ writer_options.endpoint_url }}
 {%- endif -%}
-"""
+{%- if writer_options.collection_name and writer_options.project_id %}
+Target Hubstorage collection URL: https://dash.scrapinghub.com/p/{{ writer_options.project_id }}/collections/s/{{ writer_options.collection_name }}
+{%- endif -%}
+"""  # noqa
     return render(subject_tmpl, **data), render(body_tmpl, **data)
 
 
@@ -65,6 +68,10 @@ Export job finished successfully.
 
 {% if accurate_items_count -%}
 Total records exported: {{ writer.items_count }}.
+{%- endif %}
+{%- set writer_options = configuration.writer.options -%}
+{%- if writer_options.collection_name and writer_options.project_id %}
+Target Hubstorage collection URL: https://dash.scrapinghub.com/p/{{ writer_options.project_id }}/collections/s/{{ writer_options.collection_name }}
 {%- endif %}
 
 If you have any questions or concerns about the data you have received, email us at help@scrapinghub.com.\n
