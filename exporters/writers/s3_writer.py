@@ -1,7 +1,8 @@
 import os
 from collections import Counter
-from contextlib import closing
+from contextlib import closing, contextmanager
 
+import math
 import six
 
 from exporters.default_retries import retry_long
@@ -10,6 +11,20 @@ from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
 DEFAULT_BUCKET_REGION = 'us-east-1'
+
+# 50MB of chunk size for multipart uploads
+CHUNK_SIZE = 52428800
+
+
+@contextmanager
+def multipart_upload(bucket, key_name):
+    mp = bucket.initiate_multipart_upload(key_name)
+    try:
+        yield mp
+        mp.complete_upload()
+    except:
+        mp.cancel_upload()
+        raise
 
 
 class S3Writer(FilebaseBaseWriter):
@@ -106,19 +121,62 @@ class S3Writer(FilebaseBaseWriter):
         except S3ResponseError:
             self.logger.warning('We have no READ_ACP/WRITE_ACP permissions')
 
+    def _set_key_metada(self, key, metadata):
+        from boto.exception import S3ResponseError
+        try:
+            for name, value in metadata.iteritems():
+                key.set_metadata(name, value)
+        except S3ResponseError:
+            self.logger.warning(
+                    'We have no READ_ACP/WRITE_ACP permissions, '
+                    'so we could not add metadata info')
+
     @retry_long
-    def _write_s3_key(self, dump_path, key_name):
+    def _upload_small_file(self, dump_path, key_name):
         from boto.utils import compute_md5
-        destination = 's3://{}/{}'.format(self.bucket.name, key_name)
-        self.logger.info('Start uploading {} to {}'.format(dump_path, destination))
         with closing(self.bucket.new_key(key_name)) as key, open(dump_path, 'r') as f:
             md5 = compute_md5(f)
             if self.save_metadata:
-                key.set_metadata('total', self._get_total_count(dump_path))
-                key.set_metadata('md5', md5)
+                key_metadata = {
+                    'md5': md5,
+                    'total': self._get_total_count(dump_path)
+                }
+                self._set_key_metada(key, key_metadata)
             progress = BotoDownloadProgress(self.logger)
             key.set_contents_from_file(f, cb=progress, md5=md5)
             self._ensure_proper_key_permissions(key)
+
+    # @retry_long
+    def _upload_large_file(self, dump_path, key_name):
+        from filechunkio import FileChunkIO
+        from boto.utils import compute_md5
+        self.logger.debug('Using multipart S3 uploader')
+        with multipart_upload(self.bucket, key_name) as mp:
+            source_size = os.stat(dump_path).st_size
+            chunk_count = int(math.ceil(source_size / float(CHUNK_SIZE)))
+            for i in range(chunk_count):
+                offset = CHUNK_SIZE * i
+                bytes = min(CHUNK_SIZE, source_size - offset)
+                with FileChunkIO(dump_path, 'r', offset=offset, bytes=bytes) as fp:
+                    mp.upload_part_from_file(fp, part_num=i + 1)
+                self.logger.debug('Uploaded chunk number {} of {}'.format(i+1, chunk_count))
+        with closing(self.bucket.new_key(key_name)) as key:
+            self._ensure_proper_key_permissions(key)
+            if self.save_metadata:
+                with open(dump_path, 'r') as f:
+                    key_metadata = {
+                        'md5': compute_md5(f),
+                        'total': self._get_total_count(dump_path)
+                    }
+                    self._set_key_metada(key, key_metadata)
+
+    def _write_s3_key(self, dump_path, key_name):
+        destination = 's3://{}/{}'.format(self.bucket.name, key_name)
+        self.logger.info('Start uploading {} to {}'.format(dump_path, destination))
+        if os.path.getsize(dump_path) > CHUNK_SIZE:
+            self._upload_large_file(dump_path, key_name)
+        else:
+            self._upload_small_file(dump_path, key_name)
         self.last_written_file = destination
         self.logger.info('Saved {}'.format(destination))
 
