@@ -59,9 +59,9 @@ def create_s3_bypass_simple_config(**kwargs):
 
 class S3BypassConditionsTest(unittest.TestCase):
     def test_should_meet_conditions(self):
-        bypass = S3Bypass(create_s3_bypass_simple_config(), meta())
+        config = create_s3_bypass_simple_config()
         # shouldn't raise any exception
-        bypass.meets_conditions()
+        S3Bypass.meets_conditions(config)
 
     def test_custom_filter_should_not_meet_conditions(self):
         # given:
@@ -71,11 +71,10 @@ class S3BypassConditionsTest(unittest.TestCase):
         })
 
         # when:
-        bypass = S3Bypass(config, meta())
 
         # then:
         with self.assertRaises(RequisitesNotMet):
-            bypass.meets_conditions()
+            S3Bypass.meets_conditions(config)
 
     def test_custom_grouper_should_not_meet_conditions(self):
         # given:
@@ -84,11 +83,10 @@ class S3BypassConditionsTest(unittest.TestCase):
         })
 
         # when:
-        bypass = S3Bypass(config, meta())
 
         # then:
         with self.assertRaises(RequisitesNotMet):
-            bypass.meets_conditions()
+            S3Bypass.meets_conditions(config)
 
     def test_items_limit_should_not_meet_conditions(self):
         # given:
@@ -96,11 +94,10 @@ class S3BypassConditionsTest(unittest.TestCase):
         config.writer_options['options']['items_limit'] = 10
 
         # when:
-        bypass = S3Bypass(config, meta())
 
         # then:
         with self.assertRaises(RequisitesNotMet):
-            bypass.meets_conditions()
+            S3Bypass.meets_conditions(config)
 
 
 class S3BypassTest(unittest.TestCase):
@@ -140,7 +137,7 @@ class S3BypassTest(unittest.TestCase):
 
         # when:
         with closing(S3Bypass(options, meta())) as bypass:
-            bypass.bypass()
+            bypass.execute()
 
         # then:
         bucket = self.s3_conn.get_bucket('dest_bucket')
@@ -158,7 +155,7 @@ class S3BypassTest(unittest.TestCase):
 
         # when:
         with closing(S3Bypass(options, meta())) as bypass:
-            bypass.bypass()
+            bypass.execute()
 
         # then:
         bucket = self.s3_conn.get_bucket('dest_bucket')
@@ -176,7 +173,7 @@ class S3BypassTest(unittest.TestCase):
 
         # when:
         with closing(S3Bypass(options, meta())) as bypass:
-            bypass.bypass()
+            bypass.execute()
 
         # then:
         key = next(iter(bucket.list('some_prefix/')))
@@ -218,7 +215,7 @@ class S3BypassTest(unittest.TestCase):
 
         # when:
         with closing(S3Bypass(options, meta())) as bypass:
-            bypass.bypass()
+            bypass.execute()
 
         # then:
         dest_bucket = self.s3_conn.get_bucket('resume_bucket')
@@ -269,7 +266,7 @@ class S3BypassTest(unittest.TestCase):
 
         # when:
         with closing(S3Bypass(options, meta())) as bypass:
-            bypass.bypass()
+            bypass.execute()
 
         # then:
         bucket = self.s3_conn.get_bucket('pointer_fake_bucket')
@@ -314,7 +311,7 @@ class S3BypassTest(unittest.TestCase):
 
         # when
         with closing(S3Bypass(options, meta())) as bypass:
-            bypass.bypass()
+            bypass.execute()
 
         # then
         dest_bucket = self.s3_conn.get_bucket('dest_pointer_bucket')
@@ -381,7 +378,7 @@ class S3BypassTest(unittest.TestCase):
 
         bypass = S3Bypass(options, meta())
         with environment(env):
-            bypass.bypass()
+            bypass.execute()
 
         # then:
         bucket = self.s3_conn.get_bucket('dest_bucket')

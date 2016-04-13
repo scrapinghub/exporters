@@ -302,9 +302,9 @@ class BaseByPassTest(unittest.TestCase):
     def test_not_implemented(self):
         bypass_script = BaseBypass({}, None)
         with self.assertRaises(NotImplementedError):
-            bypass_script.meets_conditions()
+            BaseBypass.meets_conditions({})
         with self.assertRaises(NotImplementedError):
-            bypass_script.bypass()
+            bypass_script.execute()
 
 
 class S3ByPassTest(unittest.TestCase):
@@ -316,9 +316,8 @@ class S3ByPassTest(unittest.TestCase):
                 'exporter_options': {'formatter': {}}
             })
         )
-        bypass = S3Bypass(exporter_options, None)
         with self.assertRaises(RequisitesNotMet):
-            bypass.meets_conditions()
+            S3Bypass.meets_conditions(exporter_options)
 
     def test_meet_supported_options(self):
         exporter_options = ExporterConfig(
@@ -330,8 +329,7 @@ class S3ByPassTest(unittest.TestCase):
                 'exporter_options': {'formatter': {}}
             })
         )
-        bypass_script = S3Bypass(exporter_options, None)
-        bypass_script.meets_conditions()
+        S3Bypass.meets_conditions(exporter_options)
 
 
 class NesteDictReadTest(unittest.TestCase):

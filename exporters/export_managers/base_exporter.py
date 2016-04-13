@@ -1,6 +1,7 @@
 import datetime
 import traceback
 from collections import OrderedDict
+from contextlib import closing
 from exporters.default_retries import disable_retries
 from exporters.writers.base_writer import ItemsLimitReached
 from exporters.export_managers.base_bypass import RequisitesNotMet
@@ -93,34 +94,39 @@ class BaseExporter(object):
         self.writer.finish_writing()
         self.metadata.end_time = datetime.datetime.now()
 
-    def bypass_exporter(self, bypass_script):
-        self.logger.info('Executing bypass {}.'.format(bypass_script.__class__.__name__))
+    def bypass_exporter(self, bypass_class):
+        self.logger.info('Executing bypass {}.'.format(bypass_class.__name__))
         self.notifiers.notify_start_dump(receivers=[CLIENTS, TEAM])
         if not self.config.exporter_options.get('resume'):
             self.persistence.close()
             self.persistence.delete()
-        bypass_script.bypass()
-        if not bypass_script.valid_total_count:
+        with closing(bypass_class(self.config, self.metadata)) as bypass:
+            bypass.execute()
+        if not bypass.valid_total_count:
             self.metadata.accurate_items_count = False
             self.logger.warning('No accurate items count info can be retrieved')
         self.writer.set_metadata(
-            'items_count', self.writer.get_metadata('items_count') + bypass_script.total_items)
+            'items_count', self.writer.get_metadata('items_count') + bypass.total_items)
         self.logger.info(
-            'Finished executing bypass {}.'.format(bypass_script.__class__.__name__))
+            'Finished executing bypass {}.'.format(bypass_class.__name__))
         self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM])
 
     def bypass(self):
         if self.config.prevent_bypass:
             return False
 
-        for bypass_script in self.bypass_cases:
+        for bypass_class in self.bypass_cases:
             try:
-                bypass_script.meets_conditions()
-                self.bypass_exporter(bypass_script)
+                bypass_class.meets_conditions(self.config)
+                self.bypass_exporter(bypass_class)
                 return True
-            except RequisitesNotMet:
-                self.logger.debug(
-                    '{} bypass skipped.'.format(bypass_script.__class__.__name__))
+            except RequisitesNotMet as e:
+                if e.message:
+                    reason = ', reason: {}'.format(e.message)
+                else:
+                    reason = ''
+                self.logger.debug('{} bypass skipped{}.'.format(
+                    bypass_class.__name__, reason))
         return False
 
     def _handle_export_exception(self, exception):

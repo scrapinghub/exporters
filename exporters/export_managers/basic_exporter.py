@@ -12,9 +12,7 @@ class BasicExporter(BaseExporter):
 
     def __init__(self, configuration):
         super(BasicExporter, self).__init__(configuration)
-        self.bypass_cases = []
-        for bypass_class in default_bypass_classes:
-            self.bypass_cases.append(bypass_class(self.config, self.metadata))
+        self.bypass_cases = default_bypass_classes
 
     @staticmethod
     def from_file_configuration(filepath):
