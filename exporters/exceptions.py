@@ -11,11 +11,11 @@ class ConfigurationError(ValueError):
 
 
 class InvalidDateRangeError(ValueError):
-    pass
+    "Empty or impossible date range"
 
 
 class InvalidCompressionFormat(ValueError):
-    pass
+    "Unsupported compression format."
 
 
 class ConfigCheckError(ConfigurationError):

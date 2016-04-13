@@ -5,12 +5,8 @@ import uuid
 
 from six.moves import UserDict
 
-from exporters.exceptions import InvalidCompressionFormat, ConfigurationError
 from exporters.utils import remove_if_exists
-from exporters.writers.compression.bzip2_compressor import Bzip2Compressor
 from exporters.writers.compression.gzip_compressor import GzipCompressor
-from exporters.writers.compression.targzip_compressor import TarGzipCompressor
-from exporters.writers.compression.zip_compressor import ZipCompressor
 
 
 class GroupingInfo(UserDict):
@@ -44,17 +40,6 @@ class GroupingInfo(UserDict):
         self[key]['buffered_items'] = 0
 
 
-SUPPORTED_COMPRESSORS = {'gzip': GzipCompressor, 'zip': ZipCompressor,
-                         'bz2': Bzip2Compressor, 'tgz': TarGzipCompressor}
-
-
-def _get_file_compressor(compression_format):
-    compressor = SUPPORTED_COMPRESSORS.get(compression_format.lower())
-    if not compressor:
-        raise InvalidCompressionFormat
-    return compressor()
-
-
 class ItemsGroupFilesHandler(object):
     """Class responsible for tracking buffer files
     used for grouping feature in writers components.
@@ -80,17 +65,12 @@ class ItemsGroupFilesHandler(object):
     in FilebaseBaseWriter that must be considered when refactoring this.
     """
 
-    def __init__(self, formatter, compression_format='gzip'):
+    def __init__(self, formatter, file_compressor=None):
         self.grouping_info = GroupingInfo()
         self.file_extension = formatter.file_extension
         self.formatter = formatter
         self.tmp_folder = tempfile.mkdtemp()
-        try:
-            self.file_compressor = _get_file_compressor(compression_format)
-        except InvalidCompressionFormat:
-            raise ConfigurationError('The compression format can only be '
-                                     'one of the following:  "{}"'
-                                     ''.format(SUPPORTED_COMPRESSORS.keys()))
+        self.file_compressor = file_compressor or GzipCompressor()
 
     def _add_to_file(self, content, key):
         path = self.get_current_buffer_path_for_group(key)
@@ -114,7 +94,7 @@ class ItemsGroupFilesHandler(object):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
     def clean_tmp_files(self, compressed_path):
-        path = compressed_path[:-len(self.file_compressor.extension)]
+        path = self.file_compressor.uncompressed_file_path(compressed_path)
         remove_if_exists(path)
         remove_if_exists(compressed_path)
 

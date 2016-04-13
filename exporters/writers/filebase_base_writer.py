@@ -24,11 +24,10 @@ def md5_for_file(f, block_size=2**20):
 
 class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
 
-    def __init__(self, formatter, compression_format, prefix, start_file_count=0):
-        super(CustomNameItemsGroupFilesHandler, self).__init__(
-            formatter, compression_format)
+    def __init__(self, formatter, prefix, start_file_count=0, **kwargs):
         self.prefix = self._format_date(prefix)
         self.start_file_count = start_file_count
+        super(CustomNameItemsGroupFilesHandler, self).__init__(formatter, **kwargs)
 
     def _get_new_path_name(self, key):
         """Build a filename for a new file for a given group,
@@ -87,13 +86,13 @@ class FilebaseBaseWriter(BaseWriter):
         self.generate_md5 = self.read_option('generate_md5')
 
     def _items_group_files_handler(self):
-        compression_format = self.read_option('compression_format')
         _, prefix = os.path.split(self.read_option('filebase'))
         start_file_count = self.read_option('start_file_count')
+        file_compressor = self._get_file_compressor()
         return CustomNameItemsGroupFilesHandler(self.export_formatter,
-                                                compression_format,
                                                 prefix,
-                                                start_file_count)
+                                                start_file_count,
+                                                file_compressor=file_compressor)
 
     def write(self, path, key, file_name=False):
         """

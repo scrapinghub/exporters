@@ -9,7 +9,7 @@ class ZipCompressor(SingleFileCompressor):
 
     def compress(self, file_path):
         _, filename = os.path.split(file_path)
-        zipped_file_path = file_path + self.extension
+        zipped_file_path = self.compressed_file_path(file_path)
         with zipfile.ZipFile(zipped_file_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             zip_file.write(file_path, arcname=filename)
         return zipped_file_path

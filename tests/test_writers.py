@@ -471,12 +471,14 @@ class FSWriterTest(unittest.TestCase):
         self.assertTrue(expected_file in writer.written_files)
 
     def test_invalid_compression_format(self):
+        options = self.get_writer_config()
+        options['options']['compression_format'] = 'unknown'
         self.assertRaisesRegexp(ConfigurationError,
                                 'The compression format can only be '
                                 'one of the following:',
-                                ItemsGroupFilesHandler,
-                                JsonExportFormatter(dict()),
-                                'unknown')
+                                FilebaseBaseWriter,
+                                options,
+                                meta())
 
     def test_get_file_number_with_date(self):
         file_path = '/tmp/%Y%m%d/'

@@ -1,5 +1,6 @@
 import six
 
+from exporters.exceptions import InvalidCompressionFormat, ConfigurationError
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 from exporters.write_buffer import WriteBuffer, ItemsGroupFilesHandler
@@ -50,9 +51,21 @@ class BaseWriter(BasePipelineItem):
                                         self._items_group_files_handler())
         self.set_metadata('items_count', 0)
 
+    def _get_file_compressor(self):
+        try:
+            from exporters.writers.compression.helpers import \
+                get_file_compressor, SUPPORTED_COMPRESSORS
+            compression_format = self.read_option('compression_format')
+            return get_file_compressor(compression_format)
+        except InvalidCompressionFormat:
+            raise ConfigurationError('The compression format can only be '
+                                     'one of the following:  "{}"'
+                                     ''.format(SUPPORTED_COMPRESSORS.keys()))
+
     def _items_group_files_handler(self):
-        compression_format = self.read_option('compression_format')
-        return ItemsGroupFilesHandler(self.export_formatter, compression_format)
+        file_compressor = self._get_file_compressor()
+        return ItemsGroupFilesHandler(self.export_formatter,
+                                      file_compressor=file_compressor)
 
     def write(self, path, key):
         """
