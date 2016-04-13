@@ -3,7 +3,7 @@ import unittest
 
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
-from exporters.writers.gstorage_writer import GStorageWriter
+from exporters.writers.gdrive_writer import GDriveWriter
 from exporters.writers.base_writer import InconsistentWriteState
 
 from .utils import meta
@@ -19,43 +19,39 @@ class GStorageWriterTest(unittest.TestCase):
 
     def get_options(self):
         return {
-            'name': 'exporters.writers.gstorage_writer.GStorageWriter',
+            'name': 'exporters.writers.gdrive_writer.GDriveWriter',
             'options': {
-                'project': 'some-project-666',
-                'bucket': 'bucket-777',
-                'credentials': {
-                    "type": "service_account",
-                    "private_key_id": "xxx",
-                    "private_key": "yyy",
-                },
-                'filebase': 'tests/',
+                "filebase": "test",
+                "client_secret": {},
+                "credentials": {},
             }
         }
 
-    def test_write(self):
+    @mock.patch('pydrive.auth.GoogleAuth')
+    @mock.patch('pydrive.drive.GoogleDrive')
+    def test_write(self, drive, auth):
         items_to_write = self.get_items_to_write()
         options = self.get_options()
 
-        with mock.patch('gcloud.storage.Client.from_service_account_json') as mocked:
-            writer = GStorageWriter(
-                options, meta(), export_formatter=JsonExportFormatter(dict()))
-            writer.write_batch(items_to_write)
-            writer.flush()
-            writer.close()
-            mocked.assert_has_calls([('().bucket().blob().upload_from_file',
-                                      (mock.ANY,))])
+        writer = GDriveWriter(
+            options, meta(), export_formatter=JsonExportFormatter(dict()))
+        writer.write_batch(items_to_write)
+        writer.flush()
+        writer.close()
+        drive.assert_has_calls([('call().CreateFile().Upload()', (mock.ANY,))])
 
-    @mock.patch('gcloud.storage.Client.from_service_account_json')
-    def test_write_blob_consistency(self, get_client):
-        get_client().bucket().blob().size = 999
-        get_client().bucket().blob().md5_hash = "a"*24
+    @mock.patch('pydrive.auth.GoogleAuth')
+    @mock.patch('pydrive.drive.GoogleDrive')
+    def test_write_blob_consistency(self, drive, auth):
+        drive().CreateFile()['size'] = 999
+        drive().CreateFile()['md5Checksum'] = "a"*24
         # given
         items_to_write = self.get_items_to_write()
         options = self.get_options()
         options['options']['check_consistency'] = True
 
         # when:
-        writer = GStorageWriter(
+        writer = GDriveWriter(
             options, meta(), export_formatter=JsonExportFormatter(dict()))
         try:
             writer.write_batch(items_to_write)
