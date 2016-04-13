@@ -1,16 +1,10 @@
-import datetime
-import logging
-import os
-import shutil
-
-from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
-from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
-from exporters.readers.s3_reader import get_bucket
+from exporters.export_managers.base_bypass import RequisitesNotMet
 from exporters.utils import TmpFile
+from .base_s3_bypass import BaseS3Bypass
 
 
-class AzureBlobS3Bypass(BaseBypass):
+class AzureBlobS3Bypass(BaseS3Bypass):
     """
     Bypass executed by default when data source is an S3 bucket and data destination is
     an Azure blob container.
@@ -26,85 +20,26 @@ class AzureBlobS3Bypass(BaseBypass):
 
     def __init__(self, config, metadata):
         super(AzureBlobS3Bypass, self).__init__(config, metadata)
-        self.tmp_folder = None
-        self.bypass_state = None
-        self.logger = logging.getLogger('bypass_logger')
-        self.logger.setLevel(logging.INFO)
+        self.container = self.read_option('writer', 'container')
+        from azure.storage.blob import BlobService
+        self.azure_service = BlobService(
+            self.read_option('writer', 'account_name'),
+            self.read_option('writer', 'account_key'))
 
     @classmethod
     def meets_conditions(cls, config):
-        if not config.reader_options['name'].endswith('S3Reader') or \
-           not config.writer_options['name'].endswith('AzureBlobWriter'):
+        if not config.writer_options['name'].endswith('AzureBlobWriter'):
             raise RequisitesNotMet
-        if not config.filter_before_options['name'].endswith('NoFilter'):
-            raise RequisitesNotMet('custom filter configured')
-        if not config.filter_after_options['name'].endswith('NoFilter'):
-            raise RequisitesNotMet('custom filter configured')
-        if not config.transform_options['name'].endswith('NoTransform'):
-            raise RequisitesNotMet('custom transform configured')
-        if not config.grouper_options['name'].endswith('NoGrouper'):
-            raise RequisitesNotMet('custom grouper configured')
-        if config.writer_options['options'].get('items_limit'):
-            raise RequisitesNotMet('items limit configuration (items_limit)')
-        if config.writer_options['options'].get('items_per_buffer_write'):
-            raise RequisitesNotMet('buffer limit configuration (items_per_buffer_write)')
-        if config.writer_options['options'].get('size_per_buffer_write'):
-            raise RequisitesNotMet('buffer limit configuration (size_per_buffer_write)')
-
-    def _get_filebase(self, writer_options):
-        dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
-        dest_filebase = datetime.datetime.now().strftime(dest_filebase)
-        return dest_filebase
-
-    def _fill_config_with_env(self):
-        reader_opts = self.config.reader_options['options']
-        if 'aws_access_key_id' not in reader_opts:
-            reader_opts['aws_access_key_id'] = os.environ.get('EXPORTERS_S3READER_AWS_KEY')
-        if 'aws_secret_access_key' not in reader_opts:
-            reader_opts['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3READER_AWS_SECRET')
-
-    def execute(self):
-        from azure.storage.blob import BlobService
-        from copy import deepcopy
-        reader_options = self.config.reader_options['options']
-        writer_options = self.config.writer_options['options']
-        self._fill_config_with_env()
-        self.bypass_state = S3BypassState(self.config, self.metadata)
-        self.total_items = self.bypass_state.stats['total_count']
-        self.container = writer_options['container']
-        self.azure_service = BlobService(
-            writer_options['account_name'], writer_options['account_key'])
-        source_bucket = get_bucket(**reader_options)
-        pending_keys = deepcopy(self.bypass_state.pending_keys())
-        try:
-            for key in pending_keys:
-                self._copy_key(source_bucket, key)
-                self.bypass_state.commit_copied_key(key)
-                logging.log(logging.INFO,
-                            'Copied key {}'.format(key))
-
-        finally:
-            if self.tmp_folder:
-                shutil.rmtree(self.tmp_folder)
+        super(AzureBlobS3Bypass, cls).meets_conditions(config)
 
     @retry_long
-    def _copy_key(self, source_bucket, key_name):
-        akey = source_bucket.get_key(key_name)
-        if akey.get_metadata('total'):
-            self.increment_items(int(akey.get_metadata('total')))
-            self.bypass_state.increment_items(int(akey.get_metadata('total')))
-        else:
-            self.valid_total_count = False
-        key = source_bucket.get_key(key_name)
+    def _copy_s3_key(self, key):
         with TmpFile() as tmp_filename:
             key.get_contents_to_filename(tmp_filename)
-            blob_name = key_name.split('/')[-1]
+            blob_name = key.name.split('/')[-1]
             self.azure_service.put_block_blob_from_path(
                 self.container,
                 blob_name,
                 tmp_filename,
                 max_connections=5,
             )
-
-    def close(self):
-        self.bypass_state.delete()

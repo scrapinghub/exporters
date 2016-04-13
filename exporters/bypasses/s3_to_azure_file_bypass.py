@@ -1,16 +1,12 @@
 import datetime
-import logging
 import os
-import shutil
-
-from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
-from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
-from exporters.readers.s3_reader import get_bucket
+from exporters.export_managers.base_bypass import RequisitesNotMet
 from exporters.utils import TmpFile
+from .base_s3_bypass import BaseS3Bypass
 
 
-class AzureFileS3Bypass(BaseBypass):
+class AzureFileS3Bypass(BaseS3Bypass):
     """
     Bypass executed by default when data source is an S3 bucket and data destination
     is an Azure share.
@@ -26,70 +22,24 @@ class AzureFileS3Bypass(BaseBypass):
 
     def __init__(self, config, metadata):
         super(AzureFileS3Bypass, self).__init__(config, metadata)
-        self.tmp_folder = None
-        self.bypass_state = None
-        self.logger = logging.getLogger('bypass_logger')
-        self.logger.setLevel(logging.INFO)
+        from azure.storage.file import FileService
+        self.azure_service = FileService(
+            self.read_option('writer', 'account_name'),
+            self.read_option('writer', 'account_key'))
+        self.share = self.read_option('writer', 'share')
+        self.filebase_path = self._format_filebase_path(self.read_option('writer', 'filebase'))
+        self._ensure_path(self.filebase_path)
 
     @classmethod
     def meets_conditions(cls, config):
-        if (not config.reader_options['name'].endswith('S3Reader') or
-                not config.writer_options['name'].endswith('AzureFileWriter')):
+        if not config.writer_options['name'].endswith('AzureFileWriter'):
             raise RequisitesNotMet
-        if not config.filter_before_options['name'].endswith('NoFilter'):
-            raise RequisitesNotMet('custom filter configured')
-        if not config.filter_after_options['name'].endswith('NoFilter'):
-            raise RequisitesNotMet('custom filter configured')
-        if not config.transform_options['name'].endswith('NoTransform'):
-            raise RequisitesNotMet('custom transform configured')
-        if not config.grouper_options['name'].endswith('NoGrouper'):
-            raise RequisitesNotMet('custom grouper configured')
-        if config.writer_options['options'].get('items_limit'):
-            raise RequisitesNotMet('items limit configuration (items_limit)')
-        if config.writer_options['options'].get('items_per_buffer_write'):
-            raise RequisitesNotMet('buffer limit configuration (items_per_buffer_write)')
-        if config.writer_options['options'].get('size_per_buffer_write'):
-            raise RequisitesNotMet('buffer limit configuration (size_per_buffer_write)')
+        super(AzureFileS3Bypass, cls).meets_conditions(config)
 
-    def _get_filebase(self, writer_options):
-        dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
-        dest_filebase = datetime.datetime.now().strftime(dest_filebase)
-        return dest_filebase
-
-    def _fill_config_with_env(self):
-        reader_opts = self.config.reader_options['options']
-        if 'aws_access_key_id' not in reader_opts:
-            reader_opts['aws_access_key_id'] = os.environ.get('EXPORTERS_S3READER_AWS_KEY')
-        if 'aws_secret_access_key' not in self.config.reader_options['options']:
-            reader_opts['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3READER_AWS_SECRET')
-
-    def execute(self):
-        from azure.storage.file import FileService
-        from copy import deepcopy
-        reader_options = self.config.reader_options['options']
-        writer_options = self.config.writer_options['options']
-        self.share = writer_options['share']
-        self.filebase = self.create_filebase_name(writer_options['filebase'])
-        self.azure_service = FileService(
-            writer_options['account_name'], writer_options['account_key'])
-        self._fill_config_with_env()
-        self.bypass_state = S3BypassState(self.config, self.metadata)
-        self.total_items = self.bypass_state.stats['total_count']
-        source_bucket = get_bucket(**reader_options)
-        pending_keys = deepcopy(self.bypass_state.pending_keys())
-        try:
-            for key in pending_keys:
-                self._copy_key(source_bucket, key)
-                self.bypass_state.commit_copied_key(key)
-                logging.log(logging.INFO,
-                            'Copied key {}'.format(key))
-        finally:
-            if self.tmp_folder:
-                shutil.rmtree(self.tmp_folder)
-
-    def create_filebase_name(self, filebase):
-        formatted_filebase = datetime.datetime.now().strftime(filebase)
-        filebase_path, prefix = os.path.split(formatted_filebase)
+    def _format_filebase_path(self, filebase):
+        filebase_with_date = datetime.datetime.now().strftime(filebase)
+        # warning: we strip file prefix here, could be unexpected
+        filebase_path, prefix = os.path.split(filebase_with_date)
         return filebase_path
 
     def _ensure_path(self, filebase):
@@ -101,25 +51,14 @@ class AzureFileS3Bypass(BaseBypass):
             self.azure_service.create_directory(self.share, parent)
 
     @retry_long
-    def _copy_key(self, source_bucket, key_name):
-        akey = source_bucket.get_key(key_name)
-        if akey.get_metadata('total'):
-            self.increment_items(int(akey.get_metadata('total')))
-            self.bypass_state.increment_items(int(akey.get_metadata('total')))
-        else:
-            self.valid_total_count = False
-        key = source_bucket.get_key(key_name)
+    def _copy_s3_key(self, key):
         with TmpFile() as tmp_filename:
-            file_name = key_name.split('/')[-1]
+            file_name = key.name.split('/')[-1]
             key.get_contents_to_filename(tmp_filename)
-            self._ensure_path(self.filebase)
             self.azure_service.put_file_from_path(
                 self.share,
-                self.filebase,
+                self.filebase_path,
                 file_name,
                 tmp_filename,
                 max_connections=5,
             )
-
-    def close(self):
-        self.bypass_state.delete()
