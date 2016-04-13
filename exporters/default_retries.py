@@ -24,11 +24,12 @@ def disable_retries():
 
 
 @decorator
-def log_errors(f, *args, **kw):
+def _warn_about_exceptions(f, *args, **kw):
     try:
         return f(*args, **kw)
-    except:
-        logging.warning("Failed: %s" % f.__name__)
+    except Exception as e:
+        logging.warning("Failed: {} (message was: {})".format(
+            f.__name__, str(e)))
         raise
 
 
@@ -39,7 +40,7 @@ def initialized_retry(*dargs, **dkw):
                 rargs, rkw = _retry_init(dargs, dkw)
             else:
                 rargs, rkw = dargs, dkw
-            return Retrying(*rargs, **rkw).call(log_errors(f), *args, **kw)
+            return Retrying(*rargs, **rkw).call(_warn_about_exceptions(f), *args, **kw)
 
         return wrapped_f
 
