@@ -103,7 +103,7 @@ class S3AzureFileBypassTest(unittest.TestCase):
         self.assertEquals(exporter.writer.get_metadata('items_count'), 0)
         self.assertEquals(exporter.reader.get_metadata('read_items'), 0)
         azure_puts = [
-            call for call in azure.mock_calls if call[0] == '().put_file_from_path'
+            call for call in azure.mock_calls if call[0] == '().copy_file'
         ]
         self.assertEquals(len(azure_puts), len(keys),
                           "all keys should be put into Azure files")
@@ -200,7 +200,7 @@ class S3AzureBlobBypassTest(unittest.TestCase):
         self.assertEquals(exporter.writer.get_metadata('items_count'), 0)
         self.assertEquals(exporter.reader.get_metadata('read_items'), 0)
         azure_puts = [
-            call for call in azure.mock_calls if call[0] == '().put_block_blob_from_path'
+            call for call in azure.mock_calls if call[0] == '().copy_blob'
         ]
         self.assertEquals(len(azure_puts), len(keys),
                           "all keys should be put into Azure blobs")

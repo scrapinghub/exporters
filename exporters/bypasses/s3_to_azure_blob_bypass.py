@@ -1,7 +1,9 @@
 from exporters.default_retries import retry_long
 from exporters.export_managers.base_bypass import RequisitesNotMet
-from exporters.utils import TmpFile
 from .base_s3_bypass import BaseS3Bypass
+
+
+S3_URL_EXPIRES_IN = 1800  # half an hour should be enough
 
 
 class AzureBlobS3Bypass(BaseS3Bypass):
@@ -34,12 +36,9 @@ class AzureBlobS3Bypass(BaseS3Bypass):
 
     @retry_long
     def _copy_s3_key(self, key):
-        with TmpFile() as tmp_filename:
-            key.get_contents_to_filename(tmp_filename)
-            blob_name = key.name.split('/')[-1]
-            self.azure_service.put_block_blob_from_path(
-                self.container,
-                blob_name,
-                tmp_filename,
-                max_connections=5,
-            )
+        blob_name = key.name.split('/')[-1]
+        self.azure_service.copy_blob(
+            self.container,
+            blob_name,
+            key.generate_url(S3_URL_EXPIRES_IN)
+        )
