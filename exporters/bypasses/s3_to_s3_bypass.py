@@ -1,7 +1,7 @@
 import datetime
 import logging
-import shutil
 from contextlib import closing, contextmanager
+from copy import deepcopy
 
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
@@ -66,34 +66,29 @@ class S3Bypass(BaseBypass):
 
     def __init__(self, config, metadata):
         super(S3Bypass, self).__init__(config, metadata)
-        self.copy_mode = True
-        self.tmp_folder = None
         self.bypass_state = None
         self.logger = logging.getLogger('bypass_logger')
         self.logger.setLevel(logging.INFO)
 
-    def _raise_conditions_not_met(self, reason):
-        self.logger.warning('Skipping S3 file copy optimization bypass because of %s' % reason)
-        raise RequisitesNotMet
-
-    def meets_conditions(self):
-        if not self.config.reader_options['name'].endswith('S3Reader') or \
-           not self.config.writer_options['name'].endswith('S3Writer'):
+    @classmethod
+    def meets_conditions(cls, config):
+        if not config.reader_options['name'].endswith('S3Reader') or \
+           not config.writer_options['name'].endswith('S3Writer'):
             raise RequisitesNotMet
-        if not self.config.filter_before_options['name'].endswith('NoFilter'):
-            self._raise_conditions_not_met('custom filter configured')
-        if not self.config.filter_after_options['name'].endswith('NoFilter'):
-            self._raise_conditions_not_met('custom filter configured')
-        if not self.config.transform_options['name'].endswith('NoTransform'):
-            self._raise_conditions_not_met('custom transform configured')
-        if not self.config.grouper_options['name'].endswith('NoGrouper'):
-            self._raise_conditions_not_met('custom grouper configured')
-        if self.config.writer_options['options'].get('items_limit'):
-            self._raise_conditions_not_met('items limit configuration (items_limit)')
-        if self.config.writer_options['options'].get('items_per_buffer_write'):
-            self._raise_conditions_not_met('buffer limit configuration (items_per_buffer_write)')
-        if self.config.writer_options['options'].get('size_per_buffer_write'):
-            self._raise_conditions_not_met('buffer limit configuration (size_per_buffer_write)')
+        if not config.filter_before_options['name'].endswith('NoFilter'):
+            raise RequisitesNotMet('custom filter configured')
+        if not config.filter_after_options['name'].endswith('NoFilter'):
+            raise RequisitesNotMet('custom filter configured')
+        if not config.transform_options['name'].endswith('NoTransform'):
+            raise RequisitesNotMet('custom transform configured')
+        if not config.grouper_options['name'].endswith('NoGrouper'):
+            raise RequisitesNotMet('custom grouper configured')
+        if config.writer_options['options'].get('items_limit'):
+            raise RequisitesNotMet('items limit configuration (items_limit)')
+        if config.writer_options['options'].get('items_per_buffer_write'):
+            raise RequisitesNotMet('buffer limit configuration (items_per_buffer_write)')
+        if config.writer_options['options'].get('size_per_buffer_write'):
+            raise RequisitesNotMet('buffer limit configuration (size_per_buffer_write)')
 
     def _get_filebase(self, writer_options):
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())
@@ -101,11 +96,14 @@ class S3Bypass(BaseBypass):
         return dest_filebase
 
     def bypass(self):
-        from copy import deepcopy
         reader_aws_key = self.read_option(
             'reader', 'aws_access_key_id', 'EXPORTERS_S3READER_AWS_KEY')
         reader_aws_secret = self.read_option(
             'reader', 'aws_secret_access_key', 'EXPORTERS_S3READER_AWS_SECRET')
+        self.bypass_state = S3BypassState(
+            self.config, self.metadata, reader_aws_key, reader_aws_secret)
+        source_bucket = get_bucket(
+            self.read_option('reader', 'bucket'), reader_aws_key, reader_aws_secret)
 
         writer_aws_key = self.read_option(
             'writer', 'aws_access_key_id', 'EXPORTERS_S3WRITER_AWS_LOGIN')
@@ -116,27 +114,18 @@ class S3Bypass(BaseBypass):
         dest_bucket = get_bucket(
             self.read_option('writer', 'bucket'), writer_aws_key, writer_aws_secret)
         dest_filebase = self._get_filebase(writer_options)
-        self.bypass_state = S3BypassState(
-            self.config, self.metadata, reader_aws_key, reader_aws_secret)
         self.total_items = self.bypass_state.stats['total_count']
 
-        source_bucket = get_bucket(
-            self.read_option('reader', 'bucket'), reader_aws_key, reader_aws_secret)
         pending_keys = deepcopy(self.bypass_state.pending_keys())
-        try:
-            for key in pending_keys:
-                dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
-                self._copy_key(dest_bucket, dest_key_name, source_bucket, key)
-                self.bypass_state.commit_copied_key(key)
-                logging.info('Copied key {} to dest: s3://{}/{}'.format(
-                    key, dest_bucket.name, dest_key_name))
-            if writer_options.get('save_pointer'):
-                self._update_last_pointer(
-                    dest_bucket, writer_options.get('save_pointer'), writer_options.get('filebase'))
-
-        finally:
-            if self.tmp_folder:
-                shutil.rmtree(self.tmp_folder)
+        for key in pending_keys:
+            dest_key_name = '{}/{}'.format(dest_filebase, key.split('/')[-1])
+            self._copy_key(dest_bucket, dest_key_name, source_bucket, key)
+            self.bypass_state.commit_copied_key(key)
+            logging.info('Copied key {} to dest: s3://{}/{}'.format(
+                key, dest_bucket.name, dest_key_name))
+        if writer_options.get('save_pointer'):
+            self._update_last_pointer(
+                dest_bucket, writer_options.get('save_pointer'), writer_options.get('filebase'))
 
     @retry_long
     def _write_s3_pointer(self, dest_bucket, save_pointer, filebase):
@@ -211,4 +200,5 @@ class S3Bypass(BaseBypass):
         self._ensure_copy_key(dest_bucket, dest_key_name, source_bucket, key_name)
 
     def close(self):
-        self.bypass_state.delete()
+        if self.bypass_state:
+            self.bypass_state.delete()

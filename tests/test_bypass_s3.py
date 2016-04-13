@@ -59,9 +59,9 @@ def create_s3_bypass_simple_config(**kwargs):
 
 class S3BypassConditionsTest(unittest.TestCase):
     def test_should_meet_conditions(self):
-        bypass = S3Bypass(create_s3_bypass_simple_config(), meta())
+        config = create_s3_bypass_simple_config()
         # shouldn't raise any exception
-        bypass.meets_conditions()
+        S3Bypass.meets_conditions(config)
 
     def test_custom_filter_should_not_meet_conditions(self):
         # given:
@@ -71,11 +71,10 @@ class S3BypassConditionsTest(unittest.TestCase):
         })
 
         # when:
-        bypass = S3Bypass(config, meta())
 
         # then:
         with self.assertRaises(RequisitesNotMet):
-            bypass.meets_conditions()
+            S3Bypass.meets_conditions(config)
 
     def test_custom_grouper_should_not_meet_conditions(self):
         # given:
@@ -84,11 +83,10 @@ class S3BypassConditionsTest(unittest.TestCase):
         })
 
         # when:
-        bypass = S3Bypass(config, meta())
 
         # then:
         with self.assertRaises(RequisitesNotMet):
-            bypass.meets_conditions()
+            S3Bypass.meets_conditions(config)
 
     def test_items_limit_should_not_meet_conditions(self):
         # given:
@@ -96,11 +94,10 @@ class S3BypassConditionsTest(unittest.TestCase):
         config.writer_options['options']['items_limit'] = 10
 
         # when:
-        bypass = S3Bypass(config, meta())
 
         # then:
         with self.assertRaises(RequisitesNotMet):
-            bypass.meets_conditions()
+            S3Bypass.meets_conditions(config)
 
 
 class S3BypassTest(unittest.TestCase):
