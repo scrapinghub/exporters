@@ -233,6 +233,36 @@ class BaseExportManagerTest(unittest.TestCase):
                           exporter.writer.get_metadata('items_count'),
                           msg="Export should write the same number items as it has read")
 
+    def test_fs_grouping_without_filebase(self):
+        tmp_dir = tempfile.mkdtemp()
+        options = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {
+                    'number_of_items': 123,
+                    'batch_size': 7
+                }
+            },
+            'writer': {
+                'name': 'exporters.writers.fs_writer.FSWriter',
+                'options': {
+                    'filebase': tmp_dir+'/some_file_'
+                }
+            },
+            'persistence': {
+                'name': 'tests.utils.NullPersistence',
+            },
+            'grouper': {
+                'name': 'exporters.groupers.file_key_grouper.FileKeyGrouper',
+                'options': {
+                    'keys': ['country_code']
+                }
+            }
+        }
+        self.exporter = exporter = BaseExporter(options)
+        exporter.export()
+        self.assertEqual(len(os.listdir(tmp_dir)), 3, 'There should be a file for every group')
+
     def test_notifier_integration_ok(self):
         notifier_class_path = 'exporters.notifications.base_notifier.BaseNotifier'
         options = {
