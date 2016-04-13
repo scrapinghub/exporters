@@ -5,7 +5,7 @@ import uuid
 
 from six.moves import UserDict
 
-from exporters.compression import compress, uncompressed_file_path
+from exporters.compression import compress_gzip
 from exporters.utils import remove_if_exists
 
 
@@ -65,12 +65,12 @@ class ItemsGroupFilesHandler(object):
     in FilebaseBaseWriter that must be considered when refactoring this.
     """
 
-    def __init__(self, formatter, compression='gz'):
+    def __init__(self, formatter, compression_func=compress_gzip):
         self.grouping_info = GroupingInfo()
         self.file_extension = formatter.file_extension
         self.formatter = formatter
         self.tmp_folder = tempfile.mkdtemp()
-        self.compression = compression
+        self.compression_func = compression_func
 
     def _add_to_file(self, content, key):
         path = self.get_current_buffer_path_for_group(key)
@@ -93,17 +93,9 @@ class ItemsGroupFilesHandler(object):
     def close(self):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
-    def clean_tmp_files(self, compressed_path):
-        path = uncompressed_file_path(compressed_path)
+    def clean_tmp_files(self, path, compressed_path):
         remove_if_exists(path)
         remove_if_exists(compressed_path)
-
-    def get_current_buffer_path_for_group(self, key):
-        if self.grouping_info[key]['group_file']:
-            path = self.grouping_info[key]['group_file'][-1]
-        else:
-            path = self.create_new_group_file(key)
-        return path
 
     def create_new_group_file(self, key):
         path = self.create_new_group_path_for_key(key)
@@ -112,6 +104,13 @@ class ItemsGroupFilesHandler(object):
         if header:
             with open(path, 'w') as f:
                 f.write(header)
+        return path
+
+    def get_current_buffer_path_for_group(self, key):
+        if self.grouping_info[key]['group_file']:
+            path = self.grouping_info[key]['group_file'][-1]
+        else:
+            path = self.create_new_group_file(key)
         return path
 
     def create_new_group_path_for_key(self, key):
@@ -127,7 +126,7 @@ class ItemsGroupFilesHandler(object):
 
     def compress_current_buffer_path_for_group(self, key):
         path = self.get_current_buffer_path_for_group(key)
-        compressed_path = compress(path, self.compression)
+        compressed_path = self.compression_func(path)
         compressed_size = os.path.getsize(compressed_path)
         return compressed_path, compressed_size
 
@@ -171,7 +170,8 @@ class WriteBuffer(object):
         self.items_group_files.create_new_group_file(key)
 
     def clean_tmp_files(self, key, compressed_path):
-        self.items_group_files.clean_tmp_files(compressed_path)
+        path = self.items_group_files.get_current_buffer_path_for_group(key)
+        self.items_group_files.clean_tmp_files(path, compressed_path)
 
     def should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(

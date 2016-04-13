@@ -29,19 +29,10 @@ def compress_zip(file_path):
     return zipped_file_path
 
 
-def uncompressed_file_path(compression_file_path):
-    file_path, compression_extension = os.path.splitext(compression_file_path)
-    return file_path
-
-
-def validate_compression_format(compression_format):
+def get_compress_func(compression_format):
     if compression_format not in FILE_COMPRESSION:
         raise UnsupportedCompressionFormat
-
-
-def compress(file_path, compression_format):
-    validate_compression_format(compression_format)
-    return FILE_COMPRESSION[compression_format](file_path)
+    return FILE_COMPRESSION[compression_format]
 
 FILE_COMPRESSION = {
     'gz': compress_gzip,
