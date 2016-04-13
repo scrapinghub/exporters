@@ -101,7 +101,7 @@ class BaseExporter(object):
             self.persistence.close()
             self.persistence.delete()
         with closing(bypass_class(self.config, self.metadata)) as bypass:
-            bypass.bypass()
+            bypass.execute()
         if not bypass.valid_total_count:
             self.metadata.accurate_items_count = False
             self.logger.warning('No accurate items count info can be retrieved')

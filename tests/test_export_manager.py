@@ -25,7 +25,7 @@ def fail(*a, **kw):
 
 
 class FakeBypass(BaseBypass):
-    bypass_called = False
+    executed = False
     fake_meet_conditions = True
 
     def __init__(self, options, metadata=None):
@@ -36,8 +36,8 @@ class FakeBypass(BaseBypass):
         if not cls.fake_meet_conditions:
             raise RequisitesNotMet
 
-    def bypass(self):
-        self.__class__.bypass_called = True
+    def execute(self):
+        self.__class__.executed = True
 
 
 class BaseExportManagerTest(unittest.TestCase):
@@ -120,7 +120,7 @@ class BaseExportManagerTest(unittest.TestCase):
         self.exporter = exporter = BaseExporter(self.build_config())
 
         class Bypass(FakeBypass):
-            bypass_called = False
+            executed = False
         exporter.bypass_cases = [Bypass]
 
         # when:
@@ -128,14 +128,14 @@ class BaseExportManagerTest(unittest.TestCase):
         exporter.writer.close()
 
         # then:
-        self.assertTrue(Bypass.bypass_called, "Bypass should have been called")
+        self.assertTrue(Bypass.executed, "Bypass should have been called")
 
     def test_when_unmet_conditions_bypass_should_not_be_called(self):
         # given:
         self.exporter = exporter = BaseExporter(self.build_config())
 
         class Bypass(FakeBypass):
-            bypass_called = False
+            executed = False
         Bypass.fake_meet_conditions = False
         exporter.bypass_cases = [Bypass]
 
@@ -143,7 +143,7 @@ class BaseExportManagerTest(unittest.TestCase):
         exporter.export()
 
         # then:
-        self.assertFalse(Bypass.bypass_called, "Bypass should NOT have been called")
+        self.assertFalse(Bypass.executed, "Bypass should NOT have been called")
 
     def test_when_meet_conditions_but_config_prevent_bypass_it_should_not_be_called(self):
         # given:
@@ -152,14 +152,14 @@ class BaseExportManagerTest(unittest.TestCase):
         self.exporter = exporter = BaseExporter(config)
 
         class Bypass(FakeBypass):
-            bypass_called = False
+            executed = False
         exporter.bypass_cases = [Bypass]
 
         # when:
         exporter.export()
 
         # then:
-        self.assertFalse(Bypass.bypass_called, "Bypass should NOT have been called")
+        self.assertFalse(Bypass.executed, "Bypass should NOT have been called")
 
     @mock.patch('exporters.writers.ftp_writer.FTPWriter.write', new=fail)
     @mock.patch('exporters.export_managers.base_exporter.NotifiersList')
@@ -351,7 +351,7 @@ class BaseExportManagerTest(unittest.TestCase):
                 def meets_conditions(cls, config):
                     pass
 
-                def bypass(self):
+                def execute(self):
                     pass
 
             exporter.bypass_cases.append(Bypass)

@@ -304,7 +304,7 @@ class BaseByPassTest(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             BaseBypass.meets_conditions({})
         with self.assertRaises(NotImplementedError):
-            bypass_script.bypass()
+            bypass_script.execute()
 
 
 class S3ByPassTest(unittest.TestCase):

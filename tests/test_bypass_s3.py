@@ -137,7 +137,7 @@ class S3BypassTest(unittest.TestCase):
 
         # when:
         with closing(S3Bypass(options, meta())) as bypass:
-            bypass.bypass()
+            bypass.execute()
 
         # then:
         bucket = self.s3_conn.get_bucket('dest_bucket')
@@ -155,7 +155,7 @@ class S3BypassTest(unittest.TestCase):
 
         # when:
         with closing(S3Bypass(options, meta())) as bypass:
-            bypass.bypass()
+            bypass.execute()
 
         # then:
         bucket = self.s3_conn.get_bucket('dest_bucket')
@@ -173,7 +173,7 @@ class S3BypassTest(unittest.TestCase):
 
         # when:
         with closing(S3Bypass(options, meta())) as bypass:
-            bypass.bypass()
+            bypass.execute()
 
         # then:
         key = next(iter(bucket.list('some_prefix/')))
@@ -215,7 +215,7 @@ class S3BypassTest(unittest.TestCase):
 
         # when:
         with closing(S3Bypass(options, meta())) as bypass:
-            bypass.bypass()
+            bypass.execute()
 
         # then:
         dest_bucket = self.s3_conn.get_bucket('resume_bucket')
@@ -266,7 +266,7 @@ class S3BypassTest(unittest.TestCase):
 
         # when:
         with closing(S3Bypass(options, meta())) as bypass:
-            bypass.bypass()
+            bypass.execute()
 
         # then:
         bucket = self.s3_conn.get_bucket('pointer_fake_bucket')
@@ -311,7 +311,7 @@ class S3BypassTest(unittest.TestCase):
 
         # when
         with closing(S3Bypass(options, meta())) as bypass:
-            bypass.bypass()
+            bypass.execute()
 
         # then
         dest_bucket = self.s3_conn.get_bucket('dest_pointer_bucket')
@@ -378,7 +378,7 @@ class S3BypassTest(unittest.TestCase):
 
         bypass = S3Bypass(options, meta())
         with environment(env):
-            bypass.bypass()
+            bypass.execute()
 
         # then:
         bucket = self.s3_conn.get_bucket('dest_bucket')

@@ -19,7 +19,7 @@ class BaseBypass(object):
     def meets_conditions(self, config):
         raise NotImplementedError
 
-    def bypass(self):
+    def execute(self):
         raise NotImplementedError
 
     def increment_items(self, number_of_items):

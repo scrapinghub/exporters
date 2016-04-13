@@ -63,7 +63,7 @@ class AzureBlobS3Bypass(BaseBypass):
         if 'aws_secret_access_key' not in reader_opts:
             reader_opts['aws_secret_access_key'] = os.environ.get('EXPORTERS_S3READER_AWS_SECRET')
 
-    def bypass(self):
+    def execute(self):
         from azure.storage.blob import BlobService
         from copy import deepcopy
         reader_options = self.config.reader_options['options']

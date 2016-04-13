@@ -95,7 +95,7 @@ class S3Bypass(BaseBypass):
         dest_filebase = datetime.datetime.now().strftime(dest_filebase)
         return dest_filebase
 
-    def bypass(self):
+    def execute(self):
         reader_aws_key = self.read_option(
             'reader', 'aws_access_key_id', 'EXPORTERS_S3READER_AWS_KEY')
         reader_aws_secret = self.read_option(
