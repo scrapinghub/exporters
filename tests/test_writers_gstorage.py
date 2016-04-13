@@ -65,4 +65,3 @@ class GStorageWriterTest(unittest.TestCase):
 
         with self.assertRaises(InconsistentWriteState):
             writer.finish_writing()
-
