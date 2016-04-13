@@ -14,12 +14,12 @@ class BasicExporter(BaseExporter):
         super(BasicExporter, self).__init__(configuration)
         self.bypass_cases = default_bypass_classes
 
-    @staticmethod
-    def from_file_configuration(filepath):
+    @classmethod
+    def from_file_configuration(cls, filepath):
         conf_string = open(filepath).read()
-        return BasicExporter(yaml.safe_load(conf_string))
+        return cls(yaml.safe_load(conf_string))
 
-    @staticmethod
-    def from_persistence_configuration(persistence_uri):
+    @classmethod
+    def from_persistence_configuration(cls, persistence_uri):
         conf_string = PersistenceConfigDispatcher(persistence_uri).config
-        return BasicExporter(conf_string)
+        return cls(conf_string)
