@@ -23,10 +23,14 @@ def md5_for_file(f, block_size=2**20):
 
 class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
 
-    def __init__(self, formatter, prefix, start_file_count=0):
+    def __init__(self, formatter, prefix, filebase, start_file_count=0):
         super(CustomNameItemsGroupFilesHandler, self).__init__(formatter)
         self.prefix = self._format_date(prefix)
         self.start_file_count = start_file_count
+        self.filebase = filebase
+
+    def _has_group_info(self, filebase_string):
+        return bool(re.findall('\{groups\[\d\]\}', filebase_string))
 
     def _get_new_path_name(self, key):
         """Build a filename for a new file for a given group,
@@ -40,6 +44,12 @@ class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
         group_folder = self._get_group_folder(group_files)
 
         current_file_count = len(group_files) + self.start_file_count
+        if key and not self._has_group_info(
+                self.filebase) and not self._has_group_info(self.prefix):
+            current_file_count = self.start_file_count
+            for group, info in self.grouping_info.iteritems():
+                current_file_count += len(info['group_file'])
+
         name_without_ext = self.prefix.format(file_number=current_file_count, groups=key)
 
         if name_without_ext == self.prefix:
@@ -89,6 +99,7 @@ class FilebaseBaseWriter(BaseWriter):
         start_file_count = self.read_option('start_file_count')
         return CustomNameItemsGroupFilesHandler(self.export_formatter,
                                                 prefix,
+                                                self.read_option('filebase'),
                                                 start_file_count)
 
     def write(self, path, key, file_name=False):
