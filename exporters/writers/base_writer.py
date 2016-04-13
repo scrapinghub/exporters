@@ -1,6 +1,7 @@
 import six
 
-from exporters.exceptions import InvalidCompressionFormat, ConfigurationError
+from exporters.exceptions import ConfigurationError, \
+    UnsupportedCompressionFormat
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 from exporters.write_buffer import WriteBuffer, ItemsGroupFilesHandler
@@ -32,7 +33,7 @@ class BaseWriter(BasePipelineItem):
         'size_per_buffer_write': {'type': int, 'default': SIZE_PER_BUFFER_WRITE},
         'items_limit': {'type': int, 'default': 0},
         'check_consistency': {'type': bool, 'default': False},
-        'compression_format': {'type': six.string_types, 'default': 'gzip'}
+        'compression': {'type': six.string_types, 'default': 'gz'}
     }
 
     def __init__(self, options, metadata, *args, **kwargs):
@@ -51,21 +52,23 @@ class BaseWriter(BasePipelineItem):
                                         self._items_group_files_handler())
         self.set_metadata('items_count', 0)
 
-    def _get_file_compressor(self):
+    def _get_compression(self):
         try:
-            from exporters.writers.compression.helpers import \
-                get_file_compressor, SUPPORTED_COMPRESSORS
-            compression_format = self.read_option('compression_format')
-            return get_file_compressor(compression_format)
-        except InvalidCompressionFormat:
+            from exporters.compression import \
+                validate_compression_format
+            compression = self.read_option('compression')
+            validate_compression_format(compression)
+            return compression
+        except UnsupportedCompressionFormat:
+            from exporters.compression import FILE_COMPRESSION
             raise ConfigurationError('The compression format can only be '
                                      'one of the following:  "{}"'
-                                     ''.format(SUPPORTED_COMPRESSORS.keys()))
+                                     ''.format(FILE_COMPRESSION.keys()))
 
     def _items_group_files_handler(self):
-        file_compressor = self._get_file_compressor()
+        compression_format = self._get_compression()
         return ItemsGroupFilesHandler(self.export_formatter,
-                                      file_compressor=file_compressor)
+                                      compression=compression_format)
 
     def write(self, path, key):
         """

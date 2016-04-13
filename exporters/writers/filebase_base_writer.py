@@ -88,11 +88,11 @@ class FilebaseBaseWriter(BaseWriter):
     def _items_group_files_handler(self):
         _, prefix = os.path.split(self.read_option('filebase'))
         start_file_count = self.read_option('start_file_count')
-        file_compressor = self._get_file_compressor()
+        compression = self._get_compression()
         return CustomNameItemsGroupFilesHandler(self.export_formatter,
                                                 prefix,
                                                 start_file_count,
-                                                file_compressor=file_compressor)
+                                                compression=compression)
 
     def write(self, path, key, file_name=False):
         """

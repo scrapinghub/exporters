@@ -416,7 +416,7 @@ class FSWriterTest(unittest.TestCase):
 
     def test_compression_gzip_format(self):
         writer_config = self.get_writer_config()
-        writer_config['options'].update({'compression_format': 'gzip'})
+        writer_config['options'].update({'compression': 'gz'})
         writer = FSWriter(writer_config, meta(),
                           export_formatter=JsonExportFormatter(dict()))
         try:
@@ -430,7 +430,7 @@ class FSWriterTest(unittest.TestCase):
 
     def test_compression_zip_format(self):
         writer_config = self.get_writer_config()
-        writer_config['options'].update({'compression_format': 'zip'})
+        writer_config['options'].update({'compression': 'zip'})
         writer = FSWriter(writer_config, meta(),
                           export_formatter=JsonExportFormatter(dict()))
         try:
@@ -444,7 +444,7 @@ class FSWriterTest(unittest.TestCase):
 
     def test_compression_bz2_format(self):
         writer_config = self.get_writer_config()
-        writer_config['options'].update({'compression_format': 'bz2'})
+        writer_config['options'].update({'compression': 'bz2'})
         writer = FSWriter(writer_config, meta(),
                           export_formatter=JsonExportFormatter(dict()))
         try:
@@ -456,23 +456,9 @@ class FSWriterTest(unittest.TestCase):
         expected_file = '{}/exporter_test0000.jl.bz2'.format(self.tmp_dir)
         self.assertTrue(expected_file in writer.written_files)
 
-    def test_compression_tar_gzip_format(self):
-        writer_config = self.get_writer_config()
-        writer_config['options'].update({'compression_format': 'tgz'})
-        writer = FSWriter(writer_config, meta(),
-                          export_formatter=JsonExportFormatter(dict()))
-        try:
-            writer.write_batch(self.get_batch())
-            writer.flush()
-
-        finally:
-            writer.close()
-        expected_file = '{}/exporter_test0000.jl.tar.gz'.format(self.tmp_dir)
-        self.assertTrue(expected_file in writer.written_files)
-
     def test_invalid_compression_format(self):
         options = self.get_writer_config()
-        options['options']['compression_format'] = 'unknown'
+        options['options']['compression'] = 'unknown'
         self.assertRaisesRegexp(ConfigurationError,
                                 'The compression format can only be '
                                 'one of the following:',

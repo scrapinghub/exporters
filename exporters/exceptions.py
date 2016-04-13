@@ -14,7 +14,7 @@ class InvalidDateRangeError(ValueError):
     "Empty or impossible date range"
 
 
-class InvalidCompressionFormat(ValueError):
+class UnsupportedCompressionFormat(ValueError):
     "Unsupported compression format."
 
 

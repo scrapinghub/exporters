@@ -5,8 +5,8 @@ import uuid
 
 from six.moves import UserDict
 
+from exporters.compression import compress, uncompressed_file_path
 from exporters.utils import remove_if_exists
-from exporters.writers.compression.gzip_compressor import GzipCompressor
 
 
 class GroupingInfo(UserDict):
@@ -65,12 +65,12 @@ class ItemsGroupFilesHandler(object):
     in FilebaseBaseWriter that must be considered when refactoring this.
     """
 
-    def __init__(self, formatter, file_compressor=None):
+    def __init__(self, formatter, compression='gz'):
         self.grouping_info = GroupingInfo()
         self.file_extension = formatter.file_extension
         self.formatter = formatter
         self.tmp_folder = tempfile.mkdtemp()
-        self.file_compressor = file_compressor or GzipCompressor()
+        self.compression = compression
 
     def _add_to_file(self, content, key):
         path = self.get_current_buffer_path_for_group(key)
@@ -94,7 +94,7 @@ class ItemsGroupFilesHandler(object):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
     def clean_tmp_files(self, compressed_path):
-        path = self.file_compressor.uncompressed_file_path(compressed_path)
+        path = uncompressed_file_path(compressed_path)
         remove_if_exists(path)
         remove_if_exists(compressed_path)
 
@@ -127,7 +127,7 @@ class ItemsGroupFilesHandler(object):
 
     def compress_current_buffer_path_for_group(self, key):
         path = self.get_current_buffer_path_for_group(key)
-        compressed_path = self.file_compressor.compress(path)
+        compressed_path = compress(path, self.compression)
         compressed_size = os.path.getsize(compressed_path)
         return compressed_path, compressed_size
 
