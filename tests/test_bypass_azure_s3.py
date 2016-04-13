@@ -100,8 +100,10 @@ class S3AzureFileBypassTest(unittest.TestCase):
             exporter.export()
 
         # then:
-        self.assertEquals(exporter.writer.get_metadata('items_count'), 0)
-        self.assertEquals(exporter.reader.get_metadata('read_items'), 0)
+        self.assertEquals(exporter.writer.get_metadata('items_count'), 0,
+                          "No items should be read")
+        self.assertEquals(exporter.reader.get_metadata('read_items'), 0,
+                          "No items should get written")
         azure_puts = [
             call for call in azure.mock_calls if call[0] == '().copy_file'
         ]
@@ -197,8 +199,10 @@ class S3AzureBlobBypassTest(unittest.TestCase):
             exporter.export()
 
         # then:
-        self.assertEquals(exporter.writer.get_metadata('items_count'), 0)
-        self.assertEquals(exporter.reader.get_metadata('read_items'), 0)
+        self.assertEquals(exporter.writer.get_metadata('items_count'), 0,
+                          "No items should be read")
+        self.assertEquals(exporter.reader.get_metadata('read_items'), 0,
+                          "No items should get written")
         azure_puts = [
             call for call in azure.mock_calls if call[0] == '().copy_blob'
         ]
