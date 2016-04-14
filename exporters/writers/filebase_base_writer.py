@@ -59,17 +59,14 @@ class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
         group_folder = self._get_group_folder(group_files)
 
         current_file_count = len(group_files) + self.start_file_count
+        name_without_ext = self.filebase.prefix.format(file_number=current_file_count, groups=key)
+        if name_without_ext == self.filebase.prefix:
+            name_without_ext += '{:04d}'.format(current_file_count)
+
         if key and not self._has_group_info(
                 self.filebase.date_formatted_filebase) and not self._has_group_info(
                 self.filebase.prefix):
-            current_file_count = self.start_file_count
-            for group, info in self.grouping_info.iteritems():
-                current_file_count += len(info['group_file'])
-
-        name_without_ext = self.filebase.prefix.format(file_number=current_file_count, groups=key)
-
-        if name_without_ext == self.filebase.prefix:
-            name_without_ext += '{:04d}'.format(current_file_count)
+            name_without_ext = '{}-{}'.format(name_without_ext, ''.join(key))
 
         filename = '{}.{}'.format(name_without_ext, self.file_extension)
         return os.path.join(group_folder, filename)
