@@ -24,10 +24,10 @@ def md5_for_file(f, block_size=2**20):
 class Filebase(object):
     def __init__(self, filebase):
         self.raw_filebase = filebase
-        self.date_formatted_filebase = self.get_date_formatted_filebase()
+        self.date_formatted_filebase = self._get_date_formatted_filebase()
         self.dirname, self.prefix = os.path.split(self.date_formatted_filebase)
 
-    def get_date_formatted_filebase(self):
+    def _get_date_formatted_filebase(self):
         return datetime.datetime.now().strftime(self.raw_filebase)
 
     def get_dirname_with_group_info(self, group_info):
@@ -82,8 +82,9 @@ class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
         os.mkdir(group_folder)
         return group_folder
 
-    def _format_date(self, value):
-        date = datetime.datetime.now()
+    def _format_date(self, value, date=None):
+        if date is None:
+            date = datetime.datetime.now()
         return date.strftime(value)
 
     def initialize(self, *args, **kwargs):
