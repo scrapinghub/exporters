@@ -11,6 +11,8 @@ import datetime
 import mock
 
 from contextlib import closing
+
+from exporters.compression import compress_gzip
 from exporters.exceptions import ConfigurationError
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
@@ -284,7 +286,7 @@ class CustomWriterTest(unittest.TestCase):
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
         item_writer = ItemsGroupFilesHandler(JsonExportFormatter({}))
-        self.write_buffer = WriteBuffer(1000, 1000, item_writer)
+        self.write_buffer = WriteBuffer(1000, 1000, compress_gzip, item_writer)
 
     def tearDown(self):
         self.write_buffer.close()

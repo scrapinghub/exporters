@@ -48,8 +48,10 @@ class BaseWriter(BasePipelineItem):
 
         items_per_buffer_write = self.read_option('items_per_buffer_write')
         size_per_buffer_write = self.read_option('size_per_buffer_write')
+        compression_func = self._get_compression_func()
         self.write_buffer = WriteBuffer(items_per_buffer_write,
                                         size_per_buffer_write,
+                                        compression_func,
                                         self._items_group_files_handler())
         self.set_metadata('items_count', 0)
 
@@ -63,9 +65,7 @@ class BaseWriter(BasePipelineItem):
                                      ''.format(FILE_COMPRESSION.keys()))
 
     def _items_group_files_handler(self):
-        compression_func = self._get_compression_func()
-        return ItemsGroupFilesHandler(self.export_formatter,
-                                      compression_func=compression_func)
+        return ItemsGroupFilesHandler(self.export_formatter)
 
     def write(self, path, key):
         """

@@ -5,7 +5,6 @@ import uuid
 
 from six.moves import UserDict
 
-from exporters.compression import compress_gzip
 from exporters.utils import remove_if_exists
 
 
@@ -65,12 +64,11 @@ class ItemsGroupFilesHandler(object):
     in FilebaseBaseWriter that must be considered when refactoring this.
     """
 
-    def __init__(self, formatter, compression_func=compress_gzip):
+    def __init__(self, formatter):
         self.grouping_info = GroupingInfo()
         self.file_extension = formatter.file_extension
         self.formatter = formatter
         self.tmp_folder = tempfile.mkdtemp()
-        self.compression_func = compression_func
 
     def _add_to_file(self, content, key):
         path = self.get_current_buffer_path_for_group(key)
@@ -123,11 +121,13 @@ class ItemsGroupFilesHandler(object):
 
 class WriteBuffer(object):
 
-    def __init__(self, items_per_buffer_write, size_per_buffer_write, items_group_files_handler):
+    def __init__(self, items_per_buffer_write, size_per_buffer_write,
+                 compression_func, items_group_files_handler):
         self.files = []
-        self.items_group_files = items_group_files_handler
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
+        self.compression_func = compression_func
+        self.items_group_files = items_group_files_handler
         self.metadata = {}
         self.is_new_buffer = True
 
@@ -148,7 +148,7 @@ class WriteBuffer(object):
         """
         self.finish_buffer_write(key)
         path = self.items_group_files.get_current_buffer_path_for_group(key)
-        compressed_path = self.items_group_files.compression_func(path)
+        compressed_path = self.compression_func(path)
         compressed_size = os.path.getsize(compressed_path)
         write_info = {
             'number_of_records': self.grouping_info[key]['buffered_items'],
