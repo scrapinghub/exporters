@@ -1,19 +1,15 @@
 import os
 from collections import Counter
 from contextlib import closing, contextmanager
-
-import math
 import six
-
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
+from exporters.utils import CHUNK_SIZE, split_file
 from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
-DEFAULT_BUCKET_REGION = 'us-east-1'
 
-# 50MB of chunk size for multipart uploads
-CHUNK_SIZE = 52428800
+DEFAULT_BUCKET_REGION = 'us-east-1'
 
 
 @contextmanager
@@ -148,18 +144,13 @@ class S3Writer(FilebaseBaseWriter):
 
     @retry_long
     def _upload_large_file(self, dump_path, key_name):
-        from filechunkio import FileChunkIO
         from boto.utils import compute_md5
         self.logger.debug('Using multipart S3 uploader')
         with multipart_upload(self.bucket, key_name) as mp:
-            source_size = os.stat(dump_path).st_size
-            chunk_count = int(math.ceil(source_size / float(CHUNK_SIZE)))
-            for i in range(chunk_count):
-                offset = CHUNK_SIZE * i
-                bytes = min(CHUNK_SIZE, source_size - offset)
-                with FileChunkIO(dump_path, 'r', offset=offset, bytes=bytes) as fp:
-                    mp.upload_part_from_file(fp, part_num=i + 1)
-                self.logger.debug('Uploaded chunk number {} of {}'.format(i+1, chunk_count))
+            for chunk in split_file(dump_path):
+                mp.upload_part_from_file(chunk.bytes, part_num=chunk.number)
+                self.logger.debug(
+                        'Uploaded chunk number {}'.format(chunk.number))
         with closing(self.bucket.new_key(key_name)) as key:
             self._ensure_proper_key_permissions(key)
             if self.save_metadata:

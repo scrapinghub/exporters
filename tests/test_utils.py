@@ -11,7 +11,7 @@ from exporters.logger.base_logger import CategoryLogger
 from exporters.module_loader import ModuleLoader
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 from exporters.python_interpreter import Interpreter
-from exporters.utils import nested_dict_value
+from exporters.utils import nested_dict_value, TmpFile, split_file
 from .utils import environment
 from .utils import valid_config_with_updates
 
@@ -372,3 +372,13 @@ class NesteDictReadTest(unittest.TestCase):
     def test_get_none_value(self):
         with self.assertRaisesRegexp(TypeError, 'Could not get key'):
             nested_dict_value({'something': None}, ['something', 'in', 'the', 'way'])
+
+
+class FileSplit(unittest.TestCase):
+
+    def test_file_chunks(self):
+        with TmpFile() as tmp_filename:
+            with open(tmp_filename, 'w') as f:
+                f.truncate(10000)
+            chunks = list(split_file(tmp_filename, 1000))
+            self.assertEqual(len(chunks), 10, 'Incorrect number of chunks from file')

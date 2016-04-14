@@ -7,6 +7,12 @@ from contextlib import contextmanager
 import collections
 
 
+# 50MB of chunk size for multipart uploads
+import math
+
+CHUNK_SIZE = 52428800
+
+
 def remove_if_exists(file_name):
     try:
         os.remove(file_name)
@@ -48,3 +54,18 @@ def nested_dict_value(d, path):
                 '{} Key could not be found for nested path {} in {}'.format(k, path, d)
             )
     return final_value
+
+
+Chunk = collections.namedtuple('Chunk', 'bytes offset size number')
+
+
+def split_file(file_path, chunk_size=CHUNK_SIZE):
+    from filechunkio import FileChunkIO
+    source_size = os.stat(file_path).st_size
+    chunk_count = int(math.ceil(source_size / float(chunk_size)))
+    for i in range(chunk_count):
+        offset = chunk_size * i
+        bytes = min(chunk_size, source_size - offset)
+        with FileChunkIO(file_path, 'r', offset=offset, bytes=bytes) as fp:
+            chunk = Chunk(fp, offset, chunk_size, i+1)
+            yield chunk
