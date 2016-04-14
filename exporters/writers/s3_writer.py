@@ -161,7 +161,7 @@ class S3Writer(FilebaseBaseWriter):
                 mp.upload_part_from_file(chunk.bytes, part_num=chunk.number)
                 self.logger.debug(
                         'Uploaded chunk number {}'.format(chunk.number))
-        with closing(self.bucket.new_key(key_name)) as key:
+        with closing(self.bucket.get_key(key_name)) as key:
             self._ensure_proper_key_permissions(key)
             if self.save_metadata:
                 self._save_metadata_for_key(key, dump_path)
