@@ -2,8 +2,8 @@ import boto
 import mock
 import moto
 import unittest
-from exporters.bypasses.s3_to_azure_blob_bypass import AzureBlobS3Bypass
-from exporters.bypasses.s3_to_azure_file_bypass import AzureFileS3Bypass
+from exporters.bypasses.s3_to_azure_blob_bypass import S3AzureBlobBypass
+from exporters.bypasses.s3_to_azure_file_bypass import S3AzureFileBypass
 from exporters.export_managers.base_bypass import RequisitesNotMet
 from exporters.export_managers.basic_exporter import BasicExporter
 from exporters.exporter_config import ExporterConfig
@@ -45,7 +45,7 @@ class S3AzureFileBypassConditionsTest(unittest.TestCase):
 
     def test_should_meet_conditions(self):
         # shouldn't raise any exception
-        AzureFileS3Bypass.meets_conditions(create_s3_azure_file_bypass_simple_config())
+        S3AzureFileBypass.meets_conditions(create_s3_azure_file_bypass_simple_config())
 
     def test_custom_filter_should_not_meet_conditions(self):
         # given:
@@ -58,7 +58,7 @@ class S3AzureFileBypassConditionsTest(unittest.TestCase):
 
         # then:
         with self.assertRaises(RequisitesNotMet):
-            AzureFileS3Bypass.meets_conditions(config)
+            S3AzureFileBypass.meets_conditions(config)
 
     def test_custom_grouper_should_not_meet_conditions(self):
         # given:
@@ -70,7 +70,7 @@ class S3AzureFileBypassConditionsTest(unittest.TestCase):
 
         # then:
         with self.assertRaises(RequisitesNotMet):
-            AzureFileS3Bypass.meets_conditions(config)
+            S3AzureFileBypass.meets_conditions(config)
 
     def test_items_limit_should_not_meet_conditions(self):
         # given:
@@ -81,7 +81,7 @@ class S3AzureFileBypassConditionsTest(unittest.TestCase):
 
         # then:
         with self.assertRaises(RequisitesNotMet):
-            AzureFileS3Bypass.meets_conditions(config)
+            S3AzureFileBypass.meets_conditions(config)
 
 
 class S3AzureFileBypassTest(unittest.TestCase):
@@ -144,7 +144,7 @@ class S3AzureBlobBypassConditionsTest(unittest.TestCase):
 
     def test_should_meet_conditions(self):
         # shouldn't raise any exception
-        AzureBlobS3Bypass.meets_conditions(create_s3_azure_blob_bypass_simple_config())
+        S3AzureBlobBypass.meets_conditions(create_s3_azure_blob_bypass_simple_config())
 
     def test_custom_filter_should_not_meet_conditions(self):
         # given:
@@ -157,7 +157,7 @@ class S3AzureBlobBypassConditionsTest(unittest.TestCase):
 
         # then:
         with self.assertRaises(RequisitesNotMet):
-            AzureBlobS3Bypass.meets_conditions(config)
+            S3AzureBlobBypass.meets_conditions(config)
 
     def test_custom_grouper_should_not_meet_conditions(self):
         # given:
@@ -169,7 +169,7 @@ class S3AzureBlobBypassConditionsTest(unittest.TestCase):
 
         # then:
         with self.assertRaises(RequisitesNotMet):
-            AzureBlobS3Bypass.meets_conditions(config)
+            S3AzureBlobBypass.meets_conditions(config)
 
     def test_items_limit_should_not_meet_conditions(self):
         # given:
@@ -180,7 +180,7 @@ class S3AzureBlobBypassConditionsTest(unittest.TestCase):
 
         # then:
         with self.assertRaises(RequisitesNotMet):
-            AzureBlobS3Bypass.meets_conditions(config)
+            S3AzureBlobBypass.meets_conditions(config)
 
 
 class S3AzureBlobBypassTest(unittest.TestCase):
