@@ -121,7 +121,7 @@ class S3Writer(FilebaseBaseWriter):
         except S3ResponseError:
             self.logger.warning('We have no READ_ACP/WRITE_ACP permissions')
 
-    def _set_key_metada(self, key, metadata):
+    def _set_key_metadata(self, key, metadata):
         from boto.exception import S3ResponseError
         try:
             for name, value in metadata.iteritems():
@@ -141,7 +141,7 @@ class S3Writer(FilebaseBaseWriter):
                     'md5': md5,
                     'total': self._get_total_count(dump_path)
                 }
-                self._set_key_metada(key, key_metadata)
+                self._set_key_metadata(key, key_metadata)
             progress = BotoDownloadProgress(self.logger)
             key.set_contents_from_file(f, cb=progress, md5=md5)
             self._ensure_proper_key_permissions(key)
@@ -168,7 +168,7 @@ class S3Writer(FilebaseBaseWriter):
                         'md5': compute_md5(f),
                         'total': self._get_total_count(dump_path)
                     }
-                    self._set_key_metada(key, key_metadata)
+                    self._set_key_metadata(key, key_metadata)
 
     def _write_s3_key(self, dump_path, key_name):
         destination = 's3://{}/{}'.format(self.bucket.name, key_name)
