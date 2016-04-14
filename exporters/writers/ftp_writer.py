@@ -49,7 +49,7 @@ class FTPWriter(FilebaseBaseWriter):
         self.logger.info(
             'FTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(
                 self.ftp_host, self.ftp_port,
-                self.filebase))
+                self.filebase.date_formatted_filebase))
 
     def _create_target_dir_if_needed(self, target, depth_limit=20):
         """Creates the directory for the path given, recursively creating

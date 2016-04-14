@@ -33,7 +33,10 @@ class Filebase(object):
     def get_dirname_with_group_info(self, group_info):
         normalized = [re.sub('\W', '_', s) for s in group_info]
         try:
-            dirname = self.dirname.format(groups=normalized)
+            if normalized:
+                dirname = self.dirname.format(groups=normalized)
+            else:
+                dirname = self.dirname.format(groups=[''])
             return dirname
         except KeyError as e:
             raise KeyError('filebase option should not contain {} key'.format(str(e)))

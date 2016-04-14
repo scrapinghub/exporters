@@ -46,7 +46,8 @@ class GStorageWriter(FilebaseBaseWriter):
                                                               project=project)
         self.bucket = client.bucket(bucket_name)
         self.logger.info('GStorageWriter has been initiated.'
-                         'Writing to {}'.format(self._blob_url(bucket_name, self.filebase)))
+                         'Writing to {}'.format
+                         (self._blob_url(bucket_name, self.filebase.date_formatted_filebase)))
 
     def _blob_url(self, bucket_name, blob_name):
         return 'https://storage.cloud.google.com/{}/{}'.format(bucket_name, blob_name)

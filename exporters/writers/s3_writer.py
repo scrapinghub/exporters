@@ -1,4 +1,3 @@
-import os
 from collections import Counter
 from contextlib import closing
 
@@ -72,8 +71,9 @@ class S3Writer(FilebaseBaseWriter):
                                               aws_secret_access_key=secret_key)
         self.bucket = self.conn.get_bucket(bucket_name, validate=False)
         self.save_metadata = self.read_option('save_metadata')
-        self.logger.info('S3Writer has been initiated.'
-                         'Writing to s3://{}/{}'.format(self.bucket.name, self.filebase))
+        self.logger.info(
+                'S3Writer has been initiated. Writing to s3://{}/{}'.format(
+                        self.bucket.name, self.filebase.date_formatted_filebase))
         self.set_metadata('files_counter', Counter())
         self.set_metadata('keys_written', [])
 
@@ -138,8 +138,7 @@ class S3Writer(FilebaseBaseWriter):
 
     def _update_last_pointer(self):
         save_pointer = self.read_option('save_pointer')
-        filebase, _ = os.path.split(self.filebase.date_formatted_filebase)
-        self._write_s3_pointer(save_pointer, filebase + '/')
+        self._write_s3_pointer(save_pointer, self.filebase.dirname + '/')
 
     def close(self):
         """

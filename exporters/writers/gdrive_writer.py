@@ -43,7 +43,8 @@ class GDriveWriter(FilebaseBaseWriter):
         shutil.rmtree(files_tmp_path)
         self.drive = GoogleDrive(gauth)
         self.logger.info(
-            'GDriveWriter has been initiated. Writing to: {}'.format(self.filebase))
+            'GDriveWriter has been initiated. Writing to: {}'.format(
+                    self.filebase.date_formatted_filebase))
         self.set_metadata('files_counter', Counter())
 
     def get_file_suffix(self, path, prefix):
