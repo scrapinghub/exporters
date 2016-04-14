@@ -31,6 +31,7 @@ class S3AzureFileBypass(BaseS3Bypass):
         self.share = self.read_option('writer', 'share')
         self.filebase_path = self._format_filebase_path(self.read_option('writer', 'filebase'))
         self._ensure_path(self.filebase_path)
+        self.metadata.per_module['bypass']['bypass_mode'] = True
 
     @classmethod
     def meets_conditions(cls, config):

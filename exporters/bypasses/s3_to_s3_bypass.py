@@ -69,6 +69,7 @@ class S3Bypass(BaseBypass):
         self.bypass_state = None
         self.logger = logging.getLogger('bypass_logger')
         self.logger.setLevel(logging.INFO)
+        self.metadata.per_module['bypass']['bypass_mode'] = True
 
     @classmethod
     def meets_conditions(cls, config):
