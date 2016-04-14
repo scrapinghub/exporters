@@ -127,24 +127,34 @@ class S3Writer(FilebaseBaseWriter):
                     'We have no READ_ACP/WRITE_ACP permissions, '
                     'so we could not add metadata info')
 
+    def _save_metadata_for_key(self, key, dump_path, md5=None):
+        from boto.exception import S3ResponseError
+        from boto.utils import compute_md5
+        try:
+            key.set_metadata('total', self._get_total_count(dump_path))
+            if md5:
+                key.set_metadata('md5', md5)
+            else:
+                with open(dump_path, 'r') as f:
+                    key.set_metadata('md5', compute_md5(f))
+        except S3ResponseError:
+            self.logger.warning(
+                    'We have no READ_ACP/WRITE_ACP permissions, '
+                    'so we could not add metadata info')
+
     @retry_long
     def _upload_small_file(self, dump_path, key_name):
         from boto.utils import compute_md5
         with closing(self.bucket.new_key(key_name)) as key, open(dump_path, 'r') as f:
             md5 = compute_md5(f)
             if self.save_metadata:
-                key_metadata = {
-                    'md5': md5,
-                    'total': self._get_total_count(dump_path)
-                }
-                self._set_key_metadata(key, key_metadata)
+                self._save_metadata_for_key(key, dump_path, md5)
             progress = BotoDownloadProgress(self.logger)
             key.set_contents_from_file(f, cb=progress, md5=md5)
             self._ensure_proper_key_permissions(key)
 
     @retry_long
     def _upload_large_file(self, dump_path, key_name):
-        from boto.utils import compute_md5
         self.logger.debug('Using multipart S3 uploader')
         with multipart_upload(self.bucket, key_name) as mp:
             for chunk in split_file(dump_path):
@@ -154,12 +164,7 @@ class S3Writer(FilebaseBaseWriter):
         with closing(self.bucket.new_key(key_name)) as key:
             self._ensure_proper_key_permissions(key)
             if self.save_metadata:
-                with open(dump_path, 'r') as f:
-                    key_metadata = {
-                        'md5': compute_md5(f),
-                        'total': self._get_total_count(dump_path)
-                    }
-                    self._set_key_metadata(key, key_metadata)
+                self._save_metadata_for_key(key, dump_path)
 
     def _write_s3_key(self, dump_path, key_name):
         destination = 's3://{}/{}'.format(self.bucket.name, key_name)
