@@ -142,7 +142,7 @@ class FilebaseBaseWriter(BaseWriter):
             'Checksum for file {}: {}'.format(compressed_path, write_info['md5']))
         self.written_files[self.last_written_file] = write_info
 
-        self.write_buffer.clean_tmp_files(key, compressed_path)
+        self.write_buffer.clean_tmp_files(write_info)
         self.write_buffer.add_new_buffer_for_group(key)
 
     def finish_writing(self):

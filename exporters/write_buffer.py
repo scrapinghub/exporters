@@ -93,10 +93,6 @@ class ItemsGroupFilesHandler(object):
     def close(self):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
-    def clean_tmp_files(self, path, compressed_path):
-        remove_if_exists(path)
-        remove_if_exists(compressed_path)
-
     def create_new_group_file(self, key):
         path = self.create_new_group_path_for_key(key)
         self.grouping_info.reset_key(key)
@@ -123,12 +119,6 @@ class ItemsGroupFilesHandler(object):
     def _get_new_path_name(self, key):
         filename = '{}.{}'.format(uuid.uuid4(), self.file_extension)
         return os.path.join(self.tmp_folder, filename)
-
-    def compress_current_buffer_path_for_group(self, key):
-        path = self.get_current_buffer_path_for_group(key)
-        compressed_path = self.compression_func(path)
-        compressed_size = os.path.getsize(compressed_path)
-        return compressed_path, compressed_size
 
 
 class WriteBuffer(object):
@@ -157,21 +147,24 @@ class WriteBuffer(object):
         (by compressing and gathering size statistics).
         """
         self.finish_buffer_write(key)
-        path, size = self.items_group_files.compress_current_buffer_path_for_group(key)
+        path = self.items_group_files.get_current_buffer_path_for_group(key)
+        compressed_path = self.items_group_files.compression_func(path)
+        compressed_size = os.path.getsize(compressed_path)
         write_info = {
             'number_of_records': self.grouping_info[key]['buffered_items'],
-            'size': size,
-            'compressed_path': path,
+            'path': path,
+            'compressed_path': compressed_path,
+            'size': compressed_size
         }
-        self.metadata[path] = write_info
+        self.metadata[compressed_path] = write_info
         return write_info
 
     def add_new_buffer_for_group(self, key):
         self.items_group_files.create_new_group_file(key)
 
-    def clean_tmp_files(self, key, compressed_path):
-        path = self.items_group_files.get_current_buffer_path_for_group(key)
-        self.items_group_files.clean_tmp_files(path, compressed_path)
+    def clean_tmp_files(self, write_info):
+        remove_if_exists(write_info.get('path'))
+        remove_if_exists(write_info.get('compressed_path'))
 
     def should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(
