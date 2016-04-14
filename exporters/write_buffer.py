@@ -1,9 +1,11 @@
-import gzip
 import os
 import shutil
 import tempfile
 import uuid
+
 from six.moves import UserDict
+
+from exporters.compression import compress_gzip
 from exporters.utils import remove_if_exists
 
 
@@ -90,18 +92,6 @@ class ItemsGroupFilesHandler(object):
     def close(self):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
-    def clean_tmp_files(self, compressed_path):
-        path = compressed_path[:-3]
-        remove_if_exists(path)
-        remove_if_exists(compressed_path)
-
-    def get_current_buffer_path_for_group(self, key):
-        if self.grouping_info[key]['group_file']:
-            path = self.grouping_info[key]['group_file'][-1]
-        else:
-            path = self.create_new_group_file(key)
-        return path
-
     def create_new_group_file(self, key):
         path = self.create_new_group_path_for_key(key)
         self.grouping_info.reset_key(key)
@@ -109,6 +99,13 @@ class ItemsGroupFilesHandler(object):
         if header:
             with open(path, 'w') as f:
                 f.write(header)
+        return path
+
+    def get_current_buffer_path_for_group(self, key):
+        if self.grouping_info[key]['group_file']:
+            path = self.grouping_info[key]['group_file'][-1]
+        else:
+            path = self.create_new_group_file(key)
         return path
 
     def create_new_group_path_for_key(self, key):
@@ -122,26 +119,16 @@ class ItemsGroupFilesHandler(object):
         filename = '{}.{}'.format(uuid.uuid4(), self.file_extension)
         return os.path.join(self.tmp_folder, filename)
 
-    def compress_current_buffer_path_for_group(self, key):
-        path = self.get_current_buffer_path_for_group(key)
-        compressed_path = self._compress_file(path)
-        compressed_size = os.path.getsize(compressed_path)
-        return compressed_path, compressed_size
-
-    def _compress_file(self, path):
-        compressed_path = path + '.gz'
-        with gzip.open(compressed_path, 'wb') as dump_file, open(path) as fl:
-            shutil.copyfileobj(fl, dump_file)
-        return compressed_path
-
 
 class WriteBuffer(object):
 
-    def __init__(self, items_per_buffer_write, size_per_buffer_write, items_group_files_handler):
+    def __init__(self, items_per_buffer_write, size_per_buffer_write,
+                 items_group_files_handler, compression_func=compress_gzip):
         self.files = []
-        self.items_group_files = items_group_files_handler
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
+        self.items_group_files = items_group_files_handler
+        self.compression_func = compression_func
         self.metadata = {}
         self.is_new_buffer = True
 
@@ -161,20 +148,24 @@ class WriteBuffer(object):
         (by compressing and gathering size statistics).
         """
         self.finish_buffer_write(key)
-        path, size = self.items_group_files.compress_current_buffer_path_for_group(key)
+        path = self.items_group_files.get_current_buffer_path_for_group(key)
+        compressed_path = self.compression_func(path)
+        compressed_size = os.path.getsize(compressed_path)
         write_info = {
             'number_of_records': self.grouping_info[key]['buffered_items'],
-            'size': size,
-            'compressed_path': path,
+            'path': path,
+            'compressed_path': compressed_path,
+            'size': compressed_size
         }
-        self.metadata[path] = write_info
+        self.metadata[compressed_path] = write_info
         return write_info
 
     def add_new_buffer_for_group(self, key):
         self.items_group_files.create_new_group_file(key)
 
-    def clean_tmp_files(self, key, compressed_path):
-        self.items_group_files.clean_tmp_files(compressed_path)
+    def clean_tmp_files(self, write_info):
+        remove_if_exists(write_info.get('path'))
+        remove_if_exists(write_info.get('compressed_path'))
 
     def should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(

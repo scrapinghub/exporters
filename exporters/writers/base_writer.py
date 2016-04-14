@@ -1,3 +1,8 @@
+import six
+
+from exporters.compression import FILE_COMPRESSION, get_compress_func
+from exporters.exceptions import ConfigurationError, \
+    UnsupportedCompressionFormat
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 from exporters.write_buffer import WriteBuffer, ItemsGroupFilesHandler
@@ -28,7 +33,8 @@ class BaseWriter(BasePipelineItem):
         'items_per_buffer_write': {'type': int, 'default': ITEMS_PER_BUFFER_WRITE},
         'size_per_buffer_write': {'type': int, 'default': SIZE_PER_BUFFER_WRITE},
         'items_limit': {'type': int, 'default': 0},
-        'check_consistency': {'type': bool, 'default': False}
+        'check_consistency': {'type': bool, 'default': False},
+        'compression': {'type': six.string_types, 'default': 'gz'}
     }
 
     def __init__(self, options, metadata, *args, **kwargs):
@@ -42,10 +48,21 @@ class BaseWriter(BasePipelineItem):
 
         items_per_buffer_write = self.read_option('items_per_buffer_write')
         size_per_buffer_write = self.read_option('size_per_buffer_write')
+        compression_func = self._get_compression_func()
         self.write_buffer = WriteBuffer(items_per_buffer_write,
                                         size_per_buffer_write,
-                                        self._items_group_files_handler())
+                                        self._items_group_files_handler(),
+                                        compression_func)
         self.set_metadata('items_count', 0)
+
+    def _get_compression_func(self):
+        try:
+            compression = self.read_option('compression')
+            return get_compress_func(compression)
+        except UnsupportedCompressionFormat:
+            raise ConfigurationError('The compression format can only be '
+                                     'one of the following:  "{}"'
+                                     ''.format(FILE_COMPRESSION.keys()))
 
     def _items_group_files_handler(self):
         return ItemsGroupFilesHandler(self.export_formatter)
@@ -127,7 +144,7 @@ class BaseWriter(BasePipelineItem):
         write_info = self.write_buffer.pack_buffer(key)
         self.write(write_info.get('compressed_path'),
                    self.write_buffer.grouping_info[key]['membership'])
-        self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
+        self.write_buffer.clean_tmp_files(write_info)
         self.write_buffer.add_new_buffer_for_group(key)
 
     def finish_writing(self):
