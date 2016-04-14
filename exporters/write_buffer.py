@@ -134,16 +134,21 @@ class ItemsGroupFilesHandler(object):
             shutil.copyfileobj(fl, dump_file)
         return compressed_path
 
+    def initialize(self, *args, **kwargs):
+        pass
+
 
 class WriteBuffer(object):
 
-    def __init__(self, items_per_buffer_write, size_per_buffer_write, items_group_files_handler):
+    def __init__(self, items_per_buffer_write, size_per_buffer_write,
+                 items_group_files_handler, *args, **kwargs):
         self.files = []
         self.items_group_files = items_group_files_handler
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
         self.metadata = {}
         self.is_new_buffer = True
+        self.initialize_items_group_files_handler(*args, **kwargs)
 
     def buffer(self, item):
         """
@@ -200,3 +205,6 @@ class WriteBuffer(object):
         if file_name not in self.metadata:
             self.metadata[file_name] = {}
         self.metadata[file_name].update(**kwargs)
+
+    def initialize_items_group_files_handler(self, *args, **kwargs):
+        self.items_group_files.initialize(*args, **kwargs)

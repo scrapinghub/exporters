@@ -138,7 +138,7 @@ class S3Writer(FilebaseBaseWriter):
 
     def _update_last_pointer(self):
         save_pointer = self.read_option('save_pointer')
-        filebase, _ = os.path.split(self.filebase)
+        filebase, _ = os.path.split(self.filebase.date_formatted_filebase)
         self._write_s3_pointer(save_pointer, filebase + '/')
 
     def close(self):

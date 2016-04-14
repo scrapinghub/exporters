@@ -21,13 +21,25 @@ def md5_for_file(f, block_size=2**20):
     return md5.hexdigest()
 
 
-class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
+class Filebase(object):
+    def __init__(self, filebase):
+        self.raw_filebase = filebase
+        self.date_formatted_filebase = self.get_date_formatted_filebase()
+        self.dirname, self.prefix = os.path.split(self.date_formatted_filebase)
 
-    def __init__(self, formatter, prefix, filebase, start_file_count=0):
-        super(CustomNameItemsGroupFilesHandler, self).__init__(formatter)
-        self.prefix = self._format_date(prefix)
-        self.start_file_count = start_file_count
-        self.filebase = filebase
+    def get_date_formatted_filebase(self):
+        return datetime.datetime.now().strftime(self.raw_filebase)
+
+    def get_dirname_with_group_info(self, group_info):
+        normalized = [re.sub('\W', '_', s) for s in group_info]
+        try:
+            dirname = self.dirname.format(groups=normalized)
+            return dirname
+        except KeyError as e:
+            raise KeyError('filebase option should not contain {} key'.format(str(e)))
+
+
+class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
 
     def _has_group_info(self, filebase_string):
         return bool(re.findall('\{groups\[\d\]\}', filebase_string))
@@ -45,14 +57,15 @@ class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
 
         current_file_count = len(group_files) + self.start_file_count
         if key and not self._has_group_info(
-                self.filebase) and not self._has_group_info(self.prefix):
+                self.filebase.date_formatted_filebase) and not self._has_group_info(
+                self.filebase.prefix):
             current_file_count = self.start_file_count
             for group, info in self.grouping_info.iteritems():
                 current_file_count += len(info['group_file'])
 
-        name_without_ext = self.prefix.format(file_number=current_file_count, groups=key)
+        name_without_ext = self.filebase.prefix.format(file_number=current_file_count, groups=key)
 
-        if name_without_ext == self.prefix:
+        if name_without_ext == self.filebase.prefix:
             name_without_ext += '{:04d}'.format(current_file_count)
 
         filename = '{}.{}'.format(name_without_ext, self.file_extension)
@@ -69,6 +82,10 @@ class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
     def _format_date(self, value):
         date = datetime.datetime.now()
         return date.strftime(value)
+
+    def initialize(self, *args, **kwargs):
+        self.filebase = kwargs.get('filebase')
+        self.start_file_count = kwargs.get('start_file_count', 0)
 
 
 class FilebaseBaseWriter(BaseWriter):
@@ -87,20 +104,18 @@ class FilebaseBaseWriter(BaseWriter):
 
     def __init__(self, *args, **kwargs):
         super(FilebaseBaseWriter, self).__init__(*args, **kwargs)
-        self.filebase = self.get_date_formatted_file_path()
-        self.set_metadata('effective_filebase', self.filebase)
+        self.filebase = Filebase(self.read_option('filebase'))
+        self.set_metadata('effective_filebase', self.filebase.date_formatted_filebase)
         self.written_files = {}
         self.md5_file_name = None
         self.last_written_file = None
         self.generate_md5 = self.read_option('generate_md5')
+        self.write_buffer.initialize_items_group_files_handler(
+                filebase=self.filebase,
+                start_file_count=self.read_option('start_file_count'))
 
     def _items_group_files_handler(self):
-        _, prefix = os.path.split(self.read_option('filebase'))
-        start_file_count = self.read_option('start_file_count')
-        return CustomNameItemsGroupFilesHandler(self.export_formatter,
-                                                prefix,
-                                                self.read_option('filebase'),
-                                                start_file_count)
+        return CustomNameItemsGroupFilesHandler(self.export_formatter)
 
     def write(self, path, key, file_name=False):
         """
@@ -114,24 +129,13 @@ class FilebaseBaseWriter(BaseWriter):
         """
         return str(uuid.uuid4())
 
-    def get_date_formatted_file_path(self):
-        self.logger.debug('Extracting path from filebase option')
-        filebase = self.read_option('filebase')
-        filebase = datetime.datetime.now().strftime(filebase)
-        return filebase
-
     def create_filebase_name(self, group_info, extension='gz', file_name=None):
         """
         Return tuple of resolved destination folder name and file name
         """
-        normalized = [re.sub('\W', '_', s) for s in group_info]
-        dirname, prefix = os.path.split(self.filebase)
-        try:
-            dirname = dirname.format(groups=normalized)
-        except KeyError as e:
-            raise KeyError('filebase option should not contain {} key'.format(str(e)))
+        dirname = self.filebase.get_dirname_with_group_info(group_info)
         if not file_name:
-            file_name = prefix + '.' + extension
+            file_name = self.filebase.prefix + '.' + extension
         return dirname, file_name
 
     def _get_md5(self, path):
@@ -141,7 +145,6 @@ class FilebaseBaseWriter(BaseWriter):
     def _write_current_buffer_for_group_key(self, key):
         write_info = self.write_buffer.pack_buffer(key)
         compressed_path = write_info.get('compressed_path')
-
         self.write(compressed_path,
                    self.write_buffer.grouping_info[key]['membership'],
                    file_name=os.path.basename(compressed_path))

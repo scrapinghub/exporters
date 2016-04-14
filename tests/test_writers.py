@@ -346,7 +346,7 @@ class FilebaseBaseWriterTest(unittest.TestCase):
         writer = FilebaseBaseWriter(writer_config, meta(),
                                     export_formatter=JsonExportFormatter(dict()))
         writer.close()
-        self.assertEqual(writer.filebase, '/tmp/some_file_')
+        self.assertEqual(writer.filebase.date_formatted_filebase, '/tmp/some_file_')
 
     def test_create_filebase_name(self):
         writer_config = {
