@@ -51,8 +51,8 @@ class BaseWriter(BasePipelineItem):
         compression_func = self._get_compression_func()
         self.write_buffer = WriteBuffer(items_per_buffer_write,
                                         size_per_buffer_write,
-                                        compression_func,
-                                        self._items_group_files_handler())
+                                        self._items_group_files_handler(),
+                                        compression_func)
         self.set_metadata('items_count', 0)
 
     def _get_compression_func(self):

@@ -5,6 +5,7 @@ import uuid
 
 from six.moves import UserDict
 
+from exporters.compression import compress_gzip
 from exporters.utils import remove_if_exists
 
 
@@ -122,12 +123,12 @@ class ItemsGroupFilesHandler(object):
 class WriteBuffer(object):
 
     def __init__(self, items_per_buffer_write, size_per_buffer_write,
-                 compression_func, items_group_files_handler):
+                 items_group_files_handler, compression_func=compress_gzip):
         self.files = []
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
-        self.compression_func = compression_func
         self.items_group_files = items_group_files_handler
+        self.compression_func = compression_func
         self.metadata = {}
         self.is_new_buffer = True
 

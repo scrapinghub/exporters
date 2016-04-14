@@ -1,3 +1,6 @@
+import bz2
+import csv
+import datetime
 import gzip
 import json
 import os
@@ -5,26 +8,21 @@ import random
 import shutil
 import tempfile
 import unittest
-import csv
-
-import datetime
-import mock
-
 from contextlib import closing
 
-from exporters.compression import compress_gzip
+import mock
+
 from exporters.exceptions import ConfigurationError
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
+from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
+from exporters.groupers import PythonExpGrouper
 from exporters.records.base_record import BaseRecord
 from exporters.write_buffer import WriteBuffer, ItemsGroupFilesHandler
 from exporters.writers import FSWriter
 from exporters.writers.base_writer import BaseWriter, InconsistentWriteState
 from exporters.writers.console_writer import ConsoleWriter
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
-from exporters.export_formatter.json_export_formatter import JsonExportFormatter
-from exporters.groupers import PythonExpGrouper
-
 from .utils import meta
 
 
@@ -286,7 +284,7 @@ class CustomWriterTest(unittest.TestCase):
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
         item_writer = ItemsGroupFilesHandler(JsonExportFormatter({}))
-        self.write_buffer = WriteBuffer(1000, 1000, compress_gzip, item_writer)
+        self.write_buffer = WriteBuffer(1000, 1000, item_writer)
 
     def tearDown(self):
         self.write_buffer.close()
@@ -430,6 +428,12 @@ class FSWriterTest(unittest.TestCase):
         expected_file = '{}/exporter_test0000.jl.gz'.format(self.tmp_dir)
         self.assertTrue(expected_file in writer.written_files)
 
+        written = []
+        with gzip.open(expected_file, 'r') as fin:
+            for line in fin:
+                written.append(json.loads(line))
+        self.assertEqual(written, self.get_batch())
+
     def test_compression_zip_format(self):
         writer_config = self.get_writer_config()
         writer_config['options'].update({'compression': 'zip'})
@@ -444,6 +448,14 @@ class FSWriterTest(unittest.TestCase):
         expected_file = '{}/exporter_test0000.jl.zip'.format(self.tmp_dir)
         self.assertTrue(expected_file in writer.written_files)
 
+        import zipfile
+        written = []
+        with zipfile.ZipFile(expected_file) as z:
+            with z.open('exporter_test0000.jl') as f:
+                for line in f:
+                    written.append(json.loads(line))
+        self.assertEqual(written, self.get_batch())
+
     def test_compression_bz2_format(self):
         writer_config = self.get_writer_config()
         writer_config['options'].update({'compression': 'bz2'})
@@ -457,6 +469,12 @@ class FSWriterTest(unittest.TestCase):
             writer.close()
         expected_file = '{}/exporter_test0000.jl.bz2'.format(self.tmp_dir)
         self.assertTrue(expected_file in writer.written_files)
+
+        written = []
+        with bz2.BZ2File(expected_file, 'r') as fin:
+            for line in fin:
+                written.append(json.loads(line))
+        self.assertEqual(written, self.get_batch())
 
     def test_invalid_compression_format(self):
         options = self.get_writer_config()
