@@ -11,6 +11,9 @@ import datetime
 import mock
 
 from contextlib import closing
+
+from freezegun import freeze_time
+
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
 from exporters.records.base_record import BaseRecord
@@ -18,7 +21,7 @@ from exporters.write_buffer import WriteBuffer, ItemsGroupFilesHandler
 from exporters.writers import FSWriter
 from exporters.writers.base_writer import BaseWriter, InconsistentWriteState
 from exporters.writers.console_writer import ConsoleWriter
-from exporters.writers.filebase_base_writer import FilebaseBaseWriter
+from exporters.writers.filebase_base_writer import FilebaseBaseWriter, Filebase
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.groupers import PythonExpGrouper
 
@@ -372,6 +375,34 @@ class FilebaseBaseWriterTest(unittest.TestCase):
         writer.close()
         with self.assertRaisesRegexp(KeyError, 'filebase option should not contain'):
             writer.create_filebase_name(('g1', 'g2'), file_name='filename')
+
+
+class FilebaseTest(unittest.TestCase):
+
+    def setUp(self):
+        self.filebase = Filebase('/tmp/output/{groups[0]}/{groups[1]}_test_{file_number}_file_')
+
+    @freeze_time('2010-01-01')
+    def test_filebase_init(self):
+        filebase = Filebase('/tmp/output/%Y/{groups[0]}/{groups[1]}_test_{file_number}_file_')
+        expected_dir = '/tmp/output/2010/{groups[0]}'
+        expected_prefix = '{groups[1]}_test_{file_number}_file_'
+        expected = '/'.join([expected_dir, expected_prefix])
+        self.assertEqual(filebase.date_formatted_filebase, expected)
+        self.assertEqual(filebase.prefix, expected_prefix)
+        self.assertEqual(filebase.dirname, expected_dir)
+
+    def test_get_dirname_with_group_info(self):
+        # then
+        self.assertEqual(self.filebase.get_dirname_with_group_info(('us', 'es')), '/tmp/output/us')
+
+    def test_formatted_prefix(self):
+        # then
+        self.assertEqual(self.filebase.formatted_prefix(('us', 'es'), 0), 'es_test_0_file_')
+
+    def test_has_group_info(self):
+        # then
+        self.assertTrue(self.filebase.has_groups_info())
 
 
 class FSWriterTest(unittest.TestCase):

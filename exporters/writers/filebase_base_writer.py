@@ -30,9 +30,6 @@ class Filebase(object):
     def _get_date_formatted_filebase(self):
         return datetime.datetime.now().strftime(self.raw_filebase)
 
-    def _has_group_info(self, filebase_string):
-        return bool(re.findall('\{groups\[\d\]\}', filebase_string))
-
     def get_dirname_with_group_info(self, group_info):
         normalized = [re.sub('\W', '_', s) for s in group_info]
         try:
@@ -45,7 +42,7 @@ class Filebase(object):
             raise KeyError('filebase option should not contain {} key'.format(str(e)))
 
     def has_groups_info(self):
-        return self._has_group_info(self.date_formatted_filebase)
+        return bool(re.findall('\{groups\[\d\]\}', self.date_formatted_filebase))
 
     def formatted_prefix(self, key, file_count):
         prefix_name = self.prefix.format(file_number=file_count, groups=key)
