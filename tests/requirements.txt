@@ -10,3 +10,4 @@ fuzzywuzzy==0.8.0
 responses==0.5.1
 
 -r ../lazy_requirements.txt
+testfixtures==4.9.1
