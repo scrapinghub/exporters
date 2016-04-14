@@ -6,7 +6,7 @@ from .base_s3_bypass import BaseS3Bypass
 S3_URL_EXPIRES_IN = 1800  # half an hour should be enough
 
 
-class AzureBlobS3Bypass(BaseS3Bypass):
+class S3AzureBlobBypass(BaseS3Bypass):
     """
     Bypass executed by default when data source is an S3 bucket and data destination is
     an Azure blob container.
@@ -21,7 +21,7 @@ class AzureBlobS3Bypass(BaseS3Bypass):
     """
 
     def __init__(self, config, metadata):
-        super(AzureBlobS3Bypass, self).__init__(config, metadata)
+        super(S3AzureBlobBypass, self).__init__(config, metadata)
         self.container = self.read_option('writer', 'container')
         from azure.storage.blob import BlobService
         self.azure_service = BlobService(
@@ -32,7 +32,7 @@ class AzureBlobS3Bypass(BaseS3Bypass):
     def meets_conditions(cls, config):
         if not config.writer_options['name'].endswith('AzureBlobWriter'):
             raise RequisitesNotMet
-        super(AzureBlobS3Bypass, cls).meets_conditions(config)
+        super(S3AzureBlobBypass, cls).meets_conditions(config)
 
     @retry_long
     def _copy_s3_key(self, key):

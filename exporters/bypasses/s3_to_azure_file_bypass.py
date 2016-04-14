@@ -8,7 +8,7 @@ from .base_s3_bypass import BaseS3Bypass
 S3_URL_EXPIRES_IN = 1800  # half an hour should be enough
 
 
-class AzureFileS3Bypass(BaseS3Bypass):
+class S3AzureFileBypass(BaseS3Bypass):
     """
     Bypass executed by default when data source is an S3 bucket and data destination
     is an Azure share.
@@ -23,7 +23,7 @@ class AzureFileS3Bypass(BaseS3Bypass):
     """
 
     def __init__(self, config, metadata):
-        super(AzureFileS3Bypass, self).__init__(config, metadata)
+        super(S3AzureFileBypass, self).__init__(config, metadata)
         from azure.storage.file import FileService
         self.azure_service = FileService(
             self.read_option('writer', 'account_name'),
@@ -36,7 +36,7 @@ class AzureFileS3Bypass(BaseS3Bypass):
     def meets_conditions(cls, config):
         if not config.writer_options['name'].endswith('AzureFileWriter'):
             raise RequisitesNotMet
-        super(AzureFileS3Bypass, cls).meets_conditions(config)
+        super(S3AzureFileBypass, cls).meets_conditions(config)
 
     def _format_filebase_path(self, filebase):
         filebase_with_date = datetime.datetime.now().strftime(filebase)
