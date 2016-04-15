@@ -1,6 +1,10 @@
 import contextlib
-import os
+import gzip
+import json
 import mock
+import os
+import StringIO
+from contextlib import closing
 from copy import deepcopy
 from exporters.meta import ExportMeta
 from exporters.persistence.base_persistence import BasePersistence
@@ -99,3 +103,12 @@ class CopyingMagicMock(mock.MagicMock):
     def _mock_call(_mock_self, *args, **kwargs):
         return super(CopyingMagicMock, _mock_self)._mock_call(
             *deepcopy(args), **deepcopy(kwargs))
+
+
+def create_s3_keys(bucket, key_names):
+    for key_name in key_names:
+        with closing(bucket.new_key(key_name)) as key:
+            out = StringIO.StringIO()
+            with gzip.GzipFile(fileobj=out, mode='w') as f:
+                f.write(json.dumps({'name': key_name}))
+            key.set_contents_from_string(out.getvalue())

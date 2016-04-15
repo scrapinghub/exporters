@@ -15,10 +15,11 @@ class BaseBypass(object):
         self.total_items = 0
         self.valid_total_count = True
 
-    def meets_conditions(self):
+    @classmethod
+    def meets_conditions(self, config):
         raise NotImplementedError
 
-    def bypass(self):
+    def execute(self):
         raise NotImplementedError
 
     def increment_items(self, number_of_items):
@@ -49,3 +50,6 @@ class BaseBypass(object):
             logging.log(logging.WARNING, 'Missing value for option {}. (tried also: {} from env)'
                         .format(option, env_fallback))
         return option
+
+    def close(self):
+        pass

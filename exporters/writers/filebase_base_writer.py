@@ -4,9 +4,10 @@ import os
 import re
 import uuid
 
+import six
+
 from exporters.write_buffer import ItemsGroupFilesHandler
 from exporters.writers.base_writer import BaseWriter
-import six
 
 MD5_FILE_NAME = 'md5checksum.md5'
 
@@ -145,15 +146,16 @@ class FilebaseBaseWriter(BaseWriter):
     def _write_current_buffer_for_group_key(self, key):
         write_info = self.write_buffer.pack_buffer(key)
         compressed_path = write_info.get('compressed_path')
+
         self.write(compressed_path,
                    self.write_buffer.grouping_info[key]['membership'],
                    file_name=os.path.basename(compressed_path))
-        write_info['md5'] = self._get_md5(write_info.get('compressed_path'))
+        write_info['md5'] = self._get_md5(compressed_path)
         self.logger.info(
-            'Checksum for file {}: {}'.format(write_info['compressed_path'], write_info['md5']))
+            'Checksum for file {}: {}'.format(compressed_path, write_info['md5']))
         self.written_files[self.last_written_file] = write_info
 
-        self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
+        self.write_buffer.clean_tmp_files(write_info)
         self.write_buffer.add_new_buffer_for_group(key)
 
     def finish_writing(self):
