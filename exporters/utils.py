@@ -3,14 +3,11 @@ import shutil
 import tempfile
 import uuid
 from contextlib import contextmanager
-
 import collections
-
-
-# 50MB of chunk size for multipart uploads
 import math
 
-CHUNK_SIZE = 52428800
+# 50MB of chunk size for multipart uploads
+CHUNK_SIZE = 50 * 1024 * 1024
 
 
 def remove_if_exists(file_name):
@@ -69,3 +66,20 @@ def split_file(file_path, chunk_size=CHUNK_SIZE):
         with FileChunkIO(file_path, 'r', offset=offset, bytes=bytes) as fp:
             chunk = Chunk(fp, offset, chunk_size, i+1)
             yield chunk
+
+
+def calculate_multipart_etag(source_path, chunk_size):
+    import hashlib
+    md5s = []
+
+    with open(source_path, 'rb') as fp:
+        while True:
+            data = fp.read(chunk_size)
+            if not data:
+                break
+            md5s.append(hashlib.md5(data))
+
+    digests = b"".join(m.digest() for m in md5s)
+    new_md5 = hashlib.md5(digests)
+    new_etag = '"%s-%s"' % (new_md5.hexdigest(), len(md5s))
+    return new_etag

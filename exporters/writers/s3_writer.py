@@ -4,7 +4,7 @@ from contextlib import closing, contextmanager
 import six
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
-from exporters.utils import CHUNK_SIZE, split_file
+from exporters.utils import CHUNK_SIZE, split_file, calculate_multipart_etag
 from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
@@ -171,7 +171,8 @@ class S3Writer(FilebaseBaseWriter):
         with closing(self.bucket.get_key(key_name)) as key:
             self._ensure_proper_key_permissions(key)
             if self.save_metadata:
-                self._save_metadata_for_key(key, dump_path)
+                md5 = calculate_multipart_etag(dump_path, CHUNK_SIZE)
+                self._save_metadata_for_key(key, dump_path, md5=md5)
 
     def _write_s3_key(self, dump_path, key_name):
         destination = 's3://{}/{}'.format(self.bucket.name, key_name)

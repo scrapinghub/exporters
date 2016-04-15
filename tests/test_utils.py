@@ -11,7 +11,7 @@ from exporters.logger.base_logger import CategoryLogger
 from exporters.module_loader import ModuleLoader
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 from exporters.python_interpreter import Interpreter
-from exporters.utils import nested_dict_value, TmpFile, split_file
+from exporters.utils import nested_dict_value, TmpFile, split_file, calculate_multipart_etag
 from .utils import environment
 from .utils import valid_config_with_updates
 
@@ -389,3 +389,11 @@ class FileSplit(unittest.TestCase):
                 f.truncate(10000)
             chunks = list(split_file(tmp_filename, 3333))
             self.assertEqual(len(chunks), 4, 'Incorrect number of chunks from file')
+
+    def test_generate_multipart_md5(self):
+        with TmpFile() as tmp_filename:
+            with open(tmp_filename, 'w') as f:
+                f.truncate(10000)
+            md5 = calculate_multipart_etag(tmp_filename, 3333)
+            expected = '"728d2dbdd842b6a145cc3f3284d66861-4"'
+            self.assertEqual(md5, expected, 'Wrong calculated md5 for multipart upload')
