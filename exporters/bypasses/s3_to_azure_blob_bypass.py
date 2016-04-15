@@ -27,7 +27,6 @@ class S3AzureBlobBypass(BaseS3Bypass):
         self.azure_service = BlobService(
             self.read_option('writer', 'account_name'),
             self.read_option('writer', 'account_key'))
-        self.metadata.per_module['bypass']['bypass_mode'] = True
 
     @classmethod
     def meets_conditions(cls, config):
