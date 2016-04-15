@@ -23,6 +23,10 @@ def multipart_upload(bucket, key_name):
         raise
 
 
+def should_use_multipart_upload(path):
+        return os.path.getsize(path) > CHUNK_SIZE
+
+
 class S3Writer(FilebaseBaseWriter):
     """
     Writes items to S3 bucket. It is a File Based writer, so it has filebase
@@ -169,7 +173,7 @@ class S3Writer(FilebaseBaseWriter):
     def _write_s3_key(self, dump_path, key_name):
         destination = 's3://{}/{}'.format(self.bucket.name, key_name)
         self.logger.info('Start uploading {} to {}'.format(dump_path, destination))
-        if os.path.getsize(dump_path) > CHUNK_SIZE:
+        if should_use_multipart_upload(dump_path):
             self._upload_large_file(dump_path, key_name)
         else:
             self._upload_small_file(dump_path, key_name)
