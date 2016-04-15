@@ -158,11 +158,14 @@ class S3Writer(FilebaseBaseWriter):
             self._ensure_proper_key_permissions(key)
 
     @retry_long
+    def _upload_chunk(self, mp, chunk):
+        mp.upload_part_from_file(chunk.bytes, part_num=chunk.number)
+
     def _upload_large_file(self, dump_path, key_name):
         self.logger.debug('Using multipart S3 uploader')
         with multipart_upload(self.bucket, key_name) as mp:
             for chunk in split_file(dump_path):
-                mp.upload_part_from_file(chunk.bytes, part_num=chunk.number)
+                self._upload_chunk(mp, chunk)
                 self.logger.debug(
                         'Uploaded chunk number {}'.format(chunk.number))
         with closing(self.bucket.get_key(key_name)) as key:
