@@ -1,4 +1,3 @@
-import gzip
 import os
 import shutil
 import tempfile
@@ -119,18 +118,6 @@ class ItemsGroupFilesHandler(object):
     def _get_new_path_name(self, key):
         filename = '{}.{}'.format(uuid.uuid4(), self.file_extension)
         return os.path.join(self.tmp_folder, filename)
-
-    def compress_current_buffer_path_for_group(self, key):
-        path = self.get_current_buffer_path_for_group(key)
-        compressed_path = self._compress_file(path)
-        compressed_size = os.path.getsize(compressed_path)
-        return compressed_path, compressed_size
-
-    def _compress_file(self, path):
-        compressed_path = path + '.gz'
-        with gzip.open(compressed_path, 'wb') as dump_file, open(path) as fl:
-            shutil.copyfileobj(fl, dump_file)
-        return compressed_path
 
     def initialize(self, *args, **kwargs):
         pass
