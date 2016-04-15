@@ -382,3 +382,10 @@ class FileSplit(unittest.TestCase):
                 f.truncate(10000)
             chunks = list(split_file(tmp_filename, 1000))
             self.assertEqual(len(chunks), 10, 'Incorrect number of chunks from file')
+
+    def test_file_chunks_with_smaller_last_chunk(self):
+        with TmpFile() as tmp_filename:
+            with open(tmp_filename, 'w') as f:
+                f.truncate(10000)
+            chunks = list(split_file(tmp_filename, 3333))
+            self.assertEqual(len(chunks), 4, 'Incorrect number of chunks from file')
