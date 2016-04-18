@@ -9,6 +9,7 @@ class ExportMeta(object):
         self.start_time = start_time or datetime.datetime.now()
         self.end_time = None
         self.accurate_items_count = True
+        self.bypassed_pipeline = False
         self.per_module = defaultdict(dict)
 
     @property
@@ -25,6 +26,7 @@ class ExportMeta(object):
             'start_time': self.start_time,
             'end_time': self.end_time,
             'elapsed_time': self.elapsed_time,
+            'bypassed_pipeline': self.bypassed_pipeline,
             'accurate_items_count': self.accurate_items_count,
         })
         return d

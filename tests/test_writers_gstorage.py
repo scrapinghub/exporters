@@ -1,5 +1,6 @@
 import mock
 import unittest
+from contextlib import nested
 
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
@@ -65,3 +66,32 @@ class GStorageWriterTest(unittest.TestCase):
 
         with self.assertRaises(InconsistentWriteState):
             writer.finish_writing()
+
+    def test_init_from_resource(self):
+        options = {
+            'name': 'exporters.writers.gstorage_writer.GStorageWriter',
+            'options': {
+                'project': 'some-project-666',
+                'bucket': 'bucket-777',
+                'filebase': 'tests/',
+            }
+        }
+        env = {'EXPORTERS_GSTORAGE_CREDS_RESOURCE': 'a:b'}
+        with nested(mock.patch.dict('os.environ', env),
+                    mock.patch('pkg_resources.resource_string', return_value='{}'),
+                    mock.patch('gcloud.storage.Client.from_service_account_json')):
+            GStorageWriter(options, meta(), export_formatter=JsonExportFormatter(dict()))
+
+    def test_init_fails_with_bad_resource(self):
+        options = {
+            'name': 'exporters.writers.gstorage_writer.GStorageWriter',
+            'options': {
+                'project': 'some-project-666',
+                'bucket': 'bucket-777',
+                'filebase': 'tests/',
+            }
+        }
+        env = {'EXPORTERS_GSTORAGE_CREDS_RESOURCE': 'a:b'}
+        with nested(self.assertRaisesRegexp(ImportError, 'No module named a'),
+                    mock.patch.dict('os.environ', env)):
+            GStorageWriter(options, meta(), export_formatter=JsonExportFormatter(dict()))
