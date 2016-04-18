@@ -1,15 +1,30 @@
 import os
 from collections import Counter
-from contextlib import closing
-
+from contextlib import closing, contextmanager
 import six
-
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
+from exporters.utils import CHUNK_SIZE, split_file, calculate_multipart_etag
 from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
+
 DEFAULT_BUCKET_REGION = 'us-east-1'
+
+
+@contextmanager
+def multipart_upload(bucket, key_name):
+    mp = bucket.initiate_multipart_upload(key_name)
+    try:
+        yield mp
+        mp.complete_upload()
+    except:
+        mp.cancel_upload()
+        raise
+
+
+def should_use_multipart_upload(path):
+        return os.path.getsize(path) > CHUNK_SIZE
 
 
 class S3Writer(FilebaseBaseWriter):
@@ -106,19 +121,66 @@ class S3Writer(FilebaseBaseWriter):
         except S3ResponseError:
             self.logger.warning('We have no READ_ACP/WRITE_ACP permissions')
 
-    @retry_long
-    def _write_s3_key(self, dump_path, key_name):
+    def _set_key_metadata(self, key, metadata):
+        from boto.exception import S3ResponseError
+        try:
+            for name, value in metadata.iteritems():
+                key.set_metadata(name, value)
+        except S3ResponseError:
+            self.logger.warning(
+                    'We have no READ_ACP/WRITE_ACP permissions, '
+                    'so we could not add metadata info')
+
+    def _save_metadata_for_key(self, key, dump_path, md5=None):
+        from boto.exception import S3ResponseError
         from boto.utils import compute_md5
-        destination = 's3://{}/{}'.format(self.bucket.name, key_name)
-        self.logger.info('Start uploading {} to {}'.format(dump_path, destination))
+        try:
+            key.set_metadata('total', self._get_total_count(dump_path))
+            if md5:
+                key.set_metadata('md5', md5)
+            else:
+                with open(dump_path, 'r') as f:
+                    key.set_metadata('md5', compute_md5(f))
+        except S3ResponseError:
+            self.logger.warning(
+                    'We have no READ_ACP/WRITE_ACP permissions, '
+                    'so we could not add metadata info')
+
+    @retry_long
+    def _upload_small_file(self, dump_path, key_name):
+        from boto.utils import compute_md5
         with closing(self.bucket.new_key(key_name)) as key, open(dump_path, 'r') as f:
             md5 = compute_md5(f)
             if self.save_metadata:
-                key.set_metadata('total', self._get_total_count(dump_path))
-                key.set_metadata('md5', md5)
+                self._save_metadata_for_key(key, dump_path, md5)
             progress = BotoDownloadProgress(self.logger)
             key.set_contents_from_file(f, cb=progress, md5=md5)
             self._ensure_proper_key_permissions(key)
+
+    @retry_long
+    def _upload_chunk(self, mp, chunk):
+        mp.upload_part_from_file(chunk.bytes, part_num=chunk.number)
+
+    def _upload_large_file(self, dump_path, key_name):
+        self.logger.debug('Using multipart S3 uploader')
+        with multipart_upload(self.bucket, key_name) as mp:
+            for chunk in split_file(dump_path):
+                self._upload_chunk(mp, chunk)
+                self.logger.debug(
+                        'Uploaded chunk number {}'.format(chunk.number))
+        with closing(self.bucket.get_key(key_name)) as key:
+            self._ensure_proper_key_permissions(key)
+            if self.save_metadata:
+                md5 = calculate_multipart_etag(dump_path, CHUNK_SIZE)
+                self._save_metadata_for_key(key, dump_path, md5=md5)
+
+    def _write_s3_key(self, dump_path, key_name):
+        destination = 's3://{}/{}'.format(self.bucket.name, key_name)
+        self.logger.info('Start uploading {} to {}'.format(dump_path, destination))
+        if should_use_multipart_upload(dump_path):
+            self._upload_large_file(dump_path, key_name)
+        else:
+            self._upload_small_file(dump_path, key_name)
         self.last_written_file = destination
         self.logger.info('Saved {}'.format(destination))
 

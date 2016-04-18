@@ -7,6 +7,7 @@ import mock
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.meta import ExportMeta
 from exporters.records.base_record import BaseRecord
+from exporters.utils import TmpFile
 from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.s3_writer import S3Writer
 
@@ -59,6 +60,27 @@ class S3WriterTest(unittest.TestCase):
         try:
             writer.write_batch(items_to_write)
             writer.flush()
+        finally:
+            writer.close()
+
+        # then:
+        bucket = self.s3_conn.get_bucket('fake_bucket')
+        saved_keys = [k for k in bucket.list()]
+        self.assertEquals(1, len(saved_keys))
+        self.assertEqual(saved_keys[0].name, 'tests/0.jl.gz')
+
+    def test_write_s3_big_file(self):
+        # given
+        options = self.get_writer_config()
+
+        # when:
+        writer = S3Writer(
+            options, meta(), export_formatter=JsonExportFormatter(dict()))
+        try:
+            with TmpFile() as tmp_filename:
+                with open(tmp_filename, 'w') as f:
+                    f.truncate(1000)
+                writer._upload_large_file(tmp_filename, 'tests/0.jl.gz')
         finally:
             writer.close()
 
