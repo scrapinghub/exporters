@@ -12,10 +12,10 @@ MD5_FILE_NAME = 'md5checksum.md5'
 
 class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
 
-    def __init__(self, formatter, prefix, start_file_count=0):
-        super(CustomNameItemsGroupFilesHandler, self).__init__(formatter)
+    def __init__(self, formatter, prefix, start_file_count=0, **kwargs):
         self.prefix = self._format_date(prefix)
         self.start_file_count = start_file_count
+        super(CustomNameItemsGroupFilesHandler, self).__init__(formatter, **kwargs)
 
     def _get_new_path_name(self, key):
         """Build a filename for a new file for a given group,
@@ -72,7 +72,6 @@ class FilebaseBaseWriter(BaseWriter):
         self.filebase = self.get_date_formatted_file_path()
         self.set_metadata('effective_filebase', self.filebase)
         self.written_files = {}
-        self.md5_file_name = None
         self.last_written_file = None
         self.generate_md5 = self.read_option('generate_md5')
 
@@ -126,7 +125,7 @@ class FilebaseBaseWriter(BaseWriter):
             'Checksum for file {compressed_path}: {compressed_hash}'.format(**write_info))
         self.written_files[self.last_written_file] = write_info
 
-        self.write_buffer.clean_tmp_files(key, write_info.get('compressed_path'))
+        self.write_buffer.clean_tmp_files(write_info)
         self.write_buffer.add_new_buffer_for_group(key)
 
     def finish_writing(self):
@@ -136,7 +135,7 @@ class FilebaseBaseWriter(BaseWriter):
                 with open(MD5_FILE_NAME, 'a') as f:
                     for file_name, write_info in self.written_files.iteritems():
                         write_info = self.written_files[file_name]
-                        f.write('{} {}'.format(write_info['md5'], file_name)+'\n')
+                        f.write('{} {}'.format(write_info['compressed_hash'], file_name)+'\n')
                 self.write_buffer.set_metadata_for_file(
                     MD5_FILE_NAME, size=os.path.getsize(MD5_FILE_NAME))
                 self.write(MD5_FILE_NAME, None, file_name=MD5_FILE_NAME)
