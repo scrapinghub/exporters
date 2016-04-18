@@ -23,7 +23,7 @@ class FSWriter(FilebaseBaseWriter):
         super(FSWriter, self).__init__(options, *args, **kwargs)
         self.logger.info(
                 'FSWriter has been initiated. Writing to: {}'.format(
-                        self.filebase.date_formatted_filebase))
+                        self.filebase.filebase_template))
         self.set_metadata('files_written', [])
 
     def _create_path_if_not_exist(self, path):

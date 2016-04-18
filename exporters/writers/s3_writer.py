@@ -73,7 +73,7 @@ class S3Writer(FilebaseBaseWriter):
         self.save_metadata = self.read_option('save_metadata')
         self.logger.info(
                 'S3Writer has been initiated. Writing to s3://{}/{}'.format(
-                        self.bucket.name, self.filebase.date_formatted_filebase))
+                        self.bucket.name, self.filebase.filebase_template))
         self.set_metadata('files_counter', Counter())
         self.set_metadata('keys_written', [])
 

@@ -45,7 +45,7 @@ class SFTPWriter(FilebaseBaseWriter):
         self.logger.info(
             'SFTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(
                 self.sftp_host, self.sftp_port,
-                self.filebase.date_formatted_filebase))
+                self.filebase.filebase_template))
 
     def _update_metadata(self, dump_path, destination):
         buffer_info = self.write_buffer.metadata.get(dump_path, {})

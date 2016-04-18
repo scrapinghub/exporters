@@ -25,24 +25,24 @@ def md5_for_file(f, block_size=2**20):
 class Filebase(object):
     def __init__(self, filebase):
         self.input_filebase = filebase
-        self.date_formatted_filebase = self._get_date_formatted_filebase()
-        self.dirname, self.prefix = os.path.split(self.date_formatted_filebase)
+        self.filebase_template = self._get_filebase_template()
+        self.dirname_template, self.prefix = os.path.split(self.filebase_template)
 
-    def _get_date_formatted_filebase(self):
+    def _get_filebase_template(self):
         return datetime.datetime.now().strftime(self.input_filebase)
 
-    def get_dirname_with_group_info(self, group_info):
+    def get_dirname_template_with_group_info(self, group_info):
         try:
             if group_info:
-                dirname = self.dirname.format(groups=group_info)
+                dirname_template = self.dirname_template.format(groups=group_info)
             else:
-                dirname = self.dirname.format(groups=[''])
-            return dirname
+                dirname_template = self.dirname_template.format(groups=[''])
+            return dirname_template
         except KeyError as e:
             raise KeyError('filebase option should not contain {} key'.format(str(e)))
 
     def has_groups_info(self):
-        return bool(re.findall('\{groups\[\d\]\}', self.date_formatted_filebase))
+        return bool(re.findall('\{groups\[\d\]\}', self.filebase_template))
 
     def formatted_prefix(self, key, file_count):
         prefix_name = self.prefix.format(file_number=file_count, groups=key)
@@ -106,7 +106,7 @@ class FilebaseBaseWriter(BaseWriter):
     def __init__(self, *args, **kwargs):
         super(FilebaseBaseWriter, self).__init__(*args, **kwargs)
         self.filebase = Filebase(self.read_option('filebase'))
-        self.set_metadata('effective_filebase', self.filebase.date_formatted_filebase)
+        self.set_metadata('effective_filebase', self.filebase.filebase_template)
         self.written_files = {}
         self.md5_file_name = None
         self.last_written_file = None
