@@ -28,5 +28,6 @@ python-dateutil==2.4.2
 jdatetime==1.7.2
 
 azure<2
+azure-storage==0.30.0
 
 dropbox
