@@ -189,7 +189,7 @@ class S3AzureBlobBypassTest(unittest.TestCase):
         opts = create_s3_azure_blob_bypass_simple_opts()
 
         # when:
-        with moto.mock_s3(), mock.patch('azure.storage.blob.BlobService') as azure:
+        with moto.mock_s3(), mock.patch('azure.storage.blob.BlockBlobService') as azure:
             s3_conn = boto.connect_s3()
             bucket = s3_conn.create_bucket(opts['reader']['options']['bucket'])
             keys = ['some_prefix/{}'.format(k) for k in ['this', 'test', 'has', 'keys']]
