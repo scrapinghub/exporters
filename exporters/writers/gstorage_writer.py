@@ -1,5 +1,6 @@
 import json
 import os
+import pkg_resources
 import six
 
 from exporters.default_retries import retry_long
@@ -22,14 +23,20 @@ class GStorageWriter(FilebaseBaseWriter):
         - bucket (str)
             Google Storage bucket name
 
-        - credentials (dict)
-            Object with valid google credentials
+        - credentials (str or dict)
+            Object with valid Google credentials, could be set using env
+            variable EXPORTERS_GSTORAGE_CREDS_RESOURCE which should include
+            reference to credentials JSON file installed with setuptools.
+            This reference should have form "package_name:file_path"
     """
 
     supported_options = {
         'project': {'type': six.string_types},
         'bucket': {'type': six.string_types},
-        'credentials': {'type': dict}
+        'credentials': {
+            'type': (dict,) + six.string_types,
+            'env_fallback': 'EXPORTERS_GSTORAGE_CREDS_RESOURCE'
+        }
     }
 
     def __init__(self, options, *args, **kwargs):
@@ -41,7 +48,13 @@ class GStorageWriter(FilebaseBaseWriter):
         with TemporaryDirectory() as temp_dir:
             credentials_file = os.path.join(temp_dir, 'credentials.json')
             with open(credentials_file, 'w') as f:
-                f.write(json.dumps(self.read_option('credentials')))
+                creds_opt = self.read_option('credentials')
+                if isinstance(creds_opt, six.string_types):
+                    package_name, path = creds_opt.split(':')
+                    serialized = pkg_resources.resource_string(package_name, path)
+                else:
+                    serialized = json.dumps(creds_opt)
+                f.write(serialized)
             client = storage.Client.from_service_account_json(credentials_file,
                                                               project=project)
         self.bucket = client.bucket(bucket_name)
