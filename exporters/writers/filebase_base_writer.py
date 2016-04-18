@@ -24,18 +24,17 @@ def md5_for_file(f, block_size=2**20):
 
 class Filebase(object):
     def __init__(self, filebase):
-        self.raw_filebase = filebase
+        self.input_filebase = filebase
         self.date_formatted_filebase = self._get_date_formatted_filebase()
         self.dirname, self.prefix = os.path.split(self.date_formatted_filebase)
 
     def _get_date_formatted_filebase(self):
-        return datetime.datetime.now().strftime(self.raw_filebase)
+        return datetime.datetime.now().strftime(self.input_filebase)
 
     def get_dirname_with_group_info(self, group_info):
-        normalized = [re.sub('\W', '_', s) for s in group_info]
         try:
-            if normalized:
-                dirname = self.dirname.format(groups=normalized)
+            if group_info:
+                dirname = self.dirname.format(groups=group_info)
             else:
                 dirname = self.dirname.format(groups=[''])
             return dirname
@@ -67,7 +66,8 @@ class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
         group_files = self.grouping_info[key]['group_file']
         group_folder = self._get_group_folder(group_files)
         current_file_count = len(group_files) + self.start_file_count
-        name_without_ext = self.filebase.formatted_prefix(key, current_file_count)
+        group_info = self.grouping_info[key]['groups_secure_path']
+        name_without_ext = self.filebase.formatted_prefix(group_info, current_file_count)
         filename = '{}.{}'.format(name_without_ext, self.file_extension)
         return os.path.join(group_folder, filename)
 
