@@ -86,14 +86,13 @@ class BaseExportManagerTest(unittest.TestCase):
         config['reader']['options']['number_of_items'] = 1000
         self.exporter = exporter = BaseExporter(config)
         exporter.export()
-        used_paths = [value['groups_secure_path'][0]
+        used_paths = [value['path_safe_keys'][0]
                       for key, value in exporter.writer.write_buffer.grouping_info.iteritems()]
         regex = '\d_ds_dump_({})'.format('|'.join(used_paths))
         written_files = [os.path.basename(f) for f in exporter.writer.written_files.keys()]
 
         for w_file in written_files:
             self.assertRegexpMatches(w_file, regex)
-
 
     def test_grouping_with_non_valid_characters(self):
         config = self.build_config(

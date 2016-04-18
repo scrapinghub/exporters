@@ -66,7 +66,7 @@ class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
         group_files = self.grouping_info[key]['group_file']
         group_folder = self._get_group_folder(group_files)
         current_file_count = len(group_files) + self.start_file_count
-        group_info = self.grouping_info[key]['groups_secure_path']
+        group_info = self.grouping_info[key]['path_safe_keys']
         name_without_ext = self.filebase.formatted_prefix(group_info, current_file_count)
         filename = '{}.{}'.format(name_without_ext, self.file_extension)
         return os.path.join(group_folder, filename)

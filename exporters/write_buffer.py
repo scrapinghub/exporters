@@ -34,7 +34,7 @@ class GroupingInfo(UserDict):
         groups = tuple(
             g_info if re.match(
                     "^[\w\.\s\d-]+$", g_info) else self._get_random_string() for g_info in key)
-        self[key]['groups_secure_path'] = groups
+        self[key]['path_safe_keys'] = groups
         self[key]['total_items'] = 0
         self[key]['buffered_items'] = 0
         self[key]['group_file'] = []
