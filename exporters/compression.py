@@ -8,8 +8,8 @@ from exporters.exceptions import UnsupportedCompressionFormat
 
 
 def compress_bz2(dump_file, source_file):
-    with bz2.BZ2File(dump_file, 'wb') as bz_file:
-        shutil.copyfileobj(source_file, bz_file)
+    with bz2.BZ2File(dump_file.name, 'wb') as bz_file, open(source_file.name) as fl:
+        shutil.copyfileobj(fl, bz_file)
 
 
 def compress_gzip(dump_file, source_file):
@@ -19,8 +19,8 @@ def compress_gzip(dump_file, source_file):
 
 def compress_zip(dump_file, source_file):
     filename = os.path.basename(source_file.name)
-    with zipfile.ZipFile(dump_file, 'wb', zipfile.ZIP_DEFLATED) as zip_file:
-        zip_file.write(source_file, arcname=filename)
+    with zipfile.ZipFile(dump_file, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        zip_file.write(source_file.name, arcname=filename)
 
 
 def get_compress_func(compression_format):
