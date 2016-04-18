@@ -70,7 +70,6 @@ class S3Writer(FilebaseBaseWriter):
 
     def __init__(self, options, *args, **kwargs):
         import boto
-
         super(S3Writer, self).__init__(options, *args, **kwargs)
         access_key = self.read_option('aws_access_key_id')
         secret_key = self.read_option('aws_secret_access_key')
@@ -146,11 +145,10 @@ class S3Writer(FilebaseBaseWriter):
                     'We have no READ_ACP/WRITE_ACP permissions, '
                     'so we could not add metadata info')
 
-    @retry_long
     def _upload_small_file(self, dump_path, key_name):
-        from boto.utils import compute_md5
         with closing(self.bucket.new_key(key_name)) as key, open(dump_path, 'r') as f:
-            md5 = compute_md5(f)
+            buffer_info = self.write_buffer.metadata[dump_path]
+            md5 = key.get_md5_from_hexdigest(buffer_info['compressed_hash'])
             if self.save_metadata:
                 self._save_metadata_for_key(key, dump_path, md5)
             progress = BotoDownloadProgress(self.logger)

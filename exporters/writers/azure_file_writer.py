@@ -90,9 +90,9 @@ class AzureFileWriter(FilebaseBaseWriter):
         from azure.common import AzureMissingResourceHttpError
         for file_info in self.get_metadata('files_written'):
             try:
-                file_properties = self.azure_service.get_file_properties(
+                afile = self.azure_service.get_file_properties(
                     self.share, file_info['filebase_path'], file_info['file_name'])
-                file_size = file_properties.get('content-length')
+                file_size = afile.properties.content_length
                 if str(file_size) != str(file_info['size']):
                     raise InconsistentWriteState(
                         'File {} has unexpected size. (expected {} - got {})'.format(

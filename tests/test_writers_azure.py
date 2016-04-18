@@ -68,17 +68,16 @@ class AzureBlobWriterTest(unittest.TestCase):
     @mock.patch('azure.storage.blob.BlockBlobService.create_container')
     def test_write_blob_consistency_size(self, create_mock, put_blob_from_path_mock,
                                          get_blob_properties_mock):
+        from azure.storage.blob.models import Blob, BlobProperties
 
         # given
         items_to_write = self.get_batch()
         options = self.get_writer_config()
         options['options']['check_consistency'] = True
 
-        fake_properties = {
-            'content-length': 999
-        }
-
-        get_blob_properties_mock.return_value = fake_properties
+        fake_properties = BlobProperties()
+        fake_properties.content_length = 999
+        get_blob_properties_mock.return_value = Blob(props=fake_properties)
 
         # when:
         writer = AzureBlobWriter(
@@ -95,7 +94,7 @@ class AzureBlobWriterTest(unittest.TestCase):
     @mock.patch('azure.storage.blob.BlockBlobService.get_blob_properties')
     @mock.patch('azure.storage.blob.BlockBlobService.create_blob_from_path')
     @mock.patch('azure.storage.blob.BlockBlobService.create_container')
-    def test_write_blob_consistency_present(self, create_mock, put_blob_from_path_mock,
+    def test_write_blob_consistency_present(self, create_mock, create_blob_from_path_mock,
                                             get_blob_properties_mock):
         from azure.common import AzureMissingResourceHttpError
         # given
@@ -144,16 +143,15 @@ class AzureFileWriterTest(unittest.TestCase):
     @mock.patch('azure.storage.file.FileService.create_directory')
     def test_write_file_consistency_size(self, create_mock, create_share_mock,
                                          put_file_from_path_mock, get_file_properties_mock):
+        from azure.storage.file.models import File, FileProperties
 
         # given
         items_to_write = self.get_batch()
         options = self.get_writer_config()
         options['options']['check_consistency'] = True
-        fake_properties = {
-            'content-length': 999
-        }
-
-        get_file_properties_mock.return_value = fake_properties
+        fake_properties = FileProperties()
+        fake_properties.content_length = 999
+        get_file_properties_mock.return_value = File(props=fake_properties)
 
         # when:
         writer = AzureFileWriter(options, ExportMeta(options),
