@@ -86,7 +86,6 @@ class GStorageWriter(FilebaseBaseWriter):
             'remote_hash': blob.md5_hash,
             'title': blob.name,
         }
-        print key_info
         self.get_metadata('files_written').append(key_info)
 
     def _check_write_consistency(self):
