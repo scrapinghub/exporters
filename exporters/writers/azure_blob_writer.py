@@ -26,7 +26,7 @@ class AzureBlobWriter(BaseWriter):
     VALID_CONTAINER_NAME_RE = r'[a-zA-Z0-9-]{3,63}'
 
     def __init__(self, *args, **kw):
-        from azure.storage.blob import BlobService
+        from azure.storage.blob import BlockBlobService
         super(AzureBlobWriter, self).__init__(*args, **kw)
         account_name = self.read_option('account_name')
         account_key = self.read_option('account_key')
@@ -38,7 +38,7 @@ class AzureBlobWriter(BaseWriter):
             warnings.warn("Container name %s doesn't conform with naming rules (see: %s)"
                           % (self.container, help_url))
 
-        self.azure_service = BlobService(account_name, account_key)
+        self.azure_service = BlockBlobService(account_name, account_key)
         self.azure_service.create_container(self.container)
         self.logger.info('AzureBlobWriter has been initiated.'
                          'Writing to container {}'.format(self.container))
@@ -53,7 +53,7 @@ class AzureBlobWriter(BaseWriter):
     @retry_long
     def _write_blob(self, dump_path):
         blob_name = dump_path.split('/')[-1]
-        self.azure_service.put_block_blob_from_path(
+        self.azure_service.create_blob_from_path(
             self.read_option('container'),
             blob_name,
             dump_path,

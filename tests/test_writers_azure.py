@@ -31,7 +31,7 @@ class AzureBlobWriterTest(unittest.TestCase):
         ]
         return [BaseRecord(d) for d in data]
 
-    @mock.patch('azure.storage.blob.BlobService.create_container')
+    @mock.patch('azure.storage.blob.BlockBlobService.create_container')
     def test_invalid_container_name(self, mock_container):
         options = self.get_writer_config()
         options['options']['container'] = 'invalid--container--name'
@@ -43,8 +43,8 @@ class AzureBlobWriterTest(unittest.TestCase):
                           str(w[0].message))
             writer.close()
 
-    @mock.patch('azure.storage.blob.BlobService.create_container')
-    @mock.patch('azure.storage.blob.BlobService.put_block_blob_from_path')
+    @mock.patch('azure.storage.blob.BlockBlobService.create_container')
+    @mock.patch('azure.storage.blob.BlockBlobService.create_blob_from_path')
     def test_write_blob(self, create_mock, put_block_blob_mock):
 
         # given
@@ -63,9 +63,9 @@ class AzureBlobWriterTest(unittest.TestCase):
         # then:
         self.assertEqual(writer.get_metadata('items_count'), 2)
 
-    @mock.patch('azure.storage.blob.BlobService.get_blob_properties')
-    @mock.patch('azure.storage.blob.BlobService.put_block_blob_from_path')
-    @mock.patch('azure.storage.blob.BlobService.create_container')
+    @mock.patch('azure.storage.blob.BlockBlobService.get_blob_properties')
+    @mock.patch('azure.storage.blob.BlockBlobService.create_blob_from_path')
+    @mock.patch('azure.storage.blob.BlockBlobService.create_container')
     def test_write_blob_consistency_size(self, create_mock, put_blob_from_path_mock,
                                          get_blob_properties_mock):
 
@@ -92,9 +92,9 @@ class AzureBlobWriterTest(unittest.TestCase):
         with self.assertRaisesRegexp(InconsistentWriteState, 'has unexpected size'):
             writer.finish_writing()
 
-    @mock.patch('azure.storage.blob.BlobService.get_blob_properties')
-    @mock.patch('azure.storage.blob.BlobService.put_block_blob_from_path')
-    @mock.patch('azure.storage.blob.BlobService.create_container')
+    @mock.patch('azure.storage.blob.BlockBlobService.get_blob_properties')
+    @mock.patch('azure.storage.blob.BlockBlobService.create_blob_from_path')
+    @mock.patch('azure.storage.blob.BlockBlobService.create_container')
     def test_write_blob_consistency_present(self, create_mock, put_blob_from_path_mock,
                                             get_blob_properties_mock):
         from azure.common import AzureMissingResourceHttpError
@@ -139,7 +139,7 @@ class AzureFileWriterTest(unittest.TestCase):
         return [BaseRecord(d) for d in data]
 
     @mock.patch('azure.storage.file.FileService.get_file_properties')
-    @mock.patch('azure.storage.file.FileService.put_file_from_path')
+    @mock.patch('azure.storage.file.FileService.create_file_from_path')
     @mock.patch('azure.storage.file.FileService.create_share')
     @mock.patch('azure.storage.file.FileService.create_directory')
     def test_write_file_consistency_size(self, create_mock, create_share_mock,
@@ -168,7 +168,7 @@ class AzureFileWriterTest(unittest.TestCase):
             writer.finish_writing()
 
     @mock.patch('azure.storage.file.FileService.get_file_properties')
-    @mock.patch('azure.storage.file.FileService.put_file_from_path')
+    @mock.patch('azure.storage.file.FileService.create_file_from_path')
     @mock.patch('azure.storage.file.FileService.create_share')
     @mock.patch('azure.storage.file.FileService.create_directory')
     def test_write_file_consistency_present(self, create_mock, create_share_mock,

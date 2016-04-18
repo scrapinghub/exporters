@@ -23,8 +23,8 @@ class S3AzureBlobBypass(BaseS3Bypass):
     def __init__(self, config, metadata):
         super(S3AzureBlobBypass, self).__init__(config, metadata)
         self.container = self.read_option('writer', 'container')
-        from azure.storage.blob import BlobService
-        self.azure_service = BlobService(
+        from azure.storage.blob import BlockBlobService
+        self.azure_service = BlockBlobService(
             self.read_option('writer', 'account_name'),
             self.read_option('writer', 'account_key'))
 
