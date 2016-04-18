@@ -45,7 +45,7 @@ class AzureBlobWriterTest(unittest.TestCase):
 
     @mock.patch('azure.storage.blob.BlockBlobService.create_container')
     @mock.patch('azure.storage.blob.BlockBlobService.create_blob_from_path')
-    def test_write_blob(self, create_mock, put_blob_mock):
+    def test_write_blob(self, create_mock, put_block_blob_mock):
 
         # given
         items_to_write = self.get_batch()
@@ -66,7 +66,7 @@ class AzureBlobWriterTest(unittest.TestCase):
     @mock.patch('azure.storage.blob.BlockBlobService.get_blob_properties')
     @mock.patch('azure.storage.blob.BlockBlobService.create_blob_from_path')
     @mock.patch('azure.storage.blob.BlockBlobService.create_container')
-    def test_write_blob_consistency_size(self, create_mock, create_blob_from_path_mock,
+    def test_write_blob_consistency_size(self, create_mock, put_blob_from_path_mock,
                                          get_blob_properties_mock):
         from azure.storage.blob.models import Blob, BlobProperties
 
