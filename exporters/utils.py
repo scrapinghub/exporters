@@ -3,8 +3,10 @@ import shutil
 import tempfile
 import uuid
 from contextlib import contextmanager
-
 import collections
+
+# 50MB of chunk size for multipart uploads
+CHUNK_SIZE = 50 * 1024 * 1024
 
 
 def remove_if_exists(file_name):
@@ -48,3 +50,38 @@ def nested_dict_value(d, path):
                 '{} Key could not be found for nested path {} in {}'.format(k, path, d)
             )
     return final_value
+
+
+Chunk = collections.namedtuple('Chunk', 'bytes offset size number')
+
+
+def split_file(file_path, chunk_size=CHUNK_SIZE):
+    from filechunkio import FileChunkIO
+    source_size = os.stat(file_path).st_size
+    chunk_number = 0
+    while True:
+        offset = chunk_size * chunk_number
+        if offset >= source_size:
+            break
+        bytes = min(chunk_size, source_size - offset)
+        with FileChunkIO(file_path, 'r', offset=offset, bytes=bytes) as fp:
+            chunk = Chunk(fp, offset, chunk_size, chunk_number+1)
+            yield chunk
+        chunk_number += 1
+
+
+def calculate_multipart_etag(source_path, chunk_size):
+    import hashlib
+    md5s = []
+
+    with open(source_path, 'rb') as fp:
+        while True:
+            data = fp.read(chunk_size)
+            if not data:
+                break
+            md5s.append(hashlib.md5(data))
+
+    digests = b"".join(m.digest() for m in md5s)
+    new_md5 = hashlib.md5(digests)
+    new_etag = '"%s-%s"' % (new_md5.hexdigest(), len(md5s))
+    return new_etag

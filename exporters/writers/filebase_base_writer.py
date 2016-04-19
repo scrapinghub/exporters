@@ -3,7 +3,6 @@ import hashlib
 import os
 import re
 import uuid
-
 import six
 
 from exporters.write_buffer import ItemsGroupFilesHandler
@@ -103,12 +102,14 @@ class FilebaseBaseWriter(BaseWriter):
         'generate_md5': {'type': bool, 'default': False}
     }
 
+    hash_algorithm = 'md5'
+
     def __init__(self, *args, **kwargs):
         super(FilebaseBaseWriter, self).__init__(*args, **kwargs)
         self.filebase = Filebase(self.read_option('filebase'))
         self.set_metadata('effective_filebase', self.filebase.filebase_template)
+        self.generate_md5 = self.read_option('generate_md5')
         self.written_files = {}
-        self.md5_file_name = None
         self.last_written_file = None
         self.generate_md5 = self.read_option('generate_md5')
         self.write_buffer.initialize_items_group_files_handler(
@@ -139,10 +140,6 @@ class FilebaseBaseWriter(BaseWriter):
             file_name = self.filebase.prefix + '.' + extension
         return dirname, file_name
 
-    def _get_md5(self, path):
-        with open(path, 'r') as f:
-            return md5_for_file(f)
-
     def _write_current_buffer_for_group_key(self, key):
         write_info = self.write_buffer.pack_buffer(key)
         compressed_path = write_info.get('compressed_path')
@@ -150,9 +147,8 @@ class FilebaseBaseWriter(BaseWriter):
         self.write(compressed_path,
                    self.write_buffer.grouping_info[key]['membership'],
                    file_name=os.path.basename(compressed_path))
-        write_info['md5'] = self._get_md5(compressed_path)
         self.logger.info(
-            'Checksum for file {}: {}'.format(compressed_path, write_info['md5']))
+            'Checksum for file {compressed_path}: {compressed_hash}'.format(**write_info))
         self.written_files[self.last_written_file] = write_info
 
         self.write_buffer.clean_tmp_files(write_info)
@@ -165,7 +161,7 @@ class FilebaseBaseWriter(BaseWriter):
                 with open(MD5_FILE_NAME, 'a') as f:
                     for file_name, write_info in self.written_files.iteritems():
                         write_info = self.written_files[file_name]
-                        f.write('{} {}'.format(write_info['md5'], file_name)+'\n')
+                        f.write('{} {}'.format(write_info['compressed_hash'], file_name)+'\n')
                 self.write_buffer.set_metadata_for_file(
                     MD5_FILE_NAME, size=os.path.getsize(MD5_FILE_NAME))
                 self.write(MD5_FILE_NAME, None, file_name=MD5_FILE_NAME)

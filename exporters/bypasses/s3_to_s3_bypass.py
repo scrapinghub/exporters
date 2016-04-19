@@ -8,7 +8,8 @@ from exporters.default_retries import retry_long
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.progress_callback import BotoUploadProgress
 from exporters.readers.s3_reader import get_bucket
-from exporters.utils import TmpFile
+from exporters.utils import TmpFile, split_file, calculate_multipart_etag, CHUNK_SIZE
+from exporters.writers.s3_writer import should_use_multipart_upload, multipart_upload
 
 
 def _add_permissions(user_id, key):
@@ -147,19 +148,27 @@ class S3Bypass(BaseBypass):
         except S3ResponseError:
             self.logger.warning('No direct copy supported for key {}.'.format(key_name))
             self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
+        else:
+            self._check_copy_integrity(key, dest_bucket, dest_key_name)
         # Using a second try catch, as they are independent operations
         try:
             dest_key = dest_bucket.get_key(dest_key_name)
             self._ensure_proper_key_permissions(dest_key)
-            self._check_copy_integrity(key, dest_bucket, dest_key)
         except S3ResponseError:
-            self.logger.warning('We have no READ_ACP/WRITE_ACP permissions')
+            self.logger.warning(
+                    'Skipping key permissions set. We have no READ_ACP/WRITE_ACP permissions')
 
-    def _check_copy_integrity(self, source_key, dest_bucket, dest_key):
-        if source_key.etag != dest_key.etag:
-            raise InvalidKeyIntegrityCheck(
-                'Key {} and key {} md5 checksums are different. {} != {}'.format(
-                    source_key.name, dest_key.name, source_key.etag, dest_key.etag))
+    def _check_copy_integrity(self, source_key, dest_bucket, dest_key_name):
+        from boto.exception import S3ResponseError
+        try:
+            dest_key = dest_bucket.get_key(dest_key_name)
+            if source_key.etag != dest_key.etag:
+                raise InvalidKeyIntegrityCheck(
+                    'Key {} and key {} md5 checksums are different. {} != {}'.format(
+                        source_key.name, dest_key.name, source_key.etag, dest_key.etag))
+        except S3ResponseError:
+            self.logger.warning(
+                    'Skipping copy integrity. We have no READ_ACP/WRITE_ACP permissions')
 
     def _ensure_proper_key_permissions(self, key):
         key.set_acl('bucket-owner-full-control')
@@ -180,14 +189,41 @@ class S3Bypass(BaseBypass):
                 md5 = compute_md5(f)
         return md5
 
+    @retry_long
+    def _upload_chunk(self, mp, chunk):
+        mp.upload_part_from_file(chunk.bytes, part_num=chunk.number)
+
+    def _upload_large_file(self, bucket, dump_path, key_name):
+        self.logger.info('Using multipart S3 uploader')
+        with multipart_upload(bucket, key_name) as mp:
+            for chunk in split_file(dump_path):
+                self._upload_chunk(mp, chunk)
+                self.logger.info(
+                        'Uploaded chunk number {}'.format(chunk.number))
+        with closing(bucket.get_key(key_name)) as key:
+            self._ensure_proper_key_permissions(key)
+
+    def _check_multipart_copy_integrity(self, key, dest_bucket, dest_key_name, path):
+        dest_key = dest_bucket.get_key(dest_key_name)
+        md5 = calculate_multipart_etag(path, CHUNK_SIZE)
+        if dest_key.etag != md5:
+            raise InvalidKeyIntegrityCheck(
+                'Key {} and key {} md5 checksums are different. {} != {}'.format(
+                    key.name, dest_key_name.name, md5, dest_key_name.etag))
+
     def _copy_without_permissions(self, dest_bucket, dest_key_name, source_bucket, key_name):
         key = source_bucket.get_key(key_name)
         with TmpFile() as tmp_filename:
             key.get_contents_to_filename(tmp_filename)
-            dest_key = dest_bucket.new_key(dest_key_name)
-            progress = BotoUploadProgress(self.logger)
-            md5 = self._get_md5(key, tmp_filename)
-            dest_key.set_contents_from_filename(tmp_filename, cb=progress, md5=md5)
+            if should_use_multipart_upload(tmp_filename):
+                self._upload_large_file(dest_bucket, tmp_filename, dest_key_name)
+                self._check_multipart_copy_integrity(key, dest_bucket, dest_key_name, tmp_filename)
+            else:
+                dest_key = dest_bucket.new_key(dest_key_name)
+                progress = BotoUploadProgress(self.logger)
+                md5 = self._get_md5(key, tmp_filename)
+                dest_key.set_contents_from_filename(tmp_filename, cb=progress, md5=md5)
+                self._check_copy_integrity(key, dest_bucket, dest_key_name)
 
     @retry_long
     def _copy_key(self, dest_bucket, dest_key_name, source_bucket, key_name):

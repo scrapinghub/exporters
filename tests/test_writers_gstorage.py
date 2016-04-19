@@ -1,21 +1,25 @@
 import mock
 import unittest
+from contextlib import nested
 
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
 from exporters.writers.gstorage_writer import GStorageWriter
+from exporters.writers.base_writer import InconsistentWriteState
 
 from .utils import meta
 
 
 class GStorageWriterTest(unittest.TestCase):
-    def test_write(self):
+    def get_items_to_write(self):
         data = [
             {'name': 'Roberto', 'birthday': '12/05/1987'},
             {'name': 'Claudia', 'birthday': '21/12/1985'},
         ]
-        items_to_write = [BaseRecord(d) for d in data]
-        options = {
+        return [BaseRecord(d) for d in data]
+
+    def get_options(self):
+        return {
             'name': 'exporters.writers.gstorage_writer.GStorageWriter',
             'options': {
                 'project': 'some-project-666',
@@ -29,6 +33,10 @@ class GStorageWriterTest(unittest.TestCase):
             }
         }
 
+    def test_write(self):
+        items_to_write = self.get_items_to_write()
+        options = self.get_options()
+
         with mock.patch('gcloud.storage.Client.from_service_account_json') as mocked:
             writer = GStorageWriter(
                 options, meta(), export_formatter=JsonExportFormatter(dict()))
@@ -37,3 +45,53 @@ class GStorageWriterTest(unittest.TestCase):
             writer.close()
             mocked.assert_has_calls([('().bucket().blob().upload_from_file',
                                       (mock.ANY,))])
+
+    @mock.patch('gcloud.storage.Client.from_service_account_json')
+    def test_write_blob_consistency(self, get_client):
+        get_client().bucket().blob().size = 999
+        get_client().bucket().blob().md5_hash = "a"*24
+        # given
+        items_to_write = self.get_items_to_write()
+        options = self.get_options()
+        options['options']['check_consistency'] = True
+
+        # when:
+        writer = GStorageWriter(
+            options, meta(), export_formatter=JsonExportFormatter(dict()))
+        try:
+            writer.write_batch(items_to_write)
+            writer.flush()
+        finally:
+            writer.close()
+
+        with self.assertRaises(InconsistentWriteState):
+            writer.finish_writing()
+
+    def test_init_from_resource(self):
+        options = {
+            'name': 'exporters.writers.gstorage_writer.GStorageWriter',
+            'options': {
+                'project': 'some-project-666',
+                'bucket': 'bucket-777',
+                'filebase': 'tests/',
+            }
+        }
+        env = {'EXPORTERS_GSTORAGE_CREDS_RESOURCE': 'a:b'}
+        with nested(mock.patch.dict('os.environ', env),
+                    mock.patch('pkg_resources.resource_string', return_value='{}'),
+                    mock.patch('gcloud.storage.Client.from_service_account_json')):
+            GStorageWriter(options, meta(), export_formatter=JsonExportFormatter(dict()))
+
+    def test_init_fails_with_bad_resource(self):
+        options = {
+            'name': 'exporters.writers.gstorage_writer.GStorageWriter',
+            'options': {
+                'project': 'some-project-666',
+                'bucket': 'bucket-777',
+                'filebase': 'tests/',
+            }
+        }
+        env = {'EXPORTERS_GSTORAGE_CREDS_RESOURCE': 'a:b'}
+        with nested(self.assertRaisesRegexp(ImportError, 'No module named a'),
+                    mock.patch.dict('os.environ', env)):
+            GStorageWriter(options, meta(), export_formatter=JsonExportFormatter(dict()))

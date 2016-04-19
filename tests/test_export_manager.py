@@ -156,6 +156,7 @@ class BaseExportManagerTest(unittest.TestCase):
 
         # then:
         self.assertTrue(Bypass.executed, "Bypass should have been called")
+        self.assertTrue(exporter.metadata.bypassed_pipeline)
 
     def test_when_unmet_conditions_bypass_should_not_be_called(self):
         # given:

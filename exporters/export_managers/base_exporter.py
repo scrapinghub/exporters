@@ -172,3 +172,5 @@ class BaseExporter(object):
                 raise e
             finally:
                 self._clean_export_job()
+        else:
+            self.metadata.bypassed_pipeline = True
