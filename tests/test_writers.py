@@ -387,21 +387,23 @@ class FilebaseTest(unittest.TestCase):
         expected_prefix = '{groups[1]}_test_{file_number}_file_'
         expected = '/'.join([expected_dir, expected_prefix])
         self.assertEqual(filebase.filebase_template, expected)
-        self.assertEqual(filebase.prefix, expected_prefix)
+        self.assertEqual(filebase.prefix_template, expected_prefix)
         self.assertEqual(filebase.dirname_template, expected_dir)
 
     def test_get_dirname_with_group_info(self):
         # then
         self.assertEqual(
-                self.filebase.get_dirname_template_with_group_info(('us', 'es')), '/tmp/output/us')
+                self.filebase.formatted_dirname(
+                        groups=('us', 'es')), '/tmp/output/us')
 
     def test_formatted_prefix(self):
         # then
-        self.assertEqual(self.filebase.formatted_prefix(('us', 'es'), 0), 'es_test_0_file_')
+        self.assertEqual(self.filebase.formatted_prefix(
+                groups=('us', 'es'), file_number=0), 'es_test_0_file_')
 
     def test_has_group_info(self):
         # then
-        self.assertTrue(self.filebase.has_groups_info())
+        self.assertTrue(self.filebase.has_key_info('groups'))
 
 
 class FSWriterTest(unittest.TestCase):

@@ -25,30 +25,29 @@ class Filebase(object):
     def __init__(self, filebase):
         self.input_filebase = filebase
         self.filebase_template = self._get_filebase_template()
-        self.dirname_template, self.prefix = os.path.split(self.filebase_template)
+        self.dirname_template, self.prefix_template = os.path.split(self.filebase_template)
 
     def _get_filebase_template(self):
         return datetime.datetime.now().strftime(self.input_filebase)
 
-    def get_dirname_template_with_group_info(self, group_info):
+    def formatted_dirname(self, **format_info):
         try:
-            if group_info:
-                dirname_template = self.dirname_template.format(groups=group_info)
-            else:
-                dirname_template = self.dirname_template.format(groups=[''])
-            return dirname_template
+            dirname = self.dirname_template.format(**format_info)
+            return dirname
         except KeyError as e:
             raise KeyError('filebase option should not contain {} key'.format(str(e)))
 
-    def has_groups_info(self):
-        return bool(re.findall('\{groups\[\d\]\}', self.filebase_template))
+    def has_key_info(self, key):
+        return bool(re.findall('\{'+key+'\[\d\]\}', self.filebase_template))
 
-    def formatted_prefix(self, key, file_count):
-        prefix_name = self.prefix.format(file_number=file_count, groups=key)
-        if prefix_name == self.prefix:
-            prefix_name += '{:04d}'.format(file_count)
-        if key and not self.has_groups_info():
-            prefix_name = '{}-{}'.format(prefix_name, ''.join(key))
+    def formatted_prefix(self, **format_info):
+        prefix_name = self.prefix_template.format(**format_info)
+        file_number = format_info.pop('file_number', 0)
+        if prefix_name == self.prefix_template:
+            prefix_name += '{:04d}'.format(file_number)
+        for key, value in format_info.iteritems():
+            if value and not self.has_key_info(key):
+                prefix_name = '{}-{}'.format(prefix_name, ''.join(value))
         return prefix_name
 
 
@@ -66,7 +65,8 @@ class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
         group_folder = self._get_group_folder(group_files)
         current_file_count = len(group_files) + self.start_file_count
         group_info = self.grouping_info[key]['path_safe_keys']
-        name_without_ext = self.filebase.formatted_prefix(group_info, current_file_count)
+        name_without_ext = self.filebase.formatted_prefix(
+                groups=group_info, file_number=current_file_count)
         filename = '{}.{}'.format(name_without_ext, self.file_extension)
         return os.path.join(group_folder, filename)
 
@@ -135,9 +135,9 @@ class FilebaseBaseWriter(BaseWriter):
         """
         Return tuple of resolved destination folder name and file name
         """
-        dirname = self.filebase.get_dirname_template_with_group_info(group_info)
+        dirname = self.filebase.formatted_dirname(groups=group_info)
         if not file_name:
-            file_name = self.filebase.prefix + '.' + extension
+            file_name = self.filebase.prefix_template + '.' + extension
         return dirname, file_name
 
     def _write_current_buffer_for_group_key(self, key):
