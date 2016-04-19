@@ -88,10 +88,6 @@ class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
             date = datetime.datetime.now()
         return date.strftime(value)
 
-    def initialize(self, *args, **kwargs):
-        self.filebase = kwargs.get('filebase')
-        self.start_file_count = kwargs.get('start_file_count', 0)
-
 
 class FilebaseBaseWriter(BaseWriter):
     """
