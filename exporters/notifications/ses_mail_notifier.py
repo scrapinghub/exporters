@@ -74,7 +74,7 @@ Total records exported: {{ writer.items_count }}.
 Target Hubstorage collection URL: https://dash.scrapinghub.com/p/{{ writer_options.project_id }}/collections/s/{{ writer_options.collection_name }}
 {%- endif %}
 
-If you have any questions or concerns about the data you have received, email us at help@scrapinghub.com.\n
+If you have any questions or concerns about the data you have received, email us at dataservices@scrapinghub.com.\n
 """  # noqa
     return render(subject_tmpl, **data), render(body_tmpl, **data)
 
