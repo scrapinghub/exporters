@@ -403,7 +403,7 @@ class FilebaseTest(unittest.TestCase):
 
     def test_has_group_info(self):
         # then
-        self.assertTrue(self.filebase.has_key_info('groups'))
+        self.assertTrue(self.filebase._has_key_info('groups'))
 
 
 class FSWriterTest(unittest.TestCase):

@@ -37,7 +37,7 @@ class Filebase(object):
         except KeyError as e:
             raise KeyError('filebase option should not contain {} key'.format(str(e)))
 
-    def has_key_info(self, key):
+    def _has_key_info(self, key):
         return bool(re.findall('\{'+key+'\[\d\]\}', self.filebase_template))
 
     def formatted_prefix(self, **format_info):
@@ -46,7 +46,7 @@ class Filebase(object):
         if prefix_name == self.prefix_template:
             prefix_name += '{:04d}'.format(file_number)
         for key, value in format_info.iteritems():
-            if value and not self.has_key_info(key):
+            if value and not self._has_key_info(key):
                 prefix_name = '{}-{}'.format(prefix_name, ''.join(value))
         return prefix_name
 
