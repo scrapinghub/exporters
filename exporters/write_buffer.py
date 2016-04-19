@@ -158,7 +158,7 @@ class WriteBuffer(object):
 
     def __init__(self, items_per_buffer_write, size_per_buffer_write,
                  items_group_files_handler, compression_format='gz',
-                 hash_algorithm=None, *args, **kwargs):
+                 hash_algorithm=None):
         self.files = []
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
@@ -167,7 +167,6 @@ class WriteBuffer(object):
         self.compression_format = compression_format
         self.metadata = {}
         self.is_new_buffer = True
-        self.initialize_items_group_files_handler(*args, **kwargs)
 
     def buffer(self, item):
         """
@@ -241,6 +240,3 @@ class WriteBuffer(object):
         if file_name not in self.metadata:
             self.metadata[file_name] = {}
         self.metadata[file_name].update(**kwargs)
-
-    def initialize_items_group_files_handler(self, *args, **kwargs):
-        self.items_group_files.initialize(*args, **kwargs)

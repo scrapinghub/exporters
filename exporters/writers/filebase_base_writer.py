@@ -53,6 +53,11 @@ class Filebase(object):
 
 class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
 
+    def __init__(self, formatter, filebase, start_file_count=0):
+        super(CustomNameItemsGroupFilesHandler, self).__init__(formatter)
+        self.filebase = filebase
+        self.start_file_count = start_file_count
+
     def _get_new_path_name(self, key):
         """Build a filename for a new file for a given group,
         considering the existing file count for it and the prefix
@@ -112,12 +117,13 @@ class FilebaseBaseWriter(BaseWriter):
         self.written_files = {}
         self.last_written_file = None
         self.generate_md5 = self.read_option('generate_md5')
-        self.write_buffer.initialize_items_group_files_handler(
-                filebase=self.filebase,
-                start_file_count=self.read_option('start_file_count'))
 
     def _items_group_files_handler(self):
-        return CustomNameItemsGroupFilesHandler(self.export_formatter)
+        return CustomNameItemsGroupFilesHandler(
+                self.export_formatter,
+                filebase=Filebase(self.read_option('filebase')),
+                start_file_count=self.read_option('start_file_count')
+        )
 
     def write(self, path, key, file_name=False):
         """
