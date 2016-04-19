@@ -388,11 +388,12 @@ class FilebaseTest(unittest.TestCase):
         expected = '/'.join([expected_dir, expected_prefix])
         self.assertEqual(filebase.filebase_template, expected)
         self.assertEqual(filebase.prefix, expected_prefix)
-        self.assertEqual(filebase.dirname, expected_dir)
+        self.assertEqual(filebase.dirname_template, expected_dir)
 
     def test_get_dirname_with_group_info(self):
         # then
-        self.assertEqual(self.filebase.get_dirname_with_group_info(('us', 'es')), '/tmp/output/us')
+        self.assertEqual(
+                self.filebase.get_dirname_template_with_group_info(('us', 'es')), '/tmp/output/us')
 
     def test_formatted_prefix(self):
         # then

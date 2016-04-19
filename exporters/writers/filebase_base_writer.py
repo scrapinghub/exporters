@@ -134,7 +134,7 @@ class FilebaseBaseWriter(BaseWriter):
         """
         Return tuple of resolved destination folder name and file name
         """
-        dirname = self.filebase.get_dirname_with_group_info(group_info)
+        dirname = self.filebase.get_dirname_template_with_group_info(group_info)
         if not file_name:
             file_name = self.filebase.prefix + '.' + extension
         return dirname, file_name

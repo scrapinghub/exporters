@@ -138,7 +138,7 @@ class S3Writer(FilebaseBaseWriter):
 
     def _update_last_pointer(self):
         save_pointer = self.read_option('save_pointer')
-        self._write_s3_pointer(save_pointer, self.filebase.dirname + '/')
+        self._write_s3_pointer(save_pointer, self.filebase.dirname_template + '/')
 
     def close(self):
         """
