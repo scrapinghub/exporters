@@ -150,9 +150,6 @@ class ItemsGroupFilesHandler(object):
         filename = '{}.{}'.format(uuid.uuid4(), self.file_extension)
         return os.path.join(self.tmp_folder, filename)
 
-    def initialize(self, *args, **kwargs):
-        pass
-
 
 class WriteBuffer(object):
 

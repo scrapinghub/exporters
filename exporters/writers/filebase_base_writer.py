@@ -78,15 +78,9 @@ class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
     def _get_group_folder(self, group_files):
         if group_files:
             return os.path.dirname(group_files[0])
-
         group_folder = os.path.join(self.tmp_folder, str(uuid.uuid4()))
         os.mkdir(group_folder)
         return group_folder
-
-    def _format_date(self, value, date=None):
-        if date is None:
-            date = datetime.datetime.now()
-        return date.strftime(value)
 
 
 class FilebaseBaseWriter(BaseWriter):
