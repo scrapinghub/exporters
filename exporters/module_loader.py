@@ -40,11 +40,11 @@ class ModuleLoader(object):
         from exporters.stats_managers.base_stats_manager import BaseStatsManager
         return self._load_module(options, metadata, BaseStatsManager, **kwargs)
 
-    def _instantiate_class(self, class_name, options, metadata, **kwargs):
-        class_path_list = class_name.split('.')
-        mod = import_module('.'.join(class_path_list[0:-1]))
-        class_instance = getattr(mod, class_path_list[-1])(options, metadata, **kwargs)
-        return class_instance
+    def _instantiate_class(self, class_path, options, metadata, **kwargs):
+        mod_path, class_name = class_path.rsplit('.', 1)
+        module = import_module(mod_path)
+        cls = getattr(module, class_name)
+        return cls(options, metadata, **kwargs)
 
     def _load_module(self, options, metadata, module_type, **kwargs):
         module_name = options['name']
