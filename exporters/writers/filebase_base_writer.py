@@ -119,6 +119,9 @@ class FilebaseBaseWriter(BaseWriter):
         self.written_files = {}
         self.last_written_file = None
         self.generate_md5 = self.read_option('generate_md5')
+        self.logger.info(
+                '{} has been initiated. Writing to: {}'.format(
+                        self.__class__.__name__, self.filebase.filebase_template))
 
     def _items_group_files_handler(self):
         return CustomNameItemsGroupFilesHandler(

@@ -24,8 +24,6 @@ class DropboxWriter(FilebaseBaseWriter):
         from dropbox import Dropbox
         super(DropboxWriter, self).__init__(*args, **kw)
         access_token = self.read_option('access_token')
-        self.logger.info('DroboxWriter has been initiated.'
-                         'Writing to folder {}'.format(self.filebase))
         self.set_metadata('files_counter', Counter())
         self.client = Dropbox(access_token)
 
