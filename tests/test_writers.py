@@ -347,7 +347,7 @@ class FilebaseBaseWriterTest(unittest.TestCase):
         writer = FilebaseBaseWriter(writer_config, meta(),
                                     export_formatter=JsonExportFormatter(dict()))
         writer.close()
-        self.assertEqual(writer.filebase.filebase_template, '/tmp/some_file_')
+        self.assertEqual(writer.filebase.template, '/tmp/some_file_')
 
     def test_create_filebase_name(self):
         writer_config = {
@@ -386,7 +386,7 @@ class FilebaseTest(unittest.TestCase):
         expected_dir = '/tmp/output/2010/{groups[0]}'
         expected_prefix = '{groups[1]}_test_{file_number}_file_'
         expected = '/'.join([expected_dir, expected_prefix])
-        self.assertEqual(filebase.filebase_template, expected)
+        self.assertEqual(filebase.template, expected)
         self.assertEqual(filebase.prefix_template, expected_prefix)
         self.assertEqual(filebase.dirname_template, expected_dir)
 

@@ -24,10 +24,10 @@ def md5_for_file(f, block_size=2**20):
 class Filebase(object):
     def __init__(self, filebase):
         self.input_filebase = filebase
-        self.filebase_template = self._get_filebase_template()
-        self.dirname_template, self.prefix_template = os.path.split(self.filebase_template)
+        self.template = self._get_template()
+        self.dirname_template, self.prefix_template = os.path.split(self.template)
 
-    def _get_filebase_template(self):
+    def _get_template(self):
         return datetime.datetime.now().strftime(self.input_filebase)
 
     def formatted_dirname(self, **format_info):
@@ -38,7 +38,7 @@ class Filebase(object):
             raise KeyError('filebase option should not contain {} key'.format(str(e)))
 
     def _has_key_info(self, key):
-        return bool(re.findall('\{'+key+'\[\d\]\}', self.filebase_template))
+        return bool(re.findall('\{'+key+'\[\d\]\}', self.template))
 
     def formatted_prefix(self, **format_info):
         """
@@ -114,14 +114,14 @@ class FilebaseBaseWriter(BaseWriter):
     def __init__(self, *args, **kwargs):
         super(FilebaseBaseWriter, self).__init__(*args, **kwargs)
         self.filebase = Filebase(self.read_option('filebase'))
-        self.set_metadata('effective_filebase', self.filebase.filebase_template)
+        self.set_metadata('effective_filebase', self.filebase.template)
         self.generate_md5 = self.read_option('generate_md5')
         self.written_files = {}
         self.last_written_file = None
         self.generate_md5 = self.read_option('generate_md5')
         self.logger.info(
                 '{} has been initiated. Writing to: {}'.format(
-                        self.__class__.__name__, self.filebase.filebase_template))
+                        self.__class__.__name__, self.filebase.template))
 
     def _items_group_files_handler(self):
         return CustomNameItemsGroupFilesHandler(
