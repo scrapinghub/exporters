@@ -1,7 +1,6 @@
 import mock
 import unittest
 
-from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
 from exporters.writers.gdrive_writer import GDriveWriter
 from exporters.writers.base_writer import InconsistentWriteState
@@ -33,8 +32,7 @@ class GStorageWriterTest(unittest.TestCase):
         items_to_write = self.get_items_to_write()
         options = self.get_options()
 
-        writer = GDriveWriter(
-            options, meta(), export_formatter=JsonExportFormatter(dict()))
+        writer = GDriveWriter(options, meta())
         writer.write_batch(items_to_write)
         writer.flush()
         writer.close()
@@ -51,8 +49,7 @@ class GStorageWriterTest(unittest.TestCase):
         options['options']['check_consistency'] = True
 
         # when:
-        writer = GDriveWriter(
-            options, meta(), export_formatter=JsonExportFormatter(dict()))
+        writer = GDriveWriter(options, meta())
         try:
             writer.write_batch(items_to_write)
             writer.flush()

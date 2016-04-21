@@ -1,0 +1,3 @@
+from .json_export_formatter import JsonExportFormatter
+
+DEFAULT_FORMATTER_CLASS = JsonExportFormatter

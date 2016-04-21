@@ -4,7 +4,6 @@ import boto
 import moto
 import mock
 
-from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.meta import ExportMeta
 from exporters.records.base_record import BaseRecord
 from exporters.utils import TmpFile
@@ -55,8 +54,7 @@ class S3WriterTest(unittest.TestCase):
         options = self.get_writer_config()
 
         # when:
-        writer = S3Writer(
-            options, meta(), export_formatter=JsonExportFormatter(dict()))
+        writer = S3Writer(options, meta())
         try:
             writer.write_batch(items_to_write)
             writer.flush()
@@ -74,8 +72,7 @@ class S3WriterTest(unittest.TestCase):
         options = self.get_writer_config()
 
         # when:
-        writer = S3Writer(
-            options, meta(), export_formatter=JsonExportFormatter(dict()))
+        writer = S3Writer(options, meta())
         try:
             with TmpFile() as tmp_filename:
                 with open(tmp_filename, 'w') as f:
@@ -100,8 +97,7 @@ class S3WriterTest(unittest.TestCase):
         options['options']['bucket'] = 'another_fake_bucket'
 
         # when:
-        writer = S3Writer(
-            options, meta(), export_formatter=JsonExportFormatter(dict()))
+        writer = S3Writer(options, meta())
 
         # then:
         self.assertEquals('eu-west-1', writer.aws_region)
@@ -120,8 +116,7 @@ class S3WriterTest(unittest.TestCase):
 
         # when:
         try:
-            writer = S3Writer(
-                options, meta(), export_formatter=JsonExportFormatter(dict()))
+            writer = S3Writer(options, meta())
             writer.write_batch(items_to_write)
             writer.flush()
         finally:
@@ -148,8 +143,7 @@ class S3WriterTest(unittest.TestCase):
 
         mock_get_bucket.side_effect = reject_validated_get_bucket
 
-        writer = S3Writer(self.get_writer_config(), meta(),
-                          export_formatter=JsonExportFormatter(dict()))
+        writer = S3Writer(self.get_writer_config(), meta())
         writer.close()
 
     def test_connect_to_bucket_location(self):
@@ -161,8 +155,7 @@ class S3WriterTest(unittest.TestCase):
         options['options']['bucket'] = 'another_fake_bucket'
 
         # when:
-        writer = S3Writer(options, meta(),
-                          export_formatter=JsonExportFormatter(dict()))
+        writer = S3Writer(options, meta())
 
         # then:
         self.assertEquals('eu-west-1', writer.aws_region)
@@ -187,8 +180,7 @@ class S3WriterTest(unittest.TestCase):
 
         # when:
         try:
-            writer = S3Writer(
-                options, ExportMeta(options), export_formatter=JsonExportFormatter(dict()))
+            writer = S3Writer(options, ExportMeta(options))
             writer.write_batch(items_to_write)
             writer.flush()
         finally:
@@ -208,8 +200,7 @@ class S3WriterTest(unittest.TestCase):
 
         # when:
         try:
-            writer = S3Writer(
-                options, ExportMeta(options), export_formatter=JsonExportFormatter(dict()))
+            writer = S3Writer(options, ExportMeta(options))
             writer.write_batch(items_to_write)
             writer.flush()
         finally:
@@ -230,8 +221,7 @@ class S3WriterTest(unittest.TestCase):
 
         # when:
         try:
-            writer = S3Writer(
-                options, ExportMeta(options), export_formatter=JsonExportFormatter(dict()))
+            writer = S3Writer(options, ExportMeta(options))
             writer.write_batch(items_to_write)
             writer.flush()
         finally:

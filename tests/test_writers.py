@@ -32,8 +32,7 @@ class BaseWriterTest(unittest.TestCase):
             'log_level': 'DEBUG',
             'logger_name': 'export-pipeline'
         }
-        self.writer = BaseWriter(
-            self.options, meta(), export_formatter=JsonExportFormatter(dict()))
+        self.writer = BaseWriter(self.options, meta())
 
     def tearDown(self):
         self.writer.close()
@@ -92,7 +91,7 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_custom_writer(self):
         # given:
-        writer = FakeWriter({}, {}, export_formatter=JsonExportFormatter(dict()))
+        writer = FakeWriter({}, {})
 
         # when:
         try:
@@ -109,7 +108,7 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_write_buffer_removes_files(self):
         # given:
-        writer = FakeWriter({}, {}, export_formatter=JsonExportFormatter(dict()))
+        writer = FakeWriter({}, {})
         writer.write_buffer.items_per_buffer_write = 1
 
         # when:
@@ -249,11 +248,9 @@ class CustomWriterTest(unittest.TestCase):
 
     def test_md5sum_file(self):
         # given:
-        formatter = JsonExportFormatter({})
         with tempfile.NamedTemporaryFile() as tmp:
             writer = FakeFilebaseWriter(
-                {'options': {'filebase': tmp.name, 'generate_md5': True}},  {},
-                export_formatter=formatter)
+                {'options': {'filebase': tmp.name, 'generate_md5': True}},  {})
             # when:
             try:
                 writer.write_batch(self.batch)
@@ -266,8 +263,7 @@ class CustomWriterTest(unittest.TestCase):
     @mock.patch('exporters.writers.base_writer.BaseWriter._check_write_consistency')
     def test_consistency_check(self, consistency_mock):
         # given:
-        writer = FakeWriter({'options': {'check_consistency': True}},
-                            export_formatter=JsonExportFormatter(dict()))
+        writer = FakeWriter({'options': {'check_consistency': True}})
 
         # when:
         try:
@@ -304,9 +300,7 @@ class ConsoleWriterTest(unittest.TestCase):
             'log_level': 'DEBUG',
             'logger_name': 'export-pipeline'
         }
-        self.writer = ConsoleWriter(
-            self.options, meta(),
-            export_formatter=JsonExportFormatter(dict()))
+        self.writer = ConsoleWriter(self.options, meta())
 
     def tearDown(self):
         self.writer.close()
@@ -331,8 +325,7 @@ class FilebaseBaseWriterTest(unittest.TestCase):
                 'filebase': '/tmp/',
             }
         }
-        writer = FilebaseBaseWriter(writer_config, meta(),
-                                    export_formatter=JsonExportFormatter(dict()))
+        writer = FilebaseBaseWriter(writer_config, meta())
         self.assertIsInstance(writer.get_file_suffix('', ''), basestring)
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')
@@ -344,8 +337,7 @@ class FilebaseBaseWriterTest(unittest.TestCase):
                 'filebase': '/tmp/some_file_',
             }
         }
-        writer = FilebaseBaseWriter(writer_config, meta(),
-                                    export_formatter=JsonExportFormatter(dict()))
+        writer = FilebaseBaseWriter(writer_config, meta())
         writer.close()
         self.assertEqual(writer.filebase.template, '/tmp/some_file_')
 
@@ -355,8 +347,7 @@ class FilebaseBaseWriterTest(unittest.TestCase):
                 'filebase': '/tmp/%m/%Y-some_folder_{groups[0]}/{groups[1]}_{file_number}_',
             }
         }
-        writer = FilebaseBaseWriter(writer_config, meta(),
-                                    export_formatter=JsonExportFormatter(dict()))
+        writer = FilebaseBaseWriter(writer_config, meta())
         writer.close()
         date = datetime.datetime.now()
         expected = (date.strftime('/tmp/%m/%Y-some_folder_g1'), 'filename')
@@ -368,8 +359,7 @@ class FilebaseBaseWriterTest(unittest.TestCase):
                 'filebase': '/tmp/%m/%Y-some_folder_{file_number}/{groups[1]}_',
             }
         }
-        writer = FilebaseBaseWriter(writer_config, meta(),
-                                    export_formatter=JsonExportFormatter(dict()))
+        writer = FilebaseBaseWriter(writer_config, meta())
         writer.close()
         with self.assertRaisesRegexp(KeyError, 'filebase option should not contain'):
             writer.create_filebase_name(('g1', 'g2'), file_name='filename')
@@ -434,8 +424,7 @@ class FSWriterTest(unittest.TestCase):
 
     def test_get_file_number(self):
         writer_config = self.get_writer_config()
-        writer = FSWriter(writer_config, meta(),
-                          export_formatter=JsonExportFormatter(dict()))
+        writer = FSWriter(writer_config, meta())
         try:
             writer.write_batch(self.get_batch())
             writer.flush()
@@ -448,8 +437,7 @@ class FSWriterTest(unittest.TestCase):
     def test_compression_gzip_format(self):
         writer_config = self.get_writer_config()
         writer_config['options'].update({'compression': 'gz'})
-        writer = FSWriter(writer_config, meta(),
-                          export_formatter=JsonExportFormatter(dict()))
+        writer = FSWriter(writer_config, meta())
         try:
             writer.write_batch(self.get_batch())
             writer.flush()
@@ -468,8 +456,7 @@ class FSWriterTest(unittest.TestCase):
     def test_compression_zip_format(self):
         writer_config = self.get_writer_config()
         writer_config['options'].update({'compression': 'zip'})
-        writer = FSWriter(writer_config, meta(),
-                          export_formatter=JsonExportFormatter(dict()))
+        writer = FSWriter(writer_config, meta())
         try:
             writer.write_batch(self.get_batch())
             writer.flush()
@@ -490,8 +477,7 @@ class FSWriterTest(unittest.TestCase):
     def test_compression_bz2_format(self):
         writer_config = self.get_writer_config()
         writer_config['options'].update({'compression': 'bz2'})
-        writer = FSWriter(writer_config, meta(),
-                          export_formatter=JsonExportFormatter(dict()))
+        writer = FSWriter(writer_config, meta())
         try:
             writer.write_batch(self.get_batch())
             writer.flush()
@@ -526,8 +512,7 @@ class FSWriterTest(unittest.TestCase):
             'filebase': file_path + file_name,
             'start_file_count': start_file_count
         }})
-        writer = FSWriter(writer_config, meta(),
-                          export_formatter=JsonExportFormatter(dict()))
+        writer = FSWriter(writer_config, meta())
         try:
             writer.write_batch(self.get_batch())
             writer.flush()
@@ -544,8 +529,7 @@ class FSWriterTest(unittest.TestCase):
         options['options']['check_consistency'] = True
 
         # when:
-        writer = FSWriter(options, meta(),
-                          export_formatter=JsonExportFormatter(dict()))
+        writer = FSWriter(options, meta())
         try:
             writer.write_batch(self.get_batch())
             writer.flush()
@@ -570,8 +554,7 @@ class FSWriterTest(unittest.TestCase):
         options['options']['generate_md5'] = True
 
         # when:
-        writer = FSWriter(options, meta(),
-                          export_formatter=JsonExportFormatter(dict()))
+        writer = FSWriter(options, meta())
         with closing(writer) as w:
             w.write_batch(self.get_batch())
             w.flush()
@@ -603,9 +586,7 @@ class FSWriterTest(unittest.TestCase):
         options = self.get_writer_config()
         options['options']['filebase'] = os.path.join(self.tmp_dir, '{groups[0]}/{groups[1]}/file')
         options['options']['items_per_buffer_write'] = 2
-        writer = FSWriter(options=options,
-                          metadata=meta(),
-                          export_formatter=JsonExportFormatter(dict()))
+        writer = FSWriter(options=options, metadata=meta())
 
         # when:
         with closing(writer) as w:
