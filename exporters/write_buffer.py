@@ -29,11 +29,12 @@ class GroupingInfo(UserDict):
         return s
 
     def _init_group_info_key(self, key):
+        clean_filename_re = r"^[\w\.\s\d_-]+$"
         self[key] = {}
         self[key]['membership'] = key
         groups = tuple(
             g_info if re.match(
-                    "^[\w\.\s\d-]+$", g_info) else self._get_random_string() for g_info in key)
+                    clean_filename_re, g_info) else self._get_random_string() for g_info in key)
         self[key]['path_safe_keys'] = groups
         self[key]['total_items'] = 0
         self[key]['buffered_items'] = 0
