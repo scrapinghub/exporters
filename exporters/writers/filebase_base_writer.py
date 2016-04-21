@@ -41,6 +41,18 @@ class Filebase(object):
         return bool(re.findall('\{'+key+'\[\d\]\}', self.filebase_template))
 
     def formatted_prefix(self, **format_info):
+        """
+        Gets a dict with format info, and formats a prefix template with that info. For example:
+        if our prefix template is:
+        'some_file_{groups[0]}_{file_number}'
+
+        And we have this method called with:
+
+        formatted_prefix(groups=[US], file_number=0)
+
+        The returned formatted prefix would be:
+        'some_file_US_0'
+        """
         prefix_name = self.prefix_template.format(**format_info)
         file_number = format_info.pop('file_number', 0)
         if prefix_name == self.prefix_template:
