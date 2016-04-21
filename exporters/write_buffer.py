@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 import uuid
+import re
 import hashlib
 from six.moves import UserDict
 
@@ -17,10 +18,24 @@ class GroupingInfo(UserDict):
     * which are the buffer files used
     * how many items are in the current buffer
     """
+    used_random_strings = set()
+
+    def _get_random_string(self, length=7):
+        while True:
+            s = str(uuid.uuid4())[:length]
+            if s not in self.used_random_strings:
+                break
+        self.used_random_strings.add(s)
+        return s
 
     def _init_group_info_key(self, key):
+        clean_filename_re = r"^[\w\.\s\d_-]+$"
         self[key] = {}
         self[key]['membership'] = key
+        groups = tuple(
+            g_info if re.match(
+                    clean_filename_re, g_info) else self._get_random_string() for g_info in key)
+        self[key]['path_safe_keys'] = groups
         self[key]['total_items'] = 0
         self[key]['buffered_items'] = 0
         self[key]['group_file'] = []
