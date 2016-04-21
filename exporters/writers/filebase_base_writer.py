@@ -150,7 +150,7 @@ class FilebaseBaseWriter(BaseWriter):
 
     def _write_current_buffer_for_group_key(self, key):
         write_info = self.write_buffer.pack_buffer(key)
-        compressed_path = write_info.get('compressed_path')
+        compressed_path = write_info['compressed_path']
 
         self.write(compressed_path,
                    self.write_buffer.grouping_info[key]['membership'],
