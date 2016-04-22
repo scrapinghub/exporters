@@ -47,8 +47,7 @@ class BaseWriter(BasePipelineItem):
                                     'logger_name': options.get('logger_name')})
         self.export_formatter = kwargs.get('export_formatter')
         if self.export_formatter is None:
-            self.export_formatter = DEFAULT_FORMATTER_CLASS(options=dict())
-
+            self.export_formatter = DEFAULT_FORMATTER_CLASS(options=dict(), metadata=metadata)
         items_per_buffer_write = self.read_option('items_per_buffer_write')
         size_per_buffer_write = self.read_option('size_per_buffer_write')
         compression_format = self._get_compression_format()

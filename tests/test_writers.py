@@ -284,7 +284,7 @@ class CustomWriterTest(unittest.TestCase):
                 'jsonlines': False
             }
         }
-        formatter = JsonExportFormatter(options)
+        formatter = JsonExportFormatter(options, meta())
         writer = FakeWriter({}, {}, export_formatter=formatter)
 
         # when:
@@ -304,7 +304,7 @@ class CustomWriterTest(unittest.TestCase):
 
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
-        item_writer = ItemsGroupFilesHandler(JsonExportFormatter({}))
+        item_writer = ItemsGroupFilesHandler(JsonExportFormatter({}, meta()))
         self.write_buffer = WriteBuffer(1000, 1000, item_writer)
 
     def tearDown(self):
