@@ -209,12 +209,17 @@ class S3Bypass(BaseBypass):
                     'Skipping copy integrity. We have no READ_ACP/WRITE_ACP permissions')
 
     def _check_multipart_copy_integrity(self, key, dest_bucket, dest_key_name, path):
-        dest_key = dest_bucket.get_key(dest_key_name)
-        md5 = calculate_multipart_etag(path, CHUNK_SIZE)
-        if dest_key.etag != md5:
-            raise InvalidKeyIntegrityCheck(
-                'Key {} and key {} md5 checksums are different. {} != {}'.format(
-                    key.name, dest_key_name.name, md5, dest_key_name.etag))
+        from boto.exception import S3ResponseError
+        try:
+            dest_key = dest_bucket.get_key(dest_key_name)
+            md5 = calculate_multipart_etag(path, CHUNK_SIZE)
+            if dest_key.etag != md5:
+                raise InvalidKeyIntegrityCheck(
+                    'Key {} and key {} md5 checksums are different. {} != {}'.format(
+                        key.name, dest_key_name.name, md5, dest_key_name.etag))
+        except S3ResponseError:
+            self.logger.warning(
+                    'Skipping copy integrity. We have no READ_ACP/WRITE_ACP permissions')
 
     def _copy_without_permissions(self, dest_bucket, dest_key_name, source_bucket, key_name):
         key = source_bucket.get_key(key_name)
