@@ -194,22 +194,33 @@ class S3Bypass(BaseBypass):
         mp.upload_part_from_file(chunk.bytes, part_num=chunk.number)
 
     def _upload_large_file(self, bucket, dump_path, key_name):
+        from boto.exception import S3ResponseError
         self.logger.info('Using multipart S3 uploader')
         with multipart_upload(bucket, key_name) as mp:
             for chunk in split_file(dump_path):
                 self._upload_chunk(mp, chunk)
                 self.logger.info(
                         'Uploaded chunk number {}'.format(chunk.number))
-        with closing(bucket.get_key(key_name)) as key:
-            self._ensure_proper_key_permissions(key)
+        try:
+            with closing(bucket.get_key(key_name)) as key:
+                self._ensure_proper_key_permissions(key)
+        except S3ResponseError:
+            self.logger.warning(
+                    'We could not ensure proper permissions. '
+                    'We have no READ_ACP/WRITE_ACP permissions')
 
     def _check_multipart_copy_integrity(self, key, dest_bucket, dest_key_name, path):
-        dest_key = dest_bucket.get_key(dest_key_name)
-        md5 = calculate_multipart_etag(path, CHUNK_SIZE)
-        if dest_key.etag != md5:
-            raise InvalidKeyIntegrityCheck(
-                'Key {} and key {} md5 checksums are different. {} != {}'.format(
-                    key.name, dest_key_name.name, md5, dest_key_name.etag))
+        from boto.exception import S3ResponseError
+        try:
+            dest_key = dest_bucket.get_key(dest_key_name)
+            md5 = calculate_multipart_etag(path, CHUNK_SIZE)
+            if dest_key.etag != md5:
+                raise InvalidKeyIntegrityCheck(
+                    'Key {} and key {} md5 checksums are different. {} != {}'.format(
+                        key.name, dest_key_name.name, md5, dest_key_name.etag))
+        except S3ResponseError:
+            self.logger.warning(
+                    'Skipping copy integrity. We have no READ_ACP/WRITE_ACP permissions')
 
     def _copy_without_permissions(self, dest_bucket, dest_key_name, source_bucket, key_name):
         key = source_bucket.get_key(key_name)
