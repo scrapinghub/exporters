@@ -1,8 +1,5 @@
 import json
-
 import datetime
-from collections import Counter
-
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 
 
@@ -36,7 +33,6 @@ class JsonExportFormatter(BaseExportFormatter):
         if not self.jsonlines:
             self.file_extension = 'json'
             self.item_separator = ',\n'
-        self.set_metadata('formatted_items', Counter())
 
     def format(self, item):
         options = dict(indent=2, sort_keys=True) if self.pretty_print else dict()
