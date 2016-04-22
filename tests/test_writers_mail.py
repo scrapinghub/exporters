@@ -1,6 +1,5 @@
 import unittest
 
-from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.writers import MailWriter
 
 from .utils import meta
@@ -32,7 +31,7 @@ class MailWriterTest(unittest.TestCase):
 
     def test_write_no_items(self):
         writer = FakeMailWriter(
-            self.writer_config, meta(), export_formatter=JsonExportFormatter(dict()))
+            self.writer_config, meta())
         writer.write(self.batch_path, [])
         self.assertEqual(writer.send_called_number, 0)
         writer.set_metadata('items_count', 1)

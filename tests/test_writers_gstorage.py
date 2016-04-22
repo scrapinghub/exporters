@@ -2,7 +2,6 @@ import mock
 import unittest
 from contextlib import nested
 
-from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
 from exporters.writers.gstorage_writer import GStorageWriter
 from exporters.writers.base_writer import InconsistentWriteState
@@ -38,8 +37,7 @@ class GStorageWriterTest(unittest.TestCase):
         options = self.get_options()
 
         with mock.patch('gcloud.storage.Client.from_service_account_json') as mocked:
-            writer = GStorageWriter(
-                options, meta(), export_formatter=JsonExportFormatter(dict()))
+            writer = GStorageWriter(options, meta())
             writer.write_batch(items_to_write)
             writer.flush()
             writer.close()
@@ -56,8 +54,7 @@ class GStorageWriterTest(unittest.TestCase):
         options['options']['check_consistency'] = True
 
         # when:
-        writer = GStorageWriter(
-            options, meta(), export_formatter=JsonExportFormatter(dict()))
+        writer = GStorageWriter(options, meta())
         try:
             writer.write_batch(items_to_write)
             writer.flush()
@@ -80,7 +77,7 @@ class GStorageWriterTest(unittest.TestCase):
         with nested(mock.patch.dict('os.environ', env),
                     mock.patch('pkg_resources.resource_string', return_value='{}'),
                     mock.patch('gcloud.storage.Client.from_service_account_json')):
-            GStorageWriter(options, meta(), export_formatter=JsonExportFormatter(dict()))
+            GStorageWriter(options, meta())
 
     def test_init_fails_with_bad_resource(self):
         options = {
@@ -94,4 +91,4 @@ class GStorageWriterTest(unittest.TestCase):
         env = {'EXPORTERS_GSTORAGE_CREDS_RESOURCE': 'a:b'}
         with nested(self.assertRaisesRegexp(ImportError, 'No module named a'),
                     mock.patch.dict('os.environ', env)):
-            GStorageWriter(options, meta(), export_formatter=JsonExportFormatter(dict()))
+            GStorageWriter(options, meta())
