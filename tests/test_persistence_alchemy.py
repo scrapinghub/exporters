@@ -41,7 +41,8 @@ class SqlitePersistenceTest(unittest.TestCase):
         persistence.commit_position(dict(read=20000))
 
         # then:
-        result = query_db(dbfile, 'SELECT * FROM job WHERE id = %s' % persistence.persistence_state_id)
+        result = query_db(dbfile, 'SELECT * FROM job WHERE id = %s'
+                          % persistence.persistence_state_id)
         self.assertEqual(dict(read=20000), persistence.get_last_position())
         self.assertFalse(result[0]['job_finished'], "Job should not marked as finished")
 
