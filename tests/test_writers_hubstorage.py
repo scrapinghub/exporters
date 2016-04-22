@@ -1,7 +1,6 @@
-import json
-import responses
+import mock
 import unittest
-from copy import deepcopy
+from contextlib import closing
 
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
@@ -11,7 +10,10 @@ from .utils import meta
 
 
 class HubstorageWriterTest(unittest.TestCase):
-    def test_should_push_items_to_hubstorage(self):
+
+    @mock.patch('hubstorage.collectionsrt.Collection')
+    def test_should_push_items_to_hubstorage(self, mock_col):
+        mock_writer = mock_col.return_value.create_writer.return_value
         # given:
         batch = [
             BaseRecord({'name': 'item1', 'country_code': 'es'}),
@@ -23,24 +25,19 @@ class HubstorageWriterTest(unittest.TestCase):
             "project_id": "10804",
             "collection_name": "test_collection",
             "key_field": "name",
-            'apikey': 'fakeapikey'
+            'apikey': 'fakeapikey',
+            'size_per_buffer_write': 2,
         }
 
         # when:
-        with responses.RequestsMock(assert_all_requests_are_fired=False) as r:
-            r.add(responses.POST,
-                  "http://storage.scrapinghub.com/collections/10804/s/test_collection",
-                  body='{}')
-            writer = HubstorageWriter({"options": options}, meta(),
-                                      export_formatter=JsonExportFormatter(dict()))
+        writer = HubstorageWriter({"options": options}, meta(),
+                                  export_formatter=JsonExportFormatter(dict()))
+        with closing(writer):
             writer.write_batch(batch)
-            written = [json.loads(l) for l in r.calls[0].request.body.split('\n')]
+            writer.flush()
 
-        # then:
+        self.assertEqual(3, len(mock_writer.write.mock_calls))
         self.assertEqual(3, writer.get_metadata('items_count'))
-        expected_items = deepcopy(batch)
-        for item in expected_items:
-            item['_key'] = item['name']
-        self.assertEqual(written, expected_items)
 
-        writer.close()
+        expected_calls = [mock.call(dict(it, _key=it['name'])) for it in batch]
+        self.assertEqual(expected_calls, mock_writer.write.mock_calls)
