@@ -35,7 +35,7 @@ class MysqlPersistenceTest(unittest.TestCase):
         self.assertIsInstance(persistence, MysqlPersistence)
 
     @patch('sqlalchemy.orm.session.Session.add')
-    @patch('exporters.persistence.base_sqlalchemy_persistence.Job')
+    @patch('exporters.persistence.alchemy_persistence.Job')
     @patch('sqlalchemy.schema.MetaData.create_all')
     @patch('sqlalchemy.orm.session.Session.query')
     def test_create_persistence_job_resume(self, mock_query, mock_metadata, mock_job, mock_add):
@@ -198,7 +198,7 @@ class PostgresqlPersistenceTest(unittest.TestCase):
         self.assertTrue(persistence.get_last_position() == 0)
 
     @patch('sqlalchemy.orm.session.Session.add')
-    @patch('exporters.persistence.base_sqlalchemy_persistence.Job')
+    @patch('exporters.persistence.alchemy_persistence.Job')
     @patch('sqlalchemy.schema.MetaData.create_all')
     @patch('sqlalchemy.orm.session.Session.query')
     def test_create_persistence_job_resume(self, mock_query, mock_metadata, mock_job, mock_add):
