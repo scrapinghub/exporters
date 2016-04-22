@@ -106,11 +106,15 @@ class ItemsGroupFilesHandler(object):
     def _add_to_file(self, content, key):
         path = self.get_current_buffer_path_for_group(key)
         with open(path, 'a') as f:
-            f.write(content + '\n')
+            f.write(content)
         self.grouping_info.add_to_group(key)
 
     def add_item_to_file(self, item, key):
         content = self.formatter.format(item)
+        self._add_to_file(content, key)
+
+    def add_item_separator_to_file(self, key):
+        content = self.formatter.item_separator
         self._add_to_file(content, key)
 
     def end_group_file(self, key):
@@ -118,7 +122,7 @@ class ItemsGroupFilesHandler(object):
         footer = self.formatter.format_footer()
         if footer:
             with open(path, 'a') as f:
-                f.write(footer)
+                f.write('\n'+footer)
         return path
 
     def close(self):
@@ -171,8 +175,13 @@ class WriteBuffer(object):
         Receive an item and write it.
         """
         key = self.get_key_from_item(item)
+        if not self.is_first_file_item(key):
+            self.items_group_files.add_item_separator_to_file(key)
         self.grouping_info.ensure_group_info(key)
         self.items_group_files.add_item_to_file(item, key)
+
+    def is_first_file_item(self, key):
+        return self.grouping_info.get(key, {}).get('buffered_items', 0) == 0
 
     def finish_buffer_write(self, key):
         self.items_group_files.end_group_file(key)
