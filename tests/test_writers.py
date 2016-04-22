@@ -195,8 +195,6 @@ class CustomWriterTest(unittest.TestCase):
                for l in output[2:-1]] + \
               [output[-1]]
 
-        print out
-
         self.assertEquals(expected, out)
         self.assertEquals('xml', writer.write_buffer.items_group_files.file_extension)
 
