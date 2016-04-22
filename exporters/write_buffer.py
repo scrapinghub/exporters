@@ -122,7 +122,7 @@ class ItemsGroupFilesHandler(object):
         footer = self.formatter.format_footer()
         if footer:
             with open(path, 'a') as f:
-                f.write('\n'+footer)
+                f.write(footer)
         return path
 
     def close(self):

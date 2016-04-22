@@ -47,4 +47,4 @@ class JsonExportFormatter(BaseExportFormatter):
     def format_footer(self):
         if self.jsonlines:
             return ''
-        return ']'
+        return '\n]'
