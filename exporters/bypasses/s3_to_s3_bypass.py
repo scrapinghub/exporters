@@ -206,7 +206,8 @@ class S3Bypass(BaseBypass):
                 self._ensure_proper_key_permissions(key)
         except S3ResponseError:
             self.logger.warning(
-                    'Skipping copy integrity. We have no READ_ACP/WRITE_ACP permissions')
+                    'We could not ensure proper permissions. '
+                    'We have no READ_ACP/WRITE_ACP permissions')
 
     def _check_multipart_copy_integrity(self, key, dest_bucket, dest_key_name, path):
         from boto.exception import S3ResponseError
