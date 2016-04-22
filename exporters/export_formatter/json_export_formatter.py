@@ -35,14 +35,15 @@ class JsonExportFormatter(BaseExportFormatter):
         self.jsonlines = self.read_option('jsonlines')
         if not self.jsonlines:
             self.file_extension = 'json'
-        self.formatted_items = Counter()
+        self.set_metadata('formatted_items', Counter())
 
     def format(self, item):
         options = dict(indent=2, sort_keys=True) if self.pretty_print else dict()
         line = json.dumps(item, default=default, **options)
-        if not self.jsonlines and self.formatted_items.get(item.group_membership):
+        formatted_items = self.get_metadata('formatted_items')
+        if not self.jsonlines and formatted_items.get(item.group_membership):
             line = ',' + line
-        self.formatted_items[item.group_membership] += 1
+        formatted_items[item.group_membership] += 1
         return line
 
     def format_header(self):
