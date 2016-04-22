@@ -30,19 +30,26 @@ class BaseAlchemyPersistence(BasePersistence):
         'port': {'type': int},
         'database': {'type': basestring}
     }
+    PROTOCOL = None
+
+    # example: mysql://username:password@host:port/database/JOB_ID
+    persistence_uri_re = (r'(?P<proto>[a-z]+)://(?P<user>.+):(?P<password>.+)@'
+                          r'(?P<host>.+):(?P<port>\d+)/(?P<database>.+)/(?P<job_id>\d+)')
 
     def __init__(self, *args, **kwargs):
         self.engine = None
         super(BaseAlchemyPersistence, self).__init__(*args, **kwargs)
 
     def _db_init(self):
-        user = self.read_option('user')
-        password = self.read_option('password')
-        host = self.read_option('host')
-        port = self.read_option('port')
-        database = self.read_option('database')
-        self.engine = create_engine(
-            '{}://{}:{}@{}:{}/{}'.format(self.PROTOCOL, user, password, host, port, database))
+        db_uri = self.build_db_conn_uri(
+            proto=self.PROTOCOL,
+            user=self.read_option('user'),
+            password=self.read_option('password'),
+            host=self.read_option('host'),
+            port=self.read_option('port'),
+            database=self.read_option('database'),
+        )
+        self.engine = create_engine(db_uri)
         Base.metadata.create_all(self.engine)
         Base.metadata.bind = self.engine
         DBSession = sessionmaker(bind=self.engine)
@@ -52,8 +59,7 @@ class BaseAlchemyPersistence(BasePersistence):
         if not self.engine:
             self._db_init()
         job = self.session.query(Job).filter(Job.id == self.persistence_state_id).first()
-        last_position = json.loads(job.last_position)
-        return last_position
+        return json.loads(job.last_position)
 
     def commit_position(self, last_position=None):
         self.last_position = last_position
@@ -70,7 +76,7 @@ class BaseAlchemyPersistence(BasePersistence):
     def generate_new_job(self):
         if not self.engine:
             self._db_init()
-        new_job = Job(last_position='None', configuration=str(self.configuration))
+        new_job = Job(last_position='None', configuration=json.dumps(self.configuration))
         self.session.add(new_job)
         self.session.commit()
         self.persistence_state_id = new_job.id
@@ -81,27 +87,51 @@ class BaseAlchemyPersistence(BasePersistence):
 
     def close(self):
         self.session.query(Job).filter(Job.id == self.persistence_state_id).update(
-            job_finished=True,
-            last_committed=datetime.datetime.now(),
+            dict(job_finished=True, last_committed=datetime.datetime.now()),
             synchronize_session='fetch'
         )
         self.session.commit()
         self.session.close()
 
-    @staticmethod
-    def configuration_from_uri(uri, uri_regex):
+    @classmethod
+    def build_db_conn_uri(cls, **kwargs):
+        """Build the database connection URI from the given keyword arguments
         """
-        returns a configuration object.
+        return '{proto}://{user}:{password}@{host}:{port}/{database}'.format(**kwargs)
+
+    @classmethod
+    def parse_persistence_uri(cls, persistence_uri):
+        """Parse a database URI and the persistence state ID from
+        the given persistence URI
         """
-        connection_parameters = re.match(uri_regex, uri).groups()
-        user, password, host, port, database, persistence_state_id = connection_parameters
-        engine = create_engine(
-            '{}://{}:{}@{}:{}/{}'.format(uri.split('://')[0], user, password, host, port, database))
+        regex = cls.persistence_uri_re
+        match = re.match(regex, persistence_uri)
+        if not match:
+            raise ValueError("Couldn't parse persistence URI: %s -- regex: %s)"
+                             % (persistence_uri, regex))
+
+        conn_params = match.groupdict()
+        missing = {'proto', 'job_id', 'database'} - set(conn_params)
+        if missing:
+            raise ValueError('Missing required parameters: %s (given params: %s)'
+                             % (tuple(missing), conn_params))
+
+        persistence_state_id = int(conn_params.pop('job_id'))
+        db_uri = cls.build_db_conn_uri(**conn_params)
+        return db_uri, persistence_state_id
+
+    @classmethod
+    def configuration_from_uri(cls, persistence_uri):
+        """
+        Return a configuration object.
+        """
+        db_uri, persistence_state_id = cls.parse_persistence_uri(persistence_uri)
+        engine = create_engine(db_uri)
         Base.metadata.create_all(engine)
         Base.metadata.bind = engine
         DBSession = sessionmaker(bind=engine)
         session = DBSession()
-        job = session.query(Job).filter(Job.id == int(persistence_state_id)).first()
+        job = session.query(Job).filter(Job.id == persistence_state_id).first()
         configuration = job.configuration
         configuration = yaml.safe_load(configuration)
         configuration['exporter_options']['resume'] = True
@@ -133,12 +163,26 @@ Name of the database in which store jobs persistence
 class MysqlPersistence(BaseAlchemyPersistence):
     PROTOCOL = 'mysql'
     __doc__ = _docstring.format(protocol=PROTOCOL)
-    # mysql://username:password@host:port/database/job_id
-    uri_regex = 'mysql:\/\/(.+):(.+)@(.+):(\d+)\/(.+)\/(\d+)'
 
 
 class PostgresqlPersistence(BaseAlchemyPersistence):
     PROTOCOL = 'postgresql'
     __doc__ = _docstring.format(protocol=PROTOCOL)
-    # postgresql://username:password@host:port/database/job_id
-    uri_regex = 'postgresql:\/\/(.+):(.+)@(.+):(\d+)\/(.+)\/(\d+)'
+
+
+class SqlitePersistence(BaseAlchemyPersistence):
+    PROTOCOL = 'postgresql'
+    __doc__ = _docstring.format(protocol=PROTOCOL)
+    # sqlite://path/to/file.db:JOB_ID
+    persistence_uri_re = '(?P<proto>sqlite)://(?P<database>.+):(?P<job_id>\d+)'
+    supported_options = {
+        # set defaults for unneeded options
+        'user': {'type': basestring, 'default': ''},
+        'password': {'type': basestring, 'default': ''},
+        'host': {'type': basestring, 'default': ''},
+        'port': {'type': int, 'default': ''},
+    }
+
+    @classmethod
+    def build_db_conn_uri(self, **kwargs):
+        return 'sqlite+pysqlite:///%s' % kwargs.pop('database')
