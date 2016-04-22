@@ -46,10 +46,6 @@ class FTPWriter(FilebaseBaseWriter):
         self.ftp_user = self.read_option('ftp_user')
         self.ftp_password = self.read_option('ftp_password')
         self.set_metadata('files_written', [])
-        self.logger.info(
-            'FTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(
-                self.ftp_host, self.ftp_port,
-                self.filebase))
 
     def _create_target_dir_if_needed(self, target, depth_limit=20):
         """Creates the directory for the path given, recursively creating

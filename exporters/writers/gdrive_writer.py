@@ -45,8 +45,6 @@ class GDriveWriter(FilebaseBaseWriter):
         gauth.LoadCredentialsFile(credentials_file)
         shutil.rmtree(files_tmp_path)
         self.drive = GoogleDrive(gauth)
-        self.logger.info(
-            'GDriveWriter has been initiated. Writing to: {}'.format(self.filebase))
         self.set_metadata('files_counter', Counter())
         self.set_metadata('files_written', [])
 

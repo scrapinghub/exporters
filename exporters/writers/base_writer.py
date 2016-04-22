@@ -1,5 +1,5 @@
 import six
-
+from exporters.export_formatter import DEFAULT_FORMATTER_CLASS
 from exporters.compression import FILE_COMPRESSION
 from exporters.exceptions import ConfigurationError
 from exporters.logger.base_logger import WriterLogger
@@ -46,6 +46,8 @@ class BaseWriter(BasePipelineItem):
         self.logger = WriterLogger({'log_level': options.get('log_level'),
                                     'logger_name': options.get('logger_name')})
         self.export_formatter = kwargs.get('export_formatter')
+        if self.export_formatter is None:
+            self.export_formatter = DEFAULT_FORMATTER_CLASS(options=dict())
 
         items_per_buffer_write = self.read_option('items_per_buffer_write')
         size_per_buffer_write = self.read_option('size_per_buffer_write')

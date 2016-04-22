@@ -70,14 +70,6 @@ class CloudsearchWriterTest(unittest.TestCase):
         endpoint_url = "http://fake-domain.us-west-2.cloudsearch.amazonaws.com"
         config = {
             "label": "unittest",
-            "exporter_options": {
-                "formatter": {
-                    "name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter",
-                    "options": {}
-                },
-                "log_level": "INFO",
-                "logger_name": "export-pipeline",
-            },
             "reader": {
                 "name": "exporters.readers.random_reader.RandomReader",
                 "options": {

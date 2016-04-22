@@ -1,5 +1,4 @@
 import six
-from copy import copy
 from exporters.writers.base_writer import BaseWriter
 
 
@@ -32,6 +31,7 @@ class HubstorageWriter(BaseWriter):
         },
         'key_field': {
             'type': six.string_types,
+            'default': '_key',
             'help': 'Record field which should be used as Hubstorage item key'
         },
         'apikey': {
@@ -47,18 +47,19 @@ class HubstorageWriter(BaseWriter):
         self.collection_name = self.read_option('collection_name')
         self.key_field = self.read_option('key_field')
         self.collection = self._get_collection()
+        self.collection_writer = self.collection.create_writer()
         self.logger.info('Will write items into project {}, '
                          ' collection {}'.format(self.project_id, self.collection_name))
 
     def write_batch(self, batch):
-        super(HubstorageWriter, self).write_batch(batch)
-
-        hs_items = []
         for item in batch:
-            hs_item = copy(item)  # shallow copy should be enough
-            hs_item['_key'] = item[self.key_field]
-            hs_items.append(hs_item)
-        self.collection.set(hs_items)
+            item_key = item[self.key_field]
+            self.collection_writer.write(dict(item, _key=item_key))
+            self.increment_written_items()
+            self._check_items_limit()
+
+    def flush(self):
+        self.collection_writer.flush()
 
     def _get_collection(self):
         import hubstorage

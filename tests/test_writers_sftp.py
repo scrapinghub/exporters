@@ -2,7 +2,6 @@ import unittest
 
 import errno
 import mock
-from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
 from exporters.writers import SFTPWriter
 from exporters.writers.base_writer import InconsistentWriteState
@@ -32,8 +31,7 @@ class SFTPWriterTest(unittest.TestCase):
 
     def test_create(self):
         options = self.get_writer_config()
-        writer = SFTPWriter(options, meta(),
-                            export_formatter=JsonExportFormatter(dict()))
+        writer = SFTPWriter(options, meta())
         self.assertEquals(22, writer.read_option('port'))
         writer.close()
 
@@ -47,8 +45,7 @@ class SFTPWriterTest(unittest.TestCase):
 
         # when:
         try:
-            writer = SFTPWriter(options, meta(),
-                                export_formatter=JsonExportFormatter(dict()))
+            writer = SFTPWriter(options, meta())
             writer.write_batch(items_to_write)
             writer.flush()
         finally:

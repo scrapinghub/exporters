@@ -11,7 +11,7 @@ from exporters.export_managers.basic_exporter import BasicExporter
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.readers.random_reader import RandomReader
 from exporters.transform.no_transform import NoTransform
-from exporters.utils import TmpFile
+from exporters.utils import TmpFile, TemporaryDirectory
 from exporters.writers.console_writer import ConsoleWriter
 from .utils import valid_config_with_updates, ErrorWriter, CopyingMagicMock
 
@@ -68,6 +68,33 @@ class BaseExportManagerTest(unittest.TestCase):
         self.assertEquals(10, exporter.writer.get_metadata('items_count'))
 
     def test_simple_grouped_export(self):
+        config = self.build_config(
+            writer={
+                'name': 'exporters.writers.fs_writer.FSWriter',
+                'options': {
+                    'filebase': os.path.join(self.tmp_dir, '{file_number}_ds_dump_{groups[0]}'),
+                    'items_per_buffer_write': 100,
+                }
+            },
+            grouper={
+                'name': 'exporters.groupers.file_key_grouper.FileKeyGrouper',
+                'options': {
+                    'keys': ['state'],
+                }
+            }
+        )
+        config['reader']['options']['number_of_items'] = 1000
+        self.exporter = exporter = BaseExporter(config)
+        exporter.export()
+        used_paths = [value['path_safe_keys'][0]
+                      for key, value in exporter.writer.write_buffer.grouping_info.iteritems()]
+        regex = '\d_ds_dump_({})'.format('|'.join(used_paths))
+        written_files = [os.path.basename(f) for f in exporter.writer.written_files.keys()]
+
+        for w_file in written_files:
+            self.assertRegexpMatches(w_file, regex)
+
+    def test_grouping_with_non_valid_characters(self):
         config = self.build_config(
             writer={
                 'name': 'exporters.writers.fs_writer.FSWriter',
@@ -240,6 +267,36 @@ class BaseExportManagerTest(unittest.TestCase):
         self.assertEquals(exporter.reader.get_metadata('read_items'),
                           exporter.writer.get_metadata('items_count'),
                           msg="Export should write the same number items as it has read")
+
+    def test_fs_grouping_without_filebase(self):
+        with TemporaryDirectory() as tmp_dir:
+            options = {
+                'reader': {
+                    'name': 'exporters.readers.random_reader.RandomReader',
+                    'options': {
+                        'number_of_items': 123,
+                        'batch_size': 7
+                    }
+                },
+                'writer': {
+                    'name': 'exporters.writers.fs_writer.FSWriter',
+                    'options': {
+                        'filebase': tmp_dir+'/some_file_'
+                    }
+                },
+                'persistence': {
+                    'name': 'tests.utils.NullPersistence',
+                },
+                'grouper': {
+                    'name': 'exporters.groupers.file_key_grouper.FileKeyGrouper',
+                    'options': {
+                        'keys': ['country_code']
+                    }
+                }
+            }
+            self.exporter = exporter = BaseExporter(options)
+            exporter.export()
+            self.assertEqual(len(os.listdir(tmp_dir)), 3, 'There should be a file for every group')
 
     def test_notifier_integration_ok(self):
         notifier_class_path = 'exporters.notifications.base_notifier.BaseNotifier'

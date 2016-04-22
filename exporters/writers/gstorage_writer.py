@@ -62,8 +62,6 @@ class GStorageWriter(FilebaseBaseWriter):
             client = storage.Client.from_service_account_json(credentials_file,
                                                               project=project)
         self.bucket = client.bucket(bucket_name)
-        self.logger.info('GStorageWriter has been initiated.'
-                         'Writing to {}'.format(self._blob_url(bucket_name, self.filebase)))
         self.set_metadata('files_written', [])
 
     def _blob_url(self, bucket_name, blob_name):

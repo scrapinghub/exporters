@@ -5,7 +5,6 @@ import warnings
 from exporters.meta import ExportMeta
 from exporters.records.base_record import BaseRecord
 from exporters.writers.azure_blob_writer import AzureBlobWriter
-from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.writers.azure_file_writer import AzureFileWriter
 from exporters.writers.base_writer import InconsistentWriteState
 
@@ -37,8 +36,7 @@ class AzureBlobWriterTest(unittest.TestCase):
         options['options']['container'] = 'invalid--container--name'
         warnings.simplefilter('always')
         with warnings.catch_warnings(record=True) as w:
-            writer = AzureBlobWriter(
-                options, meta(), export_formatter=JsonExportFormatter(dict()))
+            writer = AzureBlobWriter(options, meta())
             self.assertIn("Container name invalid--container--name doesn't conform",
                           str(w[0].message))
             writer.close()
@@ -52,8 +50,7 @@ class AzureBlobWriterTest(unittest.TestCase):
         options = self.get_writer_config()
 
         # when:
-        writer = AzureBlobWriter(
-            options, meta(), export_formatter=JsonExportFormatter(dict()))
+        writer = AzureBlobWriter(options, meta())
         try:
             writer.write_batch(items_to_write)
             writer.flush()
@@ -80,8 +77,7 @@ class AzureBlobWriterTest(unittest.TestCase):
         get_blob_properties_mock.return_value = Blob(props=fake_properties)
 
         # when:
-        writer = AzureBlobWriter(
-            options, meta(), export_formatter=JsonExportFormatter(dict()))
+        writer = AzureBlobWriter(options, meta())
         try:
             writer.write_batch(items_to_write)
             writer.flush()
@@ -105,8 +101,7 @@ class AzureBlobWriterTest(unittest.TestCase):
         get_blob_properties_mock.side_effect = AzureMissingResourceHttpError('', 404)
 
         # when:
-        writer = AzureBlobWriter(
-            options, meta(), export_formatter=JsonExportFormatter(dict()))
+        writer = AzureBlobWriter(options, meta())
         try:
             writer.write_batch(items_to_write)
             writer.flush()
@@ -154,8 +149,7 @@ class AzureFileWriterTest(unittest.TestCase):
         get_file_properties_mock.return_value = File(props=fake_properties)
 
         # when:
-        writer = AzureFileWriter(options, ExportMeta(options),
-                                 export_formatter=JsonExportFormatter(dict()))
+        writer = AzureFileWriter(options, ExportMeta(options))
         try:
             writer.write_batch(items_to_write)
             writer.flush()
@@ -180,8 +174,7 @@ class AzureFileWriterTest(unittest.TestCase):
         get_file_properties_mock.side_effect = AzureMissingResourceHttpError('', 404)
 
         # when:
-        writer = AzureFileWriter(
-            options, meta(), export_formatter=JsonExportFormatter(dict()))
+        writer = AzureFileWriter(options, meta())
         try:
             writer.write_batch(items_to_write)
             writer.flush()

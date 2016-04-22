@@ -86,8 +86,6 @@ class S3Writer(FilebaseBaseWriter):
                                               aws_secret_access_key=secret_key)
         self.bucket = self.conn.get_bucket(bucket_name, validate=False)
         self.save_metadata = self.read_option('save_metadata')
-        self.logger.info('S3Writer has been initiated.'
-                         'Writing to s3://{}/{}'.format(self.bucket.name, self.filebase))
         self.set_metadata('files_counter', Counter())
         self.set_metadata('keys_written', [])
 
@@ -198,8 +196,7 @@ class S3Writer(FilebaseBaseWriter):
 
     def _update_last_pointer(self):
         save_pointer = self.read_option('save_pointer')
-        filebase, _ = os.path.split(self.filebase)
-        self._write_s3_pointer(save_pointer, filebase + '/')
+        self._write_s3_pointer(save_pointer, self.filebase.dirname_template + '/')
 
     def close(self):
         """

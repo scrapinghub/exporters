@@ -2,7 +2,6 @@ import unittest
 
 import vcr
 
-from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
 from exporters.writers.hs_reduce_writer import HubstorageReduceWriter
 
@@ -36,8 +35,7 @@ def reduce_function(item, accumulator=None):
             "key": "0004",
             'apikey': 'fakeapikey'
         }
-        writer = HubstorageReduceWriter({"options": options}, meta(),
-                                        export_formatter=JsonExportFormatter(dict()))
+        writer = HubstorageReduceWriter({"options": options}, meta())
 
         # when:
         writer.write_batch(batch)

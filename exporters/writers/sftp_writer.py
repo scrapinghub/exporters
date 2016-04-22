@@ -42,10 +42,6 @@ class SFTPWriter(FilebaseBaseWriter):
         self.sftp_user = self.read_option('sftp_user')
         self.sftp_password = self.read_option('sftp_password')
         self.set_metadata('files_written', [])
-        self.logger.info(
-            'SFTPWriter has been initiated. host: {}. port: {}. filebase: {}'.format(
-                self.sftp_host, self.sftp_port,
-                self.filebase))
 
     def _update_metadata(self, dump_path, destination):
         buffer_info = self.write_buffer.metadata.get(dump_path, {})

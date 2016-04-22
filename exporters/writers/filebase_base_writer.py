@@ -1,4 +1,5 @@
 import datetime
+import hashlib
 import os
 import re
 import uuid
@@ -10,12 +11,64 @@ from exporters.writers.base_writer import BaseWriter
 MD5_FILE_NAME = 'md5checksum.md5'
 
 
+def md5_for_file(f, block_size=2**20):
+    md5 = hashlib.md5()
+    while True:
+        data = f.read(block_size)
+        if not data:
+            break
+        md5.update(data)
+    return md5.hexdigest()
+
+
+class Filebase(object):
+    def __init__(self, filebase):
+        self.input_filebase = filebase
+        self.template = self._get_template()
+        self.dirname_template, self.prefix_template = os.path.split(self.template)
+
+    def _get_template(self):
+        return datetime.datetime.now().strftime(self.input_filebase)
+
+    def formatted_dirname(self, **format_info):
+        try:
+            dirname = self.dirname_template.format(**format_info)
+            return dirname
+        except KeyError as e:
+            raise KeyError('filebase option should not contain {} key'.format(str(e)))
+
+    def _has_key_info(self, key):
+        return bool(re.findall('\{'+key+'\[\d\]\}', self.template))
+
+    def formatted_prefix(self, **format_info):
+        """
+        Gets a dict with format info, and formats a prefix template with that info. For example:
+        if our prefix template is:
+        'some_file_{groups[0]}_{file_number}'
+
+        And we have this method called with:
+
+        formatted_prefix(groups=[US], file_number=0)
+
+        The returned formatted prefix would be:
+        'some_file_US_0'
+        """
+        prefix_name = self.prefix_template.format(**format_info)
+        file_number = format_info.pop('file_number', 0)
+        if prefix_name == self.prefix_template:
+            prefix_name += '{:04d}'.format(file_number)
+        for key, value in format_info.iteritems():
+            if value and not self._has_key_info(key):
+                prefix_name = '{}-{}'.format(prefix_name, ''.join(value))
+        return prefix_name
+
+
 class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
 
-    def __init__(self, formatter, prefix, start_file_count=0, **kwargs):
-        self.prefix = self._format_date(prefix)
+    def __init__(self, formatter, filebase, start_file_count=0):
+        super(CustomNameItemsGroupFilesHandler, self).__init__(formatter)
+        self.filebase = filebase
         self.start_file_count = start_file_count
-        super(CustomNameItemsGroupFilesHandler, self).__init__(formatter, **kwargs)
 
     def _get_new_path_name(self, key):
         """Build a filename for a new file for a given group,
@@ -27,27 +80,19 @@ class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
         """
         group_files = self.grouping_info[key]['group_file']
         group_folder = self._get_group_folder(group_files)
-
         current_file_count = len(group_files) + self.start_file_count
-        name_without_ext = self.prefix.format(file_number=current_file_count, groups=key)
-
-        if name_without_ext == self.prefix:
-            name_without_ext += '{:04d}'.format(current_file_count)
-
+        group_info = self.grouping_info[key]['path_safe_keys']
+        name_without_ext = self.filebase.formatted_prefix(
+                groups=group_info, file_number=current_file_count)
         filename = '{}.{}'.format(name_without_ext, self.file_extension)
         return os.path.join(group_folder, filename)
 
     def _get_group_folder(self, group_files):
         if group_files:
             return os.path.dirname(group_files[0])
-
         group_folder = os.path.join(self.tmp_folder, str(uuid.uuid4()))
         os.mkdir(group_folder)
         return group_folder
-
-    def _format_date(self, value):
-        date = datetime.datetime.now()
-        return date.strftime(value)
 
 
 class FilebaseBaseWriter(BaseWriter):
@@ -68,19 +113,22 @@ class FilebaseBaseWriter(BaseWriter):
 
     def __init__(self, *args, **kwargs):
         super(FilebaseBaseWriter, self).__init__(*args, **kwargs)
+        self.filebase = Filebase(self.read_option('filebase'))
+        self.set_metadata('effective_filebase', self.filebase.template)
         self.generate_md5 = self.read_option('generate_md5')
-        self.filebase = self.get_date_formatted_file_path()
-        self.set_metadata('effective_filebase', self.filebase)
         self.written_files = {}
         self.last_written_file = None
         self.generate_md5 = self.read_option('generate_md5')
+        self.logger.info(
+                '{} has been initiated. Writing to: {}'.format(
+                        self.__class__.__name__, self.filebase.template))
 
     def _items_group_files_handler(self):
-        _, prefix = os.path.split(self.read_option('filebase'))
-        start_file_count = self.read_option('start_file_count')
-        return CustomNameItemsGroupFilesHandler(self.export_formatter,
-                                                prefix,
-                                                start_file_count)
+        return CustomNameItemsGroupFilesHandler(
+                self.export_formatter,
+                filebase=Filebase(self.read_option('filebase')),
+                start_file_count=self.read_option('start_file_count')
+        )
 
     def write(self, path, key, file_name=False):
         """
@@ -94,24 +142,13 @@ class FilebaseBaseWriter(BaseWriter):
         """
         return str(uuid.uuid4())
 
-    def get_date_formatted_file_path(self):
-        self.logger.debug('Extracting path from filebase option')
-        filebase = self.read_option('filebase')
-        filebase = datetime.datetime.now().strftime(filebase)
-        return filebase
-
     def create_filebase_name(self, group_info, extension='gz', file_name=None):
         """
         Return tuple of resolved destination folder name and file name
         """
-        normalized = [re.sub('\W', '_', s) for s in group_info]
-        dirname, prefix = os.path.split(self.filebase)
-        try:
-            dirname = dirname.format(groups=normalized)
-        except KeyError as e:
-            raise KeyError('filebase option should not contain {} key'.format(str(e)))
+        dirname = self.filebase.formatted_dirname(groups=group_info)
         if not file_name:
-            file_name = prefix + '.' + extension
+            file_name = self.filebase.prefix_template + '.' + extension
         return dirname, file_name
 
     def _write_current_buffer_for_group_key(self, key):
