@@ -280,6 +280,31 @@ class CustomWriterTest(unittest.TestCase):
         # then:
         consistency_mock.assert_called_once_with()
 
+    def test_custom_writer_with_json_file_formatter(self):
+        # given:
+        options = {
+            'name': 'exporters.export_formatter.json_export_formatter.JSONExportFormatter',
+            'options': {
+                'jsonlines': False
+            }
+        }
+        formatter = JsonExportFormatter(options)
+        writer = FakeWriter({}, {}, export_formatter=formatter)
+
+        # when:
+        try:
+            writer.write_batch(self.batch)
+            writer.flush()
+        finally:
+            writer.close()
+
+        # then:
+        output = writer.custom_output[()]
+        out = json.loads(output)
+
+        self.assertEquals(self.batch, out)
+        self.assertEquals('json', writer.write_buffer.items_group_files.file_extension)
+
 
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):

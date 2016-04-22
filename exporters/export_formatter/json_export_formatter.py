@@ -33,6 +33,8 @@ class JsonExportFormatter(BaseExportFormatter):
         super(JsonExportFormatter, self).__init__(*args, **kwargs)
         self.pretty_print = self.read_option('pretty_print')
         self.jsonlines = self.read_option('jsonlines')
+        if not self.jsonlines:
+            self.file_extension = 'json'
         self.formatted_items = Counter()
 
     def format(self, item):
