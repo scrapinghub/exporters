@@ -23,7 +23,17 @@ def multipart_upload(bucket, key_name):
         raise
 
 
-def should_use_multipart_upload(path):
+def should_use_multipart_upload(path, bucket):
+    from boto.exception import S3ResponseError
+    # We need to check if we have READ permissions on this bucket, as they are
+    # needed to perform the complete_upload operation.
+    try:
+        acl = bucket.get_acl()
+        for grant in acl.acl.grants:
+            if grant.permission == 'READ':
+                break
+    except S3ResponseError:
+        return False
     return os.path.getsize(path) > CHUNK_SIZE
 
 
@@ -173,7 +183,7 @@ class S3Writer(FilebaseBaseWriter):
     def _write_s3_key(self, dump_path, key_name):
         destination = 's3://{}/{}'.format(self.bucket.name, key_name)
         self.logger.info('Start uploading {} to {}'.format(dump_path, destination))
-        if should_use_multipart_upload(dump_path):
+        if should_use_multipart_upload(dump_path, self.bucket):
             self._upload_large_file(dump_path, key_name)
         else:
             self._upload_small_file(dump_path, key_name)

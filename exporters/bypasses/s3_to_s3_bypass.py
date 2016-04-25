@@ -226,7 +226,7 @@ class S3Bypass(BaseBypass):
         key = source_bucket.get_key(key_name)
         with TmpFile() as tmp_filename:
             key.get_contents_to_filename(tmp_filename)
-            if should_use_multipart_upload(tmp_filename):
+            if should_use_multipart_upload(tmp_filename, dest_bucket):
                 self._upload_large_file(dest_bucket, tmp_filename, dest_key_name)
                 self._check_multipart_copy_integrity(key, dest_bucket, dest_key_name, tmp_filename)
             else:
