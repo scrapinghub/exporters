@@ -149,8 +149,8 @@ class ItemsGroupFilesHandler(object):
         self.grouping_info.add_to_group(key)
 
     def add_item_separator_to_file(self, key):
-        path = self.get_current_buffer_file_for_group(key)
-        path.add_item_separator_to_file()
+        buffer_file = self.get_current_buffer_file_for_group(key)
+        buffer_file.add_item_separator_to_file()
 
     def end_group_file(self, key):
         buffer_file = self.get_current_buffer_file_for_group(key)
