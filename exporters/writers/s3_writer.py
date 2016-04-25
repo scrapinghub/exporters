@@ -24,7 +24,7 @@ def multipart_upload(bucket, key_name):
 
 
 def should_use_multipart_upload(path):
-        return os.path.getsize(path) > CHUNK_SIZE
+    return os.path.getsize(path) > CHUNK_SIZE
 
 
 class S3Writer(FilebaseBaseWriter):
