@@ -36,8 +36,7 @@ class JsonExportFormatter(BaseExportFormatter):
 
     def format(self, item):
         options = dict(indent=2, sort_keys=True) if self.pretty_print else dict()
-        line = json.dumps(item, default=default, **options)
-        return line
+        return json.dumps(item, default=default, **options)
 
     def format_header(self):
         if self.jsonlines:
