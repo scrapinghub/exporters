@@ -10,9 +10,6 @@ from exporters.compression import get_compress_file
 from exporters.utils import remove_if_exists
 
 
-BUFFERFILE_MAX_SIZE = 10000000
-
-
 def get_filename(name_without_ext, file_extension, compression_format):
     if compression_format != 'none':
         return '{}.{}.{}'.format(name_without_ext, file_extension, compression_format)
