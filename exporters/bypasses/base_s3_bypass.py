@@ -53,19 +53,25 @@ class BaseS3Bypass(BaseBypass):
         self.total_items = self.bypass_state.stats['total_count']
         source_bucket = get_bucket(**reader_options)
         keys_to_copy = deepcopy(self.bypass_state.pending_keys())
+        self._copy_keys(source_bucket, keys_to_copy)
+
+    def _copy_keys(self, source_bucket, keys_to_copy):
         for key in keys_to_copy:
             self._copy_key(source_bucket, key)
             self.bypass_state.commit_copied_key(key)
             logging.log(logging.INFO, 'Copied key {}'.format(key))
 
-    def _copy_key(self, source_bucket, key_name):
-        key = source_bucket.get_key(key_name)
+    def _add_to_stats(self, key):
         if key.get_metadata('total'):
             total = int(key.get_metadata('total'))
             self.increment_items(total)
             self.bypass_state.increment_items(total)
         else:
             self.valid_total_count = False
+
+    def _copy_key(self, source_bucket, key_name):
+        key = source_bucket.get_key(key_name)
+        self._add_to_stats(key)
         self._copy_s3_key(key)
 
     def _copy_s3_key(key):

@@ -9,6 +9,8 @@ class S3BypassState(object):
         module_loader = ModuleLoader()
         self.state = module_loader.load_persistence(config.persistence_options, metadata)
         self.state_position = self.state.get_last_position()
+        self.aws_key = aws_key
+        self.aws_secret = aws_secret
         if not self.state_position:
             self.pending = S3BucketKeysFetcher(
                 self.config.reader_options['options'], aws_key, aws_secret).pending_keys()
