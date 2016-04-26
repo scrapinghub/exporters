@@ -1,4 +1,5 @@
 import logging
+from contextlib import contextmanager
 from decorator import decorator
 from retrying import Retrying
 
@@ -15,12 +16,25 @@ def set_retry_init(fn):
 
 
 def _only_one_attempt(args, kwargs):
-    kwargs.update(stop_max_attempt_number=0)
+    kwargs = dict(kwargs, stop_max_attempt_number=0)
     return args, kwargs
 
 
 def disable_retries():
     set_retry_init(_only_one_attempt)
+
+
+def reenable_retries():
+    set_retry_init(None)
+
+
+@contextmanager
+def disabled_retries():
+    disable_retries()
+    try:
+        yield
+    finally:
+        reenable_retries()
 
 
 @decorator
