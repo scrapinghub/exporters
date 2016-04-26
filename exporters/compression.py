@@ -5,10 +5,7 @@ import zipfile
 from exporters.exceptions import UnsupportedCompressionFormat
 
 
-class StreamGzipFile(object):
-
-    def __init__(self, path):
-        self.file = gzip.open(path, 'a')
+class StreamCompressedFile(object):
 
     def append(self, content):
         self.file.write(content)
@@ -17,7 +14,13 @@ class StreamGzipFile(object):
         self.file.close()
 
 
-class StreamZipFile(object):
+class StreamGzipFile(StreamCompressedFile):
+
+    def __init__(self, path):
+        self.file = gzip.open(path, 'a')
+
+
+class StreamZipFile(StreamCompressedFile):
 
     def __init__(self, path):
         self.path = path
@@ -35,28 +38,16 @@ class StreamZipFile(object):
             zip_file.write(self.tmp_filename, arcname=filename)
 
 
-class StreamBz2File(object):
+class StreamBz2File(StreamCompressedFile):
 
     def __init__(self, path):
         self.file = BZ2File(path, 'a')
 
-    def append(self, content):
-        self.file.write(content)
 
-    def close(self):
-        self.file.close()
-
-
-class StreamNoCompressionFile(object):
+class StreamNoCompressionFile(StreamCompressedFile):
 
     def __init__(self, path):
         self.file = open(path, 'a')
-
-    def append(self, content):
-        self.file.write(content)
-
-    def close(self):
-        self.file.close()
 
 
 def get_compress_file(compression_format):
