@@ -85,7 +85,7 @@ class BufferFile(object):
         self.file = self._create_file()
         header = self.formatter.format_header()
         if header:
-            self.file.append(header)
+            self.file.write(header)
 
     def _create_file(self):
         return get_compress_file(self.compression_format)(self.path)
@@ -97,16 +97,16 @@ class BufferFile(object):
 
     def add_item_to_file(self, item):
         content = self.formatter.format(item)
-        self.file.append(content)
+        self.file.write(content)
 
     def add_item_separator_to_file(self):
         content = self.formatter.item_separator
-        self.file.append(content)
+        self.file.write(content)
 
     def end_file(self):
         footer = self.formatter.format_footer()
         if footer:
-            self.file.append(footer)
+            self.file.write(footer)
         self.file.close()
 
 
