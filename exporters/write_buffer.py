@@ -185,11 +185,10 @@ class WriteBuffer(object):
 
     def pack_buffer(self, key):
         """Prepare current buffer file for group of given key to be written
-        (by compressing and gathering size statistics).
+        (by gathering statistics).
         """
         self.finish_buffer_write(key)
-        buffer_file = self.items_group_files.get_current_buffer_file_for_group(key)
-        file_path = buffer_file.path
+        file_path = self.items_group_files.get_current_buffer_file_for_group(key).path
         file_hash = None
         if self.hash_algorithm:
             file_hash = hash_for_file(file_path, self.hash_algorithm)
