@@ -66,7 +66,7 @@ class GStorageWriterTest(unittest.TestCase):
             writer.finish_writing()
 
     @mock.patch('gcloud.storage.Client.from_service_account_json')
-    def test_write_fileobj(self, get_client):
+    def test_write_stream(self, get_client):
         # given:
         writer = GStorageWriter(self.get_options(), meta())
         file_obj = BytesIO('hello')
@@ -74,7 +74,7 @@ class GStorageWriterTest(unittest.TestCase):
         file_len = len('hello')
 
         # when:
-        writer.write_fileobj(file_obj, file_name, file_len)
+        writer.write_stream(file_obj, file_name, file_len)
 
         # then
         bucket_mock = get_client().bucket()

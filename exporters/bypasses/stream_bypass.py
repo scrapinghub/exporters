@@ -61,7 +61,7 @@ class StreamBypass(BaseBypass):
     It should be transparent to user. Conditions are:
 
         - Reader module supports get_read_streams
-        - Writer module supports write_fileobj
+        - Writer module supports write_stream
         - No filter modules are set up.
         - No transform module is set up.
         - No grouper module is set up.
@@ -102,8 +102,8 @@ class StreamBypass(BaseBypass):
         if not hasattr(reader, 'get_read_streams'):
             raise RequisitesNotMet("Reader doesn't support get_read_streams()")
 
-        if not hasattr(writer, 'write_fileobj'):
-            raise RequisitesNotMet("Writer doesn't support write_fileobj()")
+        if not hasattr(writer, 'write_stream'):
+            raise RequisitesNotMet("Writer doesn't support write_stream()")
 
     def execute(self):
         self.bypass_state = StreamBypassState(self.config, self.metadata)

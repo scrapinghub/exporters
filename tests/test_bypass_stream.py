@@ -115,8 +115,8 @@ class StreamBypassTest(unittest.TestCase):
     @mock.patch('gcloud.storage.Client')
     @mock.patch('boto.connect_s3')
     @mock.patch('exporters.readers.s3_reader.S3Reader.get_read_streams')
-    @mock.patch('exporters.writers.gstorage_writer.GStorageWriter.write_fileobj')
-    def test_bypass_stream(self, write_fileobj_mock, get_read_streams_mock, *othermocks):
+    @mock.patch('exporters.writers.gstorage_writer.GStorageWriter.write_stream')
+    def test_bypass_stream(self, write_stream_mock, get_read_streams_mock, *othermocks):
         # given
         file_len = 50
         file_obj = BytesIO('a'*file_len)
@@ -128,15 +128,15 @@ class StreamBypassTest(unittest.TestCase):
             bypass.execute()
 
         # then:
-        write_fileobj_mock.assert_called_once_with(file_obj, 'name', file_len)
+        write_stream_mock.assert_called_once_with(file_obj, 'name', file_len)
         self.assertEquals(bypass.bypass_state.stats['bytes_copied'], 50,
                           'Wrong number of bytes written')
 
     @mock.patch('gcloud.storage.Client')
     @mock.patch('boto.connect_s3')
     @mock.patch('exporters.readers.s3_reader.S3Reader.get_read_streams')
-    @mock.patch('exporters.writers.gstorage_writer.GStorageWriter.write_fileobj')
-    def test_resume_bypass(self, write_fileobj_mock, get_streams_mock, *othermocks):
+    @mock.patch('exporters.writers.gstorage_writer.GStorageWriter.write_stream')
+    def test_resume_bypass(self, write_stream_mock, get_streams_mock, *othermocks):
         # given
         options = create_stream_bypass_simple_config()
         options.persistence_options.update(
@@ -157,6 +157,6 @@ class StreamBypassTest(unittest.TestCase):
             bypass.execute()
 
         # then:
-        write_fileobj_mock.assert_called_once_with(file_obj_b, 'file_b', file_len)
+        write_stream_mock.assert_called_once_with(file_obj_b, 'file_b', file_len)
         self.assertEquals(bypass.bypass_state.stats['bytes_copied'], 100,
                           'Wrong number of bytes written')
