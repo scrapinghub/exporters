@@ -270,6 +270,19 @@ class S3ReaderTest(unittest.TestCase):
         self.assertEqual(expected, reader.keys_fetcher.prefixes)
         shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
+    def test_get_read_streams(self):
+        reader = S3Reader(self.options_valid, meta())
+        file_names = set(['test_list/dump_p1_US_a', 'test_list/dump_p1_US_b',
+                          'test_list/dump_p2_US_a', 'test_list/dump_p_US_a'])
+        streams = list(reader.get_read_streams())
+        for stream_data, file_name in zip(streams, file_names):
+            key, name, size = stream_data
+            assert not key.closed
+            assert key.name == name
+            assert name in file_names
+            file_names.remove(name)
+        assert file_names == set()
+
     def test_invalid_date_range(self):
         self.assertRaisesRegexp(ConfigurationError,
                                 'The end date should be greater or equal to '
