@@ -518,6 +518,25 @@ class FSWriterTest(unittest.TestCase):
                 written.append(json.loads(line))
         self.assertEqual(written, self.get_batch())
 
+    def test_no_compression(self):
+        writer_config = self.get_writer_config()
+        writer_config['options'].update({'compression': 'none'})
+        writer = FSWriter(writer_config, meta())
+        try:
+            writer.write_batch(self.get_batch())
+            writer.flush()
+
+        finally:
+            writer.close()
+        expected_file = '{}/exporter_test0000.jl'.format(self.tmp_dir)
+        self.assertTrue(expected_file in writer.written_files)
+
+        written = []
+        with open(expected_file, 'r') as fin:
+            for line in fin:
+                written.append(json.loads(line))
+        self.assertEqual(written, self.get_batch())
+
     def test_invalid_compression_format(self):
         options = self.get_writer_config()
         options['options']['compression'] = 'unknown'
