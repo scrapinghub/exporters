@@ -111,15 +111,15 @@ class StreamBypass(BaseBypass):
         reader = module_loader.load_reader(self.config.reader_options, self.metadata)
         writer = module_loader.load_writer(self.config.writer_options, self.metadata)
 
-        for origin, name, size in reader.get_read_streams():
+        for stream, name, size in reader.get_read_streams():
             if name not in self.bypass_state.skipped:
-                ensure_tell_method(origin)
+                ensure_tell_method(stream)
                 logging.log(logging.INFO, 'Starting to copy file {}'.format(name))
                 try:
-                    writer.write_stream(origin, name, size)
+                    writer.write_stream(stream, name, size)
                 finally:
-                    if hasattr(origin, 'close'):
-                        origin.close()
+                    if hasattr(stream, 'close'):
+                        stream.close()
                 logging.log(logging.INFO, 'Finished copying file {}'.format(name))
                 self.bypass_state.commit_copied(name, size)
             else:
