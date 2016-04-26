@@ -116,7 +116,7 @@ class StreamBypass(BaseBypass):
                 ensure_tell_method(origin)
                 logging.log(logging.INFO, 'Starting to copy file {}'.format(name))
                 try:
-                    writer.write_fileobj(origin, name, size)
+                    writer.write_stream(origin, name, size)
                 finally:
                     if hasattr(origin, 'close'):
                         origin.close()

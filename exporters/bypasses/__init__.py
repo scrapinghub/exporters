@@ -4,7 +4,7 @@ from exporters.bypasses.s3_to_s3_bypass import S3Bypass
 from exporters.bypasses.stream_bypass import StreamBypass
 
 """
-This bypass classes will be tried in the specific order, and the first one
+This bypass classes will be tried in the specified order, and the first one
 that meets the requisites will be used.
 """
 default_bypass_classes = [
