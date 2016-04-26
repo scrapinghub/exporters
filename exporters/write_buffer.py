@@ -57,6 +57,9 @@ class GroupingInfo(UserDict):
     def reset_key(self, key):
         self[key]['buffered_items'] = 0
 
+    def is_first_file_item(self, key):
+        return self.get(key, {}).get('buffered_items', 0) == 0
+
 
 class HashFile(object):
     """
@@ -192,13 +195,10 @@ class WriteBuffer(object):
         Receive an item and write it.
         """
         key = self.get_key_from_item(item)
-        if not self.is_first_file_item(key):
+        if not self.grouping_info.is_first_file_item(key):
             self.items_group_files.add_item_separator_to_file(key)
         self.grouping_info.ensure_group_info(key)
         self.items_group_files.add_item_to_file(item, key)
-
-    def is_first_file_item(self, key):
-        return self.grouping_info.get(key, {}).get('buffered_items', 0) == 0
 
     def finish_buffer_write(self, key):
         self.items_group_files.end_group_file(key)
