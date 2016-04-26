@@ -197,11 +197,11 @@ class WriteBuffer(object):
         if self.hash_algorithm:
             file_hash = hash_for_file(file_path, self.hash_algorithm)
 
-        compressed_size = os.path.getsize(file_path)
+        file_size = os.path.getsize(file_path)
         write_info = {
             'number_of_records': self.grouping_info[key]['buffered_items'],
             'file_path': file_path,
-            'size': compressed_size,
+            'size': file_size,
             'file_hash': file_hash,
         }
         self.metadata[file_path] = write_info
