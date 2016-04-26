@@ -75,10 +75,9 @@ class GroupingInfo(UserDict):
 
 class BufferFile(object):
 
-    def __init__(self, key, formatter, tmp_folder, compression_format,
+    def __init__(self, formatter, tmp_folder, compression_format,
                  file_name=None, hash_algorithm='md5'):
         self.formatter = formatter
-        self.key = key
         self.tmp_folder = tmp_folder
         self.file_extension = formatter.file_extension
         self.compression_format = compression_format
@@ -143,7 +142,7 @@ class GroupingBufferFilesTracker(object):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
     def create_new_group_file(self, key):
-        new_buffer_file = BufferFile(key, self.formatter, self.tmp_folder, self.compression_format)
+        new_buffer_file = BufferFile(self.formatter, self.tmp_folder, self.compression_format)
         self.grouping_info.add_buffer_file_to_group(key, new_buffer_file)
         self.grouping_info.reset_key(key)
         return new_buffer_file

@@ -81,7 +81,7 @@ class FilebasedGroupingBufferFilesTracker(GroupingBufferFilesTracker):
         file_name = get_filename(name_without_ext, self.file_extension, self.compression_format)
         file_name = os.path.join(group_folder, file_name)
         new_buffer_file = BufferFile(
-                key, self.formatter, self.tmp_folder, self.compression_format, file_name=file_name)
+                self.formatter, self.tmp_folder, self.compression_format, file_name=file_name)
         self.grouping_info.add_buffer_file_to_group(key, new_buffer_file)
         self.grouping_info.reset_key(key)
         return new_buffer_file
