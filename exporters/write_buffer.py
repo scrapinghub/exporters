@@ -6,11 +6,26 @@ import re
 import hashlib
 from six.moves import UserDict
 
-from exporters.compression import get_compress_func
+from exporters.compression import get_compress_file
 from exporters.utils import remove_if_exists
 
 
 BUFFERFILE_MAX_SIZE = 10000000
+
+
+def get_filename(name_without_ext, file_extension, compression_format):
+    if compression_format != 'none':
+        return '{}.{}.{}'.format(name_without_ext, file_extension, compression_format)
+    else:
+        return '{}.{}'.format(name_without_ext, file_extension)
+
+
+def hash_for_file(path, algorithm, block_size=256*128, hr=False):
+    hash = hashlib.new(algorithm)
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(block_size), b''):
+            hash.update(chunk)
+    return hash.hexdigest()
 
 
 class GroupingInfo(UserDict):
@@ -61,75 +76,42 @@ class GroupingInfo(UserDict):
         return self.get(key, {}).get('buffered_items', 0) == 0
 
 
-class HashFile(object):
-    """
-    file-like object that wraps around a file-like object and calculates
-    the writed content hash.
-    """
-    def __init__(self, fl, algorithm):
-        self._file = fl
-        self.hash = hashlib.new(algorithm)
-
-    def write(self, data):
-        self._file.write(data)
-        self.hash.update(data)
-
-    def __getattr__(self, attr):
-        return getattr(self._file, attr)
-
-
 class BufferFile(object):
 
-    def __init__(self, key, formatter, tmp_folder, file_name=None):
+    def __init__(self, key, formatter, tmp_folder, compression_format,
+                 file_name=None, hash_algorithm='md5'):
         self.formatter = formatter
         self.key = key
         self.tmp_folder = tmp_folder
         self.file_extension = formatter.file_extension
+        self.compression_format = compression_format
         self.path = self._get_new_path_name(file_name)
-        self._stream = ''
-        self._create_file()
-        self.file = open(self.path, 'a')
+        self.file = self._create_file()
         header = self.formatter.format_header()
         if header:
-            self._add_to_stream(header)
+            self.file.append(header)
 
     def _create_file(self):
-        os.mknod(self.path)
+        return get_compress_file(self.compression_format)(self.path)
 
     def _get_new_path_name(self, file_name):
         if not file_name:
-            file_name = '{}.{}'.format(uuid.uuid4(), self.file_extension)
+            file_name = get_filename(uuid.uuid4(), self.file_extension, self.compression_format)
         return os.path.join(self.tmp_folder, file_name)
-
-    def _add_to_file(self, content):
-        self.file.write(content)
 
     def add_item_to_file(self, item):
         content = self.formatter.format(item)
-        self._add_to_stream(content)
+        self.file.append(content)
 
     def add_item_separator_to_file(self):
         content = self.formatter.item_separator
-        self._add_to_stream(content)
+        self.file.append(content)
 
     def end_group_file(self):
         footer = self.formatter.format_footer()
         if footer:
-            self._add_to_stream(footer)
-        self._flush_tmp_stream()
+            self.file.append(footer)
         self.file.close()
-
-    def _add_to_stream(self, content):
-        self._stream += content
-        if self._needs_stream_flush():
-            self._flush_tmp_stream()
-
-    def _flush_tmp_stream(self):
-        self._add_to_file(self._stream)
-        self._stream = ''
-
-    def _needs_stream_flush(self):
-        return len(self._stream) > BUFFERFILE_MAX_SIZE
 
 
 class GroupingBufferFilesTracker(object):
@@ -140,11 +122,12 @@ class GroupingBufferFilesTracker(object):
     that is cleaned up when calling close().
     """
 
-    def __init__(self, formatter):
+    def __init__(self, formatter, compression_format):
         self.grouping_info = GroupingInfo()
         self.file_extension = formatter.file_extension
         self.formatter = formatter
         self.tmp_folder = tempfile.mkdtemp()
+        self.compression_format = compression_format
 
     def add_item_to_file(self, item, key):
         buffer_file = self.get_current_buffer_file_for_group(key)
@@ -163,7 +146,7 @@ class GroupingBufferFilesTracker(object):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
     def create_new_group_file(self, key):
-        new_buffer_file = BufferFile(key, self.formatter, self.tmp_folder)
+        new_buffer_file = BufferFile(key, self.formatter, self.tmp_folder, self.compression_format)
         self.grouping_info.add_buffer_file_to_group(key, new_buffer_file)
         self.grouping_info.reset_key(key)
         return new_buffer_file
@@ -208,29 +191,20 @@ class WriteBuffer(object):
         (by compressing and gathering size statistics).
         """
         self.finish_buffer_write(key)
-        path = self.items_group_files.get_current_buffer_file_for_group(key).path
-        compressed_path = path + '.' + self.compression_format
-        compress_func = get_compress_func(self.compression_format)
-        compressed_hash = None
+        buffer_file = self.items_group_files.get_current_buffer_file_for_group(key)
+        file_path = buffer_file.path
+        file_hash = None
+        if self.hash_algorithm:
+            file_hash = hash_for_file(file_path, self.hash_algorithm)
 
-        with open(path) as source_file, open(compressed_path, 'wb') as dump_file:
-            if self.hash_algorithm:
-                dump_file = HashFile(dump_file, self.hash_algorithm)
-
-            compress_func(dump_file, source_file)
-
-            if self.hash_algorithm:
-                compressed_hash = dump_file.hash.hexdigest()
-
-        compressed_size = os.path.getsize(compressed_path)
+        compressed_size = os.path.getsize(file_path)
         write_info = {
             'number_of_records': self.grouping_info[key]['buffered_items'],
-            'path': path,
-            'compressed_path': compressed_path,
+            'file_path': file_path,
             'size': compressed_size,
-            'compressed_hash': compressed_hash,
+            'file_hash': file_hash,
         }
-        self.metadata[compressed_path] = write_info
+        self.metadata[file_path] = write_info
         return write_info
 
     def add_new_buffer_for_group(self, key):
@@ -238,7 +212,7 @@ class WriteBuffer(object):
 
     def clean_tmp_files(self, write_info):
         remove_if_exists(write_info.get('path'))
-        remove_if_exists(write_info.get('compressed_path'))
+        remove_if_exists(write_info.get('file_path'))
 
     def should_write_buffer(self, key):
         if self.size_per_buffer_write and os.path.getsize(

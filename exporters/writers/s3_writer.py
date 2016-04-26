@@ -146,7 +146,7 @@ class S3Writer(FilebaseBaseWriter):
     def _upload_small_file(self, dump_path, key_name):
         with closing(self.bucket.new_key(key_name)) as key, open(dump_path, 'r') as f:
             buffer_info = self.write_buffer.metadata[dump_path]
-            md5 = key.get_md5_from_hexdigest(buffer_info['compressed_hash'])
+            md5 = key.get_md5_from_hexdigest(buffer_info['file_hash'])
             if self.save_metadata:
                 self._save_metadata_for_key(key, dump_path, md5)
             progress = BotoDownloadProgress(self.logger)

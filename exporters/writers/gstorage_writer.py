@@ -93,7 +93,7 @@ class GStorageWriter(FilebaseBaseWriter):
         key_info = {
             'size': buffer_info['size'],
             'remote_size': blob.size,
-            'hash': b64encode(unhexlify(buffer_info['compressed_hash'])),
+            'hash': b64encode(unhexlify(buffer_info['file_hash'])),
             'remote_hash': blob.md5_hash,
             'title': blob.name,
         }

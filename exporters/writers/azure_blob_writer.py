@@ -70,7 +70,7 @@ class AzureBlobWriter(BaseWriter):
         file_info = {
             'blob_name': blob_name,
             'size': buffer_info['size'],
-            'hash': b64encode(unhexlify(buffer_info['compressed_hash'])),
+            'hash': b64encode(unhexlify(buffer_info['file_hash'])),
             'number_of_records': buffer_info['number_of_records']
         }
         self.get_metadata('blobs_written').append(file_info)

@@ -304,7 +304,7 @@ class CustomWriterTest(unittest.TestCase):
 
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
-        item_writer = GroupingBufferFilesTracker(JsonExportFormatter({}, meta()))
+        item_writer = GroupingBufferFilesTracker(JsonExportFormatter({}, meta()), 'gz')
         self.write_buffer = WriteBuffer(1000, 1000, item_writer)
 
     def tearDown(self):
