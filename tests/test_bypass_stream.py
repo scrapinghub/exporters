@@ -5,7 +5,7 @@ import mock
 from exporters.exporter_config import ExporterConfig
 from exporters.utils import remove_if_exists
 from .utils import meta
-from exporters.bypasses.stream_bypass import fix_fileobj, StreamBypass
+from exporters.bypasses.stream_bypass import ensure_tell_method, StreamBypass
 from exporters.export_managers.base_bypass import RequisitesNotMet
 from six import BytesIO
 
@@ -41,13 +41,13 @@ class FooFile(object):
         return "f"*num_bytes
 
 
-class TestFixFile(unittest.TestCase):
+class TestEnsureTell(unittest.TestCase):
     def test_foo_file(self):
         assert FooFile().read(5) == 'fffff'
 
-    def test_fix_file(self):
+    def test_ensure_tell(self):
         ff = FooFile()
-        fix_fileobj(ff)
+        ensure_tell_method(ff)
         assert ff.tell() == 0
         ff.read(10)
         assert ff.tell() == 10

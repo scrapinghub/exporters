@@ -35,7 +35,7 @@ class StreamBypassState(object):
         self.state.delete()
 
 
-def fix_fileobj(fileobj):
+def ensure_tell_method(fileobj):
     """
     Adds a tell() method if the file doesn't have one already.
     This is accomplished by monkey-patching read()
@@ -113,7 +113,7 @@ class StreamBypass(BaseBypass):
 
         for origin, name, size in reader.get_read_streams():
             if name not in self.bypass_state.skipped:
-                fix_fileobj(origin)
+                ensure_tell_method(origin)
                 logging.log(logging.INFO, 'Starting to copy file {}'.format(name))
                 try:
                     writer.write_fileobj(origin, name, size)
