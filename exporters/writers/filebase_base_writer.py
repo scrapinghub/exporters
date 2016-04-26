@@ -5,7 +5,7 @@ import re
 import uuid
 import six
 
-from exporters.write_buffer import ItemsGroupFilesHandler
+from exporters.write_buffer import BufferFile, GroupingBufferFilesTracker, get_filename
 from exporters.writers.base_writer import BaseWriter
 
 MD5_FILE_NAME = 'md5checksum.md5'
@@ -63,33 +63,32 @@ class Filebase(object):
         return prefix_name
 
 
-class CustomNameItemsGroupFilesHandler(ItemsGroupFilesHandler):
+class FilebasedGroupingBufferFilesTracker(GroupingBufferFilesTracker):
 
-    def __init__(self, formatter, filebase, start_file_count=0):
-        super(CustomNameItemsGroupFilesHandler, self).__init__(formatter)
+    def __init__(self, formatter, filebase, compression_format, start_file_count=0):
+        super(FilebasedGroupingBufferFilesTracker, self).__init__(formatter, compression_format)
         self.filebase = filebase
         self.start_file_count = start_file_count
+        self.compression_format = compression_format
 
-    def _get_new_path_name(self, key):
-        """Build a filename for a new file for a given group,
-        considering the existing file count for it and the prefix
-        configured in filebase.
-
-        To ensure unique file names per group, it will use directories
-        with unique names for buffers of the same group
-        """
+    def create_new_group_file(self, key):
         group_files = self.grouping_info[key]['group_file']
         group_folder = self._get_group_folder(group_files)
         current_file_count = len(group_files) + self.start_file_count
         group_info = self.grouping_info[key]['path_safe_keys']
         name_without_ext = self.filebase.formatted_prefix(
                 groups=group_info, file_number=current_file_count)
-        filename = '{}.{}'.format(name_without_ext, self.file_extension)
-        return os.path.join(group_folder, filename)
+        file_name = get_filename(name_without_ext, self.file_extension, self.compression_format)
+        file_name = os.path.join(group_folder, file_name)
+        new_buffer_file = BufferFile(
+                self.formatter, self.tmp_folder, self.compression_format, file_name=file_name)
+        self.grouping_info.add_buffer_file_to_group(key, new_buffer_file)
+        self.grouping_info.reset_key(key)
+        return new_buffer_file
 
     def _get_group_folder(self, group_files):
         if group_files:
-            return os.path.dirname(group_files[0])
+            return os.path.dirname(group_files[0].path)
         group_folder = os.path.join(self.tmp_folder, str(uuid.uuid4()))
         os.mkdir(group_folder)
         return group_folder
@@ -124,10 +123,11 @@ class FilebaseBaseWriter(BaseWriter):
                         self.__class__.__name__, self.filebase.template))
 
     def _items_group_files_handler(self):
-        return CustomNameItemsGroupFilesHandler(
+        return FilebasedGroupingBufferFilesTracker(
                 self.export_formatter,
                 filebase=Filebase(self.read_option('filebase')),
-                start_file_count=self.read_option('start_file_count')
+                start_file_count=self.read_option('start_file_count'),
+                compression_format=self.read_option('compression')
         )
 
     def write(self, path, key, file_name=False):
@@ -153,13 +153,12 @@ class FilebaseBaseWriter(BaseWriter):
 
     def _write_current_buffer_for_group_key(self, key):
         write_info = self.write_buffer.pack_buffer(key)
-        compressed_path = write_info['compressed_path']
-
-        self.write(compressed_path,
+        file_path = write_info['file_path']
+        self.write(file_path,
                    self.write_buffer.grouping_info[key]['membership'],
-                   file_name=os.path.basename(compressed_path))
+                   file_name=os.path.basename(file_path))
         self.logger.info(
-            'Checksum for file {compressed_path}: {compressed_hash}'.format(**write_info))
+            'Checksum for file {file_path}: {file_hash}'.format(**write_info))
         self.written_files[self.last_written_file] = write_info
 
         self.write_buffer.clean_tmp_files(write_info)
@@ -172,7 +171,7 @@ class FilebaseBaseWriter(BaseWriter):
                 with open(MD5_FILE_NAME, 'a') as f:
                     for file_name, write_info in self.written_files.iteritems():
                         write_info = self.written_files[file_name]
-                        f.write('{} {}'.format(write_info['compressed_hash'], file_name)+'\n')
+                        f.write('{} {}'.format(write_info['file_hash'], file_name)+'\n')
                 self.write_buffer.set_metadata_for_file(
                     MD5_FILE_NAME, size=os.path.getsize(MD5_FILE_NAME))
                 self.write(MD5_FILE_NAME, None, file_name=MD5_FILE_NAME)

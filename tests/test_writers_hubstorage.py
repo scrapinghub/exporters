@@ -1,8 +1,6 @@
 import mock
 import unittest
 from contextlib import closing
-
-from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
 from exporters.writers.hubstorage_writer import HubstorageWriter
 
@@ -30,8 +28,7 @@ class HubstorageWriterTest(unittest.TestCase):
         }
 
         # when:
-        writer = HubstorageWriter({"options": options}, meta(),
-                                  export_formatter=JsonExportFormatter(dict()))
+        writer = HubstorageWriter({"options": options}, meta())
         with closing(writer):
             writer.write_batch(batch)
             writer.flush()

@@ -42,7 +42,7 @@ class XMLExportFormatter(BaseExportFormatter):
         return '<{}>\n'.format(self.root_name)
 
     def format_footer(self):
-        return '</{}>'.format(self.root_name)
+        return '\n</{}>'.format(self.root_name)
 
     def format(self, item):
         fields_len = len(self.fields_order)

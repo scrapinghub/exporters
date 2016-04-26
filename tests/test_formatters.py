@@ -8,6 +8,7 @@ from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.records.base_record import BaseRecord
+from tests.utils import meta
 
 
 class BaseExportFormatterTest(unittest.TestCase):
@@ -29,7 +30,7 @@ class JsonFormatterTest(unittest.TestCase):
         self.options = {
 
         }
-        self.export_formatter = JsonExportFormatter(self.options)
+        self.export_formatter = JsonExportFormatter(self.options, meta())
 
     def test_format(self):
         item = BaseRecord()

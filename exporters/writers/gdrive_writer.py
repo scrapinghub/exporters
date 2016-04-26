@@ -97,7 +97,7 @@ class GDriveWriter(FilebaseBaseWriter):
         key_info = {
             'size': buffer_info['size'],
             'remote_size': file['fileSize'],
-            'hash': buffer_info['compressed_hash'],
+            'hash': buffer_info['file_hash'],
             'remote_hash': file['md5Checksum'],
             'title': file['title'],
         }

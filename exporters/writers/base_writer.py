@@ -4,7 +4,7 @@ from exporters.compression import FILE_COMPRESSION
 from exporters.exceptions import ConfigurationError
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
-from exporters.write_buffer import WriteBuffer, ItemsGroupFilesHandler
+from exporters.write_buffer import WriteBuffer, GroupingBufferFilesTracker
 
 
 class ItemsLimitReached(Exception):
@@ -47,15 +47,14 @@ class BaseWriter(BasePipelineItem):
                                     'logger_name': options.get('logger_name')})
         self.export_formatter = kwargs.get('export_formatter')
         if self.export_formatter is None:
-            self.export_formatter = DEFAULT_FORMATTER_CLASS(options=dict())
-
+            self.export_formatter = DEFAULT_FORMATTER_CLASS(options=dict(), metadata=metadata)
         items_per_buffer_write = self.read_option('items_per_buffer_write')
         size_per_buffer_write = self.read_option('size_per_buffer_write')
-        compression_format = self._get_compression_format()
+        self.compression_format = self._get_compression_format()
         self.write_buffer = WriteBuffer(items_per_buffer_write,
                                         size_per_buffer_write,
                                         self._items_group_files_handler(),
-                                        compression_format, self.hash_algorithm)
+                                        self.compression_format, self.hash_algorithm)
         self.set_metadata('items_count', 0)
 
     def _get_compression_format(self):
@@ -67,7 +66,7 @@ class BaseWriter(BasePipelineItem):
         return compression
 
     def _items_group_files_handler(self):
-        return ItemsGroupFilesHandler(self.export_formatter)
+        return GroupingBufferFilesTracker(self.export_formatter, self.compression_format)
 
     def write(self, path, key):
         """
@@ -144,7 +143,7 @@ class BaseWriter(BasePipelineItem):
         and writes it calling write() method.
         """
         write_info = self.write_buffer.pack_buffer(key)
-        self.write(write_info.get('compressed_path'),
+        self.write(write_info.get('file_path'),
                    self.write_buffer.grouping_info[key]['membership'])
         self.write_buffer.clean_tmp_files(write_info)
         self.write_buffer.add_new_buffer_for_group(key)

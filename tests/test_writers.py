@@ -15,7 +15,7 @@ from exporters.exceptions import ConfigurationError
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
 from exporters.records.base_record import BaseRecord
-from exporters.write_buffer import WriteBuffer, ItemsGroupFilesHandler
+from exporters.write_buffer import WriteBuffer, GroupingBufferFilesTracker
 from exporters.writers import FSWriter
 from exporters.writers.base_writer import BaseWriter, InconsistentWriteState
 from exporters.writers.console_writer import ConsoleWriter
@@ -276,10 +276,35 @@ class CustomWriterTest(unittest.TestCase):
         # then:
         consistency_mock.assert_called_once_with()
 
+    def test_custom_writer_with_json_file_formatter(self):
+        # given:
+        options = {
+            'name': 'exporters.export_formatter.json_export_formatter.JSONExportFormatter',
+            'options': {
+                'jsonlines': False
+            }
+        }
+        formatter = JsonExportFormatter(options, meta())
+        writer = FakeWriter({}, {}, export_formatter=formatter)
+
+        # when:
+        try:
+            writer.write_batch(self.batch)
+            writer.flush()
+        finally:
+            writer.close()
+
+        # then:
+        output = writer.custom_output[()]
+        out = json.loads(output)
+
+        self.assertEquals(self.batch, out)
+        self.assertEquals('json', writer.write_buffer.items_group_files.file_extension)
+
 
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
-        item_writer = ItemsGroupFilesHandler(JsonExportFormatter({}))
+        item_writer = GroupingBufferFilesTracker(JsonExportFormatter({}, meta()), 'gz')
         self.write_buffer = WriteBuffer(1000, 1000, item_writer)
 
     def tearDown(self):
@@ -489,6 +514,25 @@ class FSWriterTest(unittest.TestCase):
 
         written = []
         with bz2.BZ2File(expected_file, 'r') as fin:
+            for line in fin:
+                written.append(json.loads(line))
+        self.assertEqual(written, self.get_batch())
+
+    def test_no_compression(self):
+        writer_config = self.get_writer_config()
+        writer_config['options'].update({'compression': 'none'})
+        writer = FSWriter(writer_config, meta())
+        try:
+            writer.write_batch(self.get_batch())
+            writer.flush()
+
+        finally:
+            writer.close()
+        expected_file = '{}/exporter_test0000.jl'.format(self.tmp_dir)
+        self.assertTrue(expected_file in writer.written_files)
+
+        written = []
+        with open(expected_file, 'r') as fin:
             for line in fin:
                 written.append(json.loads(line))
         self.assertEqual(written, self.get_batch())

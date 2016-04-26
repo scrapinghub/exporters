@@ -1,35 +1,37 @@
-import bz2
 import gzip
 import os
-import shutil
+from bz2file import BZ2File
 import zipfile
-
 from exporters.exceptions import UnsupportedCompressionFormat
 
 
-def compress_bz2(dump_file, source_file):
-    with bz2.BZ2File(dump_file.name, 'wb') as bz_file, open(source_file.name) as fl:
-        shutil.copyfileobj(fl, bz_file)
+class StreamZipFile(object):
+
+    def __init__(self, path):
+        self.path = path
+        os.mknod(self.path)
+        self.tmp_filename = path[:-4]
+        self.tmp_file = open(self.tmp_filename, 'a')
+
+    def write(self, content):
+        self.tmp_file.write(content)
+
+    def close(self):
+        self.tmp_file.close()
+        filename = os.path.basename(self.tmp_filename)
+        with zipfile.ZipFile(self.path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            zip_file.write(self.tmp_filename, arcname=filename)
 
 
-def compress_gzip(dump_file, source_file):
-    with gzip.GzipFile(fileobj=dump_file, mode='wb') as gz_file:
-        shutil.copyfileobj(source_file, gz_file)
-
-
-def compress_zip(dump_file, source_file):
-    filename = os.path.basename(source_file.name)
-    with zipfile.ZipFile(dump_file, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-        zip_file.write(source_file.name, arcname=filename)
-
-
-def get_compress_func(compression_format):
+def get_compress_file(compression_format):
     if compression_format not in FILE_COMPRESSION:
         raise UnsupportedCompressionFormat(compression_format)
     return FILE_COMPRESSION[compression_format]
 
+
 FILE_COMPRESSION = {
-    'gz': compress_gzip,
-    'zip': compress_zip,
-    'bz2': compress_bz2,
+    'gz': lambda path: gzip.open(path, 'a'),
+    'zip': StreamZipFile,
+    'bz2': lambda path: BZ2File(path, 'a'),
+    'none': lambda path: open(path, 'a'),
 }
