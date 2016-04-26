@@ -103,7 +103,7 @@ class BufferFile(object):
         content = self.formatter.item_separator
         self.file.append(content)
 
-    def end_group_file(self):
+    def end_file(self):
         footer = self.formatter.format_footer()
         if footer:
             self.file.append(footer)
@@ -136,7 +136,7 @@ class GroupingBufferFilesTracker(object):
 
     def end_group_file(self, key):
         buffer_file = self.get_current_buffer_file_for_group(key)
-        buffer_file.end_group_file()
+        buffer_file.end_file()
 
     def close(self):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
