@@ -4,7 +4,7 @@ from exporters.compression import FILE_COMPRESSION
 from exporters.exceptions import ConfigurationError
 from exporters.logger.base_logger import WriterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
-from exporters.write_buffer import WriteBuffer, ItemsGroupFilesHandler
+from exporters.write_buffer import WriteBuffer, GroupingBufferFilesTracker
 
 
 class ItemsLimitReached(Exception):
@@ -66,7 +66,7 @@ class BaseWriter(BasePipelineItem):
         return compression
 
     def _items_group_files_handler(self):
-        return ItemsGroupFilesHandler(self.export_formatter)
+        return GroupingBufferFilesTracker(self.export_formatter)
 
     def write(self, path, key):
         """

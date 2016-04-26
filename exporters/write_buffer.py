@@ -132,7 +132,7 @@ class BufferFile(object):
         return len(self._stream) > BUFFERFILE_MAX_SIZE
 
 
-class ItemsGroupFilesHandler(object):
+class GroupingBufferFilesTracker(object):
     """Class responsible for tracking buffer files
     used for grouping feature in writers components.
 

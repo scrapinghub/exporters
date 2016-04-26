@@ -5,7 +5,7 @@ import re
 import uuid
 import six
 
-from exporters.write_buffer import ItemsGroupFilesHandler, BufferFile
+from exporters.write_buffer import BufferFile, GroupingBufferFilesTracker
 from exporters.writers.base_writer import BaseWriter
 
 MD5_FILE_NAME = 'md5checksum.md5'
@@ -63,10 +63,10 @@ class Filebase(object):
         return prefix_name
 
 
-class FilebasedGroupFilesHandler(ItemsGroupFilesHandler):
+class FilebasedGroupingBufferFilesTracker(GroupingBufferFilesTracker):
 
     def __init__(self, formatter, filebase, start_file_count=0):
-        super(FilebasedGroupFilesHandler, self).__init__(formatter)
+        super(FilebasedGroupingBufferFilesTracker, self).__init__(formatter)
         self.filebase = filebase
         self.start_file_count = start_file_count
 
@@ -121,7 +121,7 @@ class FilebaseBaseWriter(BaseWriter):
                         self.__class__.__name__, self.filebase.template))
 
     def _items_group_files_handler(self):
-        return FilebasedGroupFilesHandler(
+        return FilebasedGroupingBufferFilesTracker(
                 self.export_formatter,
                 filebase=Filebase(self.read_option('filebase')),
                 start_file_count=self.read_option('start_file_count')

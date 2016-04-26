@@ -15,7 +15,7 @@ from exporters.exceptions import ConfigurationError
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
 from exporters.records.base_record import BaseRecord
-from exporters.write_buffer import WriteBuffer, ItemsGroupFilesHandler
+from exporters.write_buffer import WriteBuffer, GroupingBufferFilesTracker
 from exporters.writers import FSWriter
 from exporters.writers.base_writer import BaseWriter, InconsistentWriteState
 from exporters.writers.console_writer import ConsoleWriter
@@ -304,7 +304,7 @@ class CustomWriterTest(unittest.TestCase):
 
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
-        item_writer = ItemsGroupFilesHandler(JsonExportFormatter({}, meta()))
+        item_writer = GroupingBufferFilesTracker(JsonExportFormatter({}, meta()))
         self.write_buffer = WriteBuffer(1000, 1000, item_writer)
 
     def tearDown(self):
