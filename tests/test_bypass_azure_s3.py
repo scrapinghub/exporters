@@ -1,13 +1,14 @@
+import unittest
+
 import boto
 import mock
 import moto
-import unittest
+
+from exporters.bypasses.base_bypass import RequisitesNotMet
 from exporters.bypasses.s3_to_azure_blob_bypass import S3AzureBlobBypass
 from exporters.bypasses.s3_to_azure_file_bypass import S3AzureFileBypass
-from exporters.export_managers.base_bypass import RequisitesNotMet
 from exporters.export_managers.basic_exporter import BasicExporter
 from exporters.exporter_config import ExporterConfig
-
 from .utils import create_s3_keys
 
 

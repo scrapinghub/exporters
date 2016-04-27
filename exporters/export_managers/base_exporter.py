@@ -2,15 +2,16 @@ import datetime
 import traceback
 from collections import OrderedDict
 from contextlib import closing
+
+from exporters.bypasses.base_bypass import RequisitesNotMet
 from exporters.default_retries import disable_retries
-from exporters.writers.base_writer import ItemsLimitReached
-from exporters.export_managers.base_bypass import RequisitesNotMet
+from exporters.exporter_config import ExporterConfig
 from exporters.logger.base_logger import ExportManagerLogger
-from exporters.notifications.notifiers_list import NotifiersList
 from exporters.meta import ExportMeta
 from exporters.module_loader import ModuleLoader
-from exporters.exporter_config import ExporterConfig
+from exporters.notifications.notifiers_list import NotifiersList
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
+from exporters.writers.base_writer import ItemsLimitReached
 
 
 class BaseExporter(object):

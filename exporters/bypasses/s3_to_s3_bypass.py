@@ -3,9 +3,9 @@ import logging
 from contextlib import closing, contextmanager
 from copy import deepcopy
 
+from exporters.bypasses.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.default_retries import retry_long
-from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.progress_callback import BotoUploadProgress
 from exporters.readers.s3_reader import get_bucket
 from exporters.utils import TmpFile, split_file, calculate_multipart_etag, CHUNK_SIZE

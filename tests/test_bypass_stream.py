@@ -1,13 +1,15 @@
 import shutil
 import unittest
 from contextlib import closing
+
 import mock
+from six import BytesIO
+
+from exporters.bypasses.base_bypass import RequisitesNotMet
+from exporters.bypasses.stream_bypass import ensure_tell_method, StreamBypass, Stream
 from exporters.exporter_config import ExporterConfig
 from exporters.utils import remove_if_exists
 from .utils import meta
-from exporters.bypasses.stream_bypass import ensure_tell_method, StreamBypass, Stream
-from exporters.export_managers.base_bypass import RequisitesNotMet
-from six import BytesIO
 
 
 def create_stream_bypass_simple_config(**kwargs):
