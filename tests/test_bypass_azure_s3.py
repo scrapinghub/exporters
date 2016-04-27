@@ -4,7 +4,7 @@ import boto
 import mock
 import moto
 
-from exporters.bypasses.base_bypass import RequisitesNotMet
+from exporters.bypasses.base import RequisitesNotMet
 from exporters.bypasses.s3_to_azure_blob_bypass import S3AzureBlobBypass
 from exporters.bypasses.s3_to_azure_file_bypass import S3AzureFileBypass
 from exporters.export_managers.basic_exporter import BasicExporter

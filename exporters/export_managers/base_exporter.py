@@ -3,7 +3,7 @@ import traceback
 from collections import OrderedDict
 from contextlib import closing
 
-from exporters.bypasses.base_bypass import RequisitesNotMet
+from exporters.bypasses.base import RequisitesNotMet
 from exporters.default_retries import disable_retries
 from exporters.exporter_config import ExporterConfig
 from exporters.logger.base_logger import ExportManagerLogger

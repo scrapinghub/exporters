@@ -1,7 +1,7 @@
 import datetime
 import logging
 from contextlib import closing, contextmanager
-from exporters.bypasses.base_bypass import RequisitesNotMet
+from exporters.bypasses.base import RequisitesNotMet
 from exporters.bypasses.base_s3_bypass import BaseS3Bypass
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoUploadProgress

@@ -1,6 +1,6 @@
 import unittest
 
-from exporters.bypasses.base_bypass import RequisitesNotMet, BaseBypass
+from exporters.bypasses.base import RequisitesNotMet, BaseBypass
 from exporters.bypasses.s3_to_s3_bypass import S3Bypass
 from exporters.exceptions import (InvalidExpression, ConfigurationError,
                                   ConfigCheckError)

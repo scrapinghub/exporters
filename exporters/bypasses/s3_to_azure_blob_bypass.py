@@ -1,4 +1,4 @@
-from exporters.bypasses.base_bypass import RequisitesNotMet
+from exporters.bypasses.base import RequisitesNotMet
 from exporters.default_retries import retry_long
 from .base_s3_bypass import BaseS3Bypass
 

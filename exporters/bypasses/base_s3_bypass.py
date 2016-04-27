@@ -1,7 +1,7 @@
 import logging
 from copy import deepcopy
 
-from exporters.bypasses.base_bypass import RequisitesNotMet, BaseBypass
+from exporters.bypasses.base import RequisitesNotMet, BaseBypass
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.readers.s3_reader import get_bucket
 

@@ -1,7 +1,7 @@
 import logging
 from collections import namedtuple
 
-from exporters.bypasses.base_bypass import RequisitesNotMet, BaseBypass
+from exporters.bypasses.base import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
 
 Stream = namedtuple('Stream', 'file_obj filename size')
