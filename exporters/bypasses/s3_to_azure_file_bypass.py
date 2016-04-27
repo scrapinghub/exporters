@@ -1,9 +1,9 @@
 import datetime
 import os
-from exporters.default_retries import retry_long
-from exporters.export_managers.base_bypass import RequisitesNotMet
-from .base_s3_bypass import BaseS3Bypass
 
+from exporters.bypasses.base import RequisitesNotMet
+from exporters.default_retries import retry_long
+from .base_s3_bypass import BaseS3Bypass
 
 S3_URL_EXPIRES_IN = 1800  # half an hour should be enough
 
