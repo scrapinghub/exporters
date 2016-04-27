@@ -1,7 +1,6 @@
 import datetime
 import logging
 from contextlib import closing, contextmanager
-from exporters.bypasses.base_bypass import RequisitesNotMet
 from exporters.bypasses.base_s3_bypass import BaseS3Bypass
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoUploadProgress
@@ -72,8 +71,8 @@ class S3Bypass(BaseS3Bypass):
     @classmethod
     def meets_conditions(cls, config):
         if not config.writer_options['name'].endswith('S3Writer'):
-            raise RequisitesNotMet
-        super(S3Bypass, cls).meets_conditions(config)
+            return cls._handle_conditions_not_met('Wrong reader configured')
+        return super(S3Bypass, cls).meets_conditions(config)
 
     def _get_filebase(self, writer_options):
         dest_filebase = writer_options['filebase'].format(datetime.datetime.now())

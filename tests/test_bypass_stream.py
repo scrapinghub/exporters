@@ -4,8 +4,6 @@ from contextlib import closing
 
 import mock
 from six import BytesIO
-
-from exporters.bypasses.base_bypass import RequisitesNotMet
 from exporters.bypasses.stream_bypass import ensure_tell_method, StreamBypass, Stream
 from exporters.exporter_config import ExporterConfig
 from exporters.utils import remove_if_exists
@@ -75,8 +73,7 @@ class StreamBypassConditionsTest(unittest.TestCase):
         # when:
 
         # then:
-        with self.assertRaises(RequisitesNotMet):
-            StreamBypass.meets_conditions(config)
+        self.assertFalse(StreamBypass.meets_conditions(config))
 
     def test_custom_grouper_should_not_meet_conditions(self):
         # given:
@@ -87,8 +84,7 @@ class StreamBypassConditionsTest(unittest.TestCase):
         # when:
 
         # then:
-        with self.assertRaises(RequisitesNotMet):
-            StreamBypass.meets_conditions(config)
+        self.assertFalse(StreamBypass.meets_conditions(config))
 
     def test_items_limit_should_not_meet_conditions(self):
         # given:
@@ -98,8 +94,7 @@ class StreamBypassConditionsTest(unittest.TestCase):
         # when:
 
         # then:
-        with self.assertRaises(RequisitesNotMet):
-            StreamBypass.meets_conditions(config)
+        self.assertFalse(StreamBypass.meets_conditions(config))
 
 
 class StreamBypassTest(unittest.TestCase):

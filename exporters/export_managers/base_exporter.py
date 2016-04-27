@@ -2,8 +2,6 @@ import datetime
 import traceback
 from collections import OrderedDict
 from contextlib import closing
-
-from exporters.bypasses.base_bypass import RequisitesNotMet
 from exporters.default_retries import disable_retries
 from exporters.exporter_config import ExporterConfig
 from exporters.logger.base_logger import ExportManagerLogger
@@ -115,19 +113,10 @@ class BaseExporter(object):
     def bypass(self):
         if self.config.prevent_bypass:
             return False
-
         for bypass_class in self.bypass_cases:
-            try:
-                bypass_class.meets_conditions(self.config)
+            if bypass_class.meets_conditions(self.config):
                 self.bypass_exporter(bypass_class)
                 return True
-            except RequisitesNotMet as e:
-                if e.message:
-                    reason = ', reason: {}'.format(e.message)
-                else:
-                    reason = ''
-                self.logger.debug('{} bypass skipped{}.'.format(
-                    bypass_class.__name__, reason))
         return False
 
     def _handle_export_exception(self, exception):

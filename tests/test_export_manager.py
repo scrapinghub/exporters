@@ -7,7 +7,7 @@ import unittest
 import mock
 from mock import DEFAULT
 
-from exporters.bypasses.base_bypass import RequisitesNotMet, BaseBypass
+from exporters.bypasses.base_bypass import BaseBypass
 from exporters.export_managers.base_exporter import BaseExporter
 from exporters.export_managers.basic_exporter import BasicExporter
 from exporters.readers.random_reader import RandomReader
@@ -35,7 +35,8 @@ class FakeBypass(BaseBypass):
     @classmethod
     def meets_conditions(cls, config):
         if not cls.fake_meet_conditions:
-            raise RequisitesNotMet
+            return False
+        return True
 
     def execute(self):
         self.__class__.executed = True
@@ -408,7 +409,7 @@ class BaseExportManagerTest(unittest.TestCase):
             class Bypass(BaseBypass):
                 @classmethod
                 def meets_conditions(cls, config):
-                    pass
+                    return True
 
                 def execute(self):
                     pass
@@ -431,7 +432,7 @@ class BaseExportManagerTest(unittest.TestCase):
         class SkippedBypass(BaseBypass):
             @classmethod
             def meets_conditions(cls, config):
-                raise RequisitesNotMet
+                return False
 
         options = {
             'reader': {
