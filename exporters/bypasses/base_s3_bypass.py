@@ -45,13 +45,17 @@ class BaseS3Bypass(BaseBypass):
             raise RequisitesNotMet('buffer limit configuration (size_per_buffer_write)')
 
     def execute(self):
-        reader_options = self.config.reader_options['options']
+        reader_aws_key = self.read_option(
+                'reader', 'aws_access_key_id', 'EXPORTERS_S3READER_AWS_KEY')
+        reader_aws_secret = self.read_option(
+                'reader', 'aws_secret_access_key', 'EXPORTERS_S3READER_AWS_SECRET')
         self.bypass_state = S3BypassState(
             self.config, self.metadata,
-            self.read_option('reader', 'aws_access_key_id', 'EXPORTERS_S3READER_AWS_KEY'),
-            self.read_option('reader', 'aws_secret_access_key', 'EXPORTERS_S3READER_AWS_SECRET'))
+            reader_aws_key,
+            reader_aws_secret)
         self.total_items = self.bypass_state.stats['total_count']
-        source_bucket = get_bucket(**reader_options)
+        source_bucket = get_bucket(
+            self.read_option('reader', 'bucket'), reader_aws_key, reader_aws_secret)
         keys_to_copy = deepcopy(self.bypass_state.pending_keys())
         for key in keys_to_copy:
             self._copy_key(source_bucket, key)
@@ -68,7 +72,7 @@ class BaseS3Bypass(BaseBypass):
             self.valid_total_count = False
         self._copy_s3_key(key)
 
-    def _copy_s3_key(key):
+    def _copy_s3_key(self, key):
         raise NotImplementedError
 
     def close(self):
