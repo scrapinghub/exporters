@@ -1,10 +1,12 @@
 import mock
 import unittest
 from contextlib import nested
+from six import BytesIO
 
 from exporters.records.base_record import BaseRecord
 from exporters.writers.gstorage_writer import GStorageWriter
 from exporters.writers.base_writer import InconsistentWriteState
+from exporters.bypasses.stream_bypass import Stream
 
 from .utils import meta
 
@@ -63,6 +65,23 @@ class GStorageWriterTest(unittest.TestCase):
 
         with self.assertRaises(InconsistentWriteState):
             writer.finish_writing()
+
+    @mock.patch('gcloud.storage.Client.from_service_account_json')
+    def test_write_stream(self, get_client):
+        # given:
+        writer = GStorageWriter(self.get_options(), meta())
+        file_obj = BytesIO('hello')
+        file_name = 'hellofile'
+        file_len = len('hello')
+
+        # when:
+        writer.write_stream(Stream(file_obj, file_name, file_len))
+
+        # then
+        bucket_mock = get_client().bucket()
+        bucket_mock.blob.assert_called_once_with('tests/' + file_name)
+        upload_mock = bucket_mock.blob().upload_from_file
+        upload_mock.assert_called_once_with(file_obj, size=file_len)
 
     def test_init_from_resource(self):
         options = {

@@ -1,0 +1,16 @@
+(dp0
+S'last_position'
+p1
+(dp2
+S'stats'
+p3
+(dp4
+S'bytes_copied'
+p5
+I50
+ssS'done'
+p6
+(lp7
+S'file_a'
+p8
+ass.

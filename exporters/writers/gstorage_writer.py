@@ -88,6 +88,12 @@ class GStorageWriter(FilebaseBaseWriter):
         self._write_gstorage_blob(dump_path, blob_name)
         self.last_written_file = blob_name
 
+    def write_stream(self, stream):
+        filebase_path, file_name = self.create_filebase_name([], file_name=stream.filename)
+        blob_name = filebase_path + '/' + file_name
+        blob = self.bucket.blob(blob_name)
+        blob.upload_from_file(stream.file_obj, size=stream.size)
+
     def _update_metadata(self, dump_path, blob):
         buffer_info = self.write_buffer.metadata[dump_path]
         key_info = {

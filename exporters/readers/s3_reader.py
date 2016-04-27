@@ -193,6 +193,14 @@ class S3Reader(BaseReader):
         self.logger.info('Downloading key: %s' % self.current_key)
         self.bucket.get_key(self.current_key).get_contents_to_filename(file_path, cb=progress)
 
+    def get_read_streams(self):
+        from exporters.bypasses.stream_bypass import Stream
+        for key_name in self.keys:
+            key = self.bucket.get_key(key_name)
+            size = key.size
+            key.open_read()
+            yield Stream(key, key_name, size)
+
     def get_next_batch(self):
         """
         This method is called from the manager. It must return a list or a generator
