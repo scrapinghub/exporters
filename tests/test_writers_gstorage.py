@@ -6,6 +6,7 @@ from six import BytesIO
 from exporters.records.base_record import BaseRecord
 from exporters.writers.gstorage_writer import GStorageWriter
 from exporters.writers.base_writer import InconsistentWriteState
+from exporters.bypasses.stream_bypass import Stream
 
 from .utils import meta
 
@@ -74,7 +75,7 @@ class GStorageWriterTest(unittest.TestCase):
         file_len = len('hello')
 
         # when:
-        writer.write_stream(file_obj, file_name, file_len)
+        writer.write_stream(Stream(file_obj, file_name, file_len))
 
         # then
         bucket_mock = get_client().bucket()

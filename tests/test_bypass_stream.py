@@ -5,7 +5,7 @@ import mock
 from exporters.exporter_config import ExporterConfig
 from exporters.utils import remove_if_exists
 from .utils import meta
-from exporters.bypasses.stream_bypass import ensure_tell_method, StreamBypass
+from exporters.bypasses.stream_bypass import ensure_tell_method, StreamBypass, Stream
 from exporters.export_managers.base_bypass import RequisitesNotMet
 from six import BytesIO
 
@@ -120,7 +120,7 @@ class StreamBypassTest(unittest.TestCase):
         # given
         file_len = 50
         file_obj = BytesIO('a'*file_len)
-        get_read_streams_mock.return_value = [(file_obj, 'name', file_len)]
+        get_read_streams_mock.return_value = [Stream(file_obj, 'name', file_len)]
         options = create_stream_bypass_simple_config()
 
         # when:
@@ -128,7 +128,7 @@ class StreamBypassTest(unittest.TestCase):
             bypass.execute()
 
         # then:
-        write_stream_mock.assert_called_once_with(file_obj, 'name', file_len)
+        write_stream_mock.assert_called_once_with(Stream(file_obj, 'name', file_len))
         self.assertEquals(bypass.bypass_state.stats['bytes_copied'], 50,
                           'Wrong number of bytes written')
 
@@ -147,8 +147,8 @@ class StreamBypassTest(unittest.TestCase):
         file_len = 50
         file_obj_a = BytesIO('a'*file_len)
         file_obj_b = BytesIO('b'*file_len)
-        get_streams_mock.return_value = [(file_obj_a, 'file_a', file_len),
-                                         (file_obj_b, 'file_b', file_len)]
+        get_streams_mock.return_value = [Stream(file_obj_a, 'file_a', file_len),
+                                         Stream(file_obj_b, 'file_b', file_len)]
         # Initial state is:
         # skipped = ['name_a'] stats = {'bytes_copied': 50}
 
@@ -157,6 +157,6 @@ class StreamBypassTest(unittest.TestCase):
             bypass.execute()
 
         # then:
-        write_stream_mock.assert_called_once_with(file_obj_b, 'file_b', file_len)
+        write_stream_mock.assert_called_once_with(Stream(file_obj_b, 'file_b', file_len))
         self.assertEquals(bypass.bypass_state.stats['bytes_copied'], 100,
                           'Wrong number of bytes written')

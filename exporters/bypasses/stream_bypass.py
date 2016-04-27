@@ -2,10 +2,12 @@ import logging
 
 from exporters.export_managers.base_bypass import RequisitesNotMet, BaseBypass
 from exporters.module_loader import ModuleLoader
+from collections import namedtuple
+
+Stream = namedtuple('Stream', 'file_obj filename size')
 
 
 class StreamBypassState(object):
-
     def __init__(self, config, metadata):
         module_loader = ModuleLoader()
         self.state = module_loader.load_persistence(config.persistence_options, metadata)
@@ -111,19 +113,19 @@ class StreamBypass(BaseBypass):
         reader = module_loader.load_reader(self.config.reader_options, self.metadata)
         writer = module_loader.load_writer(self.config.writer_options, self.metadata)
 
-        for stream, name, size in reader.get_read_streams():
-            if name not in self.bypass_state.skipped:
-                ensure_tell_method(stream)
-                logging.log(logging.INFO, 'Starting to copy file {}'.format(name))
+        for stream in reader.get_read_streams():
+            if stream.filename not in self.bypass_state.skipped:
+                ensure_tell_method(stream.file_obj)
+                logging.log(logging.INFO, 'Starting to copy file {}'.format(stream.filename))
                 try:
-                    writer.write_stream(stream, name, size)
+                    writer.write_stream(stream)
                 finally:
                     if hasattr(stream, 'close'):
                         stream.close()
-                logging.log(logging.INFO, 'Finished copying file {}'.format(name))
-                self.bypass_state.commit_copied(name, size)
+                logging.log(logging.INFO, 'Finished copying file {}'.format(stream.filename))
+                self.bypass_state.commit_copied(stream.filename, stream.size)
             else:
-                logging.log(logging.INFO, 'Skip file {}'.format(name))
+                logging.log(logging.INFO, 'Skip file {}'.format(stream.filename))
 
     def close(self):
         if self.bypass_state:
