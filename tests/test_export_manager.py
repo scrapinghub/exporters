@@ -7,7 +7,7 @@ import unittest
 import mock
 from mock import DEFAULT
 
-from exporters.bypasses.base_bypass import BaseBypass
+from exporters.bypasses.base import BaseBypass
 from exporters.export_managers.base_exporter import BaseExporter
 from exporters.export_managers.basic_exporter import BasicExporter
 from exporters.readers.random_reader import RandomReader
