@@ -34,9 +34,7 @@ class FakeBypass(BaseBypass):
 
     @classmethod
     def meets_conditions(cls, config):
-        if not cls.fake_meet_conditions:
-            return False
-        return True
+        return cls.fake_meet_conditions
 
     def execute(self):
         self.__class__.executed = True
