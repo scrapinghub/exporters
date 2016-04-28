@@ -81,12 +81,8 @@ class S3Bypass(BaseS3Bypass):
         return dest_filebase
 
     def execute(self):
-
-        writer_aws_key = self.read_option(
-            'writer', 'aws_access_key_id', 'EXPORTERS_S3WRITER_AWS_LOGIN')
-        writer_aws_secret = self.read_option(
-            'writer', 'aws_secret_access_key', 'EXPORTERS_S3WRITER_AWS_SECRET')
-
+        writer_aws_key = self.read_option('writer', 'aws_access_key_id')
+        writer_aws_secret = self.read_option('writer', 'aws_secret_access_key')
         writer_options = self.config.writer_options['options']
         self.dest_bucket = get_bucket(
             self.read_option('writer', 'bucket'), writer_aws_key, writer_aws_secret)

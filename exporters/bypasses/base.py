@@ -1,6 +1,8 @@
 import os
 import logging
 
+from exporters.module_loader import ModuleLoader
+
 
 class BaseBypass(object):
     def __init__(self, config, metadata):
@@ -10,6 +12,27 @@ class BaseBypass(object):
         self.valid_total_count = True
         self.logger = logging.getLogger('bypass_logger')
         self.logger.setLevel(logging.INFO)
+        module_loader = ModuleLoader()
+        self.supported_options = {
+            'reader': module_loader.load_class(
+                    self.config.reader_options['name']).supported_options,
+            'writer': module_loader.load_class(
+                    self.config.writer_options['name']).supported_options,
+            'filter_after': module_loader.load_class(
+                    self.config.filter_after_options['name']).supported_options,
+            'filter_before': module_loader.load_class(
+                    self.config.filter_before_options['name']).supported_options,
+            'formatter': module_loader.load_class(
+                    self.config.formatter_options['name']).supported_options,
+            'grouper': module_loader.load_class(
+                    self.config.grouper_options['name']).supported_options,
+            'persistence': module_loader.load_class(
+                    self.config.persistence_options['name']).supported_options,
+            'stats': module_loader.load_class(
+                    self.config.stats_options['name']).supported_options,
+            'transform': module_loader.load_class(
+                    self.config.transform_options['name']).supported_options,
+        }
 
     @classmethod
     def meets_conditions(self, config):
@@ -25,7 +48,7 @@ class BaseBypass(object):
     def _log_skip_reason(cls, reason):
         logging.debug('Skipped bypass {} due to: {}'.format(cls.__name__, reason))
 
-    def read_option(self, module, option, env_fallback=None):
+    def read_option(self, module, option):
         if module == 'reader':
             options = self.config.reader_options['options']
         elif module == 'writer':
@@ -45,6 +68,7 @@ class BaseBypass(object):
         elif module == 'transform':
             options = self.config.transform_options['options']
 
+        env_fallback = self.supported_options[module][option].get('env_fallback')
         option = options.get(option, os.getenv(env_fallback))
         if not option and env_fallback:
             logging.log(logging.WARNING, 'Missing value for option {}. (tried also: {} from env)'
