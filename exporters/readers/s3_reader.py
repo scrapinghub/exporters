@@ -4,12 +4,16 @@ import os
 import tempfile
 import re
 import datetime
+from six.moves.urllib.request import urlopen
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 from exporters.default_retries import retry_long, retry_short
 from exporters.exceptions import ConfigurationError, InvalidDateRangeError
 import logging
+
+
+S3_URL_EXPIRES_IN = 1800  # half an hour should be enough
 
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
@@ -197,9 +201,8 @@ class S3Reader(BaseReader):
         from exporters.bypasses.stream_bypass import Stream
         for key_name in self.keys:
             key = self.bucket.get_key(key_name)
-            size = key.size
-            key.open_read()
-            yield Stream(key, key_name, size)
+            file_obj = urlopen(key.generate_url(S3_URL_EXPIRES_IN))
+            yield Stream(file_obj, key_name, key.size)
 
     def get_next_batch(self):
         """
