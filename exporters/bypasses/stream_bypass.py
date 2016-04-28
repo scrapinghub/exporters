@@ -1,7 +1,6 @@
 import logging
 from collections import namedtuple
-
-from exporters.bypasses.base import RequisitesNotMet, BaseBypass
+from exporters.bypasses.base import BaseBypass
 from exporters.module_loader import ModuleLoader
 
 Stream = namedtuple('Stream', 'file_obj filename size')
@@ -80,32 +79,39 @@ class StreamBypass(BaseBypass):
     @classmethod
     def meets_conditions(cls, config):
         if not config.filter_before_options['name'].endswith('NoFilter'):
-            raise RequisitesNotMet('custom filter configured')
+            cls._log_skip_reason('custom filter configured')
+            return False
         if not config.filter_after_options['name'].endswith('NoFilter'):
-            raise RequisitesNotMet('custom filter configured')
+            cls._log_skip_reason('custom filter configured')
+            return False
         if not config.transform_options['name'].endswith('NoTransform'):
-            raise RequisitesNotMet('custom transform configured')
+            cls._log_skip_reason('custom transform configured')
+            return False
         if not config.grouper_options['name'].endswith('NoGrouper'):
-            raise RequisitesNotMet('custom grouper configured')
+            cls._log_skip_reason('custom grouper configured')
+            return False
         if config.writer_options.get('options', {}).get('items_limit'):
-            raise RequisitesNotMet('items limit configuration (items_limit)')
+            cls._log_skip_reason('items limit configuration (items_limit)')
+            return False
         if config.writer_options.get('options', {}).get('items_per_buffer_write'):
-            raise RequisitesNotMet('buffer limit configuration (items_per_buffer_write)')
+            cls._log_skip_reason('buffer limit configuration (items_per_buffer_write)')
+            return False
         if config.writer_options.get('options', {}).get('size_per_buffer_write'):
-            raise RequisitesNotMet('buffer limit configuration (size_per_buffer_write)')
-
+            cls._log_skip_reason('buffer limit configuration (size_per_buffer_write)')
+            return False
         module_loader = ModuleLoader()
         try:
             reader = module_loader.load_class(config.reader_options['name'])
             writer = module_loader.load_class(config.writer_options['name'])
         except:
-            raise RequisitesNotMet("Can't load reader and/or writer")
-
+            cls._log_skip_reason("Can't load reader and/or writer")
+            return False
         if not hasattr(reader, 'get_read_streams'):
-            raise RequisitesNotMet("Reader doesn't support get_read_streams()")
-
+            cls._log_skip_reason("Reader doesn't support get_read_streams()")
+            return False
         if not hasattr(writer, 'write_stream'):
-            raise RequisitesNotMet("Writer doesn't support write_stream()")
+            cls._log_skip_reason("Writer doesn't support write_stream()")
+            return False
 
     def execute(self):
         self.bypass_state = StreamBypassState(self.config, self.metadata)

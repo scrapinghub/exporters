@@ -1,7 +1,6 @@
 import logging
 from copy import deepcopy
-
-from exporters.bypasses.base import RequisitesNotMet, BaseBypass
+from exporters.bypasses.base import BaseBypass
 from exporters.bypasses.s3_bypass_state import S3BypassState
 from exporters.readers.s3_reader import get_bucket
 
@@ -22,27 +21,34 @@ class BaseS3Bypass(BaseBypass):
     def __init__(self, config, metadata):
         super(BaseS3Bypass, self).__init__(config, metadata)
         self.bypass_state = None
-        self.logger = logging.getLogger('bypass_logger')
-        self.logger.setLevel(logging.INFO)
 
     @classmethod
     def meets_conditions(cls, config):
         if not config.reader_options['name'].endswith('S3Reader'):
-            raise RequisitesNotMet
+            cls._log_skip_reason('Wrong reader configured')
+            return False
         if not config.filter_before_options['name'].endswith('NoFilter'):
-            raise RequisitesNotMet('custom filter configured')
+            cls._log_skip_reason('custom filter configured')
+            return False
         if not config.filter_after_options['name'].endswith('NoFilter'):
-            raise RequisitesNotMet('custom filter configured')
+            cls._log_skip_reason('custom filter configured')
+            return False
         if not config.transform_options['name'].endswith('NoTransform'):
-            raise RequisitesNotMet('custom transform configured')
+            cls._log_skip_reason('custom transform configured')
+            return False
         if not config.grouper_options['name'].endswith('NoGrouper'):
-            raise RequisitesNotMet('custom grouper configured')
+            cls._log_skip_reason('custom grouper configured')
+            return False
         if config.writer_options['options'].get('items_limit'):
-            raise RequisitesNotMet('items limit configuration (items_limit)')
+            cls._log_skip_reason('items limit configuration (items_limit)')
+            return False
         if config.writer_options['options'].get('items_per_buffer_write'):
-            raise RequisitesNotMet('buffer limit configuration (items_per_buffer_write)')
+            cls._log_skip_reason('buffer limit configuration (items_per_buffer_write)')
+            return False
         if config.writer_options['options'].get('size_per_buffer_write'):
-            raise RequisitesNotMet('buffer limit configuration (size_per_buffer_write)')
+            cls._log_skip_reason('buffer limit configuration (size_per_buffer_write)')
+            return False
+        return True
 
     def execute(self):
         reader_aws_key = self.read_option(

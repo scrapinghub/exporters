@@ -1,7 +1,5 @@
 import datetime
 import os
-
-from exporters.bypasses.base import RequisitesNotMet
 from exporters.default_retries import retry_long
 from .base_s3_bypass import BaseS3Bypass
 
@@ -35,8 +33,9 @@ class S3AzureFileBypass(BaseS3Bypass):
     @classmethod
     def meets_conditions(cls, config):
         if not config.writer_options['name'].endswith('AzureFileWriter'):
-            raise RequisitesNotMet
-        super(S3AzureFileBypass, cls).meets_conditions(config)
+            cls._log_skip_reason('Wrong reader configured')
+            return False
+        return super(S3AzureFileBypass, cls).meets_conditions(config)
 
     def _format_filebase_path(self, filebase):
         filebase_with_date = datetime.datetime.now().strftime(filebase)

@@ -1,6 +1,6 @@
 import unittest
 
-from exporters.bypasses.base import RequisitesNotMet, BaseBypass
+from exporters.bypasses.base import BaseBypass
 from exporters.bypasses.s3_to_s3_bypass import S3Bypass
 from exporters.exceptions import (InvalidExpression, ConfigurationError,
                                   ConfigCheckError)
@@ -317,8 +317,7 @@ class S3ByPassTest(unittest.TestCase):
                 'exporter_options': {'formatter': {}}
             })
         )
-        with self.assertRaises(RequisitesNotMet):
-            S3Bypass.meets_conditions(exporter_options)
+        self.assertFalse(S3Bypass.meets_conditions(exporter_options))
 
     def test_meet_supported_options(self):
         exporter_options = ExporterConfig(
