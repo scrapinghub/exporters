@@ -44,7 +44,7 @@ def ensure_tell_method(fileobj):
     if not hasattr(fileobj, 'tell') and not hasattr(fileobj, 'seek'):
         old_read = fileobj.read
 
-        def new_read(num):
+        def new_read(num=-1):
             buf = old_read(num)
             new_read.pos = new_read.pos + len(buf)
             return buf
