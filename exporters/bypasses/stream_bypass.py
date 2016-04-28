@@ -86,12 +86,12 @@ class StreamBypass(BaseBypass):
             return cls._handle_conditions_not_met('custom transform configured')
         if not config.grouper_options['name'].endswith('NoGrouper'):
             return cls._handle_conditions_not_met('custom grouper configured')
-        if config.writer_options['options'].get('items_limit'):
+        if config.writer_options.get('options', {}).get('items_limit'):
             return cls._handle_conditions_not_met('items limit configuration (items_limit)')
-        if config.writer_options['options'].get('items_per_buffer_write'):
+        if config.writer_options.get('options', {}).get('items_per_buffer_write'):
             return cls._handle_conditions_not_met(
                     'buffer limit configuration (items_per_buffer_write)')
-        if config.writer_options['options'].get('size_per_buffer_write'):
+        if config.writer_options.get('options', {}).get('size_per_buffer_write'):
             return cls._handle_conditions_not_met(
                     'buffer limit configuration (size_per_buffer_write)')
 
