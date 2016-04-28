@@ -87,11 +87,11 @@ class StreamBypass(BaseBypass):
             raise RequisitesNotMet('custom transform configured')
         if not config.grouper_options['name'].endswith('NoGrouper'):
             raise RequisitesNotMet('custom grouper configured')
-        if config.writer_options['options'].get('items_limit'):
+        if config.writer_options.get('options', {}).get('items_limit'):
             raise RequisitesNotMet('items limit configuration (items_limit)')
-        if config.writer_options['options'].get('items_per_buffer_write'):
+        if config.writer_options.get('options', {}).get('items_per_buffer_write'):
             raise RequisitesNotMet('buffer limit configuration (items_per_buffer_write)')
-        if config.writer_options['options'].get('size_per_buffer_write'):
+        if config.writer_options.get('options', {}).get('size_per_buffer_write'):
             raise RequisitesNotMet('buffer limit configuration (size_per_buffer_write)')
 
         module_loader = ModuleLoader()
