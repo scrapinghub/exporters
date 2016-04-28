@@ -33,7 +33,8 @@ class S3AzureFileBypass(BaseS3Bypass):
     @classmethod
     def meets_conditions(cls, config):
         if not config.writer_options['name'].endswith('AzureFileWriter'):
-            return cls._handle_conditions_not_met('Wrong reader configured')
+            cls._log_skip_reason('Wrong reader configured')
+            return False
         return super(S3AzureFileBypass, cls).meets_conditions(config)
 
     def _format_filebase_path(self, filebase):

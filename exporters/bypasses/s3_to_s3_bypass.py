@@ -71,7 +71,8 @@ class S3Bypass(BaseS3Bypass):
     @classmethod
     def meets_conditions(cls, config):
         if not config.writer_options['name'].endswith('S3Writer'):
-            return cls._handle_conditions_not_met('Wrong reader configured')
+            cls._log_skip_reason('Wrong reader configured')
+            return False
         return super(S3Bypass, cls).meets_conditions(config)
 
     def _get_filebase(self, writer_options):

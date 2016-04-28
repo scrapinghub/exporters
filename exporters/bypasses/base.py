@@ -22,9 +22,8 @@ class BaseBypass(object):
         self.total_items += number_of_items
 
     @classmethod
-    def _handle_conditions_not_met(cls, reason):
+    def _log_skip_reason(cls, reason):
         logging.debug('Skipped bypass {} due to: {}'.format(cls.__name__, reason))
-        return False
 
     def read_option(self, module, option, env_fallback=None):
         if module == 'reader':

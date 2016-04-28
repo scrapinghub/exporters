@@ -25,24 +25,29 @@ class BaseS3Bypass(BaseBypass):
     @classmethod
     def meets_conditions(cls, config):
         if not config.reader_options['name'].endswith('S3Reader'):
-            return cls._handle_conditions_not_met('Wrong reader configured')
+            cls._log_skip_reason('Wrong reader configured')
+            return False
         if not config.filter_before_options['name'].endswith('NoFilter'):
-            return cls._handle_conditions_not_met('custom filter configured')
+            cls._log_skip_reason('custom filter configured')
+            return False
         if not config.filter_after_options['name'].endswith('NoFilter'):
-            return cls._handle_conditions_not_met('custom filter configured')
+            cls._log_skip_reason('custom filter configured')
+            return False
         if not config.transform_options['name'].endswith('NoTransform'):
-            return cls._handle_conditions_not_met('custom transform configured')
+            cls._log_skip_reason('custom transform configured')
+            return False
         if not config.grouper_options['name'].endswith('NoGrouper'):
-            return cls._handle_conditions_not_met('custom grouper configured')
+            cls._log_skip_reason('custom grouper configured')
+            return False
         if config.writer_options['options'].get('items_limit'):
-            return cls._handle_conditions_not_met(
-                    'items limit configuration (items_limit)')
+            cls._log_skip_reason('items limit configuration (items_limit)')
+            return False
         if config.writer_options['options'].get('items_per_buffer_write'):
-            return cls._handle_conditions_not_met(
-                    'buffer limit configuration (items_per_buffer_write)')
+            cls._log_skip_reason('buffer limit configuration (items_per_buffer_write)')
+            return False
         if config.writer_options['options'].get('size_per_buffer_write'):
-            return cls._handle_conditions_not_met(
-                    'buffer limit configuration (size_per_buffer_write)')
+            cls._log_skip_reason('buffer limit configuration (size_per_buffer_write)')
+            return False
         return True
 
     def execute(self):

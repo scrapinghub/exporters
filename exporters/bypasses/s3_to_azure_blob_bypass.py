@@ -29,7 +29,8 @@ class S3AzureBlobBypass(BaseS3Bypass):
     @classmethod
     def meets_conditions(cls, config):
         if not config.writer_options['name'].endswith('AzureBlobWriter'):
-            return cls._handle_conditions_not_met('Wrong reader configured')
+            cls._log_skip_reason('Wrong reader configured')
+            return False
         return super(S3AzureBlobBypass, cls).meets_conditions(config)
 
     @retry_long
