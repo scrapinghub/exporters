@@ -2,18 +2,14 @@ import os
 import logging
 
 
-class RequisitesNotMet(Exception):
-    """
-    Exception thrown when bypass requisites are note meet.
-    """
-
-
 class BaseBypass(object):
     def __init__(self, config, metadata):
         self.config = config
         self.metadata = metadata
         self.total_items = 0
         self.valid_total_count = True
+        self.logger = logging.getLogger('bypass_logger')
+        self.logger.setLevel(logging.INFO)
 
     @classmethod
     def meets_conditions(self, config):
@@ -24,6 +20,11 @@ class BaseBypass(object):
 
     def increment_items(self, number_of_items):
         self.total_items += number_of_items
+
+    @classmethod
+    def _handle_conditions_not_met(cls, reason):
+        logging.debug('Skipped bypass {} due to: {}'.format(cls.__name__, reason))
+        return False
 
     def read_option(self, module, option, env_fallback=None):
         if module == 'reader':

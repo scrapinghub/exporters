@@ -9,7 +9,7 @@ import moto
 from boto.exception import S3ResponseError
 from tests.utils import environment
 from boto.utils import compute_md5
-from exporters.bypasses.s3_to_s3_bypass import S3Bypass, RequisitesNotMet
+from exporters.bypasses.s3_to_s3_bypass import S3Bypass
 from exporters.exporter_config import ExporterConfig
 from exporters.utils import remove_if_exists, TmpFile
 from .utils import meta
@@ -73,8 +73,7 @@ class S3BypassConditionsTest(unittest.TestCase):
         # when:
 
         # then:
-        with self.assertRaises(RequisitesNotMet):
-            S3Bypass.meets_conditions(config)
+        self.assertFalse(S3Bypass.meets_conditions(config))
 
     def test_custom_grouper_should_not_meet_conditions(self):
         # given:
@@ -85,8 +84,7 @@ class S3BypassConditionsTest(unittest.TestCase):
         # when:
 
         # then:
-        with self.assertRaises(RequisitesNotMet):
-            S3Bypass.meets_conditions(config)
+        self.assertFalse(S3Bypass.meets_conditions(config))
 
     def test_items_limit_should_not_meet_conditions(self):
         # given:
@@ -96,8 +94,7 @@ class S3BypassConditionsTest(unittest.TestCase):
         # when:
 
         # then:
-        with self.assertRaises(RequisitesNotMet):
-            S3Bypass.meets_conditions(config)
+        self.assertFalse(S3Bypass.meets_conditions(config))
 
 
 class S3BypassTest(unittest.TestCase):

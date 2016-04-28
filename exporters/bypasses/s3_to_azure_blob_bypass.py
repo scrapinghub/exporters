@@ -1,4 +1,3 @@
-from exporters.bypasses.base import RequisitesNotMet
 from exporters.default_retries import retry_long
 from .base_s3_bypass import BaseS3Bypass
 
@@ -30,8 +29,8 @@ class S3AzureBlobBypass(BaseS3Bypass):
     @classmethod
     def meets_conditions(cls, config):
         if not config.writer_options['name'].endswith('AzureBlobWriter'):
-            raise RequisitesNotMet
-        super(S3AzureBlobBypass, cls).meets_conditions(config)
+            return cls._handle_conditions_not_met('Wrong reader configured')
+        return super(S3AzureBlobBypass, cls).meets_conditions(config)
 
     @retry_long
     def _copy_s3_key(self, key):
