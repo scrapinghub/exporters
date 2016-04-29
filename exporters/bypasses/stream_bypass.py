@@ -112,6 +112,7 @@ class StreamBypass(BaseBypass):
         if not hasattr(writer, 'write_stream'):
             cls._log_skip_reason("Writer doesn't support write_stream()")
             return False
+        return True
 
     def execute(self):
         self.bypass_state = StreamBypassState(self.config, self.metadata)
