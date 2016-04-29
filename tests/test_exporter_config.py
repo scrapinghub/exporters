@@ -159,6 +159,16 @@ class ConfigValidationTest(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, 'unsupported_options'):
             ExporterConfig(options)
 
+    def test_valid_formatter(self):
+        options = valid_config_with_updates({
+            'exporter_options': {
+                "formatter": {
+                    "name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter"
+                }
+            }
+        })
+        ExporterConfig(options)  # should not raise
+
     def test_invalid_formatter(self):
         options = valid_config_with_updates({
             'exporter_options': {
@@ -177,6 +187,16 @@ class ConfigValidationTest(unittest.TestCase):
         })
         with self.assertRaisesRegexp(ValueError, 'No module named'):
             ExporterConfig(options)
+
+    def test_valid_notification(self):
+        options = valid_config_with_updates({
+            'exporter_options': {
+                "notifications": [{
+                    "name": "exporters.notifications.ses_mail_notifier.SESMailNotifier",
+                }]
+            }
+        })
+        ExporterConfig(options)  # should not raise
 
     def test_invalid_notification(self):
         options = valid_config_with_updates({
