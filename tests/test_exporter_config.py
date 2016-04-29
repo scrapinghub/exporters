@@ -158,3 +158,54 @@ class ConfigValidationTest(unittest.TestCase):
         })
         with self.assertRaisesRegexp(ValueError, 'unsupported_options'):
             ExporterConfig(options)
+
+    def test_invalid_formatter(self):
+        options = valid_config_with_updates({
+            'exporter_options': {
+                "formatter": {}
+            }
+        })
+        with self.assertRaisesRegexp(ValueError, 'Module name is missing'):
+            ExporterConfig(options)
+
+        options = valid_config_with_updates({
+            'exporter_options': {
+                "formatter": {
+                    "name": "invalid.module.name"
+                }
+            }
+        })
+        with self.assertRaisesRegexp(ValueError, 'No module named'):
+            ExporterConfig(options)
+
+    def test_invalid_notification(self):
+        options = valid_config_with_updates({
+            'exporter_options': {
+                "notifications": [{}]
+            }
+        })
+        with self.assertRaisesRegexp(ValueError, 'Module name is missing'):
+            ExporterConfig(options)
+
+        options = valid_config_with_updates({
+            'exporter_options': {
+                "notifications": [{
+                    "name": "invalid.module.name"
+                }]
+            }
+        })
+        with self.assertRaisesRegexp(ValueError, 'No module named'):
+            ExporterConfig(options)
+
+        options = valid_config_with_updates({
+            'exporter_options': {
+                "notifications": [{
+                    "name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter",
+                    "options": {
+                        "unsuported_option": True
+                    }
+                }]
+            }
+        })
+        with self.assertRaisesRegexp(ValueError, 'unsupported_options'):
+            ExporterConfig(options)

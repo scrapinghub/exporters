@@ -101,6 +101,17 @@ def check_for_errors(config, raise_exception=True):
             if section_errors:
                 errors[section] = section_errors
 
+    exporter_options = config.get('exporter_options', {})
+    if "formatter" in exporter_options:
+        section_errors = _get_section_errors(exporter_options['formatter'])
+        if section_errors:
+            errors['formatter'] = section_errors
+
+    for i, notificator in enumerate(exporter_options.get('notifications', [])):
+        section_errors = _get_section_errors(notificator)
+        if section_errors:
+            errors['notifications_' + str(i)] = section_errors
+
     if raise_exception and errors:
         raise ConfigCheckError(errors=errors)
     else:
@@ -109,7 +120,7 @@ def check_for_errors(config, raise_exception=True):
 
 def _get_section_errors(config_section):
     if 'name' not in config_section:
-        return ['Module name is missing']
+        return 'Module name is missing'
     module_name = config_section['name']
     try:
         module_options = _get_module_supported_options(module_name)

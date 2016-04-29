@@ -307,6 +307,8 @@ class BaseByPassTest(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             bypass_script.execute()
 
+JSON_FORMATTER = {"name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter"}
+
 
 class S3ByPassTest(unittest.TestCase):
     def test_not_meet_supported_options(self):
@@ -314,7 +316,7 @@ class S3ByPassTest(unittest.TestCase):
             valid_config_with_updates({
                 'writer': {'name': 'exporters.writers.s3_writer.S3Writer',
                            'options': {'bucket': 'mock', 'filebase': 'mock'}},
-                'exporter_options': {'formatter': {}}
+                'exporter_options': {'formatter': JSON_FORMATTER}
             })
         )
         self.assertFalse(S3Bypass.meets_conditions(exporter_options))
@@ -326,7 +328,7 @@ class S3ByPassTest(unittest.TestCase):
                            'options': {'prefix': 'mock', 'bucket': 'mock'}},
                 'writer': {'name': 'exporters.writers.s3_writer.S3Writer',
                            'options': {'bucket': 'mock', 'filebase': 'mock'}},
-                'exporter_options': {'formatter': {}}
+                'exporter_options': {'formatter': JSON_FORMATTER}
             })
         )
         S3Bypass.meets_conditions(exporter_options)
