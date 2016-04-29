@@ -16,7 +16,6 @@ class BasePersistenceTest(unittest.TestCase):
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
                 'resume': False,
-                'formatter':  {}
             }
         })
 
@@ -53,7 +52,6 @@ class PicklePersistenceTest(unittest.TestCase):
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
                 'resume': False,
-                'formatter':  {}
             },
             'persistence': {
                 'name': 'exporters.persistence.pickle_persistence.PicklePersistence',

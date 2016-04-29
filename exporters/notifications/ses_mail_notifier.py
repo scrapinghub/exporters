@@ -118,15 +118,15 @@ class SESMailNotifier(BaseNotifier):
         - secret_key (str)
             AWS secret access key
     """
-    def __init__(self, options, metadata):
-        self.supported_options = {
-            'team_mails': {'type': list, 'default': []},
-            'client_mails': {'type': list, 'default': []},
-            'access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_MAIL_AWS_ACCESS_KEY'},
-            'secret_key': {'type': basestring, 'env_fallback': 'EXPORTERS_MAIL_AWS_SECRET_KEY'},
-            'client_name': {'type': basestring, 'default': 'Customer'},
-        }
+    supported_options = {
+        'team_mails': {'type': list, 'default': []},
+        'client_mails': {'type': list, 'default': []},
+        'access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_MAIL_AWS_ACCESS_KEY'},
+        'secret_key': {'type': basestring, 'env_fallback': 'EXPORTERS_MAIL_AWS_SECRET_KEY'},
+        'client_name': {'type': basestring, 'default': 'Customer'},
+    }
 
+    def __init__(self, options, metadata):
         super(SESMailNotifier, self).__init__(options, metadata)
         self.team_mails = self.read_option('team_mails')
         self.client_mails = self.read_option('client_mails')
