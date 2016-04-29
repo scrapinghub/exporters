@@ -60,7 +60,8 @@ class ExporterConfig(object):
 
 
 MODULE_TYPES = ['readers', 'writers', 'transform', 'groupers',
-                'persistence', 'filters', 'stats_managers']
+                'persistence', 'filters', 'stats_managers', 'export_formatter',
+                'notifications']
 
 
 def module_options():
@@ -161,10 +162,10 @@ def _get_option_error(name, spec, config_options):
 
 
 def _get_available_classes(module):
-    classes_names = []
+    classes_names = set()
     for name, obj in getmembers(module):
         if isclass(obj):
-            classes_names.append(obj.__module__ + '.' + obj.__name__)
+            classes_names.add(obj.__module__ + '.' + obj.__name__)
     return classes_names
 
 
