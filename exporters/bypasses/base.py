@@ -1,7 +1,6 @@
 import os
 import logging
-
-from exporters.module_loader import ModuleLoader
+from exporters.exporter_config import CONFIG_SECTIONS
 
 
 class BaseBypass(object):
@@ -12,27 +11,8 @@ class BaseBypass(object):
         self.valid_total_count = True
         self.logger = logging.getLogger('bypass_logger')
         self.logger.setLevel(logging.INFO)
-        module_loader = ModuleLoader()
-        self.supported_options = {
-            'reader': module_loader.load_class(
-                    self.config.reader_options['name']).supported_options,
-            'writer': module_loader.load_class(
-                    self.config.writer_options['name']).supported_options,
-            'filter_after': module_loader.load_class(
-                    self.config.filter_after_options['name']).supported_options,
-            'filter_before': module_loader.load_class(
-                    self.config.filter_before_options['name']).supported_options,
-            'formatter': module_loader.load_class(
-                    self.config.formatter_options['name']).supported_options,
-            'grouper': module_loader.load_class(
-                    self.config.grouper_options['name']).supported_options,
-            'persistence': module_loader.load_class(
-                    self.config.persistence_options['name']).supported_options,
-            'stats': module_loader.load_class(
-                    self.config.stats_options['name']).supported_options,
-            'transform': module_loader.load_class(
-                    self.config.transform_options['name']).supported_options,
-        }
+        self.supported_options = {module_name: self.config.get_supported_options(module_name)
+                                  for module_name in CONFIG_SECTIONS}
 
     @classmethod
     def meets_conditions(self, config):

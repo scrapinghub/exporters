@@ -58,9 +58,32 @@ class ExporterConfig(object):
     def disable_retries(self):
         return self.exporter_options.get('disable_retries', False)
 
+    def get_supported_options(self, module_type):
+        if module_type == 'reader':
+            return _get_module_supported_options(self.reader_options['name'])
+        if module_type == 'writer':
+            return _get_module_supported_options(self.writer_options['name'])
+        if module_type == 'filter_after':
+            return _get_module_supported_options(self.filter_after_options['name'])
+        if module_type == 'filter_before':
+            return _get_module_supported_options(self.filter_before_options['name'])
+        if module_type == 'formatter':
+            return _get_module_supported_options(self.formatter_options['name'])
+        if module_type == 'grouper':
+            return _get_module_supported_options(self.grouper_options['name'])
+        if module_type == 'persistence':
+            return _get_module_supported_options(self.persistence_options['name'])
+        if module_type == 'stats':
+            return _get_module_supported_options(self.stats_options['name'])
+        if module_type == 'transform':
+            return _get_module_supported_options(self.transform_options['name'])
+
 
 MODULE_TYPES = ['readers', 'writers', 'transform', 'groupers',
                 'persistence', 'filters', 'stats_managers']
+
+CONFIG_SECTIONS = ['reader', 'writer', 'transform', 'grouper',
+                   'persistence', 'filter_after', 'filter_before', 'stats']
 
 
 def module_options():
