@@ -5,7 +5,7 @@ setup(
     name = 'exporters',
     version = '0.3.2',
     packages = find_packages(exclude=['tests']),
-    install_requires = ['six', 'retrying', 'requests', 'PyYAML', 'decorator', 'bz2file'],
+    install_requires = ['six', 'retrying', 'requests', 'PyYAML', 'decorator', 'dicttoxml', 'bz2file'],
     dependency_links = [
         'git@github.com:scrapinghub/collection-scanner.git#egg=collection_scanner',
         'git@github.com:scrapinghub/flatson.git#egg=flatson',
