@@ -1,4 +1,2 @@
-from .webhook_notifier import WebhookNotifier
-from .ses_mail_notifier import SESMailNotifier
-
-__all__ = [WebhookNotifier, SESMailNotifier]
+from .webhook_notifier import WebhookNotifier  # NOQA
+from .ses_mail_notifier import SESMailNotifier  # NOQA
