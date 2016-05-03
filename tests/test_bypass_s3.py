@@ -7,6 +7,8 @@ import boto
 import mock
 import moto
 from boto.exception import S3ResponseError
+from freezegun import freeze_time
+
 from tests.utils import environment
 from boto.utils import compute_md5
 from exporters.bypasses.s3_to_s3_bypass import S3Bypass
@@ -402,3 +404,18 @@ class S3BypassTest(unittest.TestCase):
 
         # then:
         self.assertEqual(metadata_md5, self.key_md5)
+
+    @freeze_time('2010-01-01')
+    def test_filebase_naming(self):
+        self.s3_conn.create_bucket('dest_bucket')
+        options = create_s3_bypass_simple_config()
+        options.writer_options['options']['filebase'] = 'other_prefix/%Y-%m-%d/'
+
+        with closing(S3Bypass(options, meta())) as bypass:
+            bypass.execute()
+
+        # then:
+        bucket = self.s3_conn.get_bucket('dest_bucket')
+        key = next(iter(bucket.list('other_prefix/2010-01-01/')))
+        file_name = key.name.split('/')[-1]
+        self.assertEquals('test_key', file_name)
