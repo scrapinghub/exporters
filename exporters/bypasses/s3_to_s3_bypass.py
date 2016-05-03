@@ -207,8 +207,13 @@ class S3Bypass(BaseS3Bypass):
 
     @retry_long
     def _copy_s3_key(self, key):
-        self._ensure_copy_key(self.dest_bucket, key.name, key.bucket, key.name)
+        dest_key_name = self.get_dest_key_name(key.name)
+        self._ensure_copy_key(self.dest_bucket, dest_key_name, key.bucket, key.name)
 
     def close(self):
         if self.bypass_state:
             self.bypass_state.delete()
+
+    def get_dest_key_name(self, name):
+        file_name = name.split('/')[-1]
+        return '{}{}'.format(self.dest_filebase, file_name)
