@@ -1,6 +1,5 @@
 import os
 import logging
-from exporters.exporter_config import CONFIG_SECTIONS
 
 
 class BaseBypass(object):
@@ -12,7 +11,9 @@ class BaseBypass(object):
         self.logger = logging.getLogger('bypass_logger')
         self.logger.setLevel(logging.INFO)
         self.supported_options = {module_name: self.config.get_supported_options(module_name)
-                                  for module_name in CONFIG_SECTIONS}
+                                  for module_name in
+                                  ['reader', 'writer', 'transform', 'grouper', 'persistence',
+                                   'filter_after', 'filter_before', 'stats']}
 
     @classmethod
     def meets_conditions(self, config):
