@@ -127,14 +127,18 @@ class S3Bypass(BaseS3Bypass):
             self.logger.warning(
                     'Skipping key permissions set. We have no READ_ACP/WRITE_ACP permissions')
 
+    def _warn_if_etags_differ(self, source_key, dest_key, source_md5=None):
+        source_md5 = source_md5 or source_key.etag
+        if source_md5 != dest_key.etag:
+            self.logger.warn(
+                'MD5 for key {} differ from destination key {}: {} != {}'.format(
+                    source_key.name, dest_key.name, source_md5, dest_key.etag))
+
     def _check_copy_integrity(self, source_key, dest_bucket, dest_key_name):
         from boto.exception import S3ResponseError
         try:
             dest_key = dest_bucket.get_key(dest_key_name)
-            if source_key.etag != dest_key.etag:
-                raise InvalidKeyIntegrityCheck(
-                    'Key {} and key {} md5 checksums are different. {} != {}'.format(
-                        source_key.name, dest_key.name, source_key.etag, dest_key.etag))
+            self._warn_if_etags_differ(source_key, dest_key)
         except S3ResponseError:
             self.logger.warning(
                     'Skipping copy integrity. We have no READ_ACP/WRITE_ACP permissions')
@@ -183,10 +187,7 @@ class S3Bypass(BaseS3Bypass):
         try:
             dest_key = dest_bucket.get_key(dest_key_name)
             md5 = calculate_multipart_etag(path, CHUNK_SIZE)
-            if dest_key.etag != md5:
-                raise InvalidKeyIntegrityCheck(
-                    'Key {} and key {} md5 checksums are different. {} != {}'.format(
-                        key.name, dest_key_name.name, md5, dest_key_name.etag))
+            self._warn_if_etags_differ(key, dest_key, source_md5=md5)
         except S3ResponseError:
             self.logger.warning(
                     'Skipping copy integrity. We have no READ_ACP/WRITE_ACP permissions')
