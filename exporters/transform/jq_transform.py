@@ -3,6 +3,14 @@ from exporters.records.base_record import BaseRecord
 from exporters.transform.base_transform import BaseTransform
 
 
+def _compile_jq(jq_expr):
+    """Compile JQ expression, returning a JQ program object
+    See: https://pypi.python.org/pypi/jq
+    """
+    import jq
+    return jq.jq(jq_expr)
+
+
 class JQTransform(BaseTransform):
     """
     It applies jq transformations to items. To see documentation
@@ -21,15 +29,12 @@ class JQTransform(BaseTransform):
         self.jq_expression = self.read_option('jq_filter')
         self.logger.info('JQTransform has been initiated. Expression: {}'.format(
             self.jq_expression))
-        if not self.is_valid_jq_expression(self.jq_expression):
-            raise ValueError('JQ expression is not valid')
+        self.jq_program = _compile_jq(self.jq_expression)
 
     def transform_batch(self, batch):
-        from jq import jq
-        jq_program = jq(self.jq_expression)
         for item in batch:
             try:
-                transformed_item = jq_program.transform(item)
+                transformed_item = self.jq_program.transform(item)
             except StopIteration:
                 # jq.transform() raise StopIteration for filtered items
                 continue
@@ -39,7 +44,3 @@ class JQTransform(BaseTransform):
 
             yield BaseRecord(transformed_item)
         self.logger.debug('Transformed items')
-
-    def is_valid_jq_expression(self, jq_expression):
-        # TODO: Make a expression validator
-        return True

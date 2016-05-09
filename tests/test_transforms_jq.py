@@ -36,3 +36,7 @@ class JqTransformTest(unittest.TestCase):
             transform = JQTransform({'options': {'jq_filter': jq_filter}})
             expected = [{'country_code': country}]
             self.assertEqual(expected, list(transform.transform_batch(self.batch)))
+
+    def test_invalid_jq_expression(self):
+        with self.assertRaisesRegexp(ValueError, "jq: 1 compile error"):
+            JQTransform({'options': {'jq_filter': 'blah'}})
