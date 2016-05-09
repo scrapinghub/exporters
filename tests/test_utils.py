@@ -301,7 +301,7 @@ class PythonInterpreterTest(unittest.TestCase):
 
 class BaseByPassTest(unittest.TestCase):
     def test_not_implemented(self):
-        bypass_script = BaseBypass({}, None)
+        bypass_script = BaseBypass(ExporterConfig(valid_config_with_updates({})), None)
         with self.assertRaises(NotImplementedError):
             BaseBypass.meets_conditions({})
         with self.assertRaises(NotImplementedError):

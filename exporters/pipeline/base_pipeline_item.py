@@ -1,6 +1,7 @@
 import os
 import six
 from exporters.exceptions import ConfigurationError
+from exporters.utils import read_option
 
 
 class SupportedOptionsMeta(type):
@@ -41,12 +42,7 @@ class BasePipelineItem(object):
                 raise ConfigurationError('Missing value for option %s' % option_name)
 
     def read_option(self, option_name, default=None):
-        if option_name in self.options:
-            return self.options.get(option_name)
-        env_name = self.supported_options.get(option_name, {}).get('env_fallback')
-        if env_name and env_name in os.environ:
-            return os.environ.get(env_name)
-        return self.supported_options.get(option_name, {}).get('default', default)
+        return read_option(option_name, self.options, self.supported_options, default)
 
     def set_metadata(self, key, value, module):
         self.metadata.per_module[module][key] = value

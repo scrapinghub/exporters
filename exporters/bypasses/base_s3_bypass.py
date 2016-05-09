@@ -51,10 +51,8 @@ class BaseS3Bypass(BaseBypass):
         return True
 
     def execute(self):
-        reader_aws_key = self.read_option(
-                'reader', 'aws_access_key_id', 'EXPORTERS_S3READER_AWS_KEY')
-        reader_aws_secret = self.read_option(
-                'reader', 'aws_secret_access_key', 'EXPORTERS_S3READER_AWS_SECRET')
+        reader_aws_key = self.read_option('reader', 'aws_access_key_id')
+        reader_aws_secret = self.read_option('reader', 'aws_secret_access_key')
         self.bypass_state = S3BypassState(
             self.config, self.metadata,
             reader_aws_key,

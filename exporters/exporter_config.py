@@ -58,6 +58,13 @@ class ExporterConfig(object):
     def disable_retries(self):
         return self.exporter_options.get('disable_retries', False)
 
+    def get_supported_options(self, module_type):
+        options_name = '{}_options'.format(module_type)
+        if not hasattr(self, options_name):
+            raise ValueError("Invalid config section: %r" % options_name)
+        name = getattr(self, options_name)['name']
+        return _get_module_supported_options(name)
+
 
 MODULE_TYPES = ['readers', 'writers', 'transform', 'groupers',
                 'persistence', 'filters', 'stats_managers', 'export_formatter',

@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import tempfile
@@ -85,3 +86,15 @@ def calculate_multipart_etag(source_path, chunk_size):
     new_md5 = hashlib.md5(digests)
     new_etag = '"%s-%s"' % (new_md5.hexdigest(), len(md5s))
     return new_etag
+
+
+def read_option(option_name, options, supported_options, default=None):
+    if option_name in options:
+        return options.get(option_name)
+    env_name = supported_options.get(option_name, {}).get('env_fallback')
+    if env_name and env_name in os.environ:
+        return os.environ.get(env_name)
+    if env_name:
+        logging.log(logging.WARNING, 'Missing value for option {}. (tried also: {} from env)'
+                    .format(option_name, env_name))
+    return supported_options.get(option_name, {}).get('default', default)
