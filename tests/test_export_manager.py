@@ -121,6 +121,29 @@ class BaseExportManagerTest(unittest.TestCase):
         written_files = [os.path.basename(f) for f in exporter.writer.written_files.keys()]
         self.assertContainsSubset(written_files, expected_written_files)
 
+    def test_non_empty_files(self):
+        config = self.build_config(
+            writer={
+                'name': 'exporters.writers.fs_writer.FSWriter',
+                'options': {
+                    'filebase': os.path.join(self.tmp_dir, 'some_files_'),
+                    'items_per_buffer_write': 1,
+                }
+            },
+            reader={
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {
+                    'number_of_items': 1,
+                    'batch_size': 1
+                }
+            }
+        )
+        expected_number_of_files = 1
+        self.exporter = exporter = BaseExporter(config)
+        exporter.export()
+        written_files = len([os.path.basename(f) for f in exporter.writer.written_files.keys()])
+        self.assertEqual(written_files, expected_number_of_files)
+
     def assertContainsSubset(self, iterable, subset):
         """Check if iterable first argument contains
         all items in second argument
