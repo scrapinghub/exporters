@@ -1,5 +1,6 @@
-import os
 import logging
+
+from exporters.utils import read_option
 
 
 class BaseBypass(object):
@@ -32,12 +33,7 @@ class BaseBypass(object):
     def read_option(self, module, option):
         options_name = '{}_options'.format(module)
         options = getattr(self.config, options_name)['options']
-        env_fallback = self.supported_options[module][option].get('env_fallback')
-        option = options.get(option, os.getenv(env_fallback))
-        if not option and env_fallback:
-            logging.log(logging.WARNING, 'Missing value for option {}. (tried also: {} from env)'
-                        .format(option, env_fallback))
-        return option
+        return read_option(option, options, self.supported_options[module])
 
     def close(self):
         pass
