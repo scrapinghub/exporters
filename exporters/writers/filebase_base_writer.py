@@ -153,13 +153,14 @@ class FilebaseBaseWriter(BaseWriter):
 
     def _write_current_buffer_for_group_key(self, key):
         write_info = self.write_buffer.pack_buffer(key)
-        file_path = write_info['file_path']
-        self.write(file_path,
-                   self.write_buffer.grouping_info[key]['membership'],
-                   file_name=os.path.basename(file_path))
-        self.logger.info(
-            'Checksum for file {file_path}: {file_hash}'.format(**write_info))
-        self.written_files[self.last_written_file] = write_info
+        if write_info['number_of_records']:
+            file_path = write_info['file_path']
+            self.write(file_path,
+                       self.write_buffer.grouping_info[key]['membership'],
+                       file_name=os.path.basename(file_path))
+            self.logger.info(
+                'Checksum for file {file_path}: {file_hash}'.format(**write_info))
+            self.written_files[self.last_written_file] = write_info
 
         self.write_buffer.clean_tmp_files(write_info)
         self.write_buffer.add_new_buffer_for_group(key)
