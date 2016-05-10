@@ -103,12 +103,16 @@ class BaseWriter(BasePipelineItem):
             raise ItemsLimitReached('Finishing job after items_limit reached:'
                                     ' {} items written.'.format(self.get_metadata('items_count')))
 
+    def _should_flush(self, key):
+        return self.grouping_info[key].get('buffered_items', 0) > 0
+
     def flush(self):
         """
         Ensure all remaining buffers are written.
         """
         for key in self.grouping_info.keys():
-            self._write_current_buffer_for_group_key(key)
+            if self._should_flush(key):
+                self._write_current_buffer_for_group_key(key)
 
     def close(self):
         """
