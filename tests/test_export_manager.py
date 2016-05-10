@@ -138,12 +138,9 @@ class BaseExportManagerTest(unittest.TestCase):
                 }
             }
         )
-        expected_number_of_files = 1
         self.exporter = exporter = BaseExporter(config)
         exporter.export()
-        written_files = len([os.path.basename(f) for f in exporter.writer.written_files.keys()])
-        self.assertEqual(written_files, expected_number_of_files, 'Wrong number of written files')
-        self.assertEqual(len(exporter.writer.written_files), expected_number_of_files,
+        self.assertEqual(len(exporter.writer.written_files), 1,
                          'Wrong number of files compared to writer metadata')
 
     def assertContainsSubset(self, iterable, subset):
