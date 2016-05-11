@@ -15,7 +15,7 @@ OPERATORS = {
     'contains': lambda a, b: operator.contains(b, a),
     'in': lambda a, b: operator.contains(b, a),
     '==': lambda a, b: a == b,
-    'regex': lambda a, b: bool(re.match(b, u'%s' % a))
+    're_match': lambda a, b: bool(re.match(b, u'%s' % a))
 }
 
 DEFAULT_OPERATOR = '=='
@@ -92,4 +92,4 @@ class KeyValueRegexFilter(KeyValueBaseFilter):
     def _match_value(self, found, expected, op):
         if found is None:
             return False
-        return OPERATORS['regex'](found, expected)
+        return OPERATORS['re_match'](found, expected)
