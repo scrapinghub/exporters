@@ -2,6 +2,22 @@
 
 Modules
 =======
+Every module has a `supported_options` attribute that defines which options are optional or mandatory,
+and the default values if proceeds. It is a dict with the following shape:
+
+.. code-block:: python
+    supported_options = {
+        'option_name': {[attributes]}
+    }
+
+
+Possible attributes for a supported_option are:
+
+    - type - The option type. Possbile choices are ['basestring', 'int', 'list', 'object']
+    - default - Default option value if it is not provided by configuration object. If it is present,
+    the supported_option will be optional instead of mandatory.
+    - env_fallback - If option is not provided by configuration object, it will be loaded from
+    env_fallback environment variable.
 
 
 Export Manager
