@@ -12,8 +12,8 @@ class InvalidOperator(ValueError):
 
 
 OPERATORS = {
-    'contains': lambda a, b: operator.contains(b, a),
-    'in': lambda a, b: b in a,
+    'in': lambda a, b: operator.contains(b, a),
+    'contains': lambda a, b: b in a,
     '==': lambda a, b: a == b,
     're_match': lambda a, b: bool(re.match(b, u'%s' % a))
 }

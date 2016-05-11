@@ -263,7 +263,7 @@ class KeyValueFiltersTest(unittest.TestCase):
     def test_filter_with_contains_key_value(self):
 
         keys = [
-            {'name': 'country_code', 'value': ['es', 'us'], 'operator': 'contains'}
+            {'name': 'country_code', 'value': ['es', 'us'], 'operator': 'in'}
             ]
 
         items = [
@@ -284,7 +284,7 @@ class KeyValueFiltersTest(unittest.TestCase):
     def test_filter_with_in_key_value(self):
 
         keys = [
-            {'name': 'country_code', 'value': 'es', 'operator': 'in'}
+            {'name': 'country_code', 'value': 'es', 'operator': 'contains'}
             ]
 
         items = [
