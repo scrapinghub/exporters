@@ -3,6 +3,7 @@ import random
 import unittest
 from exporters.filters.base_filter import BaseFilter
 from exporters.filters.key_value_filter import KeyValueFilter
+from exporters.filters.key_value_filters import InvalidOperator
 from exporters.filters.key_value_regex_filter import KeyValueRegexFilter
 from exporters.filters.no_filter import NoFilter
 from exporters.records.base_record import BaseRecord
@@ -247,3 +248,74 @@ class KeyValueRegexFilterTest(unittest.TestCase):
             {'address': {'country': 3}},
         ]
         self.assertEqual(expected, result)
+
+
+class KeyValueFiltersTest(unittest.TestCase):
+
+    def setUp(self):
+        self.options = {
+            'exporter_options': {
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
+            }
+        }
+
+    def test_filter_with_contains_key_value(self):
+
+        keys = [
+            {'name': 'country_code', 'value': ['es', 'us'], 'operator': 'in'}
+            ]
+
+        items = [
+            {'name': 'item1', 'country_code': 'es'},
+            {'name': 'item2', 'country_code': 'us'},
+            {'name': 'item3', 'country_code': 'uk'}
+        ]
+        batch = []
+        for item in items:
+            record = BaseRecord(item)
+            batch.append(record)
+        filter = KeyValueFilter({'options': {'keys': keys}}, meta())
+
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertEqual(2, len(batch))
+
+    def test_filter_with_in_key_value(self):
+
+        keys = [
+            {'name': 'country_code', 'value': 'es', 'operator': 'contains'}
+            ]
+
+        items = [
+            {'name': 'item1', 'country_code': ['es', 'us']},
+            {'name': 'item2', 'country_code': ['es', 'us']},
+            {'name': 'item3', 'country_code': ['uk']}
+        ]
+        batch = []
+        for item in items:
+            record = BaseRecord(item)
+            batch.append(record)
+        filter = KeyValueFilter({'options': {'keys': keys}}, meta())
+
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertEqual(2, len(batch))
+
+    def test_filter_with_non_existing_op(self):
+
+        keys = [
+            {'name': 'country_code', 'value': ['es', 'us'], 'operator': 'not_an_operator'}
+            ]
+
+        items = [
+            {'name': 'item1', 'country_code': 'es'},
+            {'name': 'item2', 'country_code': 'us'},
+            {'name': 'item3', 'country_code': 'uk'}
+        ]
+        batch = []
+        for item in items:
+            record = BaseRecord(item)
+            batch.append(record)
+        with self.assertRaisesRegexp(InvalidOperator, 'operator not valid'):
+            KeyValueFilter({'options': {'keys': keys}}, meta())
