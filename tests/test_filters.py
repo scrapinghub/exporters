@@ -281,6 +281,27 @@ class KeyValueFiltersTest(unittest.TestCase):
         batch = list(batch)
         self.assertEqual(2, len(batch))
 
+    def test_filter_with_in_key_value(self):
+
+        keys = [
+            {'name': 'country_code', 'value': 'es', 'operator': 'in'}
+            ]
+
+        items = [
+            {'name': 'item1', 'country_code': ['es', 'us']},
+            {'name': 'item2', 'country_code': ['es', 'us']},
+            {'name': 'item3', 'country_code': ['uk']}
+        ]
+        batch = []
+        for item in items:
+            record = BaseRecord(item)
+            batch.append(record)
+        filter = KeyValueFilter({'options': {'keys': keys}}, meta())
+
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertEqual(2, len(batch))
+
     def test_filter_with_non_existing_op(self):
 
         keys = [
