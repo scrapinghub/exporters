@@ -2,6 +2,22 @@
 
 Modules
 =======
+Every module has a `supported_options` attribute that defines which options are optional or mandatory,
+and the default values if proceeds. It is a dict with the following shape:
+
+.. code-block:: python
+    supported_options = {
+        'option_name': {[attributes]}
+    }
+
+
+Possible attributes for a supported_option are:
+
+    - type - The option type. Possbile choices are ['basestring', 'int', 'list', 'object']
+    - default - Default option value if it is not provided by configuration object. If it is present,
+    the supported_option will be optional instead of mandatory.
+    - env_fallback - If option is not provided by configuration object, it will be loaded from
+    env_fallback environment variable.
 
 
 Export Manager
@@ -30,10 +46,9 @@ and writer aim S3 buckets. If no transforms or filtering are needed, keys can be
 All bypass classes are subclasses of BaseBypass class, and must implement two methods:
 
     - meets_conditions(configuration)
-            Checks if provided export configuration meets the requirements to use the bypass. If not, a RequisitesNotMet
-            exception must be thrown.
+            Checks if provided export configuration meets the requirements to use the bypass. If not, it returns False.
 
-    - bypass()
+    - execute()
         Executes the bypass script.
 
     - close()
@@ -43,10 +58,32 @@ Provided Bypass scripts
 ***********************
 S3Bypass
 ########
-.. automodule:: exporters.export_managers.s3_to_s3_bypass
+.. automodule:: exporters.bypasses.s3_to_s3_bypass
     :members:
     :undoc-members:
     :show-inheritance:
+
+S3ToAzureBlobBypass
+###################
+.. automodule:: exporters.bypasses.s3_to_azure_blob_bypass
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+S3ToAzureFileBypass
+###################
+.. automodule:: exporters.bypasses.s3_to_azure_file_bypass
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+StreamBypass
+############
+.. automodule:: exporters.bypasses.stream_bypass
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Reader
 ~~~~~~
@@ -74,7 +111,7 @@ RandomReader
     :show-inheritance:
 
 FSReader
-############
+########
 .. automodule:: exporters.readers.fs_reader
     :members:
     :undoc-members:
@@ -242,6 +279,13 @@ OdoWriter
     :undoc-members:
     :show-inheritance:
 
+HubstorageWriter
+################
+.. automodule:: exporters.writers.hubstorage_writer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 
 Transform
@@ -277,6 +321,13 @@ JqTransform
 PythonexpTransform
 ##################
 .. automodule:: exporters.transform.pythonexp_transform
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+PythonmapTransform
+##################
+.. automodule:: exporters.transform.pythonmap
     :members:
     :undoc-members:
     :show-inheritance:
@@ -453,10 +504,12 @@ the following methods:
     - final_report(stats)
         Usually called at the end of an export job
 
+
 .. automodule:: exporters.stats_managers.base_stats_managers
     :members:
     :undoc-members:
     :show-inheritance:
+
 
 Provided Stats Managers
 ***********************
@@ -513,3 +566,4 @@ XMLExportFormatter
     :members:
     :undoc-members:
     :show-inheritance:
+

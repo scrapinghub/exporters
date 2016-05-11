@@ -67,3 +67,4 @@ Features
     - Export stats gathering.
     - Grouping support.
     - Filter and transform exported items.
+    - Loading options from env.
