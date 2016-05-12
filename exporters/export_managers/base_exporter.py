@@ -87,6 +87,7 @@ class BaseExporter(object):
         self.reader.set_last_position(last_position)
 
     def _clean_export_job(self):
+        self.reader.close()
         self.writer.close()
 
     def _finish_export_job(self):
@@ -159,8 +160,8 @@ class BaseExporter(object):
                 self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM])
             except Exception as e:
                 self._handle_export_exception(e)
-                raise e
-            finally:
                 self._clean_export_job()
+                raise e
         else:
             self.metadata.bypassed_pipeline = True
+        self._clean_export_job()

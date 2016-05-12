@@ -59,3 +59,6 @@ class BaseReader(BasePipelineItem):
 
     def get_all_metadata(self, module='reader'):
         return super(BaseReader, self).get_all_metadata(module)
+
+    def close(self):
+        pass

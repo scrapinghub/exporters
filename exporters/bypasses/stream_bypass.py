@@ -102,7 +102,9 @@ class StreamBypass(BaseBypass):
         module_loader = ModuleLoader()
         try:
             reader = module_loader.load_class(config.reader_options['name'])
+            reader.close()
             writer = module_loader.load_class(config.writer_options['name'])
+            writer.close()
         except:
             cls._log_skip_reason("Can't load reader and/or writer")
             return False
@@ -133,6 +135,8 @@ class StreamBypass(BaseBypass):
                 self.bypass_state.commit_copied(stream.filename, stream.size)
             else:
                 logging.log(logging.INFO, 'Skip file {}'.format(stream.filename))
+        writer.close()
+        reader.close()
 
     def close(self):
         if self.bypass_state:
