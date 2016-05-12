@@ -2,7 +2,7 @@ import unittest
 
 import six
 
-from bin.config_assistant import get_module_choices, parse_value
+from bin.create_config_assistant import get_module_choices, parse_value
 from exporters.bypasses.base import BaseBypass
 from exporters.bypasses.s3_to_s3_bypass import S3Bypass
 from exporters.exceptions import (InvalidExpression, ConfigurationError,

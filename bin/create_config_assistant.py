@@ -165,3 +165,7 @@ def create_config():
 
     with open(file_name, 'w') as f:
         f.write(json.dumps(configuration, indent=2, sort_keys=True))
+
+
+if __name__ == '__main__':
+    create_config()
