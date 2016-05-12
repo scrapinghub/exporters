@@ -133,6 +133,7 @@ class S3BypassTest(unittest.TestCase):
         # given
         self.s3_conn.create_bucket('dest_bucket')
         options = create_s3_bypass_simple_config()
+        options.persistence_options['options']['file_path'] = '/tmp/'
 
         # when:
         with closing(S3Bypass(options, meta())) as bypass:
