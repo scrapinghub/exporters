@@ -1,5 +1,7 @@
 import logging
 from collections import namedtuple
+from contextlib import closing
+
 from exporters.bypasses.base import BaseBypass
 from exporters.module_loader import ModuleLoader
 
@@ -101,10 +103,10 @@ class StreamBypass(BaseBypass):
             return False
         module_loader = ModuleLoader()
         try:
-            reader = module_loader.load_class(config.reader_options['name'])
-            reader.close()
-            writer = module_loader.load_class(config.writer_options['name'])
-            writer.close()
+            with closing(module_loader.load_class(config.reader_options['name'])) as reader:
+                pass
+            with closing(module_loader.load_class(config.writer_options['name'])) as writer:
+                pass
         except:
             cls._log_skip_reason("Can't load reader and/or writer")
             return False
@@ -119,24 +121,23 @@ class StreamBypass(BaseBypass):
     def execute(self):
         self.bypass_state = StreamBypassState(self.config, self.metadata)
         module_loader = ModuleLoader()
-        reader = module_loader.load_reader(self.config.reader_options, self.metadata)
-        writer = module_loader.load_writer(self.config.writer_options, self.metadata)
+        with closing(module_loader.load_reader(
+                self.config.reader_options, self.metadata)) as reader, closing(
+                module_loader.load_writer(self.config.writer_options, self.metadata)) as writer:
 
-        for stream in reader.get_read_streams():
-            if stream.filename not in self.bypass_state.skipped:
-                ensure_tell_method(stream.file_obj)
-                logging.log(logging.INFO, 'Starting to copy file {}'.format(stream.filename))
-                try:
-                    writer.write_stream(stream)
-                finally:
-                    if hasattr(stream, 'close'):
-                        stream.close()
-                logging.log(logging.INFO, 'Finished copying file {}'.format(stream.filename))
-                self.bypass_state.commit_copied(stream.filename, stream.size)
-            else:
-                logging.log(logging.INFO, 'Skip file {}'.format(stream.filename))
-        writer.close()
-        reader.close()
+            for stream in reader.get_read_streams():
+                if stream.filename not in self.bypass_state.skipped:
+                    ensure_tell_method(stream.file_obj)
+                    logging.log(logging.INFO, 'Starting to copy file {}'.format(stream.filename))
+                    try:
+                        writer.write_stream(stream)
+                    finally:
+                        if hasattr(stream, 'close'):
+                            stream.close()
+                    logging.log(logging.INFO, 'Finished copying file {}'.format(stream.filename))
+                    self.bypass_state.commit_copied(stream.filename, stream.size)
+                else:
+                    logging.log(logging.INFO, 'Skip file {}'.format(stream.filename))
 
     def close(self):
         if self.bypass_state:

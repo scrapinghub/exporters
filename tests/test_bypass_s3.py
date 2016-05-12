@@ -112,15 +112,14 @@ class S3BypassTest(unittest.TestCase):
             {'name': 'Roberto', 'birthday': '12/05/1987'},
             {'name': 'Claudia', 'birthday': '21/12/1985'},
         ]
-        key = self.source_bucket.new_key('some_prefix/test_key')
-        with TmpFile() as tmp_filename:
-            with open(tmp_filename, 'w') as f:
-                f.write(json.dumps(self.data))
-            with open(tmp_filename) as f:
-                self.key_md5 = compute_md5(f)
-        key.metadata = {'total': 2, 'md5': self.key_md5}
-        key.set_contents_from_string(json.dumps(self.data))
-        key.close()
+        with closing(self.source_bucket.new_key('some_prefix/test_key')) as key:
+            with TmpFile() as tmp_filename:
+                with open(tmp_filename, 'w') as f:
+                    f.write(json.dumps(self.data))
+                with open(tmp_filename) as f:
+                    self.key_md5 = compute_md5(f)
+            key.metadata = {'total': 2, 'md5': self.key_md5}
+            key.set_contents_from_string(json.dumps(self.data))
         self.tmp_bypass_resume_file = 'tests/data/tmp_s3_bypass_resume_persistence.pickle'
         shutil.copyfile('tests/data/s3_bypass_resume_persistence.pickle',
                         self.tmp_bypass_resume_file)
@@ -241,12 +240,10 @@ class S3BypassTest(unittest.TestCase):
         options = create_s3_bypass_simple_config(writer=writer)
 
         # when:
-        bypass = S3Bypass(options, meta())
-
-        # then:
-        filebase = bypass._get_filebase(options.writer_options['options'])
-        self.assertEqual(expected, filebase)
-        bypass.close()
+        with closing(S3Bypass(options, meta())) as bypass:
+            # then:
+            filebase = bypass._get_filebase(options.writer_options['options'])
+            self.assertEqual(expected, filebase)
 
     def test_write_pointer(self):
         # given:
@@ -301,9 +298,8 @@ class S3BypassTest(unittest.TestCase):
         bucket = self.s3_conn.get_bucket('source_pointer_bucket')
 
         expected_prefix_pointer = 'some_prefix/'
-        key = bucket.new_key('test_pointer/LAST')
-        key.set_contents_from_string(expected_prefix_pointer)
-        key.close()
+        with closing(bucket.new_key('test_pointer/LAST')) as key:
+            key.set_contents_from_string(expected_prefix_pointer)
 
         self.s3_conn.create_bucket('dest_pointer_bucket')
         options = create_s3_bypass_simple_config(reader=reader, writer=writer)
@@ -377,11 +373,9 @@ class S3BypassTest(unittest.TestCase):
         }
 
         # when:
-
-        bypass = S3Bypass(options, meta())
-        with environment(env):
-            bypass.execute()
-        bypass.close()
+        with closing(S3Bypass(options, meta())) as bypass:
+            with environment(env):
+                bypass.execute()
 
         # then:
         bucket = self.s3_conn.get_bucket('dest_bucket')
