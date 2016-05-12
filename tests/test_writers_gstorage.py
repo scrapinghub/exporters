@@ -82,6 +82,7 @@ class GStorageWriterTest(unittest.TestCase):
         bucket_mock.blob.assert_called_once_with('tests/' + file_name)
         upload_mock = bucket_mock.blob().upload_from_file
         upload_mock.assert_called_once_with(file_obj, size=file_len)
+        writer.close()
 
     def test_init_from_resource(self):
         options = {
@@ -96,7 +97,8 @@ class GStorageWriterTest(unittest.TestCase):
         with nested(mock.patch.dict('os.environ', env),
                     mock.patch('pkg_resources.resource_string', return_value='{}'),
                     mock.patch('gcloud.storage.Client.from_service_account_json')):
-            GStorageWriter(options, meta())
+            writer = GStorageWriter(options, meta())
+            writer.close()
 
     def test_init_fails_with_bad_resource(self):
         options = {

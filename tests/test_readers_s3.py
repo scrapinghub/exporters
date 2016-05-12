@@ -280,6 +280,7 @@ class S3ReaderTest(unittest.TestCase):
             assert name in file_names
             file_names.remove(name)
         assert file_names == set()
+        reader.close()
 
     def test_invalid_date_range(self):
         self.assertRaisesRegexp(ConfigurationError,
