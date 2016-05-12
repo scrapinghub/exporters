@@ -246,6 +246,7 @@ class S3BypassTest(unittest.TestCase):
         # then:
         filebase = bypass._get_filebase(options.writer_options['options'])
         self.assertEqual(expected, filebase)
+        bypass.close()
 
     def test_write_pointer(self):
         # given:
@@ -380,6 +381,7 @@ class S3BypassTest(unittest.TestCase):
         bypass = S3Bypass(options, meta())
         with environment(env):
             bypass.execute()
+        bypass.close()
 
         # then:
         bucket = self.s3_conn.get_bucket('dest_bucket')
