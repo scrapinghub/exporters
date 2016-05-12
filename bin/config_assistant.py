@@ -1,4 +1,7 @@
 import json
+
+import six
+
 from exporters.defaults import DEFAULT_FILTER_CONFIG, DEFAULT_TRANSFORM_CONFIG, \
     DEFAULT_GROUPER_CONFIG, DEFAULT_PERSISTENCE_CONFIG, DEFAULT_STATS_MANAGER_CCONFIG, \
     DEFAULT_LOGGER_LEVEL, DEFAULT_FORMATTER_CONFIG
@@ -61,15 +64,22 @@ def get_module_choice_number(module_type, choice):
 
 
 def get_supported_option_text(supported_option, params):
-    text = '{} {} ({}): '.format(
-            supported_option, params.get('type'), params.get('default', 'required'))
+    if params.get('default'):
+        text = '{} {} ({}): '.format(
+            supported_option, params.get('type'), params.get('default'))
+    elif params.get('env_fallback'):
+        text = '{} {} (will try env: {}): '.format(
+            supported_option, params.get('type'), params.get('env_fallback'))
+    else:
+        text = '{} {} (required): '.format(
+            supported_option, params.get('type'))
     if params.get('help'):
         text += '\n' + params.get('help') + '\n'
     return text
 
 
 def cast(value, option_type):
-    if option_type is basestring:
+    if option_type in (six.string_types, basestring):
         option_type = str
     return option_type(value)
 
@@ -77,8 +87,12 @@ def cast(value, option_type):
 def parse_value(option_value, option_type):
     if option_value is None:
         return
+    if option_type is tuple:
+        option_type = option_type[0]
     try:
-        if option_type in (int, basestring):
+        if option_type is bool:
+            return option_value != 'False'
+        if option_type in (int, six.string_types, basestring):
             return cast(option_value, option_type)
         if option_type in (list, object):
             parsed = eval(option_value)

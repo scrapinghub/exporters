@@ -1,5 +1,7 @@
 import unittest
 
+import six
+
 from bin.config_assistant import get_module_choices, parse_value
 from exporters.bypasses.base import BaseBypass
 from exporters.bypasses.s3_to_s3_bypass import S3Bypass
@@ -443,6 +445,30 @@ class CreateConfigAssistantTest(unittest.TestCase):
 
         # then
         self.assertEqual(parse_value(value, basestring), expected)
+
+    def test_parse_six_value(self):
+        # when
+        value = "foo"
+        expected = 'foo'
+
+        # then
+        self.assertEqual(parse_value(value, six.string_types), expected)
+
+    def test_parse_bool_true_value(self):
+        # when
+        value = "True"
+        expected = True
+
+        # then
+        self.assertEqual(parse_value(value, bool), expected)
+
+    def test_parse_bool_false_value(self):
+        # when
+        value = "False"
+        expected = False
+
+        # then
+        self.assertEqual(parse_value(value, bool), expected)
 
     def test_invalid_parse(self):
         # when
