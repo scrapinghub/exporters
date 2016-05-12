@@ -46,7 +46,8 @@ def get_module_choices(module_type):
     return choices
 
 
-def get_module_text(section, module_type, choices):
+def get_module_text(section, choices):
+    module_type = MODULE_TRANSLATION[section]
     text = 'Select a {}: \n'.format(section) + '\n'.join(
             ['{} - {}'.format(k, v+' (default)' if v == MODULE_DEFAULTS[module_type] else v)
              for k, v in choices.iteritems()]) + '\n'
@@ -67,23 +68,32 @@ def get_supported_option_text(supported_option, params):
     return text
 
 
+def cast(value, option_type):
+    if option_type is basestring:
+        option_type = str
+    return option_type(value)
+
+
 def parse_value(option_value, option_type):
     if option_value is None:
         return
     try:
+        if option_type in (int, basestring):
+            return cast(option_value, option_type)
         if option_type in (list, object):
             parsed = eval(option_value)
-            if type(parsed) is not option_type:
+            if option_type is object and type(parsed) is not dict:
+                raise
+            elif option_type is list and type(parsed) is not list:
                 raise
             return parsed
-        return option_type(option_value)
     except:
         raise ValueError('{} is not of type {}'.format(option_value, option_type))
 
 
 def get_section_info(section):
     section_choices = get_module_choices(MODULE_TRANSLATION[section])
-    section_text = get_module_text(section, MODULE_TRANSLATION[section], section_choices)
+    section_text = get_module_text(section, section_choices)
     section = get_module_choice_number(MODULE_TRANSLATION[section], get_input(section_text))
     section_supported_options = _get_module_supported_options(section)
     section_options = {}
