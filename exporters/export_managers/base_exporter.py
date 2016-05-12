@@ -117,6 +117,7 @@ class BaseExporter(object):
         for bypass_class in self.bypass_cases:
             if bypass_class.meets_conditions(self.config):
                 self.bypass_exporter(bypass_class)
+                self._clean_export_job()
                 return True
         return False
 
@@ -160,8 +161,8 @@ class BaseExporter(object):
                 self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM])
             except Exception as e:
                 self._handle_export_exception(e)
-                self._clean_export_job()
                 raise e
+            finally:
+                self._clean_export_job()
         else:
             self.metadata.bypassed_pipeline = True
-        self._clean_export_job()
