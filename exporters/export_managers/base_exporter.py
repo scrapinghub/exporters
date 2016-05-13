@@ -89,9 +89,10 @@ class BaseExporter(object):
     def _clean_export_job(self):
         try:
             self.reader.close()
+        except:
+            raise
         finally:
             self.writer.close()
-            raise
 
     def _finish_export_job(self):
         self.writer.finish_writing()
