@@ -87,7 +87,12 @@ class BaseExporter(object):
         self.reader.set_last_position(last_position)
 
     def _clean_export_job(self):
-        self.writer.close()
+        try:
+            self.reader.close()
+        except:
+            raise
+        finally:
+            self.writer.close()
 
     def _finish_export_job(self):
         self.writer.finish_writing()
@@ -115,8 +120,11 @@ class BaseExporter(object):
             return False
         for bypass_class in self.bypass_cases:
             if bypass_class.meets_conditions(self.config):
-                self.bypass_exporter(bypass_class)
-                return True
+                try:
+                    self.bypass_exporter(bypass_class)
+                finally:
+                    self._clean_export_job()
+                    return True
         return False
 
     def _handle_export_exception(self, exception):

@@ -1,6 +1,6 @@
 import mock
 import unittest
-from contextlib import nested
+from contextlib import nested, closing
 from six import BytesIO
 
 from exporters.records.base_record import BaseRecord
@@ -69,19 +69,19 @@ class GStorageWriterTest(unittest.TestCase):
     @mock.patch('gcloud.storage.Client.from_service_account_json')
     def test_write_stream(self, get_client):
         # given:
-        writer = GStorageWriter(self.get_options(), meta())
-        file_obj = BytesIO('hello')
-        file_name = 'hellofile'
-        file_len = len('hello')
+        with closing(GStorageWriter(self.get_options(), meta())) as writer:
+            file_obj = BytesIO('hello')
+            file_name = 'hellofile'
+            file_len = len('hello')
 
-        # when:
-        writer.write_stream(Stream(file_obj, file_name, file_len))
+            # when:
+            writer.write_stream(Stream(file_obj, file_name, file_len))
 
-        # then
-        bucket_mock = get_client().bucket()
-        bucket_mock.blob.assert_called_once_with('tests/' + file_name)
-        upload_mock = bucket_mock.blob().upload_from_file
-        upload_mock.assert_called_once_with(file_obj, size=file_len)
+            # then
+            bucket_mock = get_client().bucket()
+            bucket_mock.blob.assert_called_once_with('tests/' + file_name)
+            upload_mock = bucket_mock.blob().upload_from_file
+            upload_mock.assert_called_once_with(file_obj, size=file_len)
 
     def test_init_from_resource(self):
         options = {
@@ -96,7 +96,8 @@ class GStorageWriterTest(unittest.TestCase):
         with nested(mock.patch.dict('os.environ', env),
                     mock.patch('pkg_resources.resource_string', return_value='{}'),
                     mock.patch('gcloud.storage.Client.from_service_account_json')):
-            GStorageWriter(options, meta())
+            with closing(GStorageWriter(options, meta())):
+                pass
 
     def test_init_fails_with_bad_resource(self):
         options = {

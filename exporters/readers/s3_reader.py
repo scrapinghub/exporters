@@ -4,6 +4,8 @@ import os
 import tempfile
 import re
 import datetime
+
+import shutil
 from six.moves.urllib.request import urlopen
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.readers.base_reader import BaseReader
@@ -11,7 +13,6 @@ from exporters.records.base_record import BaseRecord
 from exporters.default_retries import retry_long, retry_short
 from exporters.exceptions import ConfigurationError, InvalidDateRangeError
 import logging
-
 
 S3_URL_EXPIRES_IN = 1800  # half an hour should be enough
 
@@ -270,3 +271,6 @@ class S3Reader(BaseReader):
                 self.bucket.get_key(self.current_key).get_contents_to_filename(file_path)
                 self.last_line = 0
             self.last_line = self.last_position['last_line']
+
+    def close(self):
+        shutil.rmtree(self.tmp_folder)

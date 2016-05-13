@@ -46,16 +46,20 @@ class GStorageWriter(FilebaseBaseWriter):
     def __init__(self, options, *args, **kwargs):
         from gcloud import storage
         super(GStorageWriter, self).__init__(options, *args, **kwargs)
+
         project = self.read_option('project')
         bucket_name = self.read_option('bucket')
-
         with TemporaryDirectory() as temp_dir:
             credentials_file = os.path.join(temp_dir, 'credentials.json')
             with open(credentials_file, 'w') as f:
                 creds_opt = self.read_option('credentials')
                 if isinstance(creds_opt, six.string_types):
                     package_name, path = creds_opt.split(':')
-                    serialized = pkg_resources.resource_string(package_name, path)
+                    try:
+                        serialized = pkg_resources.resource_string(package_name, path)
+                    except:
+                        self.write_buffer.close()
+                        raise
                 else:
                     serialized = json.dumps(creds_opt)
                 f.write(serialized)
