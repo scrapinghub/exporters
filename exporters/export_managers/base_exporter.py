@@ -120,9 +120,11 @@ class BaseExporter(object):
             return False
         for bypass_class in self.bypass_cases:
             if bypass_class.meets_conditions(self.config):
-                self.bypass_exporter(bypass_class)
-                self._clean_export_job()
-                return True
+                try:
+                    self.bypass_exporter(bypass_class)
+                finally:
+                    self._clean_export_job()
+                    return True
         return False
 
     def _handle_export_exception(self, exception):
