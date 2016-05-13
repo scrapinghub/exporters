@@ -121,10 +121,9 @@ class StreamBypass(BaseBypass):
     def execute(self):
         self.bypass_state = StreamBypassState(self.config, self.metadata)
         module_loader = ModuleLoader()
-        with closing(module_loader.load_reader(
-                self.config.reader_options, self.metadata)) as reader, closing(
-                module_loader.load_writer(self.config.writer_options, self.metadata)) as writer:
-
+        reader = module_loader.load_reader(self.config.reader_options, self.metadata)
+        writer = module_loader.load_writer(self.config.writer_options, self.metadata)
+        with closing(reader), closing(writer):
             for stream in reader.get_read_streams():
                 if stream.filename not in self.bypass_state.skipped:
                     ensure_tell_method(stream.file_obj)
