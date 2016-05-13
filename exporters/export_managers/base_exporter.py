@@ -87,8 +87,11 @@ class BaseExporter(object):
         self.reader.set_last_position(last_position)
 
     def _clean_export_job(self):
-        self.reader.close()
-        self.writer.close()
+        try:
+            self.reader.close()
+        finally:
+            self.writer.close()
+            raise
 
     def _finish_export_job(self):
         self.writer.finish_writing()
