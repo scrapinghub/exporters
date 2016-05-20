@@ -2,6 +2,8 @@ import gzip
 import json
 import os
 import re
+from io import BufferedReader
+
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 from exporters.exceptions import ConfigurationError
@@ -74,11 +76,12 @@ class FSReader(BaseReader):
 
         for fpath in sorted(self.files):
             with gzip.open(fpath) as f:
-                for line in f:
-                    self.last_line += 1
-                    line = line.replace("\n", '')
-                    item = BaseRecord(json.loads(line))
-                    yield item
+                with BufferedReader(f) as bf:
+                    for line in bf:
+                        self.last_line += 1
+                        line = line.replace("\n", '')
+                        item = BaseRecord(json.loads(line))
+                        yield item
 
             self.read_files.append(fpath)
             self.files.remove(fpath)
