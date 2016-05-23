@@ -87,16 +87,19 @@ class FSReader(BaseReader):
             if isinstance(input_unit, basestring):
                 out.append(input_unit)
             elif isinstance(input_unit, dict):
-                try:
-                    directory = input_unit['dir']
-                except KeyError:
-                    try:
-                        pointer = input_unit['dir_pointer']
-                    except KeyError:
-                        raise ConfigurationError(
-                            'Input directory dict must contain'
-                            ' "dir" or "dir_pointer" element.')
-                    directory = cls._get_pointer(pointer)
+                missing = object()
+                directory = input_unit.get('dir', missing)
+                dir_pointer = input_unit.get('dir_pointer', missing)
+                if directory is missing and dir_pointer is missing:
+                    raise ConfigurationError(
+                        'Input directory dict must contain'
+                        ' "dir" or "dir_pointer" element (but not both)')
+                if directory is not missing and dir_pointer is not missing:
+                    raise ConfigurationError(
+                        'Input directory dict must not contain'
+                        ' both "dir" and "dir_pointer" elements')
+                if dir_pointer is not missing:
+                    directory = cls._get_pointer(dir_pointer)
 
                 out.extend(cls._get_directory_files(
                     directory, input_unit.get('pattern')))
