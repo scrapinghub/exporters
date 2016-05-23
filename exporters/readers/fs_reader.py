@@ -16,55 +16,98 @@ class FSReader(BaseReader):
         - batch_size (int)
             Number of items to be returned in each batch
 
-        - path (str)
-            Files path to be read. This reader will read recusively inside this path.
+        - input (str/dict or a list of str/dict)
+            Specification of files to be read.
 
-        - path_pointer (str)
-            Path pointing to the last version of dataset. This adds support for regular exports.
-            For example:
-                We have a weekly export set with CRON. If we wanted to point to a new data
-                path every week, we should keep updating the export configuration. With a pointer,
-                we can set the reader to read from that file, which contains one line with
-                a valid path to datasets, so only that pointer file should be updated.
+            Accepts either one "input_unit" or many of them in a
+            list. "input_unit" is defined as follows:
 
-        - pattern (str)
-            File name pattern (REGEX). All files that don't match this regex string will be
-            discarded by the reader.
+            If a string, it indicates a filename, e.g. "/path/to/filename".
+
+            If a dictionary, it indicates a directory to be read with the
+            following elements:
+
+            - "dir": path to directory, e.g. "/path/to/dir".
+
+            - "dir_pointer": path to file containing path to directory,
+              e.g. "/path/to/pointer/file" which contains "/path/to/dir".
+              Cannot be used together with "dir".
+
+              For example:
+
+                We have a weekly export set with CRON. If we wanted to point to
+                a new data path every week, we should keep updating the export
+                configuration. With a pointer, we can set the reader to read
+                from that file, which contains one line with a valid path to
+                datasets, so only that pointer file should be updated.
+
+            - "pattern": (optional) regular expression to filter filenames,
+              e.g. "output.*\.jl\.gz$"
+
     """
 
     # List of options to set up the reader
     supported_options = {
         'batch_size': {'type': int, 'default': 10000},
-        'path': {'type': basestring, 'default': ''},
-        'path_pointer': {'type': basestring, 'default': None},
-        'pattern': {'type': basestring, 'default': None}
+        'input': {'type': (str, dict, list), 'default': {'dir': ''}}
     }
 
     def __init__(self, *args, **kwargs):
         super(FSReader, self).__init__(*args, **kwargs)
         self.batch_size = self.read_option('batch_size')
-        self.path = self.read_option('path')
-        self.path_pointer = self.read_option('path_pointer')
-        self.pattern = self.read_option('pattern')
+        self.input_specification = self.read_option('input')
         self.lines_reader = self.read_lines_from_files()
 
-        if self.path and self.path_pointer:
-            raise ConfigurationError("path and path_pointer options cannot be used together")
-
-        if self.path_pointer:
-            self.path = self._get_pointer(self.path_pointer)
-
-        self.files = []
-        all_files = self._get_all_files_from_tree()
-        for file in all_files:
-            if self.pattern:
-                self._add_file_if_matches(file)
-            else:
-                self.files.append(file)
+        self.files = self._get_input_files(self.input_specification)
         self.read_files = []
         self.current_file = None
         self.last_line = 0
         self.logger.info('FSReader has been initiated')
+
+    @classmethod
+    def _get_input_files(cls, input_specification):
+        """Get list of input files according to input definition.
+
+        Input definition can be:
+
+        - str: specifying a filename
+
+        - list of str: specifying list a of filenames
+
+        - dict with "dir" and optional "pattern" parameters: specifying the
+        toplevel directory under which input files will be sought and an optional
+        filepath pattern
+
+        """
+        if isinstance(input_specification, (basestring, dict)):
+            input_specification = [input_specification]
+        elif not isinstance(input_specification, list):
+            raise ConfigurationError("Input specification must be string, list or dict.")
+
+        out = []
+        for input_unit in input_specification:
+            if isinstance(input_unit, basestring):
+                out.append(input_unit)
+            elif isinstance(input_unit, dict):
+                missing = object()
+                directory = input_unit.get('dir', missing)
+                dir_pointer = input_unit.get('dir_pointer', missing)
+                if directory is missing and dir_pointer is missing:
+                    raise ConfigurationError(
+                        'Input directory dict must contain'
+                        ' "dir" or "dir_pointer" element (but not both)')
+                if directory is not missing and dir_pointer is not missing:
+                    raise ConfigurationError(
+                        'Input directory dict must not contain'
+                        ' both "dir" and "dir_pointer" elements')
+                if dir_pointer is not missing:
+                    directory = cls._get_pointer(dir_pointer)
+
+                out.extend(cls._get_directory_files(
+                    directory, input_unit.get('pattern')))
+            else:
+                raise ConfigurationError('Input must only contain strings or dicts')
+        return out
 
     def read_lines_from_files(self):
         """
@@ -93,29 +136,28 @@ class FSReader(BaseReader):
 
         self.finished = True
 
-    def _get_pointer(self, path_pointer):
+    @classmethod
+    def _get_pointer(cls, path_pointer):
         """
         Given a pointer path extracts the path to read the datasets from
         """
         with open(path_pointer) as f:
             return f.read().strip()
 
-    def _get_all_files_from_tree(self):
-        """
-        Returns a list of files under a given path
-        """
-        all_files = []
-        for root, directories, filenames in os.walk(self.path):
-            for filename in filenames:
-                all_files.append(os.path.join(root, filename))
-        return all_files
+    @classmethod
+    def _get_directory_files(cls, directory, pattern=None):
+        if pattern is None:
+            def filepath_matches(x):
+                return True
+        else:
+            filepath_matches = re.compile(pattern).search
 
-    def _add_file_if_matches(self, file):
-        """
-        Checks if a filename matches the provided regex pattern
-        """
-        if re.match(os.path.join(self.path, self.pattern), file):
-            self.files.append(file)
+        return [
+            filepath
+            for dirpath, directories, filenames in os.walk(directory)
+            for filepath in (os.path.join(dirpath, f) for f in filenames)
+            if filepath_matches(filepath)
+        ]
 
     def get_next_batch(self):
         """
