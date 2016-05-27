@@ -119,6 +119,8 @@ class StreamBypass(BaseBypass):
         return True
 
     def execute(self):
+        # We can't count items on streamed bypasses
+        self.valid_total_count = False
         self.bypass_state = StreamBypassState(self.config, self.metadata)
         module_loader = ModuleLoader()
         reader = module_loader.load_reader(self.config.reader_options, self.metadata)
