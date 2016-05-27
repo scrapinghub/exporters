@@ -68,7 +68,16 @@ class MailWriter(BaseWriter):
         return ''
 
     def _get_file_name(self):
-        return '{}{}.{}'.format(self.file_base_name, self.mails_sent, 'gz')
+        if self.compression_format != 'none':
+            return '{}{}.{}.{}'.format(
+                    self.file_base_name,
+                    self.mails_sent,
+                    self.export_formatter.file_extension,
+                    self.compression_format
+            )
+        else:
+            return '{}{}.{}'.format(
+                    self.file_base_name, self.mails_sent, self.export_formatter.file_extension)
 
     def _write_mail(self, dump_path, group_key):
         if self.max_mails_sent == self.mails_sent:
@@ -107,7 +116,7 @@ class MailWriter(BaseWriter):
         self.mails_sent += 1
         self.logger.debug('Sent {}'.format(dump_path))
 
-    def write(self, dump_path, group_key=None):
+    def write(self, dump_path, group_key=None, file_name=None):
         if self.get_metadata('items_count'):
             self._write_mail(dump_path, group_key)
         else:
