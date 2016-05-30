@@ -4,7 +4,7 @@ from contextlib import closing, contextmanager
 import six
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
-from exporters.utils import CHUNK_SIZE, split_file, calculate_multipart_etag
+from exporters.utils import CHUNK_SIZE, split_file, calculate_multipart_etag, get_bucket_name
 from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
@@ -84,7 +84,7 @@ class S3Writer(FilebaseBaseWriter):
         access_key = self.read_option('aws_access_key_id')
         secret_key = self.read_option('aws_secret_access_key')
         self.aws_region = self.read_option('aws_region')
-        bucket_name = self.read_option('bucket')
+        bucket_name = get_bucket_name(self.read_option('bucket'))
         self.logger.info('Starting S3Writer for bucket: %s' % bucket_name)
 
         if self.aws_region is None:

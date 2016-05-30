@@ -67,6 +67,26 @@ class S3WriterTest(unittest.TestCase):
         self.assertEquals(1, len(saved_keys))
         self.assertEqual(saved_keys[0].name, 'tests/0.jl.gz')
 
+    def test_write_s3_with_s3_prefix(self):
+        # given
+        items_to_write = self.get_batch()
+        options = self.get_writer_config()
+        options['options']['bucket'] = 's3://fake_bucket/'
+
+        # when:
+        writer = S3Writer(options, meta())
+        try:
+            writer.write_batch(items_to_write)
+            writer.flush()
+        finally:
+            writer.close()
+
+        # then:
+        bucket = self.s3_conn.get_bucket('fake_bucket')
+        saved_keys = [k for k in bucket.list()]
+        self.assertEquals(1, len(saved_keys))
+        self.assertEqual(saved_keys[0].name, 'tests/0.jl.gz')
+
     def test_write_s3_big_file(self):
         # given
         options = self.get_writer_config()

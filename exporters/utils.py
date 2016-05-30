@@ -7,6 +7,8 @@ from contextlib import contextmanager
 import collections
 
 # 50MB of chunk size for multipart uploads
+import re
+
 CHUNK_SIZE = 50 * 1024 * 1024
 
 
@@ -98,3 +100,13 @@ def read_option(option_name, options, supported_options, default=None):
         logging.log(logging.WARNING, 'Missing value for option {}. (tried also: {} from env)'
                     .format(option_name, env_name))
     return supported_options.get(option_name, {}).get('default', default)
+
+
+BUCKET_RE = '(s3:\/\/|)([a-zA-Z\.0-9_\-]*)(\/|)'
+
+
+def get_bucket_name(bucket):
+    groups = re.match(BUCKET_RE, bucket).groups()
+    if len(groups) > 1:
+        bucket = groups[1]
+    return bucket

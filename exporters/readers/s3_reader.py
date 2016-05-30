@@ -14,11 +14,15 @@ from exporters.default_retries import retry_long, retry_short
 from exporters.exceptions import ConfigurationError, InvalidDateRangeError
 import logging
 
+from exporters.utils import get_bucket_name
+
 S3_URL_EXPIRES_IN = 1800  # half an hour should be enough
 
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
     import boto
+
+    bucket = get_bucket_name(bucket)
 
     if len(aws_access_key_id) > len(aws_secret_access_key):
         logging.warn("The AWS credential keys aren't in the usual size,"

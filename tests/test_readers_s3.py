@@ -190,6 +190,28 @@ class S3ReaderTest(unittest.TestCase):
             }
         }
 
+        self.options_valid_prefix = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 's3://valid_keys_bucket',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
+                'prefix': 'test_list/',
+                'pattern': 'dump_p(.*)_US_(.*)'
+            }
+        }
+
+        self.options_valid_prefix_and_suffix = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 's3://valid_keys_bucket/',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
+                'prefix': 'test_list/',
+                'pattern': 'dump_p(.*)_US_(.*)'
+            }
+        }
+
     def tearDown(self):
         self.mock_s3.stop()
 
@@ -199,6 +221,20 @@ class S3ReaderTest(unittest.TestCase):
         shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_list_keys(self):
+        reader = S3Reader(self.options_valid, meta())
+        expected = ['test_list/dump_p1_US_a', 'test_list/dump_p1_US_b',
+                    'test_list/dump_p2_US_a', 'test_list/dump_p_US_a']
+        self.assertEqual(expected, reader.keys)
+        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
+
+    def test_list_keys_prefix(self):
+        reader = S3Reader(self.options_valid, meta())
+        expected = ['test_list/dump_p1_US_a', 'test_list/dump_p1_US_b',
+                    'test_list/dump_p2_US_a', 'test_list/dump_p_US_a']
+        self.assertEqual(expected, reader.keys)
+        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
+
+    def test_list_keys_prefix_and_suffix(self):
         reader = S3Reader(self.options_valid, meta())
         expected = ['test_list/dump_p1_US_a', 'test_list/dump_p1_US_b',
                     'test_list/dump_p2_US_a', 'test_list/dump_p_US_a']
