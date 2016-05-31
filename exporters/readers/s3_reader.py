@@ -201,7 +201,7 @@ class S3Reader(BaseReader):
         d = zlib.decompressobj(16+zlib.MAX_WBITS)
         for current_key in self.keys:
             self.current_key = current_key
-            self.last_position['current_key'] = self.current_key
+            self.last_position['current_key'] = current_key
             key = self.bucket.get_key(current_key)
             last_leftover = ''
             for line in smart_open.smart_open(key):
@@ -257,12 +257,10 @@ class S3Reader(BaseReader):
             self.last_position = last_position
             self.keys = self.last_position['keys']
             self.read_keys = self.last_position['read_keys']
-            file_path = '{}/ds_dump.gz'.format(self.tmp_folder)
             if self.last_position['current_key']:
                 self.current_key = self.last_position['current_key']
             else:
                 self.current_key = self.keys[0]
-                self.bucket.get_key(self.current_key).get_contents_to_filename(file_path)
                 self.last_line = 0
             self.last_line = self.last_position['last_line']
 
