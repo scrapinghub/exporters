@@ -198,16 +198,19 @@ class S3Reader(BaseReader):
     @retry_long
     def read_lines_from_keys(self):
         for current_key in self.keys:
-            d = zlib.decompressobj(16+zlib.MAX_WBITS)
             self.current_key = current_key
             self.last_position['current_key'] = current_key
             key = self.bucket.get_key(current_key)
             self.last_leftover = ''
             index_block = 0
+            d = zlib.decompressobj(16+zlib.MAX_WBITS)
             for block in key:
+                if d.unused_data:
+                    break
                 # When resuming, we only should start reading after the last read block
                 if index_block >= self.last_block:
-                    block_text = self.last_leftover + d.decompress(block)
+                    uncompressed = d.decompress(block)
+                    block_text = self.last_leftover + uncompressed
                     items = block_text.split('\n')
                     for i in items:
                         if i:
