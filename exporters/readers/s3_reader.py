@@ -197,8 +197,8 @@ class S3Reader(BaseReader):
 
     @retry_long
     def read_lines_from_keys(self):
-        d = zlib.decompressobj(16+zlib.MAX_WBITS)
         for current_key in self.keys:
+            d = zlib.decompressobj(16+zlib.MAX_WBITS)
             self.current_key = current_key
             self.last_position['current_key'] = current_key
             key = self.bucket.get_key(current_key)
@@ -210,15 +210,16 @@ class S3Reader(BaseReader):
                     block_text = self.last_leftover + d.decompress(block)
                     items = block_text.split('\n')
                     for i in items:
-                        try:
-                            object = json.loads(i)
-                        except ValueError:
-                            # Last uncomplete line
-                            self.last_leftover = i
-                            self.last_position['last_leftover'] = self.last_leftover
-                        else:
-                            item = BaseRecord(object)
-                            yield item
+                        if i:
+                            try:
+                                object = json.loads(i)
+                            except ValueError:
+                                # Last uncomplete line
+                                self.last_leftover = i
+                                self.last_position['last_leftover'] = self.last_leftover
+                            else:
+                                item = BaseRecord(object)
+                                yield item
                 index_block += 1
                 self.last_block += 1
 
