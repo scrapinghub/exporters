@@ -4,7 +4,6 @@ import re
 import datetime
 import shutil
 import zlib
-import smart_open
 from six.moves.urllib.request import urlopen
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
@@ -184,7 +183,7 @@ class S3Reader(BaseReader):
         self.keys = self.keys_fetcher.pending_keys()
         self.read_keys = []
         self.current_key = None
-        self.last_line = 0
+        self.last_block = 0
         self.logger.info('S3Reader has been initiated')
         self.tmp_folder = tempfile.mkdtemp()
         self.lines_reader = self.read_lines_from_keys()
@@ -203,30 +202,33 @@ class S3Reader(BaseReader):
             self.current_key = current_key
             self.last_position['current_key'] = current_key
             key = self.bucket.get_key(current_key)
-            last_leftover = ''
-            for line in smart_open.smart_open(key):
-                for i in range(self.last_line):
-                    continue
-                line_text = last_leftover + d.decompress(line)
-                items = line_text.split('\n')
-                for i in items:
-                    try:
-                        object = json.loads(i)
-                    except ValueError:
-                        # Last uncomplete line
-                        last_leftover = i
-                    else:
-                        self.last_line += 1
-                        item = BaseRecord(object)
-                        yield item
+            self.last_leftover = ''
+            index_block = 0
+            for block in key:
+                # When resuming, we only should start reading after the last read block
+                if index_block >= self.last_block:
+                    block_text = self.last_leftover + d.decompress(block)
+                    items = block_text.split('\n')
+                    for i in items:
+                        try:
+                            object = json.loads(i)
+                        except ValueError:
+                            # Last uncomplete line
+                            self.last_leftover = i
+                            self.last_position['last_leftover'] = self.last_leftover
+                        else:
+                            item = BaseRecord(object)
+                            yield item
+                index_block += 1
+                self.last_block += 1
 
             self.read_keys.append(current_key)
             self.current_key = None
             self.last_position['keys'].remove(current_key)
             self.last_position['read_keys'] = self.read_keys
             self.last_position['current_key'] = self.current_key
-            self.last_position['last_line'] = self.last_line
-            self.last_line = 0
+            self.last_position['last_block'] = self.last_block
+            self.last_block = 0
 
         self.finished = True
 
@@ -252,7 +254,7 @@ class S3Reader(BaseReader):
             self.last_position['keys'] = self.keys
             self.last_position['read_keys'] = self.read_keys
             self.last_position['current_key'] = None
-            self.last_position['last_line'] = 0
+            self.last_position['last_block'] = 0
         else:
             self.last_position = last_position
             self.keys = self.last_position['keys']
@@ -261,8 +263,8 @@ class S3Reader(BaseReader):
                 self.current_key = self.last_position['current_key']
             else:
                 self.current_key = self.keys[0]
-                self.last_line = 0
-            self.last_line = self.last_position['last_line']
+                self.last_block = 0
+            self.last_block = self.last_position['last_block']
 
     def close(self):
         shutil.rmtree(self.tmp_folder)
