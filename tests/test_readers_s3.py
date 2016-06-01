@@ -97,7 +97,8 @@ class S3ReaderTest(unittest.TestCase):
                 'bucket': 'valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
                 'aws_secret_access_key': 'SECRET',
-                'prefix': 'test_list/'
+                'prefix': 'test_list/',
+                'batch_size': 1
             }
         }
 
