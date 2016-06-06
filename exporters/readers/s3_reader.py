@@ -43,6 +43,23 @@ def format_prefixes(prefixes, start, end):
     return [date.strftime(p) for date in dates for p in prefixes]
 
 
+def stream_decompress_multi(key):
+    dec = zlib.decompressobj(16 + zlib.MAX_WBITS)
+    while True:
+        chunk = key.read(1024 * 8)
+        if not chunk:
+            break
+        rv = dec.decompress(chunk)
+        if rv:
+            yield rv
+        if dec.unused_data:
+            unused = dec.unused_data
+            dec = zlib.decompressobj(16 + zlib.MAX_WBITS)
+            rv = dec.decompress(unused)
+            if rv:
+                yield rv
+
+
 class S3BucketKeysFetcher(object):
     def __init__(self, reader_options, aws_access_key_id, aws_secret_access_key):
         self.source_bucket = get_bucket(
@@ -203,13 +220,8 @@ class S3Reader(BaseReader):
             key = self.bucket.get_key(current_key)
             self.last_leftover = ''
             index_block = 0
-            d = zlib.decompressobj(16+zlib.MAX_WBITS)
-            for block in key:
-                if d.unused_data:
-                    break
-                # When resuming, we only should start reading after the last read block
+            for uncompressed in stream_decompress_multi(key):
                 if index_block >= self.last_block:
-                    uncompressed = d.decompress(block)
                     block_text = self.last_leftover + uncompressed
                     items = block_text.split('\n')
                     for i in items:
@@ -223,8 +235,8 @@ class S3Reader(BaseReader):
                             else:
                                 item = BaseRecord(object)
                                 yield item
+                    self.last_block += 1
                 index_block += 1
-                self.last_block += 1
 
             self.read_keys.append(current_key)
             self.current_key = None
