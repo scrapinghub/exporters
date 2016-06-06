@@ -43,10 +43,15 @@ def format_prefixes(prefixes, start, end):
     return [date.strftime(p) for date in dates for p in prefixes]
 
 
+@retry_short
+def read_chunk(key):
+    return key.read(1024 * 8)
+
+
 def stream_decompress_multi(key):
     dec = zlib.decompressobj(16 + zlib.MAX_WBITS)
     while True:
-        chunk = key.read(1024 * 8)
+        chunk = read_chunk(key)
         if not chunk:
             break
         rv = dec.decompress(chunk)
