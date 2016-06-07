@@ -1,3 +1,4 @@
+import httplib
 import json
 import tempfile
 import re
@@ -12,6 +13,17 @@ from exporters.exceptions import ConfigurationError, InvalidDateRangeError
 import logging
 
 S3_URL_EXPIRES_IN = 1800  # half an hour should be enough
+
+
+def patch_http_response_read(func):
+    def inner(*args):
+        try:
+            return func(*args)
+        except httplib.IncompleteRead, e:
+            return e.partial
+
+    return inner
+httplib.HTTPResponse.read = patch_http_response_read(httplib.HTTPResponse.read)
 
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
