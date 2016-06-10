@@ -61,7 +61,7 @@ def read_chunk(key):
 
 
 def stream_decompress_multi(key):
-    dec = zlib.decompressobj(16 + zlib.MAX_WBITS)
+    dec = zlib.decompressobj(32 + zlib.MAX_WBITS)
     while True:
         chunk = read_chunk(key)
         if not chunk:
@@ -71,7 +71,7 @@ def stream_decompress_multi(key):
             yield rv
         if dec.unused_data:
             unused = dec.unused_data
-            dec = zlib.decompressobj(16 + zlib.MAX_WBITS)
+            dec = zlib.decompressobj(32 + zlib.MAX_WBITS)
             rv = dec.decompress(unused)
             if rv:
                 yield rv
