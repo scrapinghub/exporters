@@ -1,5 +1,6 @@
 from exporters.default_retries import retry_long
 from .base_s3_bypass import BaseS3Bypass
+import re
 
 S3_URL_EXPIRES_IN = 1800  # half an hour should be enough
 
@@ -36,8 +37,15 @@ class S3AzureBlobBypass(BaseS3Bypass):
     @retry_long
     def _copy_s3_key(self, key):
         blob_name = key.name.split('/')[-1]
+        url = key.generate_url(S3_URL_EXPIRES_IN)
+        # Convert the https://<bucket>.s3.aws.com/<path> url format to
+        # https://s3.aws.com/<bucket>/<path> Since the first one gives
+        # certificate errors if there are dots in the bucket name
+        url = re.sub(r'^https://([^/]+)\.s3\.amazonaws\.com/', r'https://s3.amazonaws.com/\1/', url)
+
         self.azure_service.copy_blob(
             self.container,
             blob_name,
-            key.generate_url(S3_URL_EXPIRES_IN)
+            url,
+            timeout=S3_URL_EXPIRES_IN,
         )
