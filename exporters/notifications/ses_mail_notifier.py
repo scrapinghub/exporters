@@ -167,9 +167,10 @@ class SESMailNotifier(BaseNotifier):
 
     @retry_short
     def _send_email(self, mails, subject, body):
-        import boto
-        ses = boto.connect_ses(self.read_option('access_key'), self.read_option('secret_key'))
-        ses.send_email(self.read_option('mail_from', DEFAULT_MAIN_FROM), subject, body, mails)
+        if mails:
+            import boto
+            ses = boto.connect_ses(self.read_option('access_key'), self.read_option('secret_key'))
+            ses.send_email(self.read_option('mail_from', DEFAULT_MAIN_FROM), subject, body, mails)
 
     def _get_mails(self, receivers):
         mails = []
