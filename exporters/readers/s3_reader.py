@@ -60,8 +60,15 @@ def read_chunk(key):
     return key.read(1024 * 8)
 
 
+def create_decompressor():
+    # create zlib decompressor enabling automatic header detection:
+    # See: http://stackoverflow.com/a/22310760/149872
+    AUTOMATIC_HEADER_DETECTION_MASK = 32
+    return zlib.decompressobj(AUTOMATIC_HEADER_DETECTION_MASK | zlib.MAX_WBITS)
+
+
 def stream_decompress_multi(key):
-    dec = zlib.decompressobj(32 + zlib.MAX_WBITS)
+    dec = create_decompressor()
     while True:
         chunk = read_chunk(key)
         if not chunk:
@@ -71,7 +78,7 @@ def stream_decompress_multi(key):
             yield rv
         if dec.unused_data:
             unused = dec.unused_data
-            dec = zlib.decompressobj(32 + zlib.MAX_WBITS)
+            dec = create_decompressor()
             rv = dec.decompress(unused)
             if rv:
                 yield rv
