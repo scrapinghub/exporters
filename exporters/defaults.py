@@ -3,7 +3,7 @@ DEFAULT_TRANSFORM_CONFIG = {'name': 'exporters.transform.no_transform.NoTransfor
 DEFAULT_GROUPER_CONFIG = {'name': 'exporters.groupers.no_grouper.NoGrouper', 'options': {}}
 DEFAULT_PERSISTENCE_CONFIG = {
     'name': 'exporters.persistence.pickle_persistence.PicklePersistence',
-    'options': {'file_path': '/tmp/'}
+    'options': {}
 }
 DEFAULT_STATS_MANAGER_CCONFIG = {
     'name': 'exporters.stats_managers.basic_stats_manager.BasicStatsManager',

@@ -25,7 +25,13 @@ class KeyValueBaseFilter(BaseFilter):
     "Base class to key-value filters"
 
     supported_options = {
-        'keys': {'type': list},
+        'keys': {
+            'type': list,
+            'help': "List of objects describing the filter. For example, for a filter that checks "
+                    "for country_code field to be in list ['es', 'us'], we would use:\n"
+                    "[{'name': 'country_code', 'value': ['es', 'us'], 'operator': 'in'}]\n"
+                    "possible operators are %s" % OPERATORS.keys()
+        },
         'nested_field_separator': {'type': basestring, 'default': '.'}
     }
 

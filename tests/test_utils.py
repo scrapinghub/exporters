@@ -1,5 +1,8 @@
 import unittest
 
+import six
+
+from bin.create_config_assistant import get_module_choices, parse_value
 from exporters.bypasses.base import BaseBypass
 from exporters.bypasses.s3_to_s3_bypass import S3Bypass
 from exporters.exceptions import (InvalidExpression, ConfigurationError,
@@ -397,3 +400,80 @@ class FileSplit(unittest.TestCase):
             md5 = calculate_multipart_etag(tmp_filename, 3333)
             expected = '"728d2dbdd842b6a145cc3f3284d66861-4"'
             self.assertEqual(md5, expected, 'Wrong calculated md5 for multipart upload')
+
+
+class CreateConfigAssistantTest(unittest.TestCase):
+
+    def test_get_module_choices(self):
+        self.assertGreater(len(get_module_choices('readers')), 0)
+        self.assertGreater(len(get_module_choices('writers')), 0)
+        self.assertGreater(len(get_module_choices('transform')), 0)
+        self.assertGreater(len(get_module_choices('persistence')), 0)
+        self.assertGreater(len(get_module_choices('filters')), 0)
+        self.assertGreater(len(get_module_choices('stats_managers')), 0)
+        self.assertGreater(len(get_module_choices('groupers')), 0)
+        self.assertGreater(len(get_module_choices('export_formatter')), 0)
+
+    def test_parse_list_value(self):
+        # when
+        value = "[{'name': 'country_code', 'value': ['es', 'us'], 'operator': 'in'}]"
+        expected = [{'name': 'country_code', 'value': ['es', 'us'], 'operator': 'in'}]
+
+        # then
+        self.assertEqual(parse_value(value, list), expected)
+
+    def test_parse_object_value(self):
+        # when
+        value = "{'name': 'country_code', 'value': ['es', 'us'], 'operator': 'in'}"
+        expected = {'name': 'country_code', 'value': ['es', 'us'], 'operator': 'in'}
+
+        # then
+        self.assertEqual(parse_value(value, object), expected)
+
+    def test_parse_int_value(self):
+        # when
+        value = "42"
+        expected = 42
+
+        # then
+        self.assertEqual(parse_value(value, int), expected)
+
+    def test_parse_basestring_value(self):
+        # when
+        value = "foo"
+        expected = 'foo'
+
+        # then
+        self.assertEqual(parse_value(value, basestring), expected)
+
+    def test_parse_six_value(self):
+        # when
+        value = "foo"
+        expected = 'foo'
+
+        # then
+        self.assertEqual(parse_value(value, six.string_types), expected)
+
+    def test_parse_bool_true_value(self):
+        # when
+        value = "True"
+        expected = True
+
+        # then
+        self.assertEqual(parse_value(value, bool), expected)
+
+    def test_parse_bool_false_value(self):
+        # when
+        value = "False"
+        expected = False
+
+        # then
+        self.assertEqual(parse_value(value, bool), expected)
+
+    def test_invalid_parse(self):
+        # when
+        value = "[{'name': 'country_code', 'value': ['es', 'us'], 'operator': 'in'}]"
+
+        # then
+        with self.assertRaisesRegexp(ValueError, 'is not of type'):
+            parse_value(value, object)
