@@ -3,7 +3,7 @@
 Exporters project documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Exporters is a project aiming to provide a flexible and
+Exporters provide a flexible and
 easy to extend infrastructure to export data from multiple sources to multiple
 destinations, allowing filtering and transforming the data.
 
