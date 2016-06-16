@@ -3,9 +3,8 @@
 Exporters project documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Exporters is a project aiming to provide a flexible and
-easy to extend infrastructure to export data from multiple sources to multiple
-destinations, allowing filtering and transforming the data.
+Exporters provide a flexible way to export data from multiple sources to
+multiple destinations, allowing filtering and transforming the data.
 
 This `Github repository`_ is used as a central repository.
 

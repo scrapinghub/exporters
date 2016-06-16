@@ -2,6 +2,7 @@ import collections
 from importlib import import_module
 from inspect import getmembers, isclass
 import json
+from exporters.utils import maybe_cast_list
 from exporters.exceptions import ConfigCheckError
 from exporters.defaults import (
     DEFAULT_FILTER_CONFIG, DEFAULT_GROUPER_CONFIG, DEFAULT_PERSISTENCE_CONFIG,
@@ -161,7 +162,7 @@ def _get_option_error(name, spec, config_options):
     if required and name not in config_options:
         return 'Option %s is missing' % name
     else:
-        value = config_options.get(name, empty)
+        value = maybe_cast_list(config_options.get(name, empty), spec['type'])
         if value is not empty and not isinstance(value, spec['type']):
             return 'Wrong type: found {}, expected {}'.format(
                 type(value), spec['type'])

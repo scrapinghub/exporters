@@ -1,13 +1,11 @@
-import gzip
+import httplib
 import json
-import os
 import tempfile
 import re
 import datetime
-
 import shutil
+import zlib
 from six.moves.urllib.request import urlopen
-from exporters.progress_callback import BotoDownloadProgress
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 from exporters.default_retries import retry_long, retry_short
@@ -17,6 +15,17 @@ import logging
 from exporters.utils import get_bucket_name
 
 S3_URL_EXPIRES_IN = 1800  # half an hour should be enough
+
+
+def patch_http_response_read(func):
+    def inner(*args):
+        try:
+            return func(*args)
+        except httplib.IncompleteRead, e:
+            return e.partial
+
+    return inner
+httplib.HTTPResponse.read = patch_http_response_read(httplib.HTTPResponse.read)
 
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
@@ -48,6 +57,35 @@ def format_prefixes(prefixes, start, end):
         start_date += datetime.timedelta(days=1)
 
     return [date.strftime(p) for date in dates for p in prefixes]
+
+
+@retry_short
+def read_chunk(key):
+    return key.read(1024 * 8)
+
+
+def create_decompressor():
+    # create zlib decompressor enabling automatic header detection:
+    # See: http://stackoverflow.com/a/22310760/149872
+    AUTOMATIC_HEADER_DETECTION_MASK = 32
+    return zlib.decompressobj(AUTOMATIC_HEADER_DETECTION_MASK | zlib.MAX_WBITS)
+
+
+def stream_decompress_multi(key):
+    dec = create_decompressor()
+    while True:
+        chunk = read_chunk(key)
+        if not chunk:
+            break
+        rv = dec.decompress(chunk)
+        if rv:
+            yield rv
+        if dec.unused_data:
+            unused = dec.unused_data
+            dec = create_decompressor()
+            rv = dec.decompress(unused)
+            if rv:
+                yield rv
 
 
 class S3BucketKeysFetcher(object):
@@ -190,17 +228,10 @@ class S3Reader(BaseReader):
         self.keys = self.keys_fetcher.pending_keys()
         self.read_keys = []
         self.current_key = None
-        self.last_line = 0
+        self.last_block = 0
         self.logger.info('S3Reader has been initiated')
         self.tmp_folder = tempfile.mkdtemp()
-
-    @retry_long
-    def get_key(self, file_path, progress):
-        """
-        Downloads and stores an s3 key
-        """
-        self.logger.info('Downloading key: %s' % self.current_key)
-        self.bucket.get_key(self.current_key).get_contents_to_filename(file_path, cb=progress)
+        self.lines_reader = self.read_lines_from_keys()
 
     def get_read_streams(self):
         from exporters.bypasses.stream_bypass import Stream
@@ -209,47 +240,52 @@ class S3Reader(BaseReader):
             file_obj = urlopen(key.generate_url(S3_URL_EXPIRES_IN))
             yield Stream(file_obj, key_name, key.size)
 
+    @retry_long
+    def read_lines_from_keys(self):
+        for current_key in self.keys:
+            self.current_key = current_key
+            self.last_position['current_key'] = current_key
+            key = self.bucket.get_key(current_key)
+            self.last_leftover = ''
+            index_block = 0
+            for uncompressed in stream_decompress_multi(key):
+                if index_block >= self.last_block:
+                    block_text = self.last_leftover + uncompressed
+                    items = block_text.split('\n')
+                    for i in items:
+                        if i:
+                            try:
+                                object = json.loads(i)
+                            except ValueError:
+                                # Last uncomplete line
+                                self.last_leftover = i
+                                self.last_position['last_leftover'] = self.last_leftover
+                            else:
+                                item = BaseRecord(object)
+                                yield item
+                    self.last_block += 1
+                index_block += 1
+
+            self.read_keys.append(current_key)
+            self.current_key = None
+            self.last_position['keys'].remove(current_key)
+            self.last_position['read_keys'] = self.read_keys
+            self.last_position['current_key'] = self.current_key
+            self.last_position['last_block'] = self.last_block
+            self.last_block = 0
+
+        self.finished = True
+
     def get_next_batch(self):
         """
         This method is called from the manager. It must return a list or a generator
         of BaseRecord objects.
         When it has nothing else to read, it must set class variable "finished" to True.
         """
-        if not self.keys:
-            self.finished = True
-            return
-        file_path = '{}/ds_dump.gz'.format(self.tmp_folder)
-        if not self.current_key:
-            progress = BotoDownloadProgress(self.logger)
-            self.current_key = self.keys[0]
-            self.get_key(file_path, progress)
-            self.last_line = 0
-
-        dump_file = gzip.open(file_path, 'r')
-        lines = dump_file.readlines()
-        if self.last_line + self.batch_size <= len(lines):
-            last_item = self.last_line + self.batch_size
-        else:
-            last_item = len(lines)
-            self.read_keys.append(self.current_key)
-            self.keys.remove(self.current_key)
-            self.current_key = None
-            if len(self.keys) == 0:
-                self.finished = True
-                os.remove(file_path)
-        for line in lines[self.last_line:last_item]:
-            line = line.replace("\n", '')
-            item = BaseRecord(json.loads(line))
-            self.increase_read()
-            yield item
-        dump_file.close()
-
-        self.last_line += self.batch_size
-
-        self.last_position['keys'] = self.keys
-        self.last_position['read_keys'] = self.read_keys
-        self.last_position['current_key'] = self.current_key
-        self.last_position['last_line'] = self.last_line
+        count = 0
+        while count < self.batch_size:
+            count += 1
+            yield next(self.lines_reader)
         self.logger.debug('Done reading batch')
 
     def set_last_position(self, last_position):
@@ -262,19 +298,17 @@ class S3Reader(BaseReader):
             self.last_position['keys'] = self.keys
             self.last_position['read_keys'] = self.read_keys
             self.last_position['current_key'] = None
-            self.last_position['last_line'] = 0
+            self.last_position['last_block'] = 0
         else:
             self.last_position = last_position
             self.keys = self.last_position['keys']
             self.read_keys = self.last_position['read_keys']
-            file_path = '{}/ds_dump.gz'.format(self.tmp_folder)
             if self.last_position['current_key']:
                 self.current_key = self.last_position['current_key']
             else:
                 self.current_key = self.keys[0]
-                self.bucket.get_key(self.current_key).get_contents_to_filename(file_path)
-                self.last_line = 0
-            self.last_line = self.last_position['last_line']
+                self.last_block = 0
+            self.last_block = self.last_position['last_block']
 
     def close(self):
         shutil.rmtree(self.tmp_folder)

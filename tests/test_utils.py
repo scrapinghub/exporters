@@ -12,7 +12,8 @@ from exporters.logger.base_logger import CategoryLogger
 from exporters.module_loader import ModuleLoader
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 from exporters.python_interpreter import Interpreter
-from exporters.utils import nested_dict_value, TmpFile, split_file, calculate_multipart_etag
+from exporters.utils import nested_dict_value, TmpFile, split_file, \
+    calculate_multipart_etag, str_list, dict_list, int_list, maybe_cast_list
 from .utils import environment
 from .utils import valid_config_with_updates
 
@@ -397,3 +398,35 @@ class FileSplit(unittest.TestCase):
             md5 = calculate_multipart_etag(tmp_filename, 3333)
             expected = '"728d2dbdd842b6a145cc3f3284d66861-4"'
             self.assertEqual(md5, expected, 'Wrong calculated md5 for multipart upload')
+
+
+class HomogeneusListTest(unittest.TestCase):
+    def test_homogeneus_lists(self):
+        assert isinstance(dict_list(({}, {4: 5})), list)
+
+        with self.assertRaises((TypeError, ValueError)):
+            dict_list([{}, 'Not a dictionary'])
+
+        with self.assertRaises((TypeError, ValueError)):
+            int_list([40, 'Not an integer'])
+
+        assert isinstance(str_list((u'a', 'b')), list)
+        assert isinstance(int_list((u'1', 56)), list)
+
+    def test_maybe_cast_list(self):
+        # Don't do anything if it isn't a list
+        assert maybe_cast_list(None, list) is None
+        assert maybe_cast_list(50, list) == 50
+
+        # Works when we expect normal lists
+        assert type(maybe_cast_list([], list)) == list
+
+        # Cast to more specific list subclasses whenever possible
+        assert type(maybe_cast_list([4, 5], (int_list))) == int_list
+        assert type(maybe_cast_list(['asd', 5], (str_list))) == str_list
+
+        # Return original value if can't cast
+        assert type(maybe_cast_list(['asd', 5], (int_list))) == list
+
+        # Try to cast to every list subclass
+        assert type(maybe_cast_list(['asd', 5], (int_list, str_list))) == str_list

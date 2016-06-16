@@ -4,6 +4,7 @@ Kafka reader
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 from exporters.default_retries import retry_short
+from exporters.utils import str_list
 
 
 class KafkaScannerReader(BaseReader):
@@ -29,10 +30,10 @@ class KafkaScannerReader(BaseReader):
     # List of options to set up the reader
     supported_options = {
         'batch_size': {'type': int, 'default': 10000},
-        'brokers': {'type': list},
+        'brokers': {'type': str_list},
         'topic': {'type': basestring},
         'group': {'type': basestring},
-        'partitions': {'type': list, 'default': None}
+        'partitions': {'type': str_list, 'default': None}
     }
 
     def __init__(self, *args, **kwargs):

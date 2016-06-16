@@ -5,6 +5,7 @@ import re
 from exporters.default_retries import retry_short
 from exporters.notifications.base_notifier import BaseNotifier
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
+from exporters.utils import str_list
 
 
 DEFAULT_MAIN_FROM = 'Scrapinghub data services <dataservices@scrapinghub.com>'
@@ -119,8 +120,8 @@ class SESMailNotifier(BaseNotifier):
             AWS secret access key
     """
     supported_options = {
-        'team_mails': {'type': list, 'default': []},
-        'client_mails': {'type': list, 'default': []},
+        'team_mails': {'type': str_list, 'default': []},
+        'client_mails': {'type': str_list, 'default': []},
         'access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_MAIL_AWS_ACCESS_KEY'},
         'secret_key': {'type': basestring, 'env_fallback': 'EXPORTERS_MAIL_AWS_SECRET_KEY'},
         'client_name': {'type': basestring, 'default': 'Customer'},
@@ -167,9 +168,10 @@ class SESMailNotifier(BaseNotifier):
 
     @retry_short
     def _send_email(self, mails, subject, body):
-        import boto
-        ses = boto.connect_ses(self.read_option('access_key'), self.read_option('secret_key'))
-        ses.send_email(self.read_option('mail_from', DEFAULT_MAIN_FROM), subject, body, mails)
+        if mails:
+            import boto
+            ses = boto.connect_ses(self.read_option('access_key'), self.read_option('secret_key'))
+            ses.send_email(self.read_option('mail_from', DEFAULT_MAIN_FROM), subject, body, mails)
 
     def _get_mails(self, receivers):
         mails = []

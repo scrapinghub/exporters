@@ -2,6 +2,7 @@ import re
 
 from exporters.filters.base_filter import BaseFilter
 from exporters.utils import nested_dict_value
+from exporters.utils import dict_list
 import operator
 
 
@@ -25,7 +26,7 @@ class KeyValueBaseFilter(BaseFilter):
     "Base class to key-value filters"
 
     supported_options = {
-        'keys': {'type': list},
+        'keys': {'type': dict_list},
         'nested_field_separator': {'type': basestring, 'default': '.'}
     }
 

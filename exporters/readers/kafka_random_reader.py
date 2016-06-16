@@ -6,6 +6,7 @@ import random
 import zlib
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
+from exporters.utils import str_list
 
 
 class KafkaRandomReader(BaseReader):
@@ -31,7 +32,7 @@ class KafkaRandomReader(BaseReader):
     supported_options = {
         'record_count': {'type': int},
         'batch_size': {'type': int, 'default': 10000},
-        'brokers': {'type': list},
+        'brokers': {'type': str_list},
         'topic': {'type': basestring},
         'group': {'type': basestring}
     }

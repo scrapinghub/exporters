@@ -188,6 +188,18 @@ class ConfigValidationTest(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, 'No module named'):
             ExporterConfig(options)
 
+    def test_invalid_homogeneus_list(self):
+        options = valid_config_with_updates({
+            'filter': {
+                'name': 'exporters.filters.key_value_filters.KeyValueFilter',
+                'options': {
+                    "keys": ['This', 'should', 'be', 'dicts']
+                }
+            }
+        })
+        with self.assertRaisesRegexp(ValueError, 'Wrong type'):
+            ExporterConfig(options)
+
     def test_valid_notification(self):
         options = valid_config_with_updates({
             'exporter_options': {
