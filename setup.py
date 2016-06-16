@@ -4,6 +4,8 @@ from setuptools import setup, find_packages
 setup(
     name = 'exporters',
     version = '0.4.10',
+    author = 'Scrapinghub',
+    author_email = 'info@scrapinghub',
     packages = find_packages(exclude=['tests']),
     install_requires = ['six', 'retrying', 'requests', 'PyYAML', 'decorator', 'bz2file'],
     dependency_links = [
