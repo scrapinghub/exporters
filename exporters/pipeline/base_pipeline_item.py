@@ -1,7 +1,7 @@
 import os
 import six
 from exporters.exceptions import ConfigurationError
-from exporters.utils import read_option
+from exporters.utils import read_option, maybe_cast_list
 
 
 class SupportedOptionsMeta(type):
@@ -26,7 +26,7 @@ class BasePipelineItem(object):
 
     def check_options(self):
         for option_name, option_spec in self.supported_options.iteritems():
-            option_value = self.read_option(option_name)
+            option_value = maybe_cast_list(self.read_option(option_name), option_spec['type'])
             if option_value and not isinstance(option_value, option_spec['type']):
                 raise ConfigurationError('Value for option %s should be of type: %s' %
                                          (option_name, option_spec['type']))

@@ -2,6 +2,7 @@ import logging
 
 import dicttoxml
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
+from exporters.utils import str_list
 import collections
 
 
@@ -17,7 +18,7 @@ class XMLExportFormatter(BaseExportFormatter):
 
     supported_options = {
         'attr_type': {'type': bool, 'default': True},
-        'fields_order': {'type': list, 'default': []},
+        'fields_order': {'type': str_list, 'default': []},
         'item_name': {'type': basestring, 'default': 'item'},
         'root_name': {'type': basestring, 'default': 'root'},
         'xml_header': {'type': basestring, 'default': DEFAULT_XML_HEADER}

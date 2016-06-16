@@ -1,5 +1,6 @@
 from exporters.groupers.base_grouper import BaseGrouper
 from exporters.python_interpreter import Interpreter, create_context
+from exporters.utils import str_list
 
 
 class PythonExpGrouper(BaseGrouper):
@@ -10,7 +11,7 @@ class PythonExpGrouper(BaseGrouper):
             A list of python expressions to group by
     """
     supported_options = {
-        'python_expressions': {'type': list}
+        'python_expressions': {'type': str_list}
     }
 
     def __init__(self, *args, **kwargs):

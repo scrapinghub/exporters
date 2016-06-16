@@ -3,6 +3,7 @@ import logging
 from exporters.notifications.base_notifier import BaseNotifier
 from exporters.default_retries import retry_short
 import datetime
+from exporters.utils import str_list
 
 
 def _datetime_serializer(obj):
@@ -24,7 +25,7 @@ class WebhookNotifier(BaseNotifier):
 
     """
     supported_options = {
-        'endpoints': {'type': list, 'default': []}
+        'endpoints': {'type': str_list, 'default': []}
     }
 
     def __init__(self, *args, **kwargs):

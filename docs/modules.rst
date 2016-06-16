@@ -13,7 +13,10 @@ and the default values if proceeds. It is a dict with the following shape:
 
 Possible attributes for a supported_option are:
 
-    - type - The option type. Possbile choices are ['basestring', 'int', 'list', 'object']
+    - type - The option type. In addition to the standard python types (``basestring``, ``int``, ``list``, ``dict``...],
+      exporters provide homogeneous list types in ``exporters.utils`` called ``str_list``, ``int_list`` and
+      ``dict_list``, This types indicate that every member of the list needs to be able to be be casted
+      to a string, integer or dictionary respectively.
     - default - Default option value if it is not provided by configuration object. If it is present,
     the supported_option will be optional instead of mandatory.
     - env_fallback - If option is not provided by configuration object, it will be loaded from
