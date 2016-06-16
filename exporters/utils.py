@@ -106,7 +106,4 @@ BUCKET_RE = '(s3:\/\/|)([a-zA-Z\.0-9_\-]*)(\/|)'
 
 
 def get_bucket_name(bucket):
-    groups = re.match(BUCKET_RE, bucket).groups()
-    if len(groups) > 1:
-        bucket = groups[1]
-    return bucket
+    return re.match(BUCKET_RE, bucket).groups()[1]
