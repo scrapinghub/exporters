@@ -1,5 +1,6 @@
 from exporters.transform.base_transform import BaseTransform
 from exporters.python_interpreter import Interpreter, create_context
+from exporters.utils import str_list
 
 
 class PythonexpTransform(BaseTransform):
@@ -11,7 +12,7 @@ class PythonexpTransform(BaseTransform):
     """
     # List of options to set up the transform module
     supported_options = {
-        'python_expressions': {'type': list}
+        'python_expressions': {'type': str_list}
     }
 
     def __init__(self, *args, **kwargs):

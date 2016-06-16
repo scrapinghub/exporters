@@ -4,6 +4,7 @@ import datetime
 import six
 from exporters.writers.base_writer import BaseWriter
 from exporters.default_retries import retry_short
+from exporters.utils import str_list
 
 
 class MaxMailsSent(Exception):
@@ -30,7 +31,7 @@ class MailWriter(BaseWriter):
     """
 
     supported_options = {
-        'emails': {'type': list},
+        'emails': {'type': str_list},
         'subject': {'type': six.string_types},
         'from': {'type': six.string_types},
         'max_mails_sent': {'type': int, 'default': 5},

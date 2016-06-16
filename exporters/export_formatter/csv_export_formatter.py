@@ -1,6 +1,7 @@
 import csv
 import io
 import six
+from exporters.utils import str_list
 from exporters.exceptions import ConfigurationError
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 
@@ -26,7 +27,7 @@ class CSVExportFormatter(BaseExportFormatter):
 
     supported_options = {
         'show_titles': {'type': bool, 'default': True},
-        'fields': {'type': list, 'default': []},
+        'fields': {'type': str_list, 'default': []},
         'schema': {'type': dict, 'default': {}},
         'delimiter': {'type': basestring, 'default': ','},
     }

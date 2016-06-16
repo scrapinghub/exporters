@@ -3,6 +3,7 @@ import os
 import shutil
 import tempfile
 import uuid
+import six
 from contextlib import contextmanager
 import collections
 
@@ -98,3 +99,34 @@ def read_option(option_name, options, supported_options, default=None):
         logging.log(logging.WARNING, 'Missing value for option {}. (tried also: {} from env)'
                     .format(option_name, env_name))
     return supported_options.get(option_name, {}).get('default', default)
+
+
+def maybe_cast_list(value, types):
+    """
+    Try to coerce list values into more specific list subclasses in types.
+    """
+    if not isinstance(value, list):
+        return value
+
+    if type(types) not in (list, tuple):
+        types = (types,)
+
+    for list_type in types:
+        if issubclass(list_type, list):
+            try:
+                return list_type(value)
+            except (TypeError, ValueError):
+                pass
+    return value
+
+
+def homogeneus_list_type(member_type):
+    class HomogeneusList(list):
+        def __init__(self, iterable):
+            super(HomogeneusList, self).__init__(member_type(e) for e in iterable)
+    HomogeneusList.__name__ = 'list[%s]' % member_type.__name__
+    return HomogeneusList
+
+str_list = homogeneus_list_type(six.text_type)
+int_list = homogeneus_list_type(int)
+dict_list = homogeneus_list_type(dict)

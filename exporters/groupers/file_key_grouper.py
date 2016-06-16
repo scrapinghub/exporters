@@ -1,4 +1,5 @@
 from exporters.groupers.base_grouper import BaseGrouper
+from exporters.utils import str_list
 
 
 class FileKeyGrouper(BaseGrouper):
@@ -9,7 +10,7 @@ class FileKeyGrouper(BaseGrouper):
             A list of keys to group by
     """
     supported_options = {
-        'keys': {'type': list}
+        'keys': {'type': str_list}
     }
 
     def __init__(self, *args, **kwargs):

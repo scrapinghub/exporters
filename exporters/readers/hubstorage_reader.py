@@ -1,6 +1,7 @@
 import six
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
+from exporters.utils import str_list
 
 
 class HubstorageReader(BaseReader):
@@ -45,9 +46,9 @@ class HubstorageReader(BaseReader):
         'project_id': {'type': basestring},
         'collection_name': {'type': basestring},
         'count': {'type': int, 'default': 0},
-        'prefixes': {'type': list, 'default': []},
-        'exclude_prefixes': {'type': list, 'default': []},
-        'secondary_collections': {'type': list, 'default': []},
+        'prefixes': {'type': str_list, 'default': []},
+        'exclude_prefixes': {'type': str_list, 'default': []},
+        'secondary_collections': {'type': str_list, 'default': []},
         'has_many_collections': {'type': dict, 'default': {}},
         'startts': {'type': (basestring, int), 'default': None},
         'endts': {'type': (basestring, int), 'default': None},
