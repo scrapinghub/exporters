@@ -257,14 +257,14 @@ class S3Reader(BaseReader):
                         if i:
                             try:
                                 object = json.loads(i)
-                                self.last_leftover = ''
-                                self.last_position['last_leftover'] = self.last_leftover
                             except ValueError:
                                 # Last uncomplete line
                                 self.last_leftover = i
                                 self.last_position['last_leftover'] = self.last_leftover
                             else:
                                 item = BaseRecord(object)
+                                self.last_leftover = ''
+                                self.last_position['last_leftover'] = self.last_leftover
                                 yield item
                     self.last_block += 1
                 index_block += 1
