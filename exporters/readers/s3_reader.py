@@ -59,9 +59,9 @@ def format_prefixes(prefixes, start, end):
     return [date.strftime(p) for date in dates for p in prefixes]
 
 
-@retry_short
+# @retry_short
 def read_chunk(key):
-    return key.read(1024 * 8)
+    return key.read(1024)
 
 
 def create_decompressor():
@@ -77,10 +77,11 @@ def stream_decompress_multi(key):
         chunk = read_chunk(key)
         if not chunk:
             break
+
         rv = dec.decompress(chunk)
         if rv:
             yield rv
-        if dec.unused_data:
+        elif dec.unused_data:
             unused = dec.unused_data
             dec = create_decompressor()
             rv = dec.decompress(unused)
@@ -256,16 +257,16 @@ class S3Reader(BaseReader):
                         if i:
                             try:
                                 object = json.loads(i)
-                            except ValueError:
+                                self.last_leftover = ''
+                                self.last_position['last_leftover'] = self.last_leftover
+                            except Exception as e:
                                 # Last uncomplete line
                                 self.last_leftover = i
                                 self.last_position['last_leftover'] = self.last_leftover
                             else:
                                 item = BaseRecord(object)
                                 yield item
-                    self.last_block += 1
                 index_block += 1
-
             self.read_keys.append(current_key)
             self.current_key = None
             self.last_position['keys'].remove(current_key)
@@ -273,7 +274,6 @@ class S3Reader(BaseReader):
             self.last_position['current_key'] = self.current_key
             self.last_position['last_block'] = self.last_block
             self.last_block = 0
-
         self.finished = True
 
     def get_next_batch(self):
