@@ -259,7 +259,7 @@ class S3Reader(BaseReader):
                                 object = json.loads(i)
                                 self.last_leftover = ''
                                 self.last_position['last_leftover'] = self.last_leftover
-                            except Exception as e:
+                            except ValueError:
                                 # Last uncomplete line
                                 self.last_leftover = i
                                 self.last_position['last_leftover'] = self.last_leftover
