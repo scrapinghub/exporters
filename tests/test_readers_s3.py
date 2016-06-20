@@ -328,6 +328,30 @@ class S3ReaderTest(unittest.TestCase):
                                 S3Reader,
                                 self.options_with_invalid_date_range, meta())
 
+    def test_read_compressed_file(self):
+        self.s3_conn.create_bucket('compressed_files')
+        bucket = self.s3_conn.get_bucket('compressed_files')
+        key = bucket.new_key('test/dummy_data.gz')
+        key.set_contents_from_filename('tests/data/dummy_data.jl.gz')
+        key.close()
+
+        options = {
+            'name': 'exporters.readers.s3_reader.S3Reader',
+            'options': {
+                'bucket': 'compressed_files',
+                'aws_access_key_id': 'KEY',
+                'aws_secret_access_key': 'SECRET',
+                'prefix': 'test/',
+                'pattern': 'dummy_data(.*)'
+            }
+        }
+
+        reader = S3Reader(options, meta())
+        reader.set_last_position(None)
+        batch = reader.get_next_batch()
+        self.assertEqual(len(list(batch)), 200, 'Wrong items number read')
+        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
+
 
 class TestS3BucketKeysFetcher(unittest.TestCase):
 

@@ -61,7 +61,7 @@ def format_prefixes(prefixes, start, end):
 
 @retry_short
 def read_chunk(key):
-    return key.read(1024 * 8)
+    return key.read(1024 * 1024)
 
 
 def create_decompressor():
@@ -82,10 +82,12 @@ def stream_decompress_multi(key):
             yield rv
         if dec.unused_data:
             unused = dec.unused_data
-            dec = create_decompressor()
-            rv = dec.decompress(unused)
-            if rv:
-                yield rv
+            while unused:
+                dec = create_decompressor()
+                rv = dec.decompress(unused)
+                if rv:
+                    yield rv
+                unused = dec.unused_data
 
 
 class S3BucketKeysFetcher(object):
@@ -262,10 +264,11 @@ class S3Reader(BaseReader):
                                 self.last_position['last_leftover'] = self.last_leftover
                             else:
                                 item = BaseRecord(object)
+                                self.last_leftover = ''
+                                self.last_position['last_leftover'] = self.last_leftover
                                 yield item
                     self.last_block += 1
                 index_block += 1
-
             self.read_keys.append(current_key)
             self.current_key = None
             self.last_position['keys'].remove(current_key)
@@ -273,7 +276,6 @@ class S3Reader(BaseReader):
             self.last_position['current_key'] = self.current_key
             self.last_position['last_block'] = self.last_block
             self.last_block = 0
-
         self.finished = True
 
     def get_next_batch(self):
