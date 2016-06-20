@@ -59,7 +59,7 @@ def format_prefixes(prefixes, start, end):
     return [date.strftime(p) for date in dates for p in prefixes]
 
 
-# @retry_short
+@retry_short
 def read_chunk(key):
     return key.read(1024)
 
