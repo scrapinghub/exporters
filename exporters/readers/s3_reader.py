@@ -61,7 +61,7 @@ def format_prefixes(prefixes, start, end):
 
 @retry_short
 def read_chunk(key):
-    return key.read(1024)
+    return key.read(1024 * 1024)
 
 
 def create_decompressor():
@@ -77,16 +77,17 @@ def stream_decompress_multi(key):
         chunk = read_chunk(key)
         if not chunk:
             break
-
         rv = dec.decompress(chunk)
         if rv:
             yield rv
-        elif dec.unused_data:
+        if dec.unused_data:
             unused = dec.unused_data
-            dec = create_decompressor()
-            rv = dec.decompress(unused)
-            if rv:
-                yield rv
+            while unused:
+                dec = create_decompressor()
+                rv = dec.decompress(unused)
+                if rv:
+                    yield rv
+                unused = dec.unused_data
 
 
 class S3BucketKeysFetcher(object):
