@@ -266,6 +266,7 @@ class S3Reader(BaseReader):
                             else:
                                 item = BaseRecord(object)
                                 yield item
+                    self.last_block += 1
                 index_block += 1
             self.read_keys.append(current_key)
             self.current_key = None
