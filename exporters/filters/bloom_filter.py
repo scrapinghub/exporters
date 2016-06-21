@@ -1,7 +1,6 @@
 from exporters.filters.base_filter import BaseFilter
 from pybloom import BloomFilter
 import copy
-from exporters.records.base_record import BaseRecord
 
 
 def make_hash(o):
@@ -47,7 +46,7 @@ class DuplicatesBloomFilter(BaseFilter):
             item_hash = make_hash(item.get(self.field, ''))
         else:
             item_hash = make_hash(item)
-        if not item_hash in self.bloom_filter:
+        if item_hash not in self.bloom_filter:
             self.bloom_filter.add(item_hash)
             return True
         return False
