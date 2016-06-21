@@ -26,6 +26,10 @@ class DuplicatesBloomFilter(BaseFilter):
 
         - error_rate(float)
             Desired error rate
+
+        - field(float)
+            The field we want to avoid duplicates in. Please leave it to None if you want to
+            avoid the full item duplication
     """
     # List of options
     supported_options = {
