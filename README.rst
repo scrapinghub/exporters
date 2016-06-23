@@ -88,7 +88,7 @@ The export can be run using exporters as a library:
 
 .. code-block:: python
 
-    from exporters.export_managers.basic_exporter import BasicExporter
+    from exporters import BasicExporter
 
     exporter = BasicExporter.from_file_configuration('config.json')
     exporter.export()

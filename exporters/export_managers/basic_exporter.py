@@ -1,8 +1,8 @@
 import yaml
 
 from exporters.bypasses import default_bypass_classes
-from exporters.export_managers.base_exporter import BaseExporter
 from exporters.persistence.persistence_config_dispatcher import PersistenceConfigDispatcher
+from .base_exporter import BaseExporter
 
 
 class BasicExporter(BaseExporter):
