@@ -11,8 +11,8 @@ import datetime
 
 import dateparser
 import moto
-from exporters.readers.s3_reader import S3Reader, S3BucketKeysFetcher, get_bucket
-from exporters.exceptions import ConfigurationError
+from ozzy.readers.s3_reader import S3Reader, S3BucketKeysFetcher, get_bucket
+from ozzy.exceptions import ConfigurationError
 
 from .utils import meta
 
@@ -70,7 +70,7 @@ class S3ReaderTest(unittest.TestCase):
             key.close()
 
         self.options_no_keys = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'no_keys_bucket',
                 'aws_access_key_id': 'KEY',
@@ -81,7 +81,7 @@ class S3ReaderTest(unittest.TestCase):
         }
 
         self.options_valid = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
@@ -92,7 +92,7 @@ class S3ReaderTest(unittest.TestCase):
         }
 
         self.options_no_pattern = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
@@ -103,7 +103,7 @@ class S3ReaderTest(unittest.TestCase):
         }
 
         self.options_no_prefix = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
@@ -113,7 +113,7 @@ class S3ReaderTest(unittest.TestCase):
         }
 
         self.options_prefix_and_prefix_pointer = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
@@ -124,7 +124,7 @@ class S3ReaderTest(unittest.TestCase):
         }
 
         self.options_date_prefix = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
@@ -134,7 +134,7 @@ class S3ReaderTest(unittest.TestCase):
         }
 
         self.options_dateparser = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
@@ -145,7 +145,7 @@ class S3ReaderTest(unittest.TestCase):
         }
 
         self.options_dateparser_range_3_days = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
@@ -156,7 +156,7 @@ class S3ReaderTest(unittest.TestCase):
         }
 
         self.options_date_prefix_list = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
@@ -168,7 +168,7 @@ class S3ReaderTest(unittest.TestCase):
         }
 
         self.options_prefix_list_using_date = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
@@ -181,7 +181,7 @@ class S3ReaderTest(unittest.TestCase):
         }
 
         self.options_with_invalid_date_range = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
@@ -192,7 +192,7 @@ class S3ReaderTest(unittest.TestCase):
         }
 
         self.options_valid_prefix = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 's3://valid_keys_bucket',
                 'aws_access_key_id': 'KEY',
@@ -203,7 +203,7 @@ class S3ReaderTest(unittest.TestCase):
         }
 
         self.options_valid_prefix_and_suffix = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 's3://valid_keys_bucket/',
                 'aws_access_key_id': 'KEY',
@@ -336,7 +336,7 @@ class S3ReaderTest(unittest.TestCase):
         key.close()
 
         options = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'compressed_files',
                 'aws_access_key_id': 'KEY',

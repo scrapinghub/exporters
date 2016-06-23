@@ -1,45 +1,45 @@
-exporters.filters package
+ozzy.filters package
 =========================
 
 Submodules
 ----------
 
-exporters.filters.base_filter module
+ozzy.filters.base_filter module
 ------------------------------------
 
-.. automodule:: exporters.filters.base_filter
+.. automodule:: ozzy.filters.base_filter
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.filters.key_value_filter module
+ozzy.filters.key_value_filter module
 -----------------------------------------
 
-.. automodule:: exporters.filters.key_value_filter
+.. automodule:: ozzy.filters.key_value_filter
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.filters.key_value_regex_filter module
+ozzy.filters.key_value_regex_filter module
 -----------------------------------------------
 
-.. automodule:: exporters.filters.key_value_regex_filter
+.. automodule:: ozzy.filters.key_value_regex_filter
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.filters.no_filter module
+ozzy.filters.no_filter module
 ----------------------------------
 
-.. automodule:: exporters.filters.no_filter
+.. automodule:: ozzy.filters.no_filter
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.filters.pythonexp_filter module
+ozzy.filters.pythonexp_filter module
 -----------------------------------------
 
-.. automodule:: exporters.filters.pythonexp_filter
+.. automodule:: ozzy.filters.pythonexp_filter
     :members:
     :undoc-members:
     :show-inheritance:
@@ -48,7 +48,7 @@ exporters.filters.pythonexp_filter module
 Module contents
 ---------------
 
-.. automodule:: exporters.filters
+.. automodule:: ozzy.filters
     :members:
     :undoc-members:
     :show-inheritance:

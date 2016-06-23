@@ -1,9 +1,9 @@
 import copy
 import mock
 import unittest
-from exporters.readers.base_reader import BaseReader
-from exporters.readers.random_reader import RandomReader
-from exporters.readers.kafka_scanner_reader import KafkaScannerReader
+from ozzy.readers.base_reader import BaseReader
+from ozzy.readers.random_reader import RandomReader
+from ozzy.readers.kafka_scanner_reader import KafkaScannerReader
 
 from .utils import meta
 
@@ -31,7 +31,7 @@ class RandomReaderTest(unittest.TestCase):
                 'logger_name': 'export-pipeline'
             },
             'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100
@@ -81,7 +81,7 @@ class KafkaScannerReaderTest(unittest.TestCase):
 
     def basic_options(self):
         return copy.deepcopy({
-            'name': 'exporters.readers.kafka_scanner_reader.KafkaScannerReader',
+            'name': 'ozzy.readers.kafka_scanner_reader.KafkaScannerReader',
             'options': {
                 'brokers': ['b1'],
                 'topic': 'topic',

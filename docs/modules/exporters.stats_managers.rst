@@ -1,21 +1,21 @@
-exporters.stats_managers package
+ozzy.stats_managers package
 ================================
 
 Submodules
 ----------
 
-exporters.stats_managers.base_stats_manager module
+ozzy.stats_managers.base_stats_manager module
 --------------------------------------------------
 
-.. automodule:: exporters.stats_managers.base_stats_manager
+.. automodule:: ozzy.stats_managers.base_stats_manager
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.stats_managers.basic_stats_manager module
+ozzy.stats_managers.basic_stats_manager module
 ---------------------------------------------------
 
-.. automodule:: exporters.stats_managers.basic_stats_manager
+.. automodule:: ozzy.stats_managers.basic_stats_manager
     :members:
     :undoc-members:
     :show-inheritance:
@@ -24,7 +24,7 @@ exporters.stats_managers.basic_stats_manager module
 Module contents
 ---------------
 
-.. automodule:: exporters.stats_managers
+.. automodule:: ozzy.stats_managers
     :members:
     :undoc-members:
     :show-inheritance:

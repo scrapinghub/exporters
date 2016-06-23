@@ -1,8 +1,8 @@
 import mock
 import unittest
 from contextlib import closing
-from exporters.records.base_record import BaseRecord
-from exporters.writers.hubstorage_writer import HubstorageWriter
+from ozzy.records.base_record import BaseRecord
+from ozzy.writers.hubstorage_writer import HubstorageWriter
 
 from .utils import meta
 

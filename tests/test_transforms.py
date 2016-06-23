@@ -1,9 +1,9 @@
 import unittest
-from exporters.records.base_record import BaseRecord
-from exporters.transform.base_transform import BaseTransform
-from exporters.transform.no_transform import NoTransform
-from exporters.transform.pythonexp_transform import PythonexpTransform
-from exporters.module_loader import ModuleLoader
+from ozzy.records.base_record import BaseRecord
+from ozzy.transform.base_transform import BaseTransform
+from ozzy.transform.no_transform import NoTransform
+from ozzy.transform.pythonexp_transform import PythonexpTransform
+from ozzy.module_loader import ModuleLoader
 
 from .utils import meta
 
@@ -16,7 +16,7 @@ class BaseTransformTest(unittest.TestCase):
                 'logger_name': 'export-pipeline'
             },
             'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100
@@ -39,7 +39,7 @@ class NoTransformTest(unittest.TestCase):
                 'logger_name': 'export-pipeline'
             },
             'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100

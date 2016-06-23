@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-This script wraps exporters launching logic, and should be used to
+This script wraps ozzy launching logic, and should be used to
 make export jobs both from localhost and from dash.
 """
 
 from __future__ import print_function
-from exporters.export_managers.basic_exporter import BasicExporter
-from exporters.exceptions import ConfigurationError
+from ozzy.export_managers.basic_exporter import BasicExporter
+from ozzy.exceptions import ConfigurationError
 import logging
 
 

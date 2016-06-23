@@ -1,13 +1,7 @@
-from exporters.groupers.base_grouper import BaseGrouper
+import logging
 
 
-class NoGrouper(BaseGrouper):
-    """
-    Default group module, used when no grouping strategies are needed.
-    """
+logging.warning('Exporters naming has been deprecated. Please use ozzy instead')
 
-    def __init__(self, *args, **kwargs):
-        super(NoGrouper, self).__init__(*args, **kwargs)
 
-    def group_batch(self, batch):
-        return batch
+from ozzy.groupers.no_grouper import NoGrouper  # NOQA

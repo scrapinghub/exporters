@@ -1,14 +1,7 @@
-from exporters.transform.base_transform import BaseTransform
+import logging
 
 
-class NoTransform(BaseTransform):
-    """
-    It leaves the batch as is.
-    This is provided for the cases where no transformations are needed on the original items.
-    """
+logging.warning('Exporters naming has been deprecated. Please use ozzy instead')
 
-    def __init__(self, *args, **kwargs):
-        super(NoTransform, self).__init__(*args, **kwargs)
 
-    def transform_batch(self, batch):
-        return batch
+from ozzy.transform.no_transform import NoTransform  # NOQA

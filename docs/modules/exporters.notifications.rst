@@ -1,45 +1,45 @@
-exporters.notifications package
+ozzy.notifications package
 ===============================
 
 Submodules
 ----------
 
-exporters.notifications.base_notifier module
+ozzy.notifications.base_notifier module
 --------------------------------------------
 
-.. automodule:: exporters.notifications.base_notifier
+.. automodule:: ozzy.notifications.base_notifier
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.notifications.notifiers_list module
+ozzy.notifications.notifiers_list module
 ---------------------------------------------
 
-.. automodule:: exporters.notifications.notifiers_list
+.. automodule:: ozzy.notifications.notifiers_list
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.notifications.receiver_groups module
+ozzy.notifications.receiver_groups module
 ----------------------------------------------
 
-.. automodule:: exporters.notifications.receiver_groups
+.. automodule:: ozzy.notifications.receiver_groups
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.notifications.s3_mail_notifier module
+ozzy.notifications.s3_mail_notifier module
 -----------------------------------------------
 
-.. automodule:: exporters.notifications.s3_mail_notifier
+.. automodule:: ozzy.notifications.s3_mail_notifier
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.notifications.webhook_notifier module
+ozzy.notifications.webhook_notifier module
 -----------------------------------------------
 
-.. automodule:: exporters.notifications.webhook_notifier
+.. automodule:: ozzy.notifications.webhook_notifier
     :members:
     :undoc-members:
     :show-inheritance:
@@ -48,7 +48,7 @@ exporters.notifications.webhook_notifier module
 Module contents
 ---------------
 
-.. automodule:: exporters.notifications
+.. automodule:: ozzy.notifications
     :members:
     :undoc-members:
     :show-inheritance:

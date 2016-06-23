@@ -1,13 +1,13 @@
-exporters.contrib.writers package
+ozzy.contrib.writers package
 =================================
 
 Submodules
 ----------
 
-exporters.contrib.writers.odo_writer module
+ozzy.contrib.writers.odo_writer module
 -------------------------------------------
 
-.. automodule:: exporters.contrib.writers.odo_writer
+.. automodule:: ozzy.contrib.writers.odo_writer
     :members:
     :undoc-members:
     :show-inheritance:
@@ -16,7 +16,7 @@ exporters.contrib.writers.odo_writer module
 Module contents
 ---------------
 
-.. automodule:: exporters.contrib.writers
+.. automodule:: ozzy.contrib.writers
     :members:
     :undoc-members:
     :show-inheritance:

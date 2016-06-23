@@ -1,6 +1,6 @@
 import unittest
 
-from exporters.writers import MailWriter
+from ozzy.writers import MailWriter
 
 from .utils import meta
 import copy

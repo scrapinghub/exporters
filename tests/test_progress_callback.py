@@ -1,5 +1,5 @@
 import unittest
-from exporters.progress_callback import (
+from ozzy.progress_callback import (
     FtpDownloadProgress,
     FtpUploadProgress,
     BotoUploadProgress,

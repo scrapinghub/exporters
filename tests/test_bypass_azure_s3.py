@@ -3,17 +3,17 @@ import unittest
 import boto
 import mock
 import moto
-from exporters.bypasses.s3_to_azure_blob_bypass import S3AzureBlobBypass
-from exporters.bypasses.s3_to_azure_file_bypass import S3AzureFileBypass
-from exporters.export_managers.basic_exporter import BasicExporter
-from exporters.exporter_config import ExporterConfig
+from ozzy.bypasses.s3_to_azure_blob_bypass import S3AzureBlobBypass
+from ozzy.bypasses.s3_to_azure_file_bypass import S3AzureFileBypass
+from ozzy.export_managers.basic_exporter import BasicExporter
+from ozzy.exporter_config import ExporterConfig
 from .utils import create_s3_keys
 
 
 def create_s3_azure_file_bypass_simple_opts(**kwargs):
     config = {
         'reader': {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'source_bucket',
                 'aws_access_key_id': 'aws-key',
@@ -22,7 +22,7 @@ def create_s3_azure_file_bypass_simple_opts(**kwargs):
             }
         },
         'writer': {
-            'name': 'exporters.writers.azure_file_writer.AzureFileWriter',
+            'name': 'ozzy.writers.azure_file_writer.AzureFileWriter',
             'options': {
                 'filebase': 'bypass_test/',
                 'share': 'some_share',
@@ -49,7 +49,7 @@ class S3AzureFileBypassConditionsTest(unittest.TestCase):
     def test_custom_filter_should_not_meet_conditions(self):
         # given:
         config = create_s3_azure_file_bypass_simple_config(filter={
-            'name': 'exporters.filters.PythonexpFilter',
+            'name': 'ozzy.filters.PythonexpFilter',
             'options': {'python_expression': 'None'}
         })
 
@@ -110,7 +110,7 @@ class S3AzureFileBypassTest(unittest.TestCase):
 def create_s3_azure_blob_bypass_simple_opts(**kwargs):
     config = {
         'reader': {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'source_bucket',
                 'aws_access_key_id': 'a',
@@ -119,7 +119,7 @@ def create_s3_azure_blob_bypass_simple_opts(**kwargs):
             }
         },
         'writer': {
-            'name': 'exporters.writers.azure_blob_writer.AzureBlobWriter',
+            'name': 'ozzy.writers.azure_blob_writer.AzureBlobWriter',
             'options': {
                 'container': 'some_share',
                 'account_name': 'a',
@@ -145,7 +145,7 @@ class S3AzureBlobBypassConditionsTest(unittest.TestCase):
     def test_custom_filter_should_not_meet_conditions(self):
         # given:
         config = create_s3_azure_blob_bypass_simple_config(filter={
-            'name': 'exporters.filters.PythonexpFilter',
+            'name': 'ozzy.filters.PythonexpFilter',
             'options': {'python_expression': 'None'}
         })
 

@@ -1,7 +1,7 @@
 import datetime
 import unittest
-from exporters.filters.pythonexp_filter import PythonexpFilter
-from exporters.records.base_record import BaseRecord
+from ozzy.filters.pythonexp_filter import PythonexpFilter
+from ozzy.records.base_record import BaseRecord
 
 from .utils import meta
 

@@ -1,29 +1,29 @@
-exporters.export_formatter package
+ozzy.export_formatter package
 ==================================
 
 Submodules
 ----------
 
-exporters.export_formatter.base_export_formatter module
+ozzy.export_formatter.base_export_formatter module
 -------------------------------------------------------
 
-.. automodule:: exporters.export_formatter.base_export_formatter
+.. automodule:: ozzy.export_formatter.base_export_formatter
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.export_formatter.csv_export_formatter module
+ozzy.export_formatter.csv_export_formatter module
 ------------------------------------------------------
 
-.. automodule:: exporters.export_formatter.csv_export_formatter
+.. automodule:: ozzy.export_formatter.csv_export_formatter
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.export_formatter.json_export_formatter module
+ozzy.export_formatter.json_export_formatter module
 -------------------------------------------------------
 
-.. automodule:: exporters.export_formatter.json_export_formatter
+.. automodule:: ozzy.export_formatter.json_export_formatter
     :members:
     :undoc-members:
     :show-inheritance:
@@ -32,7 +32,7 @@ exporters.export_formatter.json_export_formatter module
 Module contents
 ---------------
 
-.. automodule:: exporters.export_formatter
+.. automodule:: ozzy.export_formatter
     :members:
     :undoc-members:
     :show-inheritance:

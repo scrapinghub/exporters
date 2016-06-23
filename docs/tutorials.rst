@@ -1,9 +1,9 @@
 .. _tutorials:
 
-Exporters Tutorial
-==================
+Ozzy Tutorial
+=============
 
-In this tutorial, we are going to learn how the new exporters work. The purpose of this project is to have a tool to
+In this tutorial, we are going to learn how ozzy works. The purpose of this project is to have a tool to
 allow us to export from a wide range of sources to a wide range of targets, allowing us to perform complex filtering and transformations to items.
 
 
@@ -23,22 +23,22 @@ The configuration file should look like this:
             "log_level": "DEBUG",
             "logger_name": "export-pipeline",
             "formatter": {
-                "name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter",
+                "name": "ozzy.export_formatter.json_export_formatter.JsonExportFormatter",
                 "options": {}
             },
             "notifications":[
             ]
         },
         "reader": {
-            "name": "exporters.readers.kafka_scanner_reader.KafkaScannerReader",
+            "name": "ozzy.readers.kafka_scanner_reader.KafkaScannerReader",
             "options": {
                 "brokers": [LIST OF BROKERS URLS],
                 "topic": "your-topic-name",
-                "group": "exporters-test"
+                "group": "ozzy-test"
             }
         },
         "filter": {
-            "name": "exporters.filters.key_value_regex_filter.KeyValueRegexFilter",
+            "name": "ozzy.filters.key_value_regex_filter.KeyValueRegexFilter",
             "options": {
                 "keys": [
                     {"name": "country", "value": "United States"}
@@ -46,7 +46,7 @@ The configuration file should look like this:
             }
         },
         "writer": {
-            "name": "exporters.writers.s3_writer.S3Writer",
+            "name": "ozzy.writers.s3_writer.S3Writer",
             "options": {
                 "bucket": "your-bucket",
                 "filebase": "tests/export_tutorial_{:%d-%b-%Y}",
@@ -99,7 +99,7 @@ First two steps will only have to be done once:
 
      Go there, right click on the shared folder and click on "Add to my drive".
      This will add the folder the client shared with you in your `My Drive
-     <https://drive.google.com/drive/my-drive>`_. section, which can be seen by exporters.
+     <https://drive.google.com/drive/my-drive>`_. section, which can be seen by ozzy.
 
      .. image:: _images/add_to.png
         :scale: 60 %
@@ -113,7 +113,7 @@ First two steps will only have to be done once:
      .. code-block:: python
 
         "writer":{
-            "name": "exporters.writers.gdrive_writer.GDriveWriter",
+            "name": "ozzy.writers.gdrive_writer.GDriveWriter",
             "options": {
                 "filebase": "export-data/gwriter-test_",
                 "client_secret": {client-secret.json OBJECT},
@@ -138,18 +138,18 @@ Let's assume we have a failed export job, that was using this configuration:
 
     {
         "reader": {
-            "name": "exporters.readers.random_reader.RandomReader",
+            "name": "ozzy.readers.random_reader.RandomReader",
             "options": {
             }
         },
         "writer": {
-            "name": "exporters.writers.console_writer.ConsoleWriter",
+            "name": "ozzy.writers.console_writer.ConsoleWriter",
             "options": {
 
             }
         },
         "persistence":{
-            "name": "exporters.persistence.pickle_persistence.PicklePersistence",
+            "name": "ozzy.persistence.pickle_persistence.PicklePersistence",
             "options": {
                 "file_path": "job_state.pickle"
             }
@@ -182,7 +182,7 @@ To get the needed access_token please follow this steps.
 .. code-block:: python
 
         "writer":{
-            "name": "exporters.writers.dropbox_writer.DropboxWriter",
+            "name": "ozzy.writers.dropbox_writer.DropboxWriter",
             "options": {
                 "access_token": "YOUR_ACCESS_TOKEN",
                 "filebase": "/export/exported_file"

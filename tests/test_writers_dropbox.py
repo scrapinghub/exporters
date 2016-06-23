@@ -1,7 +1,7 @@
 import mock
 import unittest
-from exporters.records.base_record import BaseRecord
-from exporters.writers.dropbox_writer import DropboxWriter
+from ozzy.records.base_record import BaseRecord
+from ozzy.writers.dropbox_writer import DropboxWriter
 
 from .utils import meta
 
@@ -10,7 +10,7 @@ class DropboxWriterTest(unittest.TestCase):
 
     def get_writer_config(self):
         return {
-            'name': 'exporters.writers.dropbox_writer.DropboxWriter',
+            'name': 'ozzy.writers.dropbox_writer.DropboxWriter',
             'options': {
                 "access_token": "some_token",
                 "filebase": "/test/sh_file_"

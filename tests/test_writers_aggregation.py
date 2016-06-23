@@ -1,7 +1,7 @@
 import unittest
 
-from exporters.records.base_record import BaseRecord
-from exporters.writers.aggregation_stats_writer import AggregationStatsWriter
+from ozzy.records.base_record import BaseRecord
+from ozzy.writers.aggregation_stats_writer import AggregationStatsWriter
 
 from .utils import meta
 
@@ -32,7 +32,7 @@ class AggregationStatsWriterTest(unittest.TestCase):
 
     def get_writer_config(self):
         return {
-            'name': 'exporters.writers.aggregation_stats_writer.AggregationStatsWriter',
+            'name': 'ozzy.writers.aggregation_stats_writer.AggregationStatsWriter',
             'options': {
 
             }

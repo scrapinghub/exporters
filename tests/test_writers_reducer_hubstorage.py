@@ -2,8 +2,8 @@ import unittest
 
 import vcr
 
-from exporters.records.base_record import BaseRecord
-from exporters.writers.hs_reduce_writer import HubstorageReduceWriter
+from ozzy.records.base_record import BaseRecord
+from ozzy.writers.hs_reduce_writer import HubstorageReduceWriter
 
 from .utils import meta
 

@@ -1,4 +1,4 @@
-exporters.contrib package
+ozzy.contrib package
 =========================
 
 Subpackages
@@ -6,22 +6,22 @@ Subpackages
 
 .. toctree::
 
-    exporters.contrib.export_formatter
-    exporters.contrib.export_managers
-    exporters.contrib.filters
-    exporters.contrib.groupers
-    exporters.contrib.logger
-    exporters.contrib.notifications
-    exporters.contrib.persistence
-    exporters.contrib.readers
-    exporters.contrib.stats_managers
-    exporters.contrib.transform
-    exporters.contrib.writers
+    ozzy.contrib.export_formatter
+    ozzy.contrib.export_managers
+    ozzy.contrib.filters
+    ozzy.contrib.groupers
+    ozzy.contrib.logger
+    ozzy.contrib.notifications
+    ozzy.contrib.persistence
+    ozzy.contrib.readers
+    ozzy.contrib.stats_managers
+    ozzy.contrib.transform
+    ozzy.contrib.writers
 
 Module contents
 ---------------
 
-.. automodule:: exporters.contrib
+.. automodule:: ozzy.contrib
     :members:
     :undoc-members:
     :show-inheritance:

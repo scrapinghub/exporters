@@ -7,13 +7,13 @@ import unittest
 import mock
 from mock import DEFAULT
 
-from exporters.bypasses.base import BaseBypass
-from exporters.export_managers.base_exporter import BaseExporter
-from exporters.export_managers.basic_exporter import BasicExporter
-from exporters.readers.random_reader import RandomReader
-from exporters.transform.no_transform import NoTransform
-from exporters.utils import TmpFile, TemporaryDirectory
-from exporters.writers.console_writer import ConsoleWriter
+from ozzy.bypasses.base import BaseBypass
+from ozzy.export_managers.base_exporter import BaseExporter
+from ozzy.export_managers.basic_exporter import BasicExporter
+from ozzy.readers.random_reader import RandomReader
+from ozzy.transform.no_transform import NoTransform
+from ozzy.utils import TmpFile, TemporaryDirectory
+from ozzy.writers.console_writer import ConsoleWriter
 from .utils import valid_config_with_updates, ErrorWriter, CopyingMagicMock
 
 
@@ -44,7 +44,7 @@ class BaseExportManagerTest(unittest.TestCase):
     def build_config(self, **kwargs):
         defaults = {
             'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': 10,
                     'batch_size': 1
@@ -70,14 +70,14 @@ class BaseExportManagerTest(unittest.TestCase):
     def test_simple_grouped_export(self):
         config = self.build_config(
             writer={
-                'name': 'exporters.writers.fs_writer.FSWriter',
+                'name': 'ozzy.writers.fs_writer.FSWriter',
                 'options': {
                     'filebase': os.path.join(self.tmp_dir, '{file_number}_ds_dump_{groups[0]}'),
                     'items_per_buffer_write': 100,
                 }
             },
             grouper={
-                'name': 'exporters.groupers.file_key_grouper.FileKeyGrouper',
+                'name': 'ozzy.groupers.file_key_grouper.FileKeyGrouper',
                 'options': {
                     'keys': ['state'],
                 }
@@ -97,14 +97,14 @@ class BaseExportManagerTest(unittest.TestCase):
     def test_grouping_with_non_valid_characters(self):
         config = self.build_config(
             writer={
-                'name': 'exporters.writers.fs_writer.FSWriter',
+                'name': 'ozzy.writers.fs_writer.FSWriter',
                 'options': {
                     'filebase': os.path.join(self.tmp_dir, '{file_number}_ds_dump_{groups[0]}'),
                     'items_per_buffer_write': 100,
                 }
             },
             grouper={
-                'name': 'exporters.groupers.file_key_grouper.FileKeyGrouper',
+                'name': 'ozzy.groupers.file_key_grouper.FileKeyGrouper',
                 'options': {
                     'keys': ['country_code'],
                 }
@@ -124,14 +124,14 @@ class BaseExportManagerTest(unittest.TestCase):
     def test_non_empty_files(self):
         config = self.build_config(
             writer={
-                'name': 'exporters.writers.fs_writer.FSWriter',
+                'name': 'ozzy.writers.fs_writer.FSWriter',
                 'options': {
                     'filebase': os.path.join(self.tmp_dir, 'some_files_'),
                     'items_per_buffer_write': 1,
                 }
             },
             reader={
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': 1,
                     'batch_size': 1
@@ -153,7 +153,7 @@ class BaseExportManagerTest(unittest.TestCase):
     def test_export_with_csv_formatter(self):
         config = self.build_config()
         config['exporter_options']['formatter'] = {
-            'name': 'exporters.export_formatter.csv_export_formatter.CSVExportFormatter',
+            'name': 'ozzy.export_formatter.csv_export_formatter.CSVExportFormatter',
             'options': {
                 'show_titles': True,
                 'fields': ['city', 'country_code']
@@ -211,12 +211,12 @@ class BaseExportManagerTest(unittest.TestCase):
         # then:
         self.assertFalse(Bypass.executed, "Bypass should NOT have been called")
 
-    @mock.patch('exporters.writers.ftp_writer.FTPWriter.write', new=fail)
-    @mock.patch('exporters.export_managers.base_exporter.NotifiersList')
+    @mock.patch('ozzy.writers.ftp_writer.FTPWriter.write', new=fail)
+    @mock.patch('ozzy.export_managers.base_exporter.NotifiersList')
     def test_when_writing_only_on_flush_should_notify_job_failure(self, mock_notifier):
         config = self.build_config(
             writer={
-                'name': 'exporters.writers.FTPWriter',
+                'name': 'ozzy.writers.FTPWriter',
                 'options': {
                     'host': 'ftp.invalid.com',
                     'filebase': '_',
@@ -251,7 +251,7 @@ class BaseExportManagerTest(unittest.TestCase):
                     'persistence_state_id': os.path.basename(pickle_file),
                 },
                 persistence={
-                    'name': 'exporters.persistence.pickle_persistence.PicklePersistence',
+                    'name': 'ozzy.persistence.pickle_persistence.PicklePersistence',
                     'options': {
                         'file_path': os.path.dirname(pickle_file)
                     }
@@ -271,7 +271,7 @@ class BaseExportManagerTest(unittest.TestCase):
     def test_read_goes_into_written(self):
         options = {
             'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': 123,
                     'batch_size': 7
@@ -294,14 +294,14 @@ class BaseExportManagerTest(unittest.TestCase):
         with TemporaryDirectory() as tmp_dir:
             options = {
                 'reader': {
-                    'name': 'exporters.readers.random_reader.RandomReader',
+                    'name': 'ozzy.readers.random_reader.RandomReader',
                     'options': {
                         'number_of_items': 123,
                         'batch_size': 7
                     }
                 },
                 'writer': {
-                    'name': 'exporters.writers.fs_writer.FSWriter',
+                    'name': 'ozzy.writers.fs_writer.FSWriter',
                     'options': {
                         'filebase': tmp_dir+'/some_file_'
                     }
@@ -310,7 +310,7 @@ class BaseExportManagerTest(unittest.TestCase):
                     'name': 'tests.utils.NullPersistence',
                 },
                 'grouper': {
-                    'name': 'exporters.groupers.file_key_grouper.FileKeyGrouper',
+                    'name': 'ozzy.groupers.file_key_grouper.FileKeyGrouper',
                     'options': {
                         'keys': ['country_code']
                     }
@@ -321,10 +321,10 @@ class BaseExportManagerTest(unittest.TestCase):
             self.assertEqual(len(os.listdir(tmp_dir)), 3, 'There should be a file for every group')
 
     def test_notifier_integration_ok(self):
-        notifier_class_path = 'exporters.notifications.base_notifier.BaseNotifier'
+        notifier_class_path = 'ozzy.notifications.base_notifier.BaseNotifier'
         options = {
             'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': 10,
                     'batch_size': 3
@@ -358,10 +358,10 @@ class BaseExportManagerTest(unittest.TestCase):
                               msg='There was 1 complete dump notification')
 
     def test_notifier_integration_export_fail(self):
-        notifier_class_path = 'exporters.notifications.base_notifier.BaseNotifier'
+        notifier_class_path = 'ozzy.notifications.base_notifier.BaseNotifier'
         options = {
             'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': 10,
                     'batch_size': 3
@@ -399,7 +399,7 @@ class BaseExportManagerTest(unittest.TestCase):
                               msg='There should be no complete dump notification')
 
     def test_valid_bypass(self):
-        notifier_class_path = 'exporters.notifications.base_notifier.BaseNotifier'
+        notifier_class_path = 'ozzy.notifications.base_notifier.BaseNotifier'
         options = {
             'reader': {
                 # error reader and writer should give
@@ -456,7 +456,7 @@ class BaseExportManagerTest(unittest.TestCase):
 
         options = {
             'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': 10,
                     'batch_size': 3
@@ -480,7 +480,7 @@ class BaseExportManagerTest(unittest.TestCase):
     def test_writer_items_limit(self):
         options = {
             'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': 17,
                     'batch_size': 3
@@ -506,7 +506,7 @@ class BaseExportManagerTest(unittest.TestCase):
         pers_class_path = 'tests.utils.NullPersistence'
         options = {
             'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': 17,
                     'batch_size': 3
@@ -529,7 +529,7 @@ class BaseExportManagerTest(unittest.TestCase):
         count_holder = [0]
         options = {
             'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': 17,
                     'batch_size': 3
@@ -547,7 +547,7 @@ class BaseExportManagerTest(unittest.TestCase):
             'exporter_options': {
                 'notifications': [
                     {
-                        'name': 'exporters.notifications.webhook_notifier.WebhookNotifier',
+                        'name': 'ozzy.notifications.webhook_notifier.WebhookNotifier',
                         'options': {
                             'endpoints': ['http://endpoint']
                         }
@@ -568,6 +568,28 @@ class BaseExportManagerTest(unittest.TestCase):
         # there should be 2 posts: for started and completed dump
         self.assertEqual(count_holder[0], 2, "Retries should be disabled")
 
+    def test_legacy_modules(self):
+        options = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {
+                    'number_of_items': 123,
+                    'batch_size': 7
+                }
+            },
+            'writer': {
+                'name': 'tests.utils.NullWriter'
+            },
+            'persistence': {
+                'name': 'tests.utils.NullPersistence',
+            }
+        }
+        self.exporter = exporter = BaseExporter(options)
+        exporter.export()
+        self.assertEquals(exporter.reader.get_metadata('read_items'),
+                          exporter.writer.get_metadata('items_count'),
+                          msg="Export should write the same number items as it has read")
+
 
 class BasicExportManagerTest(unittest.TestCase):
 
@@ -577,7 +599,7 @@ class BasicExportManagerTest(unittest.TestCase):
                 'log_level': 'DEBUG',
                 'logger_name': 'export-pipeline',
                 'formatter': {
-                    'name': 'exporters.export_formatter.csv_export_formatter.CSVExportFormatter',
+                    'name': 'ozzy.export_formatter.csv_export_formatter.CSVExportFormatter',
                     'options': {
                         'show_titles': True,
                         'fields': ['city', 'country_code']
@@ -585,14 +607,14 @@ class BasicExportManagerTest(unittest.TestCase):
                 }
             },
             'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100
                 }
             },
             'writer': {
-                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'name': 'ozzy.writers.console_writer.ConsoleWriter',
                 'options': {
 
                 }

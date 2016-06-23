@@ -5,14 +5,14 @@
         "RESUME": false,
         "JOB_ID": "",
         "FORMATTER": {
-            "name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter",
+            "name": "ozzy.export_formatter.json_export_formatter.JsonExportFormatter",
             "options": {
 
             }
         },
         "NOTIFICATIONS":[
             {
-                "name": "exporters.notifications.s3_mail_notifier.S3MailNotifier",
+                "name": "ozzy.notifications.s3_mail_notifier.S3MailNotifier",
                 "options":
                     {
                         "team_mails": ["bernardo@scrapinghub.com"],
@@ -36,14 +36,14 @@
         ]
     },
     "reader": {
-        "name": "exporters.readers.random_reader.RandomReader",
+        "name": "ozzy.readers.random_reader.RandomReader",
         "options": {
             "number_of_items": 100,
             "batch_size": 10
         }
     },
     "filter": {
-        "name": "exporters.filters.key_value_regex_filter.KeyValueRegexFilter",
+        "name": "ozzy.filters.key_value_regex_filter.KeyValueRegexFilter",
         "options": {
             "keys": [
                 {"name": "country_code", "value": "es"},
@@ -52,20 +52,20 @@
         }
     },
     "transform": {
-        "name": "exporters.transform.no_transform.NoTransform",
+        "name": "ozzy.transform.no_transform.NoTransform",
         "options": {
 
         }
     },
     "writer":{
-        "name": "exporters.writers.console_writer.ConsoleWriter",
+        "name": "ozzy.writers.console_writer.ConsoleWriter",
         "options": {
 
         },
         "export_format": "csv"
     },
     "persistence": {
-        "name": "exporters.persistence.pickle_persistence.PicklePersistence",
+        "name": "ozzy.persistence.pickle_persistence.PicklePersistence",
         "options": {
           "file_path": "/tmp/"
         }

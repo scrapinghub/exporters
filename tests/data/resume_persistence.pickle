@@ -17,6 +17,6 @@ S'b6408aad-658a-46b8-92c1-582522357ee5'
 p7
 sS'configuration'
 p8
-S"{u'writer': {u'options': {}, u'log_level': u'DEBUG', u'name': u'exporters.writers.console_writer.ConsoleWriter', u'logger_name': u'export-pipeline'}, u'exporter_options': {u'notifications': [], u'formatter': {u'name': u'exporters.export_formatter.json_export_formatter.JsonExportFormatter', u'options': {}}, u'log_level': u'DEBUG', u'logger_name': u'export-pipeline'}, u'reader': {u'options': {u'batch_size': 10, u'number_of_items': 1000}, u'log_level': u'DEBUG', u'name': u'exporters.readers.random_reader.RandomReader', u'logger_name': u'export-pipeline'}}"
+S"{u'writer': {u'options': {}, u'log_level': u'DEBUG', u'name': u'ozzy.writers.console_writer.ConsoleWriter', u'logger_name': u'export-pipeline'}, u'exporter_options': {u'notifications': [], u'formatter': {u'name': u'ozzy.export_formatter.json_export_formatter.JsonExportFormatter', u'options': {}}, u'log_level': u'DEBUG', u'logger_name': u'export-pipeline'}, u'reader': {u'options': {u'batch_size': 10, u'number_of_items': 1000}, u'log_level': u'DEBUG', u'name': u'ozzy.readers.random_reader.RandomReader', u'logger_name': u'export-pipeline'}}"
 p9
 s.

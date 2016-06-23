@@ -1,36 +1,36 @@
-exporters.export_managers package
-=================================
+ozzy.export_managers package
+============================
 
 Subpackages
 -----------
 
 .. toctree::
 
-    exporters.export_managers.settings
+    ozzy.export_managers.settings
 
 Submodules
 ----------
 
-exporters.export_managers.base_exporter module
-----------------------------------------------
+ozzy.export_managers.base_exporter module
+-----------------------------------------
 
-.. automodule:: exporters.export_managers.base_exporter
+.. automodule:: ozzy.export_managers.base_exporter
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.export_managers.bypass module
----------------------------------------
+ozzy.export_managers.bypass module
+----------------------------------
 
-.. automodule:: exporters.export_managers.bypass
+.. automodule:: ozzy.export_managers.bypass
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.export_managers.unified_exporter module
--------------------------------------------------
+ozzy.export_managers.unified_exporter module
+--------------------------------------------
 
-.. automodule:: exporters.export_managers.unified_exporter
+.. automodule:: ozzy.export_managers.unified_exporter
     :members:
     :undoc-members:
     :show-inheritance:
@@ -39,7 +39,7 @@ exporters.export_managers.unified_exporter module
 Module contents
 ---------------
 
-.. automodule:: exporters.export_managers
+.. automodule:: ozzy.export_managers
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,14 +1,7 @@
-from exporters.stats_managers.base_stats_manager import BaseStatsManager
+import logging
 
 
-class BasicStatsManager(BaseStatsManager):
-    """
-    Module to be used when no stats tracking is needed. It does nothing for iteration
-    reports, and only prints a debug log message with final stats
-    """
+logging.warning('Exporters naming has been deprecated. Please use ozzy instead')
 
-    def iteration_report(self, times):
-        pass
 
-    def final_report(self):
-        self.logger.debug(repr(self.metadata.to_dict()))
+from ozzy.stats_managers.basic_stats_manager import BasicStatsManager  # NOQA

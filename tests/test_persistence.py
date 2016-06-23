@@ -1,9 +1,9 @@
 import unittest
 from mock import patch
-from exporters.exporter_config import ExporterConfig
-from exporters.persistence.base_persistence import BasePersistence
-from exporters.persistence.pickle_persistence import PicklePersistence
-from exporters.utils import remove_if_exists
+from ozzy.exporter_config import ExporterConfig
+from ozzy.persistence.base_persistence import BasePersistence
+from ozzy.persistence.pickle_persistence import PicklePersistence
+from ozzy.utils import remove_if_exists
 
 from .utils import valid_config_with_updates, meta
 
@@ -54,7 +54,7 @@ class PicklePersistenceTest(unittest.TestCase):
                 'resume': False,
             },
             'persistence': {
-                'name': 'exporters.persistence.pickle_persistence.PicklePersistence',
+                'name': 'ozzy.persistence.pickle_persistence.PicklePersistence',
                 'options': {'file_path': '/tmp'}
             }
         })

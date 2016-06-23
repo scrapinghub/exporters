@@ -2,11 +2,11 @@ import mock
 import unittest
 import warnings
 
-from exporters.meta import ExportMeta
-from exporters.records.base_record import BaseRecord
-from exporters.writers.azure_blob_writer import AzureBlobWriter
-from exporters.writers.azure_file_writer import AzureFileWriter
-from exporters.writers.base_writer import InconsistentWriteState
+from ozzy.meta import ExportMeta
+from ozzy.records.base_record import BaseRecord
+from ozzy.writers.azure_blob_writer import AzureBlobWriter
+from ozzy.writers.azure_file_writer import AzureFileWriter
+from ozzy.writers.base_writer import InconsistentWriteState
 
 from .utils import meta
 
@@ -15,7 +15,7 @@ class AzureBlobWriterTest(unittest.TestCase):
 
     def get_writer_config(self):
         return {
-            'name': 'exporters.writers.azure_blob_writer.AzureBlobWriter',
+            'name': 'ozzy.writers.azure_blob_writer.AzureBlobWriter',
             'options': {
                 'container': 'datasetsscrapinghub',
                 'account_name': 'account_name',
@@ -116,7 +116,7 @@ class AzureFileWriterTest(unittest.TestCase):
 
     def get_writer_config(self):
         return {
-            'name': 'exporters.writers.azure_file_writer.AzureFileWriter',
+            'name': 'ozzy.writers.azure_file_writer.AzureFileWriter',
             'options': {
                 'share': 'datasetsscrapinghub',
                 'account_name': 'account_name',

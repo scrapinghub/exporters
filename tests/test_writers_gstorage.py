@@ -3,10 +3,10 @@ import unittest
 from contextlib import nested, closing
 from six import BytesIO
 
-from exporters.records.base_record import BaseRecord
-from exporters.writers.gstorage_writer import GStorageWriter
-from exporters.writers.base_writer import InconsistentWriteState
-from exporters.bypasses.stream_bypass import Stream
+from ozzy.records.base_record import BaseRecord
+from ozzy.writers.gstorage_writer import GStorageWriter
+from ozzy.writers.base_writer import InconsistentWriteState
+from ozzy.bypasses.stream_bypass import Stream
 
 from .utils import meta
 
@@ -21,7 +21,7 @@ class GStorageWriterTest(unittest.TestCase):
 
     def get_options(self):
         return {
-            'name': 'exporters.writers.gstorage_writer.GStorageWriter',
+            'name': 'ozzy.writers.gstorage_writer.GStorageWriter',
             'options': {
                 'project': 'some-project-666',
                 'bucket': 'bucket-777',
@@ -85,14 +85,14 @@ class GStorageWriterTest(unittest.TestCase):
 
     def test_init_from_resource(self):
         options = {
-            'name': 'exporters.writers.gstorage_writer.GStorageWriter',
+            'name': 'ozzy.writers.gstorage_writer.GStorageWriter',
             'options': {
                 'project': 'some-project-666',
                 'bucket': 'bucket-777',
                 'filebase': 'tests/',
             }
         }
-        env = {'EXPORTERS_GSTORAGE_CREDS_RESOURCE': 'a:b'}
+        env = {'ozzy.GSTORAGE_CREDS_RESOURCE': 'a:b'}
         with nested(mock.patch.dict('os.environ', env),
                     mock.patch('pkg_resources.resource_string', return_value='{}'),
                     mock.patch('gcloud.storage.Client.from_service_account_json')):
@@ -101,14 +101,14 @@ class GStorageWriterTest(unittest.TestCase):
 
     def test_init_fails_with_bad_resource(self):
         options = {
-            'name': 'exporters.writers.gstorage_writer.GStorageWriter',
+            'name': 'ozzy.writers.gstorage_writer.GStorageWriter',
             'options': {
                 'project': 'some-project-666',
                 'bucket': 'bucket-777',
                 'filebase': 'tests/',
             }
         }
-        env = {'EXPORTERS_GSTORAGE_CREDS_RESOURCE': 'a:b'}
+        env = {'ozzy.GSTORAGE_CREDS_RESOURCE': 'a:b'}
         with nested(self.assertRaisesRegexp(ImportError, 'No module named a'),
                     mock.patch.dict('os.environ', env)):
             GStorageWriter(options, meta())

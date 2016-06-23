@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import random
 import unittest
-from exporters.filters.base_filter import BaseFilter
-from exporters.filters.key_value_filter import KeyValueFilter
-from exporters.filters.key_value_filters import InvalidOperator
-from exporters.filters.key_value_regex_filter import KeyValueRegexFilter
-from exporters.filters.no_filter import NoFilter
-from exporters.records.base_record import BaseRecord
+from ozzy.filters.base_filter import BaseFilter
+from ozzy.filters.key_value_filter import KeyValueFilter
+from ozzy.filters.key_value_filters import InvalidOperator
+from ozzy.filters.key_value_regex_filter import KeyValueRegexFilter
+from ozzy.filters.no_filter import NoFilter
+from ozzy.records.base_record import BaseRecord
 
 from .utils import meta
 

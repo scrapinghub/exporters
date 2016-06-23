@@ -1,7 +1,7 @@
 import unittest
 
-from exporters.records.base_record import BaseRecord
-from exporters.transform.pythonmap import PythonMapTransform
+from ozzy.records.base_record import BaseRecord
+from ozzy.transform.pythonmap import PythonMapTransform
 
 
 def create_map_transform(map_expr):

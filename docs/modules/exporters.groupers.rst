@@ -1,29 +1,29 @@
-exporters.groupers package
+ozzy.groupers package
 ==========================
 
 Submodules
 ----------
 
-exporters.groupers.base_grouper module
+ozzy.groupers.base_grouper module
 --------------------------------------
 
-.. automodule:: exporters.groupers.base_grouper
+.. automodule:: ozzy.groupers.base_grouper
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.groupers.file_key_grouper module
+ozzy.groupers.file_key_grouper module
 ------------------------------------------
 
-.. automodule:: exporters.groupers.file_key_grouper
+.. automodule:: ozzy.groupers.file_key_grouper
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.groupers.no_grouper module
+ozzy.groupers.no_grouper module
 ------------------------------------
 
-.. automodule:: exporters.groupers.no_grouper
+.. automodule:: ozzy.groupers.no_grouper
     :members:
     :undoc-members:
     :show-inheritance:
@@ -32,7 +32,7 @@ exporters.groupers.no_grouper module
 Module contents
 ---------------
 
-.. automodule:: exporters.groupers
+.. automodule:: ozzy.groupers
     :members:
     :undoc-members:
     :show-inheritance:

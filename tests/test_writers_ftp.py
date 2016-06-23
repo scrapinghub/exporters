@@ -3,9 +3,9 @@ import tempfile
 import unittest
 from contextlib import closing
 
-from exporters.records.base_record import BaseRecord
-from exporters.writers import FTPWriter
-from exporters.writers.base_writer import InconsistentWriteState
+from ozzy.records.base_record import BaseRecord
+from ozzy.writers import FTPWriter
+from ozzy.writers.base_writer import InconsistentWriteState
 
 from .utils import meta
 
@@ -28,7 +28,7 @@ class FTPWriterTest(unittest.TestCase):
         with closing(FTPWriter(options, meta())) as writer:
             self.assertEquals(21, writer.read_option('port'))
 
-    @mock.patch('exporters.writers.FTPWriter.build_ftp_instance')
+    @mock.patch('ozzy.writers.FTPWriter.build_ftp_instance')
     def test_create_parent_dirs_in_right_order(self, mock_ftp):
         filebase = 'some/long/dir/tree/'
         options = dict(options=dict(
@@ -48,7 +48,7 @@ class FTPWriterTest(unittest.TestCase):
             mock.call('some/long/dir/tree'),
         ], mock_mkd.mock_calls)
 
-    @mock.patch('exporters.writers.FTPWriter.build_ftp_instance')
+    @mock.patch('ozzy.writers.FTPWriter.build_ftp_instance')
     def test_create_parent_dirs_with_filebase_prefix(self, mock_ftp):
         filebase = 'some/long/dir/with/prefix'
         options = dict(options=dict(
@@ -68,7 +68,7 @@ class FTPWriterTest(unittest.TestCase):
             mock.call('some/long/dir/with'),
         ], mock_mkd.mock_calls)
 
-    @mock.patch('exporters.writers.FTPWriter.build_ftp_instance')
+    @mock.patch('ozzy.writers.FTPWriter.build_ftp_instance')
     def test_check_writer_consistency_unexpected_size(self, mock_ftp):
 
         # given
@@ -88,7 +88,7 @@ class FTPWriterTest(unittest.TestCase):
             with self.assertRaisesRegexp(InconsistentWriteState, 'Unexpected size for file'):
                 writer.finish_writing()
 
-    @mock.patch('exporters.writers.FTPWriter.build_ftp_instance')
+    @mock.patch('ozzy.writers.FTPWriter.build_ftp_instance')
     def test_check_writer_consistency_not_present(self, mock_ftp):
         # given
         options = dict(options=dict(

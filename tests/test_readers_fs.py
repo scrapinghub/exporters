@@ -1,6 +1,6 @@
 import unittest
-from exporters.readers import FSReader
-from exporters.exceptions import ConfigurationError
+from ozzy.readers import FSReader
+from ozzy.exceptions import ConfigurationError
 
 from .utils import meta
 
@@ -30,7 +30,7 @@ class FSReaderTest(unittest.TestCase):
     @staticmethod
     def _make_fs_reader(options):
         full_config = {
-            'name': 'exporters.readers.fs_reader.FSReader',
+            'name': 'ozzy.readers.fs_reader.FSReader',
             'options': options
         }
         reader = FSReader(full_config, meta())

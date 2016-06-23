@@ -1,1 +1,5 @@
-__version__ = '0.4.12'
+import logging
+
+logging.warning('Exporters naming has been deprecated. Please use ozzy instead')
+
+import ozzy as exporters  # NOQA

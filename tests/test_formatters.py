@@ -3,11 +3,11 @@ import io
 import csv
 import random
 import unittest
-from exporters.exceptions import ConfigurationError
-from exporters.export_formatter.base_export_formatter import BaseExportFormatter
-from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
-from exporters.export_formatter.json_export_formatter import JsonExportFormatter
-from exporters.records.base_record import BaseRecord
+from ozzy.exceptions import ConfigurationError
+from ozzy.export_formatter.base_export_formatter import BaseExportFormatter
+from ozzy.export_formatter.csv_export_formatter import CSVExportFormatter
+from ozzy.export_formatter.json_export_formatter import JsonExportFormatter
+from ozzy.records.base_record import BaseRecord
 from tests.utils import meta
 
 

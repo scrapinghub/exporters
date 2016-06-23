@@ -1,27 +1,27 @@
-.. _exporters:
+.. _ozzy:
 
-Exporters description
-=====================
+Ozzy description
+================
 
-What are exporters?
--------------------
+What is Ozzy?
+-------------
 
-Exporters aims to provide a flexible and
+Ozzy the plumber aims to provide a flexible and
 easy to extend infrastructure for exporting data to and from multiple sources, with support for filtering and transformation.
 
 Architecture
 ------------
 
-.. image:: _images/exporters_pipe.png
+.. image:: _images/ozzy_pipe.png
    :scale: 60 %
-   :alt: Exporters architecture
+   :alt: Ozzy architecture
    :align: center
 
 
 Config file
 -----------
 
-You can define Exporters behaviour with a configuration object. This object has the
+You can define Ozzy behaviour with a configuration object. This object has the
 following attributes:
 
 - reader (mandatory): defines what reader module the export should use and its options.
@@ -41,14 +41,14 @@ This is an example of the simplest config file that can be used.
     {
 
         "reader": {
-            "name": "exporters.readers.random_reader.RandomReader",
+            "name": "ozzy.readers.random_reader.RandomReader",
             "options": {
                 "number_of_items": 1000,
                 "batch_size": 10
             }
         },
         "writer":{
-            "name": "exporters.writers.console_writer.ConsoleWriter",
+            "name": "ozzy.writers.console_writer.ConsoleWriter",
             "options": {
             }
         }

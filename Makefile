@@ -4,7 +4,7 @@ COMMIT_HASH := $(shell git rev-parse --short --verify HEAD)
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 LIB_VERSION := $(shell python setup.py --version)
 LIB_NAME := $(shell python setup.py --name)
-SRC_DIRS := exporters/ bin/
+SRC_DIRS := ozzy/ bin/
 COVERAGE_VERSION := $(shell coverage --version 2>/dev/null)
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -33,7 +33,7 @@ compile:
 
 test: compile
 	flake8
-	py.test -v tests --cov=exporters --cov=bin --cov-report term-missing
+	py.test -v tests --cov=ozzy --cov=bin --cov-report term-missing
 
 clean-pyc:
 	find . -name \*.pyc -delete
@@ -57,7 +57,7 @@ install-all-deps:
 
 
 build-docs:
-	sphinx-apidoc -o docs/modules/ exporters
+	sphinx-apidoc -o docs/modules/ ozzy
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 

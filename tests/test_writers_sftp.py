@@ -2,9 +2,9 @@ import unittest
 
 import errno
 import mock
-from exporters.records.base_record import BaseRecord
-from exporters.writers import SFTPWriter
-from exporters.writers.base_writer import InconsistentWriteState
+from ozzy.records.base_record import BaseRecord
+from ozzy.writers import SFTPWriter
+from ozzy.writers.base_writer import InconsistentWriteState
 
 from .utils import meta
 
@@ -20,7 +20,7 @@ class SFTPWriterTest(unittest.TestCase):
 
     def get_writer_config(self):
         return {
-            'name': 'exporters.writers.sftp_writer.SFTPWriter',
+            'name': 'ozzy.writers.sftp_writer.SFTPWriter',
             'options': {
                 'sftp_user': 'user',
                 'sftp_password': 'password',

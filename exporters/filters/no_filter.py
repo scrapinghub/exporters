@@ -1,14 +1,7 @@
-from exporters.filters.base_filter import BaseFilter
+import logging
 
 
-class NoFilter(BaseFilter):
-    """
-    It leaves the batch as is. This is provided for the cases where no filters are needed
-    on the original items.
-    """
+logging.warning('Exporters naming has been deprecated. Please use ozzy instead')
 
-    def __init__(self, *args, **kwargs):
-        super(NoFilter, self).__init__(*args, **kwargs)
 
-    def filter_batch(self, batch):
-        return batch
+from ozzy.filters.no_filter import NoFilter  # NOQA
