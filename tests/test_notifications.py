@@ -3,13 +3,13 @@ import json
 import unittest
 
 import mock
-from exporters.meta import ExportMeta
-from exporters.notifications.base_notifier import BaseNotifier
-from exporters.notifications.receiver_groups import CLIENTS, TEAM
-from exporters.notifications.ses_mail_notifier import (DEFAULT_MAIN_FROM,
-                                                       InvalidMailProvided,
-                                                       SESMailNotifier)
-from exporters.notifications.webhook_notifier import WebhookNotifier
+from ozzy.meta import ExportMeta
+from ozzy.notifications.base_notifier import BaseNotifier
+from ozzy.notifications.receiver_groups import CLIENTS, TEAM
+from ozzy.notifications.ses_mail_notifier import (DEFAULT_MAIN_FROM,
+                                                  InvalidMailProvided,
+                                                  SESMailNotifier)
+from ozzy.notifications.webhook_notifier import WebhookNotifier
 from tests.utils import environment
 
 
@@ -85,7 +85,7 @@ class SESMailNotifierTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline',
                 'notifications': [
                     {
-                        'name': 'exporters.notifications.s3_mail_notifier.SESMailNotifier',
+                        'name': 'ozzy.notifications.s3_mail_notifier.SESMailNotifier',
                         'options':
                             {
                                 'team_mails': ['team@example.com'],
@@ -195,7 +195,7 @@ class SESMailNotifierTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline',
                 'notifications': [
                     {
-                        'name': 'exporters.notifications.s3_mail_notifier.S3MailNotifier',
+                        'name': 'ozzy.notifications.s3_mail_notifier.S3MailNotifier',
                         'options':
                             {
                                 'team_mails': ['badmail'],
@@ -226,7 +226,7 @@ class WebhookNotifierTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline',
                 'notifications': [
                     {
-                        'name': 'exporters.notifications.webhook_notifier.WebhookNotifier',
+                        'name': 'ozzy.notifications.webhook_notifier.WebhookNotifier',
                         'options':
                             {
                                 'endpoints': ['http://test.com']

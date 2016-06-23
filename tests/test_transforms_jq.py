@@ -1,6 +1,6 @@
 import unittest
-from exporters.records.base_record import BaseRecord
-from exporters.transform.jq_transform import JQTransform
+from ozzy.records.base_record import BaseRecord
+from ozzy.transform.jq_transform import JQTransform
 
 
 class JqTransformTest(unittest.TestCase):

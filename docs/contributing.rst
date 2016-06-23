@@ -3,7 +3,7 @@
 Contributing
 ============
 
-There are many ways to contribute to Exporters project. Here are some of them:
+There are many ways to contribute to Ozzy project. Here are some of them:
 
     - Report bugs and request features in the issue tracker, trying to follow the guidelines
       detailed in Reporting bugs below.
@@ -74,12 +74,12 @@ and more likely to get merged.
 Coding style
 ~~~~~~~~~~~~
 
-Please follow these coding conventions when writing code for inclusion in Exporters:
+Please follow these coding conventions when writing code for inclusion in Ozzy:
 
     - Unless otherwise specified, follow PEP 8.
     - It’s OK to use lines longer than 80 chars if it improves the code readability.
     - Don’t put your name in the code you contribute. Our policy is to keep the contributor’s
-      name in the AUTHORS file distributed with Exporters.
+      name in the AUTHORS file distributed with Ozzy.
 
 
 .. _writing-modules:
@@ -141,7 +141,7 @@ All functionality (including new features and bug fixes) must include a test cas
 that it works as expected, so please include tests for your patches if you want them to get
 accepted sooner.
 
-Exporters uses unit-tests, which are located in the tests/ directory. Their module name
+Ozzy uses unit-tests, which are located in the tests/ directory. Their module name
 typically resembles the full path of the module they’re testing.
 
 

@@ -2,9 +2,9 @@ import unittest
 
 from testfixtures import LogCapture
 
-from exporters.default_retries import (disable_retries, disabled_retries,
-                                       initialized_retry, reenable_retries,
-                                       retry_short)
+from ozzy.default_retries import (disable_retries, disabled_retries,
+                                  initialized_retry, reenable_retries,
+                                  retry_short)
 
 
 class InitializeRetryTest(unittest.TestCase):

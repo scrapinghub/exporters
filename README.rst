@@ -1,9 +1,9 @@
-.. _Github repository: https://github.com/scrapinghub/exporters/
+.. _Github repository: https://github.com/scrapinghub/ozzy/
 
-Exporters project documentation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Ozzy project documentation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Exporters provide a flexible way to export data from multiple sources to
+Ozzy provide a flexible way to export data from multiple sources to
 multiple destinations, allowing filtering and transforming the data.
 
 This `Github repository`_ is used as a central repository.
@@ -12,25 +12,25 @@ This `Github repository`_ is used as a central repository.
 Getting Started
 ===============
 
-Install exporters
------------------
+Install ozzy
+------------
 
 First of all, we recommend to create a virtualenv::
 
-    virtualenv exporters
-    source exporters/bin/activate
+    virtualenv ozzy
+    source ozzy/bin/activate
 
 ..
 
-Exporters can be cloned from its `Github repository`_::
+Ozzy can be cloned from its `Github repository`_::
 
-    git clone git@github.com:scrapinghub/exporters.git
+    git clone git@github.com:scrapinghub/ozzy.git
 
 ..
 
 Then, we install the requirements::
 
-    cd exporters
+    cd ozzy
     pip install -r requirements.txt
 
 ..
@@ -46,16 +46,16 @@ Then, we can create our first configuration object and store it in a file called
 
    {
         "reader": {
-            "name": "exporters.readers.s3_reader.S3Reader",
+            "name": "ozzy.readers.s3_reader.S3Reader",
             "options": {
                 "bucket": "YOUR_BUCKET",
                 "aws_access_key_id": "YOUR_ACCESS_KEY",
                 "aws_secret_access_key": "YOUR_SECRET_KEY",
-                "prefix": "exporters-tutorial/sample-dataset"
+                "prefix": "ozzy-tutorial/sample-dataset"
             }
         },
         "filter": {
-            "name": "exporters.filters.key_value_regex_filter.KeyValueRegexFilter",
+            "name": "ozzy.filters.key_value_regex_filter.KeyValueRegexFilter",
             "options": {
                 "keys": [
                     {"name": "country", "value": "United States"}
@@ -63,7 +63,7 @@ Then, we can create our first configuration object and store it in a file called
             }
         },
         "writer":{
-            "name": "exporters.writers.fs_writer.FSWriter",
+            "name": "ozzy.writers.fs_writer.FSWriter",
             "options": {
                 "filebase": "/tmp/output/"
             }
@@ -84,11 +84,11 @@ We can use the provided script to run this export:
 Use it as a library
 -------------------
 
-The export can be run using exporters as a library:
+The export can be run using ozzy as a library:
 
 .. code-block:: python
 
-    from exporters.export_managers.basic_exporter import BasicExporter
+    from ozzy.export_managers.basic_exporter import BasicExporter
 
     exporter = BasicExporter.from_file_configuration('config.json')
     exporter.export()

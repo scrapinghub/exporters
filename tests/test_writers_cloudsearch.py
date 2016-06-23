@@ -2,9 +2,9 @@ import json
 import mock
 import unittest
 
-from exporters.writers.cloudsearch_writer import (CLOUDSEARCH_MAX_BATCH_SIZE,
-                                                  create_document_batches)
-from exporters.export_managers.basic_exporter import BasicExporter
+from ozzy.writers.cloudsearch_writer import (CLOUDSEARCH_MAX_BATCH_SIZE,
+                                             create_document_batches)
+from ozzy.export_managers.basic_exporter import BasicExporter
 
 
 class CreateDocumentBatches(unittest.TestCase):
@@ -64,27 +64,27 @@ class CreateDocumentBatches(unittest.TestCase):
 
 
 class CloudsearchWriterTest(unittest.TestCase):
-    @mock.patch('exporters.writers.cloudsearch_writer.requests', autospec=True)
+    @mock.patch('ozzy.writers.cloudsearch_writer.requests', autospec=True)
     def test_run_exporter_integration(self, mock_requests):
         # given:
         endpoint_url = "http://fake-domain.us-west-2.cloudsearch.amazonaws.com"
         config = {
             "label": "unittest",
             "reader": {
-                "name": "exporters.readers.random_reader.RandomReader",
+                "name": "ozzy.readers.random_reader.RandomReader",
                 "options": {
                     "number_of_items": 100
                 }
             },
             "transform": {
-                "name": "exporters.transform.jq_transform.JQTransform",
+                "name": "ozzy.transform.jq_transform.JQTransform",
                 "options": {
                     "jq_filter": ("{key: .key, country: .country_code, value: .value} |"
                                   " del(.[] | select(. == null))")
                 }
             },
             "writer": {
-                "name": "exporters.writers.cloudsearch_writer.CloudSearchWriter",
+                "name": "ozzy.writers.cloudsearch_writer.CloudSearchWriter",
                 "options": {
                     "endpoint_url": endpoint_url,
                     "id_field": "key"

@@ -1,56 +1,56 @@
-exporters package
-=================
+ozzy.package
+============
 
 Subpackages
 -----------
 
 .. toctree::
 
-    exporters.export_formatter
-    exporters.export_managers
-    exporters.filters
-    exporters.groupers
-    exporters.integration_tests
-    exporters.logger
-    exporters.notifications
-    exporters.persistence
-    exporters.pipeline
-    exporters.readers
-    exporters.records
-    exporters.transform
-    exporters.writers
+    ozzy.export_formatter
+    ozzy.export_managers
+    ozzy.filters
+    ozzy.groupers
+    ozzy.integration_tests
+    ozzy.logger
+    ozzy.notifications
+    ozzy.persistence
+    ozzy.pipeline
+    ozzy.readers
+    ozzy.records
+    ozzy.transform
+    ozzy.writers
 
 Submodules
 ----------
 
-exporters.exceptions module
----------------------------
+ozzy.exceptions module
+----------------------
 
-.. automodule:: exporters.exceptions
+.. automodule:: ozzy.exceptions
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.exporter_options module
----------------------------------
+ozzy.exporter_options module
+----------------------------
 
-.. automodule:: exporters.exporter_options
+.. automodule:: ozzy.exporter_options
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.module_loader module
+ozzy.module_loader module
+-------------------------
+
+.. automodule:: ozzy.module_loader
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+ozzy.python_interpreter module
 ------------------------------
 
-.. automodule:: exporters.module_loader
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-exporters.python_interpreter module
------------------------------------
-
-.. automodule:: exporters.python_interpreter
+.. automodule:: ozzy.python_interpreter
     :members:
     :undoc-members:
     :show-inheritance:
@@ -59,7 +59,7 @@ exporters.python_interpreter module
 Module contents
 ---------------
 
-.. automodule:: exporters
+.. automodule:: ozzy
     :members:
     :undoc-members:
     :show-inheritance:

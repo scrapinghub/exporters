@@ -1,9 +1,9 @@
 import random
 import unittest
-from exporters.groupers.base_grouper import BaseGrouper
-from exporters.groupers.file_key_grouper import FileKeyGrouper
-from exporters.groupers.python_exp_grouper import PythonExpGrouper
-from exporters.records.base_record import BaseRecord
+from ozzy.groupers.base_grouper import BaseGrouper
+from ozzy.groupers.file_key_grouper import FileKeyGrouper
+from ozzy.groupers.python_exp_grouper import PythonExpGrouper
+from ozzy.records.base_record import BaseRecord
 
 country_codes = ['es', 'uk', 'us']
 states = ['valencia', 'madrid', 'barcelona']
@@ -31,7 +31,7 @@ class BaseGrouperTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'grouper': {
-                'name': 'exporters.groupers.base_grouper.BaseGrouper',
+                'name': 'ozzy.groupers.base_grouper.BaseGrouper',
                 'options': {
                 }
             }
@@ -51,7 +51,7 @@ class FileKeyGrouperTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'grouper': {
-                'name': 'exporters.groupers.file_key_grouper.FileKeyGrouper',
+                'name': 'ozzy.groupers.file_key_grouper.FileKeyGrouper',
                 'options': {
                     'keys': ['country_code', 'state', 'city']
                 }
@@ -64,7 +64,7 @@ class FileKeyGrouperTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'grouper': {
-                'name': 'exporters.groupers.file_key_grouper.FileKeyGrouper',
+                'name': 'ozzy.groupers.file_key_grouper.FileKeyGrouper',
                 'options': {
                     'keys': ['country_code', 'not_a_key', 'city']
                 }
@@ -98,7 +98,7 @@ class PythonExpGrouperTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'grouper': {
-                'name': 'exporters.groupers.python_exp_grouper.PythonExpGrouper',
+                'name': 'ozzy.groupers.python_exp_grouper.PythonExpGrouper',
                 'options': {
                     'python_expressions': ['item[\'country_code\'] in [\'uk\', \'us\']']
                 }
@@ -111,7 +111,7 @@ class PythonExpGrouperTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'grouper': {
-                'name': 'exporters.groupers.python_exp_grouper.PythonExpGrouper',
+                'name': 'ozzy.groupers.python_exp_grouper.PythonExpGrouper',
                 'options': {
                     'python_expressions': ['item[\'value\'] % 5']
                 }
@@ -124,7 +124,7 @@ class PythonExpGrouperTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'grouper': {
-                'name': 'exporters.groupers.python_exp_grouper.PythonExpGrouper',
+                'name': 'ozzy.groupers.python_exp_grouper.PythonExpGrouper',
                 'options': {
                     'python_expressions': [
                         'item[\'country_code\'] in [\'uk\', \'us\']',
@@ -140,7 +140,7 @@ class PythonExpGrouperTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'grouper': {
-                'name': 'exporters.groupers.python_exp_grouper.PythonExpGrouper',
+                'name': 'ozzy.groupers.python_exp_grouper.PythonExpGrouper',
                 'options': {
                     'python_expressions': ['item[\'description\'] % 5']
                 }

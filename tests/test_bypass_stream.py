@@ -4,16 +4,16 @@ from contextlib import closing
 
 import mock
 from six import BytesIO
-from exporters.bypasses.stream_bypass import ensure_tell_method, StreamBypass, Stream
-from exporters.exporter_config import ExporterConfig
-from exporters.utils import remove_if_exists
+from ozzy.bypasses.stream_bypass import ensure_tell_method, StreamBypass, Stream
+from ozzy.exporter_config import ExporterConfig
+from ozzy.utils import remove_if_exists
 from .utils import meta
 
 
 def create_stream_bypass_simple_config(**kwargs):
     config = {
         'reader': {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'source_bucket',
                 'aws_access_key_id': 'a',
@@ -22,7 +22,7 @@ def create_stream_bypass_simple_config(**kwargs):
             }
         },
         'writer': {
-            'name': 'exporters.writers.gstorage_writer.GStorageWriter',
+            'name': 'ozzy.writers.gstorage_writer.GStorageWriter',
             'options': {
                 'bucket': 'dest_bucket',
                 'project': "",
@@ -66,7 +66,7 @@ class StreamBypassConditionsTest(unittest.TestCase):
     def test_custom_filter_should_not_meet_conditions(self):
         # given:
         config = create_stream_bypass_simple_config(filter={
-            'name': 'exporters.filters.PythonexpFilter',
+            'name': 'ozzy.filters.PythonexpFilter',
             'options': {'python_expression': 'None'}
         })
 
@@ -111,8 +111,8 @@ class StreamBypassTest(unittest.TestCase):
 
     @mock.patch('gcloud.storage.Client')
     @mock.patch('boto.connect_s3')
-    @mock.patch('exporters.readers.s3_reader.S3Reader.get_read_streams')
-    @mock.patch('exporters.writers.gstorage_writer.GStorageWriter.write_stream')
+    @mock.patch('ozzy.readers.s3_reader.S3Reader.get_read_streams')
+    @mock.patch('ozzy.writers.gstorage_writer.GStorageWriter.write_stream')
     def test_bypass_stream(self, write_stream_mock, get_read_streams_mock, *othermocks):
         # given
         file_len = 50
@@ -131,8 +131,8 @@ class StreamBypassTest(unittest.TestCase):
 
     @mock.patch('gcloud.storage.Client')
     @mock.patch('boto.connect_s3')
-    @mock.patch('exporters.readers.s3_reader.S3Reader.get_read_streams')
-    @mock.patch('exporters.writers.gstorage_writer.GStorageWriter.write_stream')
+    @mock.patch('ozzy.readers.s3_reader.S3Reader.get_read_streams')
+    @mock.patch('ozzy.writers.gstorage_writer.GStorageWriter.write_stream')
     def test_resume_bypass(self, write_stream_mock, get_streams_mock, *othermocks):
         # given
         options = create_stream_bypass_simple_config()

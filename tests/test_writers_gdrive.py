@@ -1,9 +1,9 @@
 import mock
 import unittest
 
-from exporters.records.base_record import BaseRecord
-from exporters.writers.gdrive_writer import GDriveWriter
-from exporters.writers.base_writer import InconsistentWriteState
+from ozzy.records.base_record import BaseRecord
+from ozzy.writers.gdrive_writer import GDriveWriter
+from ozzy.writers.base_writer import InconsistentWriteState
 
 from .utils import meta
 
@@ -18,7 +18,7 @@ class GStorageWriterTest(unittest.TestCase):
 
     def get_options(self):
         return {
-            'name': 'exporters.writers.gdrive_writer.GDriveWriter',
+            'name': 'ozzy.writers.gdrive_writer.GDriveWriter',
             'options': {
                 "filebase": "test",
                 "client_secret": {},

@@ -14,7 +14,7 @@ and the default values if proceeds. It is a dict with the following shape:
 Possible attributes for a supported_option are:
 
     - type - The option type. In addition to the standard python types (``basestring``, ``int``, ``list``, ``dict``...],
-      exporters provide homogeneous list types in ``exporters.utils`` called ``str_list``, ``int_list`` and
+      ozzy provide homogeneous list types in ``ozzy.utils`` called ``str_list``, ``int_list`` and
       ``dict_list``, This types indicate that every member of the list needs to be able to be be casted
       to a string, integer or dictionary respectively.
     - default - Default option value if it is not provided by configuration object. If it is present,
@@ -30,12 +30,12 @@ A pipeline iteration usually consists on calling the reader to get a batch, filt
 filter it again, write it and commit the read batch. It should also be in charge of notifications
 and retries management.
 
-Provided exporters
+Provided ozzy
 ******************
 
 BasicExporter
 #############
-.. automodule:: exporters.export_managers.basic_exporter
+.. automodule:: ozzy.export_managers.basic_exporter
     :members:
     :undoc-members:
     :show-inheritance:
@@ -43,7 +43,7 @@ BasicExporter
 
 Bypass support
 ~~~~~~~~~~~~~~
-Exporters architecture provides support for bypassing the pipeline. One example would be in which both reader
+Ozzy architecture provides support for bypassing the pipeline. One example would be in which both reader
 and writer aim S3 buckets. If no transforms or filtering are needed, keys can be copied directly without downloading them.
 
 All bypass classes are subclasses of BaseBypass class, and must implement two methods:
@@ -61,28 +61,28 @@ Provided Bypass scripts
 ***********************
 S3Bypass
 ########
-.. automodule:: exporters.bypasses.s3_to_s3_bypass
+.. automodule:: ozzy.bypasses.s3_to_s3_bypass
     :members:
     :undoc-members:
     :show-inheritance:
 
 S3ToAzureBlobBypass
 ###################
-.. automodule:: exporters.bypasses.s3_to_azure_blob_bypass
+.. automodule:: ozzy.bypasses.s3_to_azure_blob_bypass
     :members:
     :undoc-members:
     :show-inheritance:
 
 S3ToAzureFileBypass
 ###################
-.. automodule:: exporters.bypasses.s3_to_azure_file_bypass
+.. automodule:: ozzy.bypasses.s3_to_azure_file_bypass
     :members:
     :undoc-members:
     :show-inheritance:
 
 StreamBypass
 ############
-.. automodule:: exporters.bypasses.stream_bypass
+.. automodule:: ozzy.bypasses.stream_bypass
     :members:
     :undoc-members:
     :show-inheritance:
@@ -98,7 +98,7 @@ Readers are in charge of providing batches of items to the pipeline. All readers
         When it has nothing else to read, it must set class variable "finished" to True.
 
 
-.. automodule:: exporters.readers.base_reader
+.. automodule:: ozzy.readers.base_reader
     :members:
     :undoc-members:
     :show-inheritance:
@@ -108,35 +108,35 @@ Provided readers
 ****************
 RandomReader
 ############
-.. automodule:: exporters.readers.random_reader
+.. automodule:: ozzy.readers.random_reader
     :members:
     :undoc-members:
     :show-inheritance:
 
 FSReader
 ########
-.. automodule:: exporters.readers.fs_reader
+.. automodule:: ozzy.readers.fs_reader
     :members:
     :undoc-members:
     :show-inheritance:
 
 KafkaScannerReader
 ##################
-.. automodule:: exporters.readers.kafka_scanner_reader
+.. automodule:: ozzy.readers.kafka_scanner_reader
     :members:
     :undoc-members:
     :show-inheritance:
 
 KafkaRandomReader
 #################
-.. automodule:: exporters.readers.kafka_random_reader
+.. automodule:: ozzy.readers.kafka_random_reader
     :members:
     :undoc-members:
     :show-inheritance:
 
 S3Reader
 ########
-.. automodule:: exporters.readers.s3_reader
+.. automodule:: ozzy.readers.s3_reader
     :members:
     :undoc-members:
     :show-inheritance:
@@ -144,7 +144,7 @@ S3Reader
 
 HubstorageReader
 ################
-.. automodule:: exporters.readers.hubstorage_reader
+.. automodule:: ozzy.readers.hubstorage_reader
     :members:
     :undoc-members:
     :show-inheritance:
@@ -174,7 +174,7 @@ All writers have also the following common options:
         testing exports.
 
 
-.. automodule:: exporters.writers.base_writer
+.. automodule:: ozzy.writers.base_writer
     :members:
     :undoc-members:
     :show-inheritance:
@@ -184,14 +184,14 @@ Provided writers
 ****************
 ConsoleWriter
 #############
-.. automodule:: exporters.writers.console_writer
+.. automodule:: ozzy.writers.console_writer
     :members:
     :undoc-members:
     :show-inheritance:
 
 S3Writer
 ########
-.. automodule:: exporters.writers.s3_writer
+.. automodule:: ozzy.writers.s3_writer
     :members:
     :undoc-members:
     :show-inheritance:
@@ -199,21 +199,21 @@ S3Writer
 
 FTPWriter
 #########
-.. automodule:: exporters.writers.ftp_writer
+.. automodule:: ozzy.writers.ftp_writer
     :members:
     :undoc-members:
     :show-inheritance:
 
 SFTPWriter
 ##########
-.. automodule:: exporters.writers.sftp_writer
+.. automodule:: ozzy.writers.sftp_writer
     :members:
     :undoc-members:
     :show-inheritance:
 
 FSWriter
 ########
-.. automodule:: exporters.writers.fs_writer
+.. automodule:: ozzy.writers.fs_writer
     :members:
     :undoc-members:
     :show-inheritance:
@@ -221,7 +221,7 @@ FSWriter
 
 MailWriter
 ##########
-.. automodule:: exporters.writers.mail_writer
+.. automodule:: ozzy.writers.mail_writer
     :members:
     :undoc-members:
     :show-inheritance:
@@ -229,7 +229,7 @@ MailWriter
 
 AggregationWriter
 #################
-.. automodule:: exporters.writers.aggregation_writer
+.. automodule:: ozzy.writers.aggregation_writer
     :members:
     :undoc-members:
     :show-inheritance:
@@ -237,7 +237,7 @@ AggregationWriter
 
 CloudsearchWriter
 #################
-.. automodule:: exporters.writers.cloudsearch_writer
+.. automodule:: ozzy.writers.cloudsearch_writer
     :members:
     :undoc-members:
     :show-inheritance:
@@ -245,7 +245,7 @@ CloudsearchWriter
 
 GDriveWriter
 ############
-.. automodule:: exporters.writers.gdrive_writer
+.. automodule:: ozzy.writers.gdrive_writer
     :members:
     :undoc-members:
     :show-inheritance:
@@ -253,7 +253,7 @@ GDriveWriter
 
 GStorageWriter
 ##############
-.. automodule:: exporters.writers.gstorage_writer
+.. automodule:: ozzy.writers.gstorage_writer
     :members:
     :undoc-members:
     :show-inheritance:
@@ -261,7 +261,7 @@ GStorageWriter
 
 HubstorageReduceWriter
 ######################
-.. automodule:: exporters.writers.hs_reduce_writer
+.. automodule:: ozzy.writers.hs_reduce_writer
     :members:
     :undoc-members:
     :show-inheritance:
@@ -269,7 +269,7 @@ HubstorageReduceWriter
 
 ReduceWriter
 ############
-.. automodule:: exporters.writers.reduce_writer
+.. automodule:: ozzy.writers.reduce_writer
     :members:
     :undoc-members:
     :show-inheritance:
@@ -277,14 +277,14 @@ ReduceWriter
 
 OdoWriter
 #########
-.. automodule:: exporters.writers.odo_writer
+.. automodule:: ozzy.writers.odo_writer
     :members:
     :undoc-members:
     :show-inheritance:
 
 HubstorageWriter
 ################
-.. automodule:: exporters.writers.hubstorage_writer
+.. automodule:: ozzy.writers.hubstorage_writer
     :members:
     :undoc-members:
     :show-inheritance:
@@ -299,7 +299,7 @@ be modified or cleaned before being written. To add a new transform module, you 
     - transform_batch(batch)
          Receives the batch, transforms its items and yields them,
 
-.. automodule:: exporters.transform.base_transform
+.. automodule:: ozzy.transform.base_transform
     :members:
     :undoc-members:
     :show-inheritance:
@@ -308,7 +308,7 @@ Provided transform
 ******************
 NoTransform
 ###########
-.. automodule:: exporters.transform.no_transform
+.. automodule:: ozzy.transform.no_transform
     :members:
     :undoc-members:
     :show-inheritance:
@@ -316,21 +316,21 @@ NoTransform
 
 JqTransform
 ###########
-.. automodule:: exporters.transform.jq_transform
+.. automodule:: ozzy.transform.jq_transform
     :members:
     :undoc-members:
     :show-inheritance:
 
 PythonexpTransform
 ##################
-.. automodule:: exporters.transform.pythonexp_transform
+.. automodule:: ozzy.transform.pythonexp_transform
     :members:
     :undoc-members:
     :show-inheritance:
 
 PythonmapTransform
 ##################
-.. automodule:: exporters.transform.pythonmap
+.. automodule:: ozzy.transform.pythonmap
     :members:
     :undoc-members:
     :show-inheritance:
@@ -343,7 +343,7 @@ It must implement the following method:
 - filter(item)
     It receives an item and returns True if the item must be included, or False otherwise
 
-.. automodule:: exporters.filters.base_filter
+.. automodule:: ozzy.filters.base_filter
     :members:
     :undoc-members:
     :show-inheritance:
@@ -353,28 +353,28 @@ Provided filters
 
 NoFilter
 ########
-.. automodule:: exporters.filters.no_filter
+.. automodule:: ozzy.filters.no_filter
     :members:
     :undoc-members:
     :show-inheritance:
 
 KeyValueFilter
 ##############
-.. automodule:: exporters.filters.key_value_filter
+.. automodule:: ozzy.filters.key_value_filter
     :members:
     :undoc-members:
     :show-inheritance:
 
 KeyValueRegex
 #############
-.. automodule:: exporters.filters.key_value_regex_filter
+.. automodule:: ozzy.filters.key_value_regex_filter
     :members:
     :undoc-members:
     :show-inheritance:
 
 PythonExpeRegex
 ###############
-.. automodule:: exporters.filters.pythonexp_filter
+.. automodule:: ozzy.filters.pythonexp_filter
     :members:
     :undoc-members:
     :show-inheritance:
@@ -404,7 +404,7 @@ from an export manager, and must implement the following methods:
 
 It must also define a `uri_regex` to help the module find a previously created resume abstraction.
 
-.. automodule:: exporters.persistence.base_persistence
+.. automodule:: ozzy.persistence.base_persistence
     :members:
     :undoc-members:
     :show-inheritance:
@@ -414,7 +414,7 @@ Provided persistence
 ********************
 PicklePersistence
 #################
-.. automodule:: exporters.persistence.pickle_persistence
+.. automodule:: ozzy.persistence.pickle_persistence
     :members:
     :undoc-members:
     :show-inheritance:
@@ -422,7 +422,7 @@ PicklePersistence
 
 AlchemyPersistence
 ##################
-.. automodule:: exporters.persistence.alchemy_persistence
+.. automodule:: ozzy.persistence.alchemy_persistence
     :members:
     :undoc-members:
     :show-inheritance:
@@ -434,7 +434,7 @@ You can define notifications for main export job events such as starting an expo
 These events can be sent to multiple destinations by adding proper modules to an export configuration.
 
 
-.. automodule:: exporters.notifications.base_notifier
+.. automodule:: ozzy.notifications.base_notifier
     :members:
     :undoc-members:
     :show-inheritance:
@@ -444,14 +444,14 @@ Provided notifications
 **********************
 SESMailNotifier
 ###############
-.. automodule:: exporters.notifications.s3_mail_notifier
+.. automodule:: ozzy.notifications.s3_mail_notifier
     :members:
     :undoc-members:
     :show-inheritance:
 
 WebhookNotifier
 ###############
-.. automodule:: exporters.notifications.webhook_notifier
+.. automodule:: ozzy.notifications.webhook_notifier
     :members:
     :undoc-members:
     :show-inheritance:
@@ -465,7 +465,7 @@ This module adds support for grouping items. It must implement the following met
         It adds grouping info to all the items from a batch. Every item, which is a BaseRecord,
         has a group_membership attribute that should be updated by this method before yielding it
 
-.. automodule:: exporters.groupers.base_grouper
+.. automodule:: ozzy.groupers.base_grouper
     :members:
     :undoc-members:
     :show-inheritance:
@@ -475,21 +475,21 @@ Provided Groupers
 *****************
 KeyFileGrouper
 ##############
-.. automodule:: exporters.groupers.file_key_grouper
+.. automodule:: ozzy.groupers.file_key_grouper
     :members:
     :undoc-members:
     :show-inheritance:
 
 NoGrouper
 #########
-.. automodule:: exporters.groupers.no_grouper
+.. automodule:: ozzy.groupers.no_grouper
     :members:
     :undoc-members:
     :show-inheritance:
 
 PythonExpGrouper
 ################
-.. automodule:: exporters.groupers.python_exp_grouper
+.. automodule:: ozzy.groupers.python_exp_grouper
     :members:
     :undoc-members:
     :show-inheritance:
@@ -508,7 +508,7 @@ the following methods:
         Usually called at the end of an export job
 
 
-.. automodule:: exporters.stats_managers.base_stats_managers
+.. automodule:: ozzy.stats_managers.base_stats_managers
     :members:
     :undoc-members:
     :show-inheritance:
@@ -519,14 +519,14 @@ Provided Stats Managers
 
 BasicStatsManager
 #################
-.. automodule:: exporters.stats_managers.basic_stats_manager
+.. automodule:: ozzy.stats_managers.basic_stats_manager
     :members:
     :undoc-members:
     :show-inheritance:
 
 LoggingStatsManager
 ###################
-.. automodule:: exporters.stats_managers.logging_stats_manager
+.. automodule:: ozzy.stats_managers.logging_stats_manager
     :members:
     :undoc-members:
     :show-inheritance:
@@ -534,13 +534,13 @@ LoggingStatsManager
 
 Export Formatters
 ~~~~~~~~~~~~~~~~~
-Exporters use formatter modules to export in different formats. An export formatter must implement the following method:
+Ozzy use formatter modules to export in different formats. An export formatter must implement the following method:
 
     - format(batch)
         It adds formatting info to all the items from a batch. Every item, which is a BaseRecord,
         has a formatted attribute that should be updated by this method before yielding it
 
-.. automodule:: exporters.export_formatters.base_export_formatter
+.. automodule:: ozzy.export_formatters.base_export_formatter
     :members:
     :undoc-members:
     :show-inheritance:
@@ -551,21 +551,21 @@ Provided Export Formatters
 
 JsonExportFormatter
 ###################
-.. automodule:: exporters.export_formatter.json_export_formatter
+.. automodule:: ozzy.export_formatter.json_export_formatter
     :members:
     :undoc-members:
     :show-inheritance:
 
 CSVExportFormatter
 ##################
-.. automodule:: exporters.export_formatter.csv_export_formatter
+.. automodule:: ozzy.export_formatter.csv_export_formatter
     :members:
     :undoc-members:
     :show-inheritance:
 
 XMLExportFormatter
 ##################
-.. automodule:: exporters.export_formatter.xml_export_formatter
+.. automodule:: ozzy.export_formatter.xml_export_formatter
     :members:
     :undoc-members:
     :show-inheritance:

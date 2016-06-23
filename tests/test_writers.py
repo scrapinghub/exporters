@@ -11,18 +11,18 @@ import unittest
 import mock
 from contextlib import closing
 from freezegun import freeze_time
-from exporters.exceptions import ConfigurationError
-from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
-from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
-from exporters.records.base_record import BaseRecord
-from exporters.write_buffer import WriteBuffer, GroupingBufferFilesTracker
-from exporters.writers import FSWriter
-from exporters.writers.base_writer import BaseWriter, InconsistentWriteState
-from exporters.writers.console_writer import ConsoleWriter
-from exporters.writers.filebase_base_writer import Filebase
-from exporters.export_formatter.json_export_formatter import JsonExportFormatter
-from exporters.groupers import PythonExpGrouper
-from exporters.writers.filebase_base_writer import FilebaseBaseWriter
+from ozzy.exceptions import ConfigurationError
+from ozzy.export_formatter.csv_export_formatter import CSVExportFormatter
+from ozzy.export_formatter.xml_export_formatter import XMLExportFormatter
+from ozzy.records.base_record import BaseRecord
+from ozzy.write_buffer import WriteBuffer, GroupingBufferFilesTracker
+from ozzy.writers import FSWriter
+from ozzy.writers.base_writer import BaseWriter, InconsistentWriteState
+from ozzy.writers.console_writer import ConsoleWriter
+from ozzy.writers.filebase_base_writer import Filebase
+from ozzy.export_formatter.json_export_formatter import JsonExportFormatter
+from ozzy.groupers import PythonExpGrouper
+from ozzy.writers.filebase_base_writer import FilebaseBaseWriter
 from .utils import meta
 
 
@@ -127,7 +127,7 @@ class CustomWriterTest(unittest.TestCase):
         # given:
 
         options = {
-            'name': 'exporters.export_formatter.csv_export_formatter.CSVExportFormatter',
+            'name': 'ozzy.export_formatter.csv_export_formatter.CSVExportFormatter',
             'options': {'show_titles': False, 'fields': ['key1', 'key2']}
         }
         formatter = CSVExportFormatter(options)
@@ -157,7 +157,7 @@ class CustomWriterTest(unittest.TestCase):
         from xml.dom.minidom import parseString
         # given:
         options = {
-            'name': 'exporters.export_formatter.xml_export_formatter.XMLExportFormatter',
+            'name': 'ozzy.export_formatter.xml_export_formatter.XMLExportFormatter',
             'options': {
 
             }
@@ -201,7 +201,7 @@ class CustomWriterTest(unittest.TestCase):
     def test_custom_writer_with_xml_formatter_with_options(self):
         from xml.dom.minidom import parseString
         # given:
-        options = {'name': 'exporters.export_formatter.xml_export_formatter.XMLExportFormatter',
+        options = {'name': 'ozzy.export_formatter.xml_export_formatter.XMLExportFormatter',
                    'options': {
                        'attr_type': False,
                        'fields_order': ['key1', 'key2'],
@@ -260,7 +260,7 @@ class CustomWriterTest(unittest.TestCase):
                 writer.close()
             self.assertIn('md5checksum.md5', writer.fake_files_already_written)
 
-    @mock.patch('exporters.writers.base_writer.BaseWriter._check_write_consistency')
+    @mock.patch('ozzy.writers.base_writer.BaseWriter._check_write_consistency')
     def test_consistency_check(self, consistency_mock):
         # given:
         writer = FakeWriter({'options': {'check_consistency': True}})
@@ -279,7 +279,7 @@ class CustomWriterTest(unittest.TestCase):
     def test_custom_writer_with_json_file_formatter(self):
         # given:
         options = {
-            'name': 'exporters.export_formatter.json_export_formatter.JSONExportFormatter',
+            'name': 'ozzy.export_formatter.json_export_formatter.JSONExportFormatter',
             'options': {
                 'jsonlines': False
             }
@@ -432,7 +432,7 @@ class FSWriterTest(unittest.TestCase):
 
     def get_writer_config(self):
         return {
-            'name': 'exporters.writers.fs_writer.FSWriter',
+            'name': 'ozzy.writers.fs_writer.FSWriter',
             'options': {
                 'filebase': '{}/exporter_test'.format(self.tmp_dir),
             }
@@ -609,7 +609,7 @@ class FSWriterTest(unittest.TestCase):
 
     def _build_grouped_batch(self, batch, python_expressions):
         grouper_options = {
-            'name': 'exporters.groupers.python_exp_grouper.PythonExpGrouper',
+            'name': 'ozzy.groupers.python_exp_grouper.PythonExpGrouper',
             'options': {'python_expressions': python_expressions}
         }
         grouper = PythonExpGrouper(options=grouper_options)

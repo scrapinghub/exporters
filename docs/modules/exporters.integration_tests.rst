@@ -1,21 +1,21 @@
-exporters.integration_tests package
+ozzy.integration_tests package
 ===================================
 
 Submodules
 ----------
 
-exporters.integration_tests.configs module
+ozzy.integration_tests.configs module
 ------------------------------------------
 
-.. automodule:: exporters.integration_tests.configs
+.. automodule:: ozzy.integration_tests.configs
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.integration_tests.run_tests module
+ozzy.integration_tests.run_tests module
 --------------------------------------------
 
-.. automodule:: exporters.integration_tests.run_tests
+.. automodule:: ozzy.integration_tests.run_tests
     :members:
     :undoc-members:
     :show-inheritance:
@@ -24,7 +24,7 @@ exporters.integration_tests.run_tests module
 Module contents
 ---------------
 
-.. automodule:: exporters.integration_tests
+.. automodule:: ozzy.integration_tests
     :members:
     :undoc-members:
     :show-inheritance:

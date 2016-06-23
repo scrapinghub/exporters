@@ -1,37 +1,37 @@
-exporters.transform package
+ozzy.transform package
 ===========================
 
 Submodules
 ----------
 
-exporters.transform.base_transform module
+ozzy.transform.base_transform module
 -----------------------------------------
 
-.. automodule:: exporters.transform.base_transform
+.. automodule:: ozzy.transform.base_transform
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.transform.jq_transform module
+ozzy.transform.jq_transform module
 ---------------------------------------
 
-.. automodule:: exporters.transform.jq_transform
+.. automodule:: ozzy.transform.jq_transform
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.transform.no_transform module
+ozzy.transform.no_transform module
 ---------------------------------------
 
-.. automodule:: exporters.transform.no_transform
+.. automodule:: ozzy.transform.no_transform
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.transform.pythonexp_transform module
+ozzy.transform.pythonexp_transform module
 ----------------------------------------------
 
-.. automodule:: exporters.transform.pythonexp_transform
+.. automodule:: ozzy.transform.pythonexp_transform
     :members:
     :undoc-members:
     :show-inheritance:
@@ -40,7 +40,7 @@ exporters.transform.pythonexp_transform module
 Module contents
 ---------------
 
-.. automodule:: exporters.transform
+.. automodule:: ozzy.transform
     :members:
     :undoc-members:
     :show-inheritance:

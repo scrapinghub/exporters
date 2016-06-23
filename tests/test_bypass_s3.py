@@ -11,9 +11,9 @@ from freezegun import freeze_time
 
 from tests.utils import environment
 from boto.utils import compute_md5
-from exporters.bypasses.s3_to_s3_bypass import S3Bypass
-from exporters.exporter_config import ExporterConfig
-from exporters.utils import remove_if_exists, TmpFile
+from ozzy.bypasses.s3_to_s3_bypass import S3Bypass
+from ozzy.exporter_config import ExporterConfig
+from ozzy.utils import remove_if_exists, TmpFile
 from .utils import meta
 
 
@@ -37,7 +37,7 @@ def create_fake_connection():
 def create_s3_bypass_simple_config(**kwargs):
     config = {
         'reader': {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'source_bucket',
                 'aws_access_key_id': 'a',
@@ -46,7 +46,7 @@ def create_s3_bypass_simple_config(**kwargs):
             }
         },
         'writer': {
-            'name': 'exporters.writers.s3_writer.S3Writer',
+            'name': 'ozzy.writers.s3_writer.S3Writer',
             'options': {
                 'bucket': 'dest_bucket',
                 'aws_access_key_id': 'b',
@@ -68,7 +68,7 @@ class S3BypassConditionsTest(unittest.TestCase):
     def test_custom_filter_should_not_meet_conditions(self):
         # given:
         config = create_s3_bypass_simple_config(filter={
-            'name': 'exporters.filters.PythonexpFilter',
+            'name': 'ozzy.filters.PythonexpFilter',
             'options': {'python_expression': 'None'}
         })
 
@@ -226,7 +226,7 @@ class S3BypassTest(unittest.TestCase):
     def test_filebase_format_bypass(self):
         # given
         writer = {
-            'name': 'exporters.writers.s3_writer.S3Writer',
+            'name': 'ozzy.writers.s3_writer.S3Writer',
             'options': {
                 'bucket': 'a',
                 'aws_access_key_id': 'a',
@@ -248,7 +248,7 @@ class S3BypassTest(unittest.TestCase):
     def test_write_pointer(self):
         # given:
         writer = {
-            'name': 'exporters.writers.s3_writer.S3Writer',
+            'name': 'ozzy.writers.s3_writer.S3Writer',
             'options': {
                 'bucket': 'pointer_fake_bucket',
                 'aws_access_key_id': 'a',
@@ -275,7 +275,7 @@ class S3BypassTest(unittest.TestCase):
     def test_prefix_pointer_list_keys(self):
         # given
         reader = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'source_pointer_bucket',
                 'aws_access_key_id': 'a',
@@ -285,7 +285,7 @@ class S3BypassTest(unittest.TestCase):
         }
 
         writer = {
-            'name': 'exporters.writers.s3_writer.S3Writer',
+            'name': 'ozzy.writers.s3_writer.S3Writer',
             'options': {
                 'bucket': 'dest_pointer_bucket',
                 'aws_access_key_id': 'b',
@@ -320,7 +320,7 @@ class S3BypassTest(unittest.TestCase):
     def test_load_from_env(self):
         # given
         reader = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'source_bucket',
                 'prefix': 'some_prefix/'
@@ -332,14 +332,14 @@ class S3BypassTest(unittest.TestCase):
 
         # then
         expected = '123'
-        with environment({'EXPORTERS_S3READER_AWS_KEY': expected}):
+        with environment({'ozzy.S3READER_AWS_KEY': expected}):
             self.assertEqual(bypass.read_option('reader', 'aws_access_key_id'), expected)
         self.assertIsNone(bypass.read_option('reader', 'aws_access_key_id'))
 
     def test_load_from_config(self):
         # given
         reader = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'source_bucket',
                 'prefix': 'some_prefix/',
@@ -353,14 +353,14 @@ class S3BypassTest(unittest.TestCase):
         # then
         expected = '123'
         self.assertEqual(bypass.read_option('reader', 'aws_access_key_id'), expected)
-        with environment({'EXPORTERS_S3READER_AWS_KEY': '456'}):
+        with environment({'ozzy.S3READER_AWS_KEY': '456'}):
             self.assertEqual(bypass.read_option('reader', 'aws_access_key_id'), expected)
 
     def test_copy_bypass_s3_with_env(self):
         # given
         self.s3_conn.create_bucket('dest_bucket')
         reader = {
-            'name': 'exporters.readers.s3_reader.S3Reader',
+            'name': 'ozzy.readers.s3_reader.S3Reader',
             'options': {
                 'bucket': 'source_bucket',
                 'prefix': 'some_prefix/'
@@ -368,8 +368,8 @@ class S3BypassTest(unittest.TestCase):
         }
         options = create_s3_bypass_simple_config(reader=reader)
         env = {
-            'EXPORTERS_S3READER_AWS_KEY': 'a',
-            'EXPORTERS_S3READER_AWS_SECRET': 'b'
+            'ozzy.S3READER_AWS_KEY': 'a',
+            'ozzy.S3READER_AWS_SECRET': 'b'
         }
 
         # when:

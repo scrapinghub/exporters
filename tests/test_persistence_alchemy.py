@@ -4,10 +4,10 @@ import unittest
 import sqlite3
 from copy import deepcopy
 
-from exporters.exporter_config import ExporterConfig
-from exporters.persistence.alchemy_persistence import (MysqlPersistence,
-                                                       PostgresqlPersistence,
-                                                       SqlitePersistence)
+from ozzy.exporter_config import ExporterConfig
+from ozzy.persistence.alchemy_persistence import (MysqlPersistence,
+                                                  PostgresqlPersistence,
+                                                  SqlitePersistence)
 
 from .utils import meta, valid_config_with_updates
 
@@ -78,7 +78,7 @@ class SqlitePersistenceTest(unittest.TestCase):
         dbfile = '%s/dbfile.db' % self.tmp_folder
         configuration = valid_config_with_updates({
             'persistence': {
-                'name': 'exporters.persistence.alchemy_persistence.SqlitePersistence',
+                'name': 'ozzy.persistence.alchemy_persistence.SqlitePersistence',
                 'options': {
                     'database': dbfile,
                 }

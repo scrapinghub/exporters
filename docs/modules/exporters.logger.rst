@@ -1,13 +1,13 @@
-exporters.logger package
+ozzy.logger package
 ========================
 
 Submodules
 ----------
 
-exporters.logger.base_logger module
+ozzy.logger.base_logger module
 -----------------------------------
 
-.. automodule:: exporters.logger.base_logger
+.. automodule:: ozzy.logger.base_logger
     :members:
     :undoc-members:
     :show-inheritance:
@@ -16,7 +16,7 @@ exporters.logger.base_logger module
 Module contents
 ---------------
 
-.. automodule:: exporters.logger
+.. automodule:: ozzy.logger
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,7 +1,7 @@
-.. exporters documentation master file
+.. ozzy documentation master file
 
-Welcome to Exporters' documentation!
-=====================================
+Welcome to Ozzy documentation!
+==============================
 
 Contents:
 
@@ -9,7 +9,7 @@ Contents:
    :maxdepth: 2
 
    readme
-   exporters
+   ozzy
    modules
    contributing
    docs

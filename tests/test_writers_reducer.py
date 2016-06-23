@@ -1,7 +1,7 @@
 import unittest
 
-from exporters.writers.reduce_writer import ReduceWriter
-from exporters.records.base_record import BaseRecord
+from ozzy.writers.reduce_writer import ReduceWriter
+from ozzy.records.base_record import BaseRecord
 
 from .utils import meta
 

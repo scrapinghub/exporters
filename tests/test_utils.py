@@ -1,18 +1,18 @@
 import unittest
 
-from exporters.bypasses.base import BaseBypass
-from exporters.bypasses.s3_to_s3_bypass import S3Bypass
-from exporters.exceptions import (InvalidExpression, ConfigurationError,
-                                  ConfigCheckError)
-from exporters.exporter_config import ExporterConfig
-from exporters.exporter_config import (module_options,
-                                       MODULE_TYPES)
-from exporters.groupers.base_grouper import BaseGrouper
-from exporters.logger.base_logger import CategoryLogger
-from exporters.module_loader import ModuleLoader
-from exporters.pipeline.base_pipeline_item import BasePipelineItem
-from exporters.python_interpreter import Interpreter
-from exporters.utils import nested_dict_value, TmpFile, split_file, \
+from ozzy.bypasses.base import BaseBypass
+from ozzy.bypasses.s3_to_s3_bypass import S3Bypass
+from ozzy.exceptions import (InvalidExpression, ConfigurationError,
+                             ConfigCheckError)
+from ozzy.exporter_config import ExporterConfig
+from ozzy.exporter_config import (module_options,
+                                  MODULE_TYPES)
+from ozzy.groupers.base_grouper import BaseGrouper
+from ozzy.logger.base_logger import CategoryLogger
+from ozzy.module_loader import ModuleLoader
+from ozzy.pipeline.base_pipeline_item import BasePipelineItem
+from ozzy.python_interpreter import Interpreter
+from ozzy.utils import nested_dict_value, TmpFile, split_file, \
     calculate_multipart_etag, str_list, dict_list, int_list, maybe_cast_list
 from .utils import environment
 from .utils import valid_config_with_updates
@@ -150,7 +150,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'reader': {
-                'name': 'exporters.transform.no_transform.NoTransform',
+                'name': 'ozzy.transform.no_transform.NoTransform',
                 'options': {
                 }
             }
@@ -166,7 +166,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'writer': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': 1000,
                     'batch_size': 100
@@ -184,7 +184,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'persistence': {
-                'name': 'exporters.transform.no_transform.NoTransform',
+                'name': 'ozzy.transform.no_transform.NoTransform',
                 'options': {
                 }
             }
@@ -198,10 +198,10 @@ class ModuleLoaderTest(unittest.TestCase):
             'exporter_options': {
                 'LOG_LEVEL': 'DEBUG',
                 'LOGGER_NAME': 'export-pipeline',
-                "EXPORTER": 'exporters.writers.console_writer.ConsoleWriter',
+                "EXPORTER": 'ozzy.writers.console_writer.ConsoleWriter',
             },
             'formatter': {
-                'name': 'exporters.transform.no_transform.NoTransform',
+                'name': 'ozzy.transform.no_transform.NoTransform',
                 'options': {
                 }
             },
@@ -217,7 +217,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'notifier': {
-                'name': 'exporters.transform.no_transform.NoTransform',
+                'name': 'ozzy.transform.no_transform.NoTransform',
                 'options': {
                 }
             }
@@ -233,7 +233,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'grouper': {
-                'name': 'exporters.transform.no_transform.NoTransform',
+                'name': 'ozzy.transform.no_transform.NoTransform',
                 'options': {
                 }
             }
@@ -249,7 +249,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'filter': {
-                'name': 'exporters.transform.no_transform.NoTransform',
+                'name': 'ozzy.transform.no_transform.NoTransform',
                 'options': {
                 }
             },
@@ -265,7 +265,7 @@ class ModuleLoaderTest(unittest.TestCase):
                 'LOGGER_NAME': 'export-pipeline'
             },
             'transform': {
-                'name': 'exporters.filters.no_filter.NoFilter',
+                'name': 'ozzy.filters.no_filter.NoFilter',
                 'options': {
                 }
             }
@@ -276,7 +276,7 @@ class ModuleLoaderTest(unittest.TestCase):
 
     def test_load_grouper(self):
         grouper = {
-            'name': 'exporters.groupers.file_key_grouper.FileKeyGrouper',
+            'name': 'ozzy.groupers.file_key_grouper.FileKeyGrouper',
             'options': {
                     'keys': ['country_code', 'state', 'city']
             }
@@ -308,14 +308,14 @@ class BaseByPassTest(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             bypass_script.execute()
 
-JSON_FORMATTER = {"name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter"}
+JSON_FORMATTER = {"name": "ozzy.export_formatter.json_export_formatter.JsonExportFormatter"}
 
 
 class S3ByPassTest(unittest.TestCase):
     def test_not_meet_supported_options(self):
         exporter_options = ExporterConfig(
             valid_config_with_updates({
-                'writer': {'name': 'exporters.writers.s3_writer.S3Writer',
+                'writer': {'name': 'ozzy.writers.s3_writer.S3Writer',
                            'options': {'bucket': 'mock', 'filebase': 'mock'}},
                 'exporter_options': {'formatter': JSON_FORMATTER}
             })
@@ -325,9 +325,9 @@ class S3ByPassTest(unittest.TestCase):
     def test_meet_supported_options(self):
         exporter_options = ExporterConfig(
             valid_config_with_updates({
-                'reader': {'name': 'exporters.readers.s3_reader.S3Reader',
+                'reader': {'name': 'ozzy.readers.s3_reader.S3Reader',
                            'options': {'prefix': 'mock', 'bucket': 'mock'}},
-                'writer': {'name': 'exporters.writers.s3_writer.S3Writer',
+                'writer': {'name': 'ozzy.writers.s3_writer.S3Writer',
                            'options': {'bucket': 'mock', 'filebase': 'mock'}},
                 'exporter_options': {'formatter': JSON_FORMATTER}
             })

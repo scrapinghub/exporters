@@ -1,6 +1,6 @@
 import mock
 import unittest
-from exporters.readers import HubstorageReader
+from ozzy.readers import HubstorageReader
 
 from .utils import meta
 
@@ -9,7 +9,7 @@ class HubstorageReaderTest(unittest.TestCase):
     def setUp(self):
         pass
 
-    @mock.patch('exporters.readers.hubstorage_reader.HubstorageReader._create_collection_scanner')
+    @mock.patch('ozzy.readers.hubstorage_reader.HubstorageReader._create_collection_scanner')
     def test_set_last_position_legacy(self, mock_create_scanner):
         options = dict(apikey='fake', collection_name='collection', project_id='10804')
         hs_reader = HubstorageReader(dict(options=options), meta())
@@ -18,7 +18,7 @@ class HubstorageReaderTest(unittest.TestCase):
                           mock_create_scanner.return_value.mock_calls)
         self.assertEquals(dict(last_key='resumekey'), hs_reader.last_position)
 
-    @mock.patch('exporters.readers.hubstorage_reader.HubstorageReader._create_collection_scanner')
+    @mock.patch('ozzy.readers.hubstorage_reader.HubstorageReader._create_collection_scanner')
     def test_set_last_position(self, mock_create_scanner):
         options = dict(apikey='fake', collection_name='collection', project_id='10804')
         hs_reader = HubstorageReader(dict(options=options), meta())
@@ -27,7 +27,7 @@ class HubstorageReaderTest(unittest.TestCase):
                           mock_create_scanner.return_value.mock_calls)
         self.assertEquals(dict(last_key='resumekey'), hs_reader.last_position)
 
-    @mock.patch('exporters.readers.hubstorage_reader.HubstorageReader._create_collection_scanner')
+    @mock.patch('ozzy.readers.hubstorage_reader.HubstorageReader._create_collection_scanner')
     def test_update_last_position_after_getting_batch(self, mock_create_scanner):
         mock_create_scanner.return_value.get_new_batch.side_effect = [
             [{'_key': 'value1'}, {'_key': 'value2'}],

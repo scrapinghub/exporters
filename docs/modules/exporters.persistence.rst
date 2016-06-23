@@ -1,45 +1,45 @@
-exporters.persistence package
+ozzy.persistence package
 =============================
 
 Submodules
 ----------
 
-exporters.persistence.alchemy_persistence module
+ozzy.persistence.alchemy_persistence module
 ------------------------------------------------
 
-.. automodule:: exporters.persistence.alchemy_persistence
+.. automodule:: ozzy.persistence.alchemy_persistence
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.persistence.base_persistence module
+ozzy.persistence.base_persistence module
 ---------------------------------------------
 
-.. automodule:: exporters.persistence.base_persistence
+.. automodule:: ozzy.persistence.base_persistence
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.persistence.base_sqlalchemy_persistence module
+ozzy.persistence.base_sqlalchemy_persistence module
 --------------------------------------------------------
 
-.. automodule:: exporters.persistence.base_sqlalchemy_persistence
+.. automodule:: ozzy.persistence.base_sqlalchemy_persistence
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.persistence.persistence_config_dispatcher module
+ozzy.persistence.persistence_config_dispatcher module
 ----------------------------------------------------------
 
-.. automodule:: exporters.persistence.persistence_config_dispatcher
+.. automodule:: ozzy.persistence.persistence_config_dispatcher
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.persistence.pickle_persistence module
+ozzy.persistence.pickle_persistence module
 -----------------------------------------------
 
-.. automodule:: exporters.persistence.pickle_persistence
+.. automodule:: ozzy.persistence.pickle_persistence
     :members:
     :undoc-members:
     :show-inheritance:
@@ -48,7 +48,7 @@ exporters.persistence.pickle_persistence module
 Module contents
 ---------------
 
-.. automodule:: exporters.persistence
+.. automodule:: ozzy.persistence
     :members:
     :undoc-members:
     :show-inheritance:

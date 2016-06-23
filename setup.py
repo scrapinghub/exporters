@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name = 'exporters',
+    name = 'ozzy',
     version = '0.4.12',
     author = 'Scrapinghub',
     author_email = 'info@scrapinghub',

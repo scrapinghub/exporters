@@ -3,7 +3,7 @@ import shutil
 import tempfile
 import unittest
 
-from exporters.contrib.writers.odo_writer import ODOWriter
+from ozzy.contrib.writers.odo_writer import ODOWriter
 
 
 @unittest.skipUnless(os.getenv('TEST_CONTRIB'), 'disabled contrib test')

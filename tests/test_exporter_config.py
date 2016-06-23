@@ -1,8 +1,8 @@
 import unittest
-from exporters.exceptions import ConfigurationError
-from exporters.exporter_config import ExporterConfig, check_for_errors
+from ozzy.exceptions import ConfigurationError
+from ozzy.exporter_config import ExporterConfig, check_for_errors
 from tests.utils import valid_config_with_updates, VALID_EXPORTER_CONFIG
-from exporters.writers import FSWriter
+from ozzy.writers import FSWriter
 
 
 class SampleSubclassWriter(FSWriter):
@@ -30,24 +30,24 @@ class ConfigValidationTest(unittest.TestCase):
     def test_missing_supported_options(self):
         config = {
             'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {}
             },
             'writer': {
-                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'name': 'ozzy.writers.console_writer.ConsoleWriter',
                 'options': {}
             },
             'filter': {
-                'name': 'exporters.filters.no_filter.NoFilter',
+                'name': 'ozzy.filters.no_filter.NoFilter',
                 'options': {}
             },
             'transform': {
-                'name': 'exporters.transform.jq_transform.JQTransform',
+                'name': 'ozzy.transform.jq_transform.JQTransform',
                 'options': {}
             },
             'exporter_options': {},
             'persistence': {
-                'name': 'exporters.persistence.PicklePersistence',
+                'name': 'ozzy.persistence.PicklePersistence',
                 'options': {
                     'file_path': '/tmp'
                 }
@@ -65,29 +65,29 @@ class ConfigValidationTest(unittest.TestCase):
     def test_wrong_type_supported_options(self):
         config = {
             'reader': {
-                'name': 'exporters.readers.random_reader.RandomReader',
+                'name': 'ozzy.readers.random_reader.RandomReader',
                 'options': {
                     'number_of_items': {},
                     'batch_size': []
                 }
             },
             'writer': {
-                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'name': 'ozzy.writers.console_writer.ConsoleWriter',
                 'options': {}
             },
             'filter': {
-                'name': 'exporters.filters.no_filter.NoFilter',
+                'name': 'ozzy.filters.no_filter.NoFilter',
                 'options': {}
             },
             'transform': {
-                'name': 'exporters.transform.jq_transform.JQTransform',
+                'name': 'ozzy.transform.jq_transform.JQTransform',
                 'options': {
                     'jq_filter': 5
                 }
             },
             'exporter_options': {},
             'persistence': {
-                'name': 'exporters.persistence.PicklePersistence',
+                'name': 'ozzy.persistence.PicklePersistence',
                 'options': {
                     'file_path': 567
                 }
@@ -132,7 +132,7 @@ class ConfigValidationTest(unittest.TestCase):
     def test_supported_and_not_supported_options(self):
         options = valid_config_with_updates({
             'writer': {
-                'name': 'exporters.writers.console_writer.ConsoleWriter',
+                'name': 'ozzy.writers.console_writer.ConsoleWriter',
                 'options': {
                     'items_limit': 1234,
                     'not_a_supported_option': 'foo'
@@ -163,7 +163,7 @@ class ConfigValidationTest(unittest.TestCase):
         options = valid_config_with_updates({
             'exporter_options': {
                 "formatter": {
-                    "name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter"
+                    "name": "ozzy.export_formatter.json_export_formatter.JsonExportFormatter"
                 }
             }
         })
@@ -191,7 +191,7 @@ class ConfigValidationTest(unittest.TestCase):
     def test_invalid_homogeneus_list(self):
         options = valid_config_with_updates({
             'filter': {
-                'name': 'exporters.filters.key_value_filters.KeyValueFilter',
+                'name': 'ozzy.filters.key_value_filters.KeyValueFilter',
                 'options': {
                     "keys": ['This', 'should', 'be', 'dicts']
                 }
@@ -204,7 +204,7 @@ class ConfigValidationTest(unittest.TestCase):
         options = valid_config_with_updates({
             'exporter_options': {
                 "notifications": [{
-                    "name": "exporters.notifications.ses_mail_notifier.SESMailNotifier",
+                    "name": "ozzy.notifications.ses_mail_notifier.SESMailNotifier",
                 }]
             }
         })
@@ -232,7 +232,7 @@ class ConfigValidationTest(unittest.TestCase):
         options = valid_config_with_updates({
             'exporter_options': {
                 "notifications": [{
-                    "name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter",
+                    "name": "ozzy.export_formatter.json_export_formatter.JsonExportFormatter",
                     "options": {
                         "unsuported_option": True
                     }

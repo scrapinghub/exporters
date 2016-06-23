@@ -1,13 +1,13 @@
-exporters.pipeline package
+ozzy.pipeline package
 ==========================
 
 Submodules
 ----------
 
-exporters.pipeline.base_pipeline_item module
+ozzy.pipeline.base_pipeline_item module
 --------------------------------------------
 
-.. automodule:: exporters.pipeline.base_pipeline_item
+.. automodule:: ozzy.pipeline.base_pipeline_item
     :members:
     :undoc-members:
     :show-inheritance:
@@ -16,7 +16,7 @@ exporters.pipeline.base_pipeline_item module
 Module contents
 ---------------
 
-.. automodule:: exporters.pipeline
+.. automodule:: ozzy.pipeline
     :members:
     :undoc-members:
     :show-inheritance:

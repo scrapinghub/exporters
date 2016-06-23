@@ -6,38 +6,38 @@ import os
 import StringIO
 from contextlib import closing
 from copy import deepcopy
-from exporters.meta import ExportMeta
-from exporters.persistence.base_persistence import BasePersistence
-from exporters.readers.base_reader import BaseReader
-from exporters.writers.base_writer import BaseWriter
+from ozzy.meta import ExportMeta
+from ozzy.persistence.base_persistence import BasePersistence
+from ozzy.readers.base_reader import BaseReader
+from ozzy.writers.base_writer import BaseWriter
 
 
 VALID_EXPORTER_CONFIG = {
     'reader': {
-        'name': 'exporters.readers.random_reader.RandomReader',
+        'name': 'ozzy.readers.random_reader.RandomReader',
     },
     'writer': {
-        'name': 'exporters.writers.console_writer.ConsoleWriter',
+        'name': 'ozzy.writers.console_writer.ConsoleWriter',
     },
     'filter': {
-        'name': 'exporters.filters.no_filter.NoFilter',
+        'name': 'ozzy.filters.no_filter.NoFilter',
     },
     'filter_before': {
-        'name': 'exporters.filters.no_filter.NoFilter',
+        'name': 'ozzy.filters.no_filter.NoFilter',
     },
     'filter_after': {
-        'name': 'exporters.filters.no_filter.NoFilter',
+        'name': 'ozzy.filters.no_filter.NoFilter',
     },
     'transform': {
-        'name': 'exporters.transform.no_transform.NoTransform',
+        'name': 'ozzy.transform.no_transform.NoTransform',
     },
     'exporter_options': {},
     'persistence': {
-        'name': 'exporters.persistence.pickle_persistence.PicklePersistence',
+        'name': 'ozzy.persistence.pickle_persistence.PicklePersistence',
         'options': {'file_path': '/tmp'}
     },
     'grouper': {
-        'name': 'exporters.groupers.no_grouper.NoGrouper',
+        'name': 'ozzy.groupers.no_grouper.NoGrouper',
     }
 }
 

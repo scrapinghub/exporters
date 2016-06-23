@@ -4,11 +4,11 @@ import boto
 import moto
 import mock
 
-from exporters.meta import ExportMeta
-from exporters.records.base_record import BaseRecord
-from exporters.utils import TmpFile
-from exporters.writers.base_writer import InconsistentWriteState
-from exporters.writers.s3_writer import S3Writer
+from ozzy.meta import ExportMeta
+from ozzy.records.base_record import BaseRecord
+from ozzy.utils import TmpFile
+from ozzy.writers.base_writer import InconsistentWriteState
+from ozzy.writers.s3_writer import S3Writer
 
 from .utils import meta
 
@@ -183,7 +183,7 @@ class S3WriterTest(unittest.TestCase):
 
     def get_writer_config(self):
         return {
-            'name': 'exporters.writers.s3_writer.S3Writer',
+            'name': 'ozzy.writers.s3_writer.S3Writer',
             'options': {
                 'bucket': 'fake_bucket',
                 'aws_access_key_id': 'FAKE_ACCESS_KEY',

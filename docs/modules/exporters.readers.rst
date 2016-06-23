@@ -1,53 +1,53 @@
-exporters.readers package
+ozzy.readers package
 =========================
 
 Submodules
 ----------
 
-exporters.readers.base_reader module
+ozzy.readers.base_reader module
 ------------------------------------
 
-.. automodule:: exporters.readers.base_reader
+.. automodule:: ozzy.readers.base_reader
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.readers.hubstorage_reader module
+ozzy.readers.hubstorage_reader module
 ------------------------------------------
 
-.. automodule:: exporters.readers.hubstorage_reader
+.. automodule:: ozzy.readers.hubstorage_reader
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.readers.kafka_random_reader module
+ozzy.readers.kafka_random_reader module
 --------------------------------------------
 
-.. automodule:: exporters.readers.kafka_random_reader
+.. automodule:: ozzy.readers.kafka_random_reader
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.readers.kafka_scanner_reader module
+ozzy.readers.kafka_scanner_reader module
 ---------------------------------------------
 
-.. automodule:: exporters.readers.kafka_scanner_reader
+.. automodule:: ozzy.readers.kafka_scanner_reader
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.readers.random_reader module
+ozzy.readers.random_reader module
 --------------------------------------
 
-.. automodule:: exporters.readers.random_reader
+.. automodule:: ozzy.readers.random_reader
     :members:
     :undoc-members:
     :show-inheritance:
 
-exporters.readers.s3_reader module
+ozzy.readers.s3_reader module
 ----------------------------------
 
-.. automodule:: exporters.readers.s3_reader
+.. automodule:: ozzy.readers.s3_reader
     :members:
     :undoc-members:
     :show-inheritance:
@@ -56,7 +56,7 @@ exporters.readers.s3_reader module
 Module contents
 ---------------
 
-.. automodule:: exporters.readers
+.. automodule:: ozzy.readers
     :members:
     :undoc-members:
     :show-inheritance:
