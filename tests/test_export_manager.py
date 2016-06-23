@@ -568,6 +568,28 @@ class BaseExportManagerTest(unittest.TestCase):
         # there should be 2 posts: for started and completed dump
         self.assertEqual(count_holder[0], 2, "Retries should be disabled")
 
+    def test_legacy_modules(self):
+        options = {
+            'reader': {
+                'name': 'exporters.readers.random_reader.RandomReader',
+                'options': {
+                    'number_of_items': 123,
+                    'batch_size': 7
+                }
+            },
+            'writer': {
+                'name': 'tests.utils.NullWriter'
+            },
+            'persistence': {
+                'name': 'tests.utils.NullPersistence',
+            }
+        }
+        self.exporter = exporter = BaseExporter(options)
+        exporter.export()
+        self.assertEquals(exporter.reader.get_metadata('read_items'),
+                          exporter.writer.get_metadata('items_count'),
+                          msg="Export should write the same number items as it has read")
+
 
 class BasicExportManagerTest(unittest.TestCase):
 
