@@ -9,14 +9,14 @@ install:
   - pip install -U tox
 
 script:
-  - tox
+  - tox -e $TOXENV
 
 deploy:
   provider: pypi
-  distributions: sdist
-  user: scrapinghub
+  distributions: sdist bdist_wheel
+  user: eljunior
   password:
-    secure: bG1ycgBJrVfgBsHAwaWScL2V1x52/aZy2znE2kFzFfYq95HS51mu1GO2PKwpATJyMCs/xUIKGhiBtoo8LzNmNU2kPgarQFwzpLkx2ninOm+3uAwuIfGGWsonBW/h854n+cNwppJOlfEOxvMVerVVpdV4EFeJfEkVYascwOBbnqo=
+    secure: swMnY7o9xgkaznpNp0xyxHClxv22HmitihUEpUG7Sh9i4zLN2gTsYPiXVhp8aVxCoLL8+eh2hcnui//8gq+TedpPa4bYyD+hxvbGPOVa6XzFk8ROd1LsLn15QIydEBE2i4Arx+8UVg5k/exlsDaudt9SgSWSn9CefL3wxf+32sLHyVB5U4hfmjc129j5L/mrznHq0H0494flT5nJMrTnLM0iZ+dM7kVSa6NfkuVgXnY7wrjvV6wLv0jLa0/GQi+OO6ZhGC9kgS+fjBvtYHq9nQ6i2OpoZA4neHyL5/Qz1ZlincQP8hB6KrB/sRk2o/JcujTauEp5m4TnP4NKGXoCGDKlUBzo7cKHl7JnbmeSJ0ZSqszUXqwNLNkRS7oSBuLiVfq6zmTXkGp2p/D6ifWwYDqDsoSRTNGTNC/XyMPqGdty01bKsqggfKqpwbYRebwzqwFAdPChowQZTtA6qoKSGBV7hdMpNxOkrIwhSdj9hj7nGC6Yp3FgYziZuoLbot2g+R8xqOYPALX8lzIewV/8SwcBFZ3m0g8fhUoRvJRYz7Id8cM/5u1eTf8pwWrGb1oHONZjc8KG/b/jEJFabX+cTyes+WcWC531bBTtOlznQ8IVrl39YRBn14sXm1uYSrJU4hgAIDZ4zcjeGbCrEVfpc9YY1ypsSxGPeEG0uK7k1Ik=
   on:
     tags: true
     repo: scrapinghub/exporters
