@@ -7,7 +7,8 @@ duplicates in the process.
 We are taking items from two different places (reader_1 and reader_2). In this case, they are two
 random generators, but you can use any module provided by the project.
 
-Then, we filter all the items not allowing duplicates in the "city" field. For more details about
-the duplicates filter posibilities please take a look at the module docs.
+Then, we filter all the items not allowing duplicates in the "city" field using the duplicates bloom 
+filter plugin from https://github.com/exporters-plugins/exporters-bloom-filter. For more details about
+the duplicates filter posibilities please take a look at the plugin project.
 
 Finally, we write the resulting items to the console.

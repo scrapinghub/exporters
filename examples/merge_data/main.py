@@ -1,6 +1,6 @@
 import logging
 
-from exporters.filters.bloom_filter import DuplicatesBloomFilter
+from exporters_bloom_filter.filter import DuplicatesBloomFilter
 from exporters.meta import ExportMeta
 from exporters.readers import RandomReader
 from exporters.writers import ConsoleWriter
@@ -9,7 +9,7 @@ logging.basicConfig()
 
 if __name__ == '__main__':
 
-    # Ozzy modules need a shared meta object, to store shared information
+    # Exporters modules need a shared meta object, to store shared information
     meta = ExportMeta(None)
 
     # As this is just an example, we will leave modules with default options. For more options
