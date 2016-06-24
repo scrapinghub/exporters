@@ -22,18 +22,13 @@ First of all, we recommend to create a virtualenv::
 
 ..
 
-Exporters can be cloned from its `Github repository`_::
+Installing::
 
-    git clone git@github.com:scrapinghub/exporters.git
-
-..
-
-Then, we install the requirements::
-
-    cd exporters
-    pip install -r requirements.txt
+    pip install exporters
 
 ..
+
+
 
 Creating a configuration
 ------------------------
