@@ -8,6 +8,8 @@ multiple destinations, allowing filtering and transforming the data.
 
 This `Github repository`_ is used as a central repository.
 
+Full documentation can be found here http://exporters.readthedocs.io/en/latest/
+
 
 Getting Started
 ===============
