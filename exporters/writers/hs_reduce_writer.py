@@ -58,10 +58,10 @@ class HubstorageReduceWriter(ReduceWriter):
 
     def write_batch(self, batch):
         super(HubstorageReduceWriter, self).write_batch(batch)
-        self.collection.set(self.get_result(finished=False))
+        self.collection.set(self.get_result(_finished=False))
 
     def finish_writing(self):
-        self.collection.set(self.get_result(finished=True))
+        self.collection.set(self.get_result(_finished=True))
 
     def _get_collection(self):
         collection_url = self.read_option('collection_url')

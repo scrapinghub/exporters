@@ -42,7 +42,7 @@ def reduce_function(item, accumulator=None):
 
         # then:
         self.assertEqual(6, writer.reduced_result)
-        self.assertEqual({'value': 6, 'finished': False}, writer.collection.get("0004"))
+        self.assertEqual({'value': 6, '_finished': False}, writer.collection.get("0004"))
         writer.finish_writing()
-        self.assertEqual({'value': 6, 'finished': True}, writer.collection.get("0004"))
+        self.assertEqual({'value': 6, '_finished': True}, writer.collection.get("0004"))
         writer.close()
