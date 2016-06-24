@@ -68,3 +68,10 @@ Features
     - Grouping support.
     - Filter and transform exported items.
     - Loading options from env.
+
+
+Going further
+-------------
+
+Exporters functionality can be exteded by plugins. Please check https://github.com/exporters-plugins
+to find out about them.
