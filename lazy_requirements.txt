@@ -4,7 +4,7 @@ hubstorage==0.16.1
 -e git+git://github.com/scrapinghub/collection-scanner.git#egg=collection_scanner
 kafka-python==0.9.5
 msgpack-python==0.4.2
--e git+git@github.com:scrapinghub/kafka-scanner.git#egg=kafka_scanner
+-e git+git://github.com/scrapinghub/kafka-scanner.git#egg=kafka_scanner
 jq==0.1.6
 
 pysftp==0.2.8
