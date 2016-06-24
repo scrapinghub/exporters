@@ -48,14 +48,20 @@ class HubstorageReduceWriter(ReduceWriter):
         self.logger.info('Will write accumulator to: {}#/details/{}'
                          .format(collection_url, self.element_key))
 
-    def write_batch(self, batch):
-        super(HubstorageReduceWriter, self).write_batch(batch)
-
+    def get_result(self, **extra):
         result = dict(self.reduced_result
                       if isinstance(self.reduced_result, MutableMapping)
                       else dict(value=self.reduced_result))
         result['_key'] = self.element_key
-        self.collection.set(result)
+        result.update(extra)
+        return result
+
+    def write_batch(self, batch):
+        super(HubstorageReduceWriter, self).write_batch(batch)
+        self.collection.set(self.get_result(finished=False))
+
+    def finish_writing(self):
+        self.collection.set(self.get_result(finished=True))
 
     def _get_collection(self):
         collection_url = self.read_option('collection_url')
