@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'exporters',
-    version = '0.4.13',
+    version = '0.4.14',
     author = 'Scrapinghub',
     author_email = 'info@scrapinghub',
     packages = find_packages(exclude=['tests']),
