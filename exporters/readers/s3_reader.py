@@ -8,7 +8,7 @@ import zlib
 from six.moves.urllib.request import urlopen
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
-from exporters.default_retries import retry_long, retry_short
+from exporters.default_retries import retry_short
 from exporters.exceptions import ConfigurationError, InvalidDateRangeError
 import logging
 
@@ -242,7 +242,6 @@ class S3Reader(BaseReader):
             file_obj = urlopen(key.generate_url(S3_URL_EXPIRES_IN))
             yield Stream(file_obj, key_name, key.size)
 
-    @retry_long
     def read_lines_from_keys(self):
         for current_key in self.keys:
             self.current_key = current_key
@@ -257,13 +256,13 @@ class S3Reader(BaseReader):
                     for i in items:
                         if i:
                             try:
-                                object = json.loads(i)
+                                obj = json.loads(i)
                             except ValueError:
                                 # Last uncomplete line
                                 self.last_leftover = i
                                 self.last_position['last_leftover'] = self.last_leftover
                             else:
-                                item = BaseRecord(object)
+                                item = BaseRecord(obj)
                                 self.last_leftover = ''
                                 self.last_position['last_leftover'] = self.last_leftover
                                 yield item
