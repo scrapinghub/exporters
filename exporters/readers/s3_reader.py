@@ -297,7 +297,7 @@ class S3Reader(BaseReader):
         """
         if last_position is None:
             self.last_position = {}
-            self.last_position['keys'] = self.keys
+            self.last_position['keys'] = list(self.keys)
             self.last_position['read_keys'] = self.read_keys
             self.last_position['current_key'] = None
             self.last_position['last_block'] = 0
