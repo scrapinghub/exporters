@@ -15,5 +15,4 @@ requests==2.5.3
 six==1.9.0
 decorator
 
-dicttoxml
 bz2file

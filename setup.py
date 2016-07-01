@@ -29,5 +29,6 @@ setup(
         'postgres': ['psycopg2', 'SQLAlchemy'],
         'mysql': ['mysql-python', 'SQLAlchemy'],
         'azure': ['azure'],
+        'xml': ['dicttoxml'],
     },
 )
