@@ -23,13 +23,14 @@ setup(
     author_email = 'info@scrapinghub',
     license = 'BSD',
     packages = find_packages(exclude=['tests']),
-    install_requires = ['six', 'retrying', 'requests', 'PyYAML', 'decorator', 'bz2file'],
+    install_requires = ['six', 'retrying', 'requests', 'PyYAML', 'decorator'],
     dependency_links = [
         'git@github.com:scrapinghub/collection-scanner.git#egg=collection_scanner',
         'git@github.com:scrapinghub/flatson.git#egg=flatson',
         'git@github.com:scrapinghub/kafka-scanner.git#egg=kafka_scanner'
     ],
     extras_require = {
+        'bz2': ['bz2file'],
         'sftp': ['pysftp', 'ecdsa', 'paramiko', 'pycrypto' 'wsgiref'],
         's3': ['boto', 'dateparser'],
         'hubstorage': ['hubstorage', 'collection_scanner'],
