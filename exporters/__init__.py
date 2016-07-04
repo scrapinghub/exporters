@@ -1,4 +1,4 @@
-__version__ = '0.4.14'
+__version__ = '0.4.15'
 
 
 from exporters.export_managers import BasicExporter  # NOQA
