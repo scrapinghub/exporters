@@ -180,6 +180,24 @@ class BaseExportManagerTest(unittest.TestCase):
         self.assertTrue(Bypass.executed, "Bypass should have been called")
         self.assertTrue(exporter.metadata.bypassed_pipeline)
 
+    def test_when_failing_bypass_should_raise_error(self):
+        # given:
+        self.exporter = exporter = BaseExporter(self.build_config())
+
+        class Bypass(FakeBypass):
+            executed = False
+
+            def execute(self):
+                super(Bypass, self).execute()
+                raise RuntimeError("ooops")
+        exporter.bypass_cases = [Bypass]
+
+        # when calling export, should raise the error:
+        with self.assertRaisesRegexp(RuntimeError, "ooops"):
+            exporter.export()
+
+        exporter.writer.close()
+
     def test_when_unmet_conditions_bypass_should_not_be_called(self):
         # given:
         self.exporter = exporter = BaseExporter(self.build_config())
