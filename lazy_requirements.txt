@@ -32,3 +32,5 @@ azure-storage==0.30.0
 
 dropbox
 
+dicttoxml
+bz2file
