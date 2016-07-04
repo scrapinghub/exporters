@@ -29,7 +29,7 @@ class XMLExportFormatter(BaseExportFormatter):
         self.root_name = self.read_option('root_name')
         self.xml_header = self.read_option('xml_header')
         self.fields_order = self._get_fields()
-        
+
     def _get_fields(self):
         fields = self.read_option('fields_order')
         return {key: idx for idx, key in enumerate(fields)}
