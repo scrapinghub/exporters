@@ -201,6 +201,7 @@ class S3Bypass(BaseS3Bypass):
                 md5 = self._get_md5(key, tmp_filename)
                 dest_key.set_contents_from_filename(tmp_filename, cb=progress, md5=md5)
                 self._check_copy_integrity(key, dest_bucket, dest_key_name)
+        self.logger.info('Uploaded key {}'.format(dest_key_name))
 
     @retry_long
     def _copy_s3_key(self, key):
