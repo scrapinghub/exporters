@@ -23,6 +23,7 @@ class XMLExportFormatter(BaseExportFormatter):
     }
 
     def __init__(self, *args, **kwargs):
+        import dicttoxml
         super(XMLExportFormatter, self).__init__(*args, **kwargs)
         self.attr_type = self.read_option('attr_type')
         self.item_name = self.read_option('item_name')
