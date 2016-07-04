@@ -23,15 +23,13 @@ class XMLExportFormatter(BaseExportFormatter):
     }
 
     def __init__(self, *args, **kwargs):
-        import dicttoxml
         super(XMLExportFormatter, self).__init__(*args, **kwargs)
         self.attr_type = self.read_option('attr_type')
         self.item_name = self.read_option('item_name')
         self.root_name = self.read_option('root_name')
         self.xml_header = self.read_option('xml_header')
         self.fields_order = self._get_fields()
-        dicttoxml.LOG.setLevel(logging.WARNING)
-
+        
     def _get_fields(self):
         fields = self.read_option('fields_order')
         return {key: idx for idx, key in enumerate(fields)}
@@ -46,6 +44,7 @@ class XMLExportFormatter(BaseExportFormatter):
 
     def format(self, item):
         import dicttoxml
+        dicttoxml.LOG.setLevel(logging.WARNING)
         fields_len = len(self.fields_order)
         ordered_item = collections.OrderedDict(
             sorted(item.items(),
