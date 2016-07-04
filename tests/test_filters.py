@@ -5,6 +5,7 @@ from exporters.filters.base_filter import BaseFilter
 from exporters.filters.key_value_filter import KeyValueFilter
 from exporters.filters.key_value_filters import InvalidOperator
 from exporters.filters.key_value_regex_filter import KeyValueRegexFilter
+from exporters.filters.multiple_filter import MultipleFilter
 from exporters.filters.no_filter import NoFilter
 from exporters.records.base_record import BaseRecord
 
@@ -319,3 +320,36 @@ class KeyValueFiltersTest(unittest.TestCase):
             batch.append(record)
         with self.assertRaisesRegexp(InvalidOperator, 'operator not valid'):
             KeyValueFilter({'options': {'keys': keys}}, meta())
+
+
+class TestMultipleFilters(unittest.TestCase):
+
+    def test_multiple_no_composition_filters(self):
+        items = [
+            {'name': 'item1', 'country_code': 'es'},
+            {'name': 'item2', 'country_code': 'us'},
+            {'name': 'item3', 'country_code': 'uk'}
+        ]
+
+        batch = [BaseRecord(item) for item in items]
+
+        configuration = {
+            'filters': {
+                'filter1': {
+                    'name': 'exporters.filters.KeyValueFilter',
+                    'options': {
+                        'keys': [{'name': 'country_code', 'value': 'es', 'operator': 'contains'}]
+                    }
+                },
+                'filter2': {
+                    'name': 'exporters.filters.KeyValueFilter',
+                    'options': {
+                        'keys': [{'name': 'name', 'value': 'item1', 'operator': 'contains'}]
+                    }
+                }
+            }
+        }
+
+        filter = MultipleFilter({'options': configuration}, meta())
+        filtered_batch = list(filter.filter_batch(batch))
+        self.assertEquals(len(filtered_batch), 1)
