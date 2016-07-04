@@ -1,6 +1,5 @@
 import gzip
 import os
-from bz2file import BZ2File
 import zipfile
 from exporters.exceptions import UnsupportedCompressionFormat
 
@@ -32,6 +31,14 @@ def get_compress_file(compression_format):
 FILE_COMPRESSION = {
     'gz': lambda path: gzip.open(path, 'a'),
     'zip': StreamZipFile,
-    'bz2': lambda path: BZ2File(path, 'a'),
     'none': lambda path: open(path, 'a'),
 }
+
+try:
+    from bz2file import BZ2File
+except ImportError:
+    import logging
+    logging.warning('bz2file module not found. BZ2 compression disabled. To enable it please install'
+                    'bz2file package or install lazy_requirements.txt')
+else:
+    FILE_COMPRESSION['bz2'] = lambda path: BZ2File(path, 'a')
