@@ -39,7 +39,7 @@ try:
     from bz2file import BZ2File
 except ImportError:
     import logging
-    logging.warning('bz2file module not found. BZ2 compression disabled. To enable it please '
-                    'install bz2file package or install lazy_requirements.txt')
+    logging.info('bz2file module not found. BZ2 compression disabled. To enable it please '
+                 'install bz2file package')
 else:
     FILE_COMPRESSION['bz2'] = lambda path: BZ2File(path, 'a')
