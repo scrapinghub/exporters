@@ -1,44 +1,33 @@
 from exporters.filters.base_filter import BaseFilter
-from exporters.python_interpreter import Interpreter, create_context
-from importlib import import_module
+from exporters.module_loader import ModuleLoader
 
 
-def load_imports(imports):
-    # XXX: should we blacklist (or whitelist?) imports here?
-    return {name: import_module(mod) for name, mod in imports.items()}
+class MultipleFilter(BaseFilter):
 
-
-class PythonexpFilter(BaseFilter):
-    """
-    Filter items depending on python expression. This is NOT sure, so make sure you only use
-    it in contained environments
-
-        - python_expression (str)
-            Python expression to filter by
-
-        - imports(dict)
-            An object with neede imports for expressions
-    """
-    # List of options
     supported_options = {
-        'python_expression': {'type': basestring},
-        'imports': {'type': dict, 'default': {}},
+        'filters': {'type': dict, 'default': {}},
+        'composition': {'type': basestring, 'default': None}
     }
 
     def __init__(self, *args, **kwargs):
-        super(PythonexpFilter, self).__init__(*args, **kwargs)
-        self.logger.warning('PythonexpFilter can import insecure code'
-                            ' -- only use it in contained environments')
-        self.expression = self.read_option('python_expression')
-        self.imports = load_imports(self.read_option('imports'))
-        self.interpreter = Interpreter()
-        self.logger.info('PythonexpFilter has been initiated.'
-                         ' Expression: {!r}'.format(self.expression))
+        super(MultipleFilter, self).__init__(*args, **kwargs)
+        self.module_loader = ModuleLoader()
+        self.filters = self.load_filters()
+        self.composition = self.read_option('composition')
+
+    def load_filters(self):
+        filters = {}
+        for filter_name, filter_config in self.read_option('filters').iteritems():
+            filters[filter_name] = self.module_loader.load_filter(filter_config, self.metadata)
+        return filters
+
+    def and_filter(self, item):
+        for filter_name, filter_module in self.filters.iteritems():
+            if filter_module.filter(item) is False:
+                return False
+        return True
 
     def filter(self, item):
-        try:
-            context = create_context(item=item, **self.imports)
-            return self.interpreter.eval(self.expression, context=context)
-        except Exception as ex:
-            self.logger.error(str(ex))
-            raise
+        if self.composition is None:
+            return self.and_filter(item)
+        return True
