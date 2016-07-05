@@ -14,7 +14,7 @@ class HubstorageReader(BaseReader):
         - apikey (str)
             API key with access to the project where the items are being generated.
 
-        - project_id (str)
+        - project_id (int or str)
             Id of the project.
 
         - collection_name (str)
@@ -43,7 +43,7 @@ class HubstorageReader(BaseReader):
     supported_options = {
         'batch_size': {'type': int, 'default': 10000},
         'apikey': {'type': basestring, 'env_fallback': 'EXPORTERS_HS_APIKEY'},
-        'project_id': {'type': basestring},
+        'project_id': {'type': (basestring, int)},
         'collection_name': {'type': basestring},
         'count': {'type': int, 'default': 0},
         'prefixes': {'type': str_list, 'default': []},
@@ -67,7 +67,7 @@ class HubstorageReader(BaseReader):
 
     def _create_collection_scanner(self):
         from collection_scanner import CollectionScanner
-        return CollectionScanner(self.read_option('apikey'), self.read_option('project_id'),
+        return CollectionScanner(self.read_option('apikey'), str(self.read_option('project_id')),
                                  self.read_option('collection_name'),
                                  batchsize=self.batch_size,
                                  startafter=self.last_position.get('last_key', ''),
