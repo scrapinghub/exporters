@@ -1,3 +1,5 @@
+from gzip import GzipFile
+
 from exporters.readers import FSReader
 from exporters.exceptions import ConfigurationError
 
@@ -125,3 +127,38 @@ class FSReaderTest(object):
         ]
         batch = list(reader.get_next_batch())
         assert expected == batch
+
+    def test_dot_files_ignored_by_default(self, tmpdir_with_dotfiles):
+        reader = self._make_fs_reader({'input': {
+            'dir': tmpdir_with_dotfiles.strpath,
+        }})
+        assert list(reader.get_next_batch()) == [{"bar": 1}]
+
+        reader = self._make_fs_reader({'input': {
+            'dir': tmpdir_with_dotfiles.strpath,
+            'pattern': r'/\.[^/]*$',
+        }})
+        assert list(reader.get_next_batch()) == []
+
+    def test_dot_files_included_with_flag(self, tmpdir_with_dotfiles):
+        reader = self._make_fs_reader({'input': {
+            'dir': tmpdir_with_dotfiles.strpath,
+            'pattern': r'/\.[^/]*$',
+            'include_dot_files': True,
+        }})
+        assert list(reader.get_next_batch()) == [{"foo": 1}]
+
+        reader = self._make_fs_reader({'input': {
+            'dir': tmpdir_with_dotfiles.strpath,
+            'include_dot_files': True,
+        }})
+        assert list(reader.get_next_batch()) == [{"foo": 1}, {"bar": 1}]
+
+
+@pytest.fixture
+def tmpdir_with_dotfiles(tmpdir):
+    with GzipFile(tmpdir.join('.foo.jl.gz').strpath, 'w') as zf:
+        zf.write('{"foo": 1}')
+    with GzipFile(tmpdir.join('bar.jl.gz').strpath, 'w') as zf:
+        zf.write('{"bar": 1}')
+    return tmpdir
