@@ -20,7 +20,7 @@ class HubstorageReaderTest(unittest.TestCase):
 
     @mock.patch('exporters.readers.hubstorage_reader.HubstorageReader._create_collection_scanner')
     def test_set_last_position(self, mock_create_scanner):
-        options = dict(apikey='fake', collection_name='collection', project_id='10804')
+        options = dict(apikey='fake', collection_name='collection', project_id=10804)
         hs_reader = HubstorageReader(dict(options=options), meta())
         hs_reader.set_last_position(dict(last_key='resumekey'))
         self.assertEquals([mock.call.set_startafter('resumekey')],
