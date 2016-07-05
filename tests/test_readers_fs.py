@@ -1,4 +1,3 @@
-import unittest
 from exporters.readers import FSReader
 from exporters.exceptions import ConfigurationError
 
@@ -7,21 +6,22 @@ from .utils import meta
 import pytest
 
 
-class FSReaderTest(unittest.TestCase):
-    def setUp(self):
-        self.options = {
+class FSReaderTest(object):
+    @classmethod
+    def setup_class(cls):
+        cls.options = {
             'input': {
                 'dir': './tests/data/fs_reader_test',
             }
         }
 
-        self.options_pointer = {
+        cls.options_pointer = {
             'input': {
                 'dir_pointer': './tests/data/fs_reader_pointer',
             }
         }
 
-        self.options_empty_folder = {
+        cls.options_empty_folder = {
             'input': {
                 'dir': './tests/data/fs_reader_empty_folder',
             }
@@ -44,7 +44,7 @@ class FSReaderTest(unittest.TestCase):
         ]
         reader = self._make_fs_reader(self.options)
         batch = list(reader.get_next_batch())
-        self.assertEqual(expected, batch)
+        assert expected == batch
 
     def test_read_from_pointer(self):
         expected = [
@@ -53,12 +53,12 @@ class FSReaderTest(unittest.TestCase):
         ]
         reader = self._make_fs_reader(self.options_pointer)
         batch = list(reader.get_next_batch())
-        self.assertEqual(expected, batch)
+        assert expected == batch
 
     def test_read_from_empty_folder(self):
         reader = self._make_fs_reader(self.options_empty_folder)
         list(reader.get_next_batch())
-        self.assertTrue(reader.is_finished())
+        assert reader.is_finished()
 
     def test_read_from_file(self):
         reader = self._make_fs_reader({
@@ -68,7 +68,7 @@ class FSReaderTest(unittest.TestCase):
         expected = [
             {u'item': u'value1'}, {u'item': u'value2'}, {u'item': u'value3'}
         ]
-        self.assertEqual(expected, batch)
+        assert expected == batch
 
     def test_read_from_multiple_files(self):
         reader = self._make_fs_reader({
@@ -82,7 +82,7 @@ class FSReaderTest(unittest.TestCase):
             {u'item': u'value1'}, {u'item': u'value2'}, {u'item': u'value3'},
             {u'item': u'value1'}, {u'item': u'value2'}, {u'item': u'value3'},
         ]
-        self.assertEqual(expected, batch)
+        assert expected == batch
 
     def test_read_from_file_and_dir(self):
         reader = self._make_fs_reader({
@@ -97,7 +97,7 @@ class FSReaderTest(unittest.TestCase):
             {u'item': u'value1'}, {u'item': u'value2'}, {u'item': u'value3'},
             {u'item2': u'value1'}, {u'item2': u'value2'}, {u'item2': u'value3'},
         ]
-        self.assertEqual(expected, batch)
+        assert expected == batch
 
     def test_dir_specification_no_dir_or_dir_pointer(self):
         with pytest.raises(ConfigurationError) as err:
@@ -124,4 +124,4 @@ class FSReaderTest(unittest.TestCase):
             {u'item2': u'value1'}, {u'item2': u'value2'}, {u'item2': u'value3'},
         ]
         batch = list(reader.get_next_batch())
-        self.assertEqual(expected, batch)
+        assert expected == batch
