@@ -104,7 +104,9 @@ class FSReader(BaseReader):
                     directory = cls._get_pointer(dir_pointer)
 
                 out.extend(cls._get_directory_files(
-                    directory, input_unit.get('pattern')))
+                    directory=directory,
+                    pattern=input_unit.get('pattern'),
+                    include_dot_files=input_unit.get('include_dot_files', False)))
             else:
                 raise ConfigurationError('Input must only contain strings or dicts')
         return out
@@ -145,18 +147,23 @@ class FSReader(BaseReader):
             return f.read().strip()
 
     @classmethod
-    def _get_directory_files(cls, directory, pattern=None):
-        if pattern is None:
-            def filepath_matches(x):
-                return True
-        else:
-            filepath_matches = re.compile(pattern).search
+    def _get_directory_files(cls, directory, pattern=None,
+                             include_dot_files=False):
+        match_funcs = []
+        if pattern is not None:
+            match_funcs.append(re.compile(pattern).search)
+
+        if not include_dot_files:
+            def is_non_dot_file(filepath):
+                return not os.path.basename(filepath).startswith('.')
+
+            match_funcs.append(is_non_dot_file)
 
         return [
             filepath
             for dirpath, directories, filenames in os.walk(directory)
             for filepath in (os.path.join(dirpath, f) for f in filenames)
-            if filepath_matches(filepath)
+            if all(mf(filepath) for mf in match_funcs)
         ]
 
     def get_next_batch(self):

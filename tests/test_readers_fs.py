@@ -1,4 +1,5 @@
-import unittest
+from gzip import GzipFile
+
 from exporters.readers import FSReader
 from exporters.exceptions import ConfigurationError
 
@@ -7,21 +8,22 @@ from .utils import meta
 import pytest
 
 
-class FSReaderTest(unittest.TestCase):
-    def setUp(self):
-        self.options = {
+class FSReaderTest(object):
+    @classmethod
+    def setup_class(cls):
+        cls.options = {
             'input': {
                 'dir': './tests/data/fs_reader_test',
             }
         }
 
-        self.options_pointer = {
+        cls.options_pointer = {
             'input': {
                 'dir_pointer': './tests/data/fs_reader_pointer',
             }
         }
 
-        self.options_empty_folder = {
+        cls.options_empty_folder = {
             'input': {
                 'dir': './tests/data/fs_reader_empty_folder',
             }
@@ -44,7 +46,7 @@ class FSReaderTest(unittest.TestCase):
         ]
         reader = self._make_fs_reader(self.options)
         batch = list(reader.get_next_batch())
-        self.assertEqual(expected, batch)
+        assert expected == batch
 
     def test_read_from_pointer(self):
         expected = [
@@ -53,12 +55,12 @@ class FSReaderTest(unittest.TestCase):
         ]
         reader = self._make_fs_reader(self.options_pointer)
         batch = list(reader.get_next_batch())
-        self.assertEqual(expected, batch)
+        assert expected == batch
 
     def test_read_from_empty_folder(self):
         reader = self._make_fs_reader(self.options_empty_folder)
         list(reader.get_next_batch())
-        self.assertTrue(reader.is_finished())
+        assert reader.is_finished()
 
     def test_read_from_file(self):
         reader = self._make_fs_reader({
@@ -68,7 +70,7 @@ class FSReaderTest(unittest.TestCase):
         expected = [
             {u'item': u'value1'}, {u'item': u'value2'}, {u'item': u'value3'}
         ]
-        self.assertEqual(expected, batch)
+        assert expected == batch
 
     def test_read_from_multiple_files(self):
         reader = self._make_fs_reader({
@@ -82,7 +84,7 @@ class FSReaderTest(unittest.TestCase):
             {u'item': u'value1'}, {u'item': u'value2'}, {u'item': u'value3'},
             {u'item': u'value1'}, {u'item': u'value2'}, {u'item': u'value3'},
         ]
-        self.assertEqual(expected, batch)
+        assert expected == batch
 
     def test_read_from_file_and_dir(self):
         reader = self._make_fs_reader({
@@ -97,7 +99,7 @@ class FSReaderTest(unittest.TestCase):
             {u'item': u'value1'}, {u'item': u'value2'}, {u'item': u'value3'},
             {u'item2': u'value1'}, {u'item2': u'value2'}, {u'item2': u'value3'},
         ]
-        self.assertEqual(expected, batch)
+        assert expected == batch
 
     def test_dir_specification_no_dir_or_dir_pointer(self):
         with pytest.raises(ConfigurationError) as err:
@@ -124,4 +126,39 @@ class FSReaderTest(unittest.TestCase):
             {u'item2': u'value1'}, {u'item2': u'value2'}, {u'item2': u'value3'},
         ]
         batch = list(reader.get_next_batch())
-        self.assertEqual(expected, batch)
+        assert expected == batch
+
+    def test_dot_files_ignored_by_default(self, tmpdir_with_dotfiles):
+        reader = self._make_fs_reader({'input': {
+            'dir': tmpdir_with_dotfiles.strpath,
+        }})
+        assert list(reader.get_next_batch()) == [{"bar": 1}]
+
+        reader = self._make_fs_reader({'input': {
+            'dir': tmpdir_with_dotfiles.strpath,
+            'pattern': r'/\.[^/]*$',
+        }})
+        assert list(reader.get_next_batch()) == []
+
+    def test_dot_files_included_with_flag(self, tmpdir_with_dotfiles):
+        reader = self._make_fs_reader({'input': {
+            'dir': tmpdir_with_dotfiles.strpath,
+            'pattern': r'/\.[^/]*$',
+            'include_dot_files': True,
+        }})
+        assert list(reader.get_next_batch()) == [{"foo": 1}]
+
+        reader = self._make_fs_reader({'input': {
+            'dir': tmpdir_with_dotfiles.strpath,
+            'include_dot_files': True,
+        }})
+        assert list(reader.get_next_batch()) == [{"foo": 1}, {"bar": 1}]
+
+
+@pytest.fixture
+def tmpdir_with_dotfiles(tmpdir):
+    with GzipFile(tmpdir.join('.foo.jl.gz').strpath, 'w') as zf:
+        zf.write('{"foo": 1}')
+    with GzipFile(tmpdir.join('bar.jl.gz').strpath, 'w') as zf:
+        zf.write('{"bar": 1}')
+    return tmpdir
