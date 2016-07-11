@@ -1,13 +1,8 @@
 import httplib
-import json
-import tempfile
 import re
 import datetime
-import shutil
-import zlib
 from six.moves.urllib.request import urlopen
-from exporters.readers.base_reader import BaseReader
-from exporters.records.base_record import BaseRecord
+from exporters.readers.base_stream_reader import StreamBasedReader
 from exporters.default_retries import retry_short
 from exporters.exceptions import ConfigurationError, InvalidDateRangeError
 import logging
@@ -57,37 +52,6 @@ def format_prefixes(prefixes, start, end):
         start_date += datetime.timedelta(days=1)
 
     return [date.strftime(p) for date in dates for p in prefixes]
-
-
-@retry_short
-def read_chunk(key):
-    return key.read(1024 * 1024)
-
-
-def create_decompressor():
-    # create zlib decompressor enabling automatic header detection:
-    # See: http://stackoverflow.com/a/22310760/149872
-    AUTOMATIC_HEADER_DETECTION_MASK = 32
-    return zlib.decompressobj(AUTOMATIC_HEADER_DETECTION_MASK | zlib.MAX_WBITS)
-
-
-def stream_decompress_multi(key):
-    dec = create_decompressor()
-    while True:
-        chunk = read_chunk(key)
-        if not chunk:
-            break
-        rv = dec.decompress(chunk)
-        if rv:
-            yield rv
-        if dec.unused_data:
-            unused = dec.unused_data
-            while unused:
-                dec = create_decompressor()
-                rv = dec.decompress(unused)
-                if rv:
-                    yield rv
-                unused = dec.unused_data
 
 
 class S3BucketKeysFetcher(object):
@@ -163,12 +127,9 @@ class S3BucketKeysFetcher(object):
         return self._get_keys_from_bucket()
 
 
-class S3Reader(BaseReader):
+class S3Reader(StreamBasedReader):
     """
     Reads items from keys located in S3 buckets and compressed with gzip with a common path.
-
-        - batch_size (int)
-            Number of items to be returned in each batch
 
         - bucket (str)
             Name of the bucket to retrieve items from.
@@ -198,7 +159,6 @@ class S3Reader(BaseReader):
 
     # List of options to set up the reader
     supported_options = {
-        'batch_size': {'type': int, 'default': 10000},
         'bucket': {'type': basestring},
         'aws_access_key_id': {
             'type': basestring,
@@ -216,7 +176,6 @@ class S3Reader(BaseReader):
 
     def __init__(self, *args, **kwargs):
         super(S3Reader, self).__init__(*args, **kwargs)
-        self.batch_size = self.read_option('batch_size')
         bucket_name = self.read_option('bucket')
         self.logger.info('Starting S3Reader for bucket: %s' % bucket_name)
 
@@ -228,12 +187,7 @@ class S3Reader(BaseReader):
                                                 self.read_option('aws_access_key_id'),
                                                 self.read_option('aws_secret_access_key'))
         self.keys = self.keys_fetcher.pending_keys()
-        self.read_keys = []
-        self.current_key = None
-        self.last_block = 0
         self.logger.info('S3Reader has been initiated')
-        self.tmp_folder = tempfile.mkdtemp()
-        self.lines_reader = self.read_lines_from_keys()
 
     def get_read_streams(self):
         from exporters.bypasses.stream_bypass import Stream
@@ -241,75 +195,3 @@ class S3Reader(BaseReader):
             key = self.bucket.get_key(key_name)
             file_obj = urlopen(key.generate_url(S3_URL_EXPIRES_IN))
             yield Stream(file_obj, key_name, key.size)
-
-    def read_lines_from_keys(self):
-        for current_key in self.keys:
-            self.current_key = current_key
-            self.last_position['current_key'] = current_key
-            key = self.bucket.get_key(current_key)
-            self.last_leftover = ''
-            index_block = 0
-            for uncompressed in stream_decompress_multi(key):
-                if index_block >= self.last_block:
-                    block_text = self.last_leftover + uncompressed
-                    items = block_text.split('\n')
-                    for i in items:
-                        if i:
-                            try:
-                                obj = json.loads(i)
-                            except ValueError:
-                                # Last uncomplete line
-                                self.last_leftover = i
-                                self.last_position['last_leftover'] = self.last_leftover
-                            else:
-                                item = BaseRecord(obj)
-                                self.last_leftover = ''
-                                self.last_position['last_leftover'] = self.last_leftover
-                                yield item
-                    self.last_block += 1
-                index_block += 1
-            self.read_keys.append(current_key)
-            self.current_key = None
-            self.last_position['keys'].remove(current_key)
-            self.last_position['read_keys'] = self.read_keys
-            self.last_position['current_key'] = self.current_key
-            self.last_position['last_block'] = self.last_block
-            self.last_block = 0
-        self.finished = True
-
-    def get_next_batch(self):
-        """
-        This method is called from the manager. It must return a list or a generator
-        of BaseRecord objects.
-        When it has nothing else to read, it must set class variable "finished" to True.
-        """
-        count = 0
-        while count < self.batch_size:
-            count += 1
-            yield next(self.lines_reader)
-        self.logger.debug('Done reading batch')
-
-    def set_last_position(self, last_position):
-        """
-        Called from the manager, it is in charge of updating the last position of data commited
-        by the writer, in order to have resume support
-        """
-        if last_position is None:
-            self.last_position = {}
-            self.last_position['keys'] = list(self.keys)
-            self.last_position['read_keys'] = self.read_keys
-            self.last_position['current_key'] = None
-            self.last_position['last_block'] = 0
-        else:
-            self.last_position = last_position
-            self.keys = self.last_position['keys']
-            self.read_keys = self.last_position['read_keys']
-            if self.last_position['current_key']:
-                self.current_key = self.last_position['current_key']
-            else:
-                self.current_key = self.keys[0]
-                self.last_block = 0
-            self.last_block = self.last_position['last_block']
-
-    def close(self):
-        shutil.rmtree(self.tmp_folder)

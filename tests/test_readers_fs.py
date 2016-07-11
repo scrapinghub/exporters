@@ -76,13 +76,13 @@ class FSReaderTest(object):
         reader = self._make_fs_reader({
             'input': [
                 './tests/data/fs_reader_test/fs_test_data.jl.gz',
-                './tests/data/fs_reader_test/fs_test_data.jl.gz',
+                './tests/data/fs_reader_test/fs_test_data_2.jl.gz',
             ]
         })
         batch = list(reader.get_next_batch())
         expected = [
             {u'item': u'value1'}, {u'item': u'value2'}, {u'item': u'value3'},
-            {u'item': u'value1'}, {u'item': u'value2'}, {u'item': u'value3'},
+            {u'item2': u'value1'}, {u'item2': u'value2'}, {u'item2': u'value3'},
         ]
         assert expected == batch
 
@@ -95,7 +95,6 @@ class FSReaderTest(object):
         })
         batch = list(reader.get_next_batch())
         expected = [
-            {u'item': u'value1'}, {u'item': u'value2'}, {u'item': u'value3'},
             {u'item': u'value1'}, {u'item': u'value2'}, {u'item': u'value3'},
             {u'item2': u'value1'}, {u'item2': u'value2'}, {u'item2': u'value3'},
         ]

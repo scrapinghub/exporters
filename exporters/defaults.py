@@ -12,6 +12,15 @@ DEFAULT_STATS_MANAGER_CCONFIG = {
 DEFAULT_FORMATTER_CONFIG = {
     "name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter",
     "options": {}
+
+}
+DEFAULT_DESERIALIZER_CONFIG = {
+    "name": "exporters.deserializers.jsonlines.JsonLinesDeserializer",
+    "options": {}
+}
+DEFAULT_DECOMPRESSOR_CONFIG = {
+    "name": "exporters.decompressors.zlib_decompressor.ZLibDecompressor",
+    "options": {}
 }
 DEFAULT_LOGGER_LEVEL = 'INFO'
 DEFAULT_LOGGER_NAME = 'export-pipeline'

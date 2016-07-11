@@ -7,7 +7,8 @@ from exporters.exceptions import ConfigCheckError
 from exporters.defaults import (
     DEFAULT_FILTER_CONFIG, DEFAULT_GROUPER_CONFIG, DEFAULT_PERSISTENCE_CONFIG,
     DEFAULT_STATS_MANAGER_CCONFIG, DEFAULT_FORMATTER_CONFIG, DEFAULT_LOGGER_LEVEL,
-    DEFAULT_LOGGER_NAME, DEFAULT_TRANSFORM_CONFIG
+    DEFAULT_LOGGER_NAME, DEFAULT_TRANSFORM_CONFIG, DEFAULT_DECOMPRESSOR_CONFIG,
+    DEFAULT_DESERIALIZER_CONFIG
 )
 
 
@@ -24,6 +25,8 @@ class ExporterConfig(object):
             self.filter_before_options = self._merge_options('filter_before', DEFAULT_FILTER_CONFIG)
         self.filter_after_options = self._merge_options('filter_after', DEFAULT_FILTER_CONFIG)
         self.transform_options = self._merge_options('transform', DEFAULT_TRANSFORM_CONFIG)
+        self.decompressor_options = self._merge_options('decompressor', DEFAULT_DECOMPRESSOR_CONFIG)
+        self.deserializer_options = self._merge_options('deserializer', DEFAULT_DESERIALIZER_CONFIG)
         self.grouper_options = self._merge_options('grouper', DEFAULT_GROUPER_CONFIG)
         self.writer_options = self._merge_options('writer')
         # Persistence module needs to know about the full configuration,
@@ -69,7 +72,7 @@ class ExporterConfig(object):
 
 MODULE_TYPES = ['readers', 'writers', 'transform', 'groupers',
                 'persistence', 'filters', 'stats_managers', 'export_formatter',
-                'notifications']
+                'notifications', 'decompressors', 'deserializers']
 
 
 def module_options():

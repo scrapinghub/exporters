@@ -1,20 +1,14 @@
-import gzip
-import json
 import os
 import re
-from io import BufferedReader
 
-from exporters.readers.base_reader import BaseReader
-from exporters.records.base_record import BaseRecord
+from exporters.readers.base_stream_reader import StreamBasedReader
 from exporters.exceptions import ConfigurationError
+from exporters.bypasses.stream_bypass import Stream
 
 
-class FSReader(BaseReader):
+class FSReader(StreamBasedReader):
     """
     Reads items from files located in filesystem and compressed with gzip with a common path.
-
-        - batch_size (int)
-            Number of items to be returned in each batch
 
         - input (str/dict or a list of str/dict)
             Specification of files to be read.
@@ -48,15 +42,12 @@ class FSReader(BaseReader):
 
     # List of options to set up the reader
     supported_options = {
-        'batch_size': {'type': int, 'default': 10000},
         'input': {'type': (str, dict, list), 'default': {'dir': ''}}
     }
 
     def __init__(self, *args, **kwargs):
         super(FSReader, self).__init__(*args, **kwargs)
-        self.batch_size = self.read_option('batch_size')
         self.input_specification = self.read_option('input')
-        self.lines_reader = self.read_lines_from_files()
 
         self.files = self._get_input_files(self.input_specification)
         self.read_files = []
@@ -111,33 +102,6 @@ class FSReader(BaseReader):
                 raise ConfigurationError('Input must only contain strings or dicts')
         return out
 
-    def read_lines_from_files(self):
-        """
-        Open and reads files from self.files variable, and yields the items extracted from them.
-
-        """
-        if not self.files:
-            self.logger.warning('Files not found for reading')
-
-        for fpath in sorted(self.files):
-            with gzip.open(fpath) as f:
-                with BufferedReader(f) as bf:
-                    for line in bf:
-                        self.last_line += 1
-                        line = line.replace("\n", '')
-                        item = BaseRecord(json.loads(line))
-                        yield item
-
-            self.read_files.append(fpath)
-            self.files.remove(fpath)
-            self.current_file = None
-            self.last_position['files'] = self.files
-            self.last_position['read_files'] = self.read_files
-            self.last_position['current_file'] = self.current_file
-            self.last_position['last_line'] = self.last_line
-
-        self.finished = True
-
     @classmethod
     def _get_pointer(cls, path_pointer):
         """
@@ -166,36 +130,8 @@ class FSReader(BaseReader):
             if all(mf(filepath) for mf in match_funcs)
         ]
 
-    def get_next_batch(self):
-        """
-        This method is called from the manager. It must return a list or a generator
-        of BaseRecord objects.
-        When it has nothing else to read, it must set class variable "finished" to True.
-        """
-        count = 0
-        while count < self.batch_size:
-            count += 1
-            yield next(self.lines_reader)
-        self.logger.debug('Done reading batch')
-
-    def set_last_position(self, last_position):
-        """
-        Called from the manager, it is in charge of updating the last position of data commited
-        by the writer, in order to have resume support
-        """
-        if last_position is None:
-            self.last_position = {}
-            self.last_position['files'] = self.files
-            self.last_position['read_files'] = self.read_files
-            self.last_position['current_file'] = None
-            self.last_position['last_line'] = 0
-        else:
-            self.last_position = last_position
-            self.files = self.last_position['files']
-            self.read_files = self.last_position['read_files']
-            if self.last_position['current_file']:
-                self.current_file = self.last_position['current_file']
-            else:
-                self.current_file = self.files[0]
-                self.last_line = 0
-            self.last_line = self.last_position['last_line']
+    def get_read_streams(self):
+        for fpath in sorted(self.files):
+            size = os.path.getsize(fpath)
+            with open(fpath, 'rb') as f:
+                yield Stream(f, fpath, size)

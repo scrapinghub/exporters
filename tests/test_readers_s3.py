@@ -1,6 +1,5 @@
 import gzip
 import json
-import shutil
 import unittest
 import StringIO
 from contextlib import closing
@@ -219,28 +218,24 @@ class S3ReaderTest(unittest.TestCase):
     def test_list_no_keys(self):
         reader = S3Reader(self.options_no_keys, meta())
         self.assertEqual([], reader.keys)
-        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_list_keys(self):
         reader = S3Reader(self.options_valid, meta())
         expected = ['test_list/dump_p1_US_a', 'test_list/dump_p1_US_b',
                     'test_list/dump_p2_US_a', 'test_list/dump_p_US_a']
         self.assertEqual(expected, reader.keys)
-        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_list_keys_prefix(self):
         reader = S3Reader(self.options_valid, meta())
         expected = ['test_list/dump_p1_US_a', 'test_list/dump_p1_US_b',
                     'test_list/dump_p2_US_a', 'test_list/dump_p_US_a']
         self.assertEqual(expected, reader.keys)
-        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_list_keys_prefix_and_suffix(self):
         reader = S3Reader(self.options_valid, meta())
         expected = ['test_list/dump_p1_US_a', 'test_list/dump_p1_US_b',
                     'test_list/dump_p2_US_a', 'test_list/dump_p_US_a']
         self.assertEqual(expected, reader.keys)
-        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_no_pattern_keys(self):
         reader = S3Reader(self.options_no_pattern, meta())
@@ -249,14 +244,12 @@ class S3ReaderTest(unittest.TestCase):
                     'test_list/dump_p1_US_b', 'test_list/dump_p2_US_a',
                     'test_list/dump_p_US_a']
         self.assertEqual(expected, reader.keys)
-        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_no_prefix_list_keys(self):
         reader = S3Reader(self.options_no_prefix, meta())
         expected = ['test_list/dump_p1_US_a', 'test_list/dump_p1_US_b',
                     'test_list/dump_p2_US_a', 'test_list/dump_p_US_a']
         self.assertEqual(expected, reader.keys)
-        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_prefix_and_prefix_pointer_list_keys(self):
         self.assertRaises(ConfigurationError, S3Reader,
@@ -268,20 +261,17 @@ class S3ReaderTest(unittest.TestCase):
         batch = list(reader.get_next_batch())
         expected_batch = [{u'name': u'test_list/dump_p1_ES_a'}]
         self.assertEqual(batch, expected_batch)
-        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_date_prefix(self):
         reader = S3Reader(self.options_date_prefix, meta())
         expected = [datetime.datetime.now().strftime('test_prefix/%Y-%m-%d')]
         self.assertEqual(expected, reader.keys_fetcher.prefixes)
-        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_date_prefix_yesterday(self):
         reader = S3Reader(self.options_dateparser, meta())
         yesterday = dateparser.parse('yesterday').strftime('%Y-%m-%d')
         expected = ['test_prefix/{yesterday}'.format(yesterday=yesterday)]
         self.assertEqual(expected, reader.keys_fetcher.prefixes)
-        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_date_range_prefixes(self):
         reader = S3Reader(self.options_dateparser_range_3_days, meta())
@@ -289,7 +279,6 @@ class S3ReaderTest(unittest.TestCase):
                     'test_prefix/{}'.format(dateparser.parse('yesterday').strftime('%Y-%m-%d')),
                     'test_prefix/{}'.format(dateparser.parse('today').strftime('%Y-%m-%d'))]
         self.assertEqual(expected, reader.keys_fetcher.prefixes)
-        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_date_prefix_list(self):
         reader = S3Reader(self.options_date_prefix_list, meta())
@@ -298,7 +287,6 @@ class S3ReaderTest(unittest.TestCase):
                     'b_prefix/daily/{}'.format(today),
                     'c_prefix/daily/{}'.format(today)]
         self.assertEqual(expected, reader.keys_fetcher.prefixes)
-        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_prefix_list_using_date(self):
         reader = S3Reader(self.options_prefix_list_using_date, meta())
@@ -307,7 +295,6 @@ class S3ReaderTest(unittest.TestCase):
                     'b_prefix/daily/{}'.format(yesterday),
                     'c_prefix/daily/{}'.format(yesterday)]
         self.assertEqual(expected, reader.keys_fetcher.prefixes)
-        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
     def test_get_read_streams(self):
         with closing(S3Reader(self.options_valid, meta())) as reader:
@@ -350,7 +337,6 @@ class S3ReaderTest(unittest.TestCase):
         reader.set_last_position(None)
         batch = reader.get_next_batch()
         self.assertEqual(len(list(batch)), 200, 'Wrong items number read')
-        shutil.rmtree(reader.tmp_folder, ignore_errors=True)
 
 
 class TestS3BucketKeysFetcher(unittest.TestCase):

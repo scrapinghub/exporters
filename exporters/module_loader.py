@@ -20,6 +20,14 @@ class ModuleLoader(object):
         from exporters.writers.base_writer import BaseWriter
         return self._load_module(options, metadata, BaseWriter, **kwargs)
 
+    def load_decompressor(self, options, metadata, **kwargs):
+        from exporters.decompressors.base import BaseDecompressor
+        return self._load_module(options, metadata, BaseDecompressor, **kwargs)
+
+    def load_deserializer(self, options, metadata, **kwargs):
+        from exporters.deserializers.base import BaseDeserializer
+        return self._load_module(options, metadata, BaseDeserializer, **kwargs)
+
     def load_persistence(self, options, metadata, **kwargs):
         from exporters.persistence.base_persistence import BasePersistence
         return self._load_module(options, metadata, BasePersistence, **kwargs)
