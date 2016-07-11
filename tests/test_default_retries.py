@@ -18,9 +18,9 @@ class InitializeRetryTest(unittest.TestCase):
             with self.assertRaisesRegexp(RuntimeError, "oops"):
                 buggy()
         l.check(
-            ('root', 'WARNING', 'Failed: buggy (message was: oops)'),
-            ('root', 'WARNING', 'Failed: buggy (message was: oops)'),
-            ('root', 'WARNING', 'Failed: buggy (message was: oops)'),
+            ('root', 'WARNING', 'Retrying: buggy (message was: oops)'),
+            ('root', 'WARNING', 'Retrying: buggy (message was: oops)'),
+            ('root', 'WARNING', 'Retrying: buggy (message was: oops)'),
         )
 
     def test_by_default_retries_are_enabled(self):

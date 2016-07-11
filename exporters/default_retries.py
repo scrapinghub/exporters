@@ -42,7 +42,7 @@ def _warn_about_exceptions(f, *args, **kw):
     try:
         return f(*args, **kw)
     except Exception as e:
-        logging.warning("Failed: {} (message was: {})".format(
+        logging.warning("Retrying: {} (message was: {})".format(
             f.__name__, str(e)))
         raise
 
