@@ -1,4 +1,4 @@
-from exporters.decompressors.base import BaseDecompressor
+from exporters.decompressors.base_decompressor import BaseDecompressor
 
 
 class NoCompression(BaseDecompressor):

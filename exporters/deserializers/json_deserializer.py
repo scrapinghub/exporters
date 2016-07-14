@@ -1,6 +1,6 @@
 import json
 from exporters.records.base_record import BaseRecord
-from exporters.deserializers.base import BaseDeserializer
+from exporters.deserializers.base_deserializer import BaseDeserializer
 
 
 class JsonLinesDeserializer(BaseDeserializer):

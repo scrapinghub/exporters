@@ -15,7 +15,7 @@ DEFAULT_FORMATTER_CONFIG = {
 
 }
 DEFAULT_DESERIALIZER_CONFIG = {
-    "name": "exporters.deserializers.jsonlines.JsonLinesDeserializer",
+    "name": "exporters.deserializers.json_deserializer.JsonLinesDeserializer",
     "options": {}
 }
 DEFAULT_DECOMPRESSOR_CONFIG = {

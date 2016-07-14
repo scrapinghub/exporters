@@ -1,5 +1,5 @@
 import zlib
-from exporters.decompressors.base import BaseDecompressor
+from exporters.decompressors.base_decompressor import BaseDecompressor
 
 
 def create_decompressor():
