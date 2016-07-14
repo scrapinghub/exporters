@@ -188,7 +188,7 @@ def _get_available_classes(module):
     return classes_names
 
 
-def _get_modue(module_name):
+def _get_module(module_name):
     class_path_list = module_name.split('.')
     mod = import_module('.'.join(class_path_list[0:-1]))
     return getattr(mod, class_path_list[-1])
@@ -196,7 +196,7 @@ def _get_modue(module_name):
 
 def _is_stream_reader(config):
     try:
-        reader = _get_modue(config['reader']['name'])
+        reader = _get_module(config['reader']['name'])
     except:
         return True
     return issubclass(reader, StreamBasedReader)
@@ -204,7 +204,7 @@ def _is_stream_reader(config):
 
 def _get_module_supported_options(module_name):
     try:
-        return _get_modue(module_name).supported_options
+        return _get_module(module_name).supported_options
     except Exception as e:
         raise ConfigCheckError(
             message='There was a problem loading {} class, exception: {}'

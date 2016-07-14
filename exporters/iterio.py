@@ -1,10 +1,21 @@
 def cohere_stream(stream):
+    """
+    Convert into an IterIO object.
+
+    Stream can be:
+    - An iterable of strings or bytes
+    - An IterIO object
+    - A file-like object
+    """
     if isinstance(stream, IterIO):
         return stream
     return IterIO(stream)
 
 
 def iterate_chunks(file, chunk_size):
+    """
+    Iterate chunks of size chunk_size from a file-like object
+    """
     chunk = file.read(chunk_size)
     while chunk:
         yield chunk
@@ -24,6 +35,7 @@ class IterIO(object):
         self._unconsumed = []
         self.mode = mode
         self._pos = 0
+        self._file = iterator
         if callable(getattr(iterator, 'read', None)):  # file-like object
             self._iterator = iterate_chunks(iterator, chunk_size)
         else:
@@ -56,6 +68,10 @@ class IterIO(object):
             return line
 
     def next_chunk(self):
+        """
+        Read a chunk of arbitrary size from the underlying iterator. To get a
+        chunk of an specific size, use read()
+        """
         if self._unconsumed:
             data = self._unconsumed.pop()
         else:
@@ -64,6 +80,12 @@ class IterIO(object):
         return data
 
     def read(self, size=None):
+        """
+        read([size]) -> read at most size bytes, returned as a string.
+
+        If the size argument is negative or None, read until EOF is reached.
+        Return an empty string at EOF.
+        """
         if size is None or size < 0:
             return "".join(list(self))
         else:
@@ -86,6 +108,9 @@ class IterIO(object):
             return "".join(data_chunks)
 
     def readline(self):
+        """
+        Read until a new-line character is encountered
+        """
         line = ""
         n_pos = -1
         try:
@@ -107,19 +132,39 @@ class IterIO(object):
             line = self.readline()
 
     def readlines(self):
+        """
+        readlines([size]) -> list of strings, each a line from the file.
+
+        Call readline() repeatedly and return a list of the lines readed.
+        """
         return list(self.iterlines())
 
     def tell(self):
+        """
+        Get current file position, an integer
+        """
         return self._pos
 
     def close(self):
-        if callable(getattr(self._iterator, 'close', None)):
+        """
+        Disable al operations and close the underlying file-like object, if any
+        """
+        if callable(getattr(self._file, 'close', None)):
             self._iterator.close()
         self._iterator = None
         self._unconsumed = None
         self.closed = True
 
     def seek(self, offset, from_what=0):
+        """
+        seek(offset, from_what=0) -> int.  Change stream position.
+
+        Seek to byte offset pos relative to position indicated by whence:
+             0  Start of stream (the default).  pos should be >= tell();
+             1  Current position - negative pos not implemented;
+             2  End of stream - not implemented.
+        Returns the new absolute position.
+        """
         if from_what == 0:  # From the begining
             if offset >= self.tell():
                 self.seek(offset - self.tell(), from_what=1)
@@ -132,3 +177,4 @@ class IterIO(object):
                 self.read(offset)
         else:
             raise NotImplementedError("Can't seek from there")
+        return self.tell()
