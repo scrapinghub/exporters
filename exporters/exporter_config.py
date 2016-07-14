@@ -122,7 +122,7 @@ def check_for_errors(config, raise_exception=True):
         if section_errors:
             errors['formatter'] = section_errors
 
-    if not _is_stream_reader(config.get('section', {}).get('name')):
+    if not _is_stream_reader(config):
         for section in STREAM_READER_SECTIONS:
             if config.get(section) and not errors.get(section):
                 errors[section] = 'The %r section can only be used with a stream reader.' % section
@@ -194,11 +194,12 @@ def _get_modue(module_name):
     return getattr(mod, class_path_list[-1])
 
 
-def _is_stream_reader(reader_name):
+def _is_stream_reader(config):
     try:
-        return issubclass(_get_modue(reader_name), StreamBasedReader)
+        reader = _get_modue(config['reader']['name'])
     except:
-        return False
+        return True
+    return issubclass(reader, StreamBasedReader)
 
 
 def _get_module_supported_options(module_name):

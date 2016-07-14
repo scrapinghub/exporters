@@ -241,3 +241,37 @@ class ConfigValidationTest(unittest.TestCase):
         })
         with self.assertRaisesRegexp(ValueError, 'unsupported_options'):
             ExporterConfig(options)
+
+    def test_stream_only_sections(self):
+        config = valid_config_with_updates({
+            "decompressor": {
+                "name": "exporters.decompressors.zlib_decompressor.ZLibDecompressor",
+            },
+            "deserializer": {
+                "name": "exporters.deserializers.csv_deserializer.CSVDeserializer",
+            },
+        })
+        with self.assertRaises(ConfigurationError) as cm:
+            check_for_errors(config)
+
+        expected_errors = {
+            'decompressor': "The 'decompressor' section can only be used with a stream reader.",
+            'deserializer': "The 'deserializer' section can only be used with a stream reader.",
+        }
+        assert expected_errors == cm.exception.errors
+
+        config = valid_config_with_updates({
+            "reader": {
+                "name": "exporters.readers.fs_reader.FSReader",
+                "options": {
+                    "input": "."
+                }
+            },
+            "decompressor": {
+                "name": "exporters.decompressors.zlib_decompressor.ZLibDecompressor",
+            },
+            "deserializer": {
+                "name": "exporters.deserializers.csv_deserializer.CSVDeserializer",
+            },
+        })
+        check_for_errors(config)  # should not raise
