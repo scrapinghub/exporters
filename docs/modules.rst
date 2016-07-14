@@ -90,15 +90,31 @@ StreamBypass
 
 Reader
 ~~~~~~
-Readers are in charge of providing batches of items to the pipeline. All readers are subclasses of
- BaseReader class, and must implement:
+There are two kinds of readers, stream readers and structured readers. Stream readers read a stream of
+data from a binary backend, while in structured readers the underlying storage stores structured items.
 
+Stream readers have to be combined with a decompressor and a deserializer to read the items from them (by
+default, ZLibDecompressor and JsonDeserializer are used).
+
+Readers are in charge of providing batches of items to the pipeline. All readers are subclasses of
+BaseReader class.
+
+ Structured readers must implement:
     - get_next_batch()
         This method is called from the manager. It must return a list or a generator of BaseRecord objects.
         When it has nothing else to read, it must set class variable "finished" to True.
 
+ Stream readers must implement:
+    - get_read_streams()
+        This should be an iterator that yields streams (file-like objects).
+
 
 .. automodule:: exporters.readers.base_reader
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: exporters.readers.base_stream_reader
     :members:
     :undoc-members:
     :show-inheritance:
@@ -113,8 +129,8 @@ RandomReader
     :undoc-members:
     :show-inheritance:
 
-FSReader
-########
+FSReader (Stream)
+#################
 .. automodule:: exporters.readers.fs_reader
     :members:
     :undoc-members:
@@ -134,8 +150,8 @@ KafkaRandomReader
     :undoc-members:
     :show-inheritance:
 
-S3Reader
-########
+S3Reader (Stream)
+#################
 .. automodule:: exporters.readers.s3_reader
     :members:
     :undoc-members:
@@ -570,3 +586,66 @@ XMLExportFormatter
     :undoc-members:
     :show-inheritance:
 
+
+Decompressors
+~~~~~~~~~~~~~
+Decompressors take a compressed stream from a stream reader and return an uncompressed stream.
+They have to implement one function:
+
+    - decompress(stream)
+        Decompress the input stream (returns an uncompressed stream)
+
+.. automodule:: exporters.decompressors.base_decompressor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Provided Decompressors
+**********************
+
+ZLibDecompressor
+################
+.. automodule:: exporters.decompressors.zlib_decompressor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+NoDecompressor
+##############
+.. automodule:: exporters.decompressors.no_decompressor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Deserializers
+~~~~~~~~~~~~~
+Deserializers take a stream of uncompressed bytes and returns an iterator of records
+They have to implement one function:
+
+    - deserialize(stream)
+        Deserialize the input stream (return an iterator of records)
+
+.. automodule:: exporters.deserializers.base_deserializer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Provided deserializers
+**********************
+
+JsonDeserializer
+################
+.. automodule:: exporters.deserializers.json_deserializer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+CSVDeserializer
+###############
+.. automodule:: exporters.deserializers.csv_deserializer
+    :members:
+    :undoc-members:
+    :show-inheritance:
