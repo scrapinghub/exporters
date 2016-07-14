@@ -1,7 +1,6 @@
 import unittest
 import zlib
-from exporters.decompressors.zlib_decompressor import ZLibDecompressor
-from exporters.decompressors.no_decompressor import NoDecompressor
+from exporters.decompressors import ZLibDecompressor, NoDecompressor
 from exporters.iterio import IterIO
 from io import BytesIO
 import random

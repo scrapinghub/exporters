@@ -15,11 +15,11 @@ DEFAULT_FORMATTER_CONFIG = {
 
 }
 DEFAULT_DESERIALIZER_CONFIG = {
-    "name": "exporters.deserializers.json_deserializer.JsonLinesDeserializer",
+    "name": "exporters.deserializers.JsonLinesDeserializer",
     "options": {}
 }
 DEFAULT_DECOMPRESSOR_CONFIG = {
-    "name": "exporters.decompressors.zlib_decompressor.ZLibDecompressor",
+    "name": "exporters.decompressors.ZLibDecompressor",
     "options": {}
 }
 DEFAULT_LOGGER_LEVEL = 'INFO'

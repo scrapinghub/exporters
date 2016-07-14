@@ -595,25 +595,7 @@ They have to implement one function:
     - decompress(stream)
         Decompress the input stream (returns an uncompressed stream)
 
-.. automodule:: exporters.decompressors.base_decompressor
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Provided Decompressors
-**********************
-
-ZLibDecompressor
-################
-.. automodule:: exporters.decompressors.zlib_decompressor
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-NoDecompressor
-##############
-.. automodule:: exporters.decompressors.no_decompressor
+.. automodule:: exporters.decompressors
     :members:
     :undoc-members:
     :show-inheritance:
@@ -627,25 +609,7 @@ They have to implement one function:
     - deserialize(stream)
         Deserialize the input stream (return an iterator of records)
 
-.. automodule:: exporters.deserializers.base_deserializer
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Provided deserializers
-**********************
-
-JsonDeserializer
-################
-.. automodule:: exporters.deserializers.json_deserializer
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-CSVDeserializer
-###############
-.. automodule:: exporters.deserializers.csv_deserializer
+.. automodule:: exporters.deserializers
     :members:
     :undoc-members:
     :show-inheritance:

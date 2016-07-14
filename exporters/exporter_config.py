@@ -1,6 +1,6 @@
 import collections
 from importlib import import_module
-from inspect import getmembers, isclass
+from inspect import isclass
 import json
 from exporters.utils import maybe_cast_list
 from exporters.exceptions import ConfigCheckError
@@ -180,11 +180,16 @@ def _get_option_error(name, spec, config_options):
     return None
 
 
+def exported_classes(module):
+    names = module.__all__ if hasattr(module, '__all__') else dir(module)
+    classes = [(x, getattr(module, x)) for x in names]
+    return [(name, obj) for name, obj in classes if isclass(obj)]
+
+
 def _get_available_classes(module):
     classes_names = set()
-    for name, obj in getmembers(module):
-        if isclass(obj):
-            classes_names.add(obj.__module__ + '.' + obj.__name__)
+    for name, obj in exported_classes(module):
+        classes_names.add(obj.__module__ + '.' + obj.__name__)
     return classes_names
 
 

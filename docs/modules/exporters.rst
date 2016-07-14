@@ -16,8 +16,6 @@ Subpackages
     exporters.persistence
     exporters.pipeline
     exporters.readers
-    exporters.decompressors
-    exporters.deserializers
     exporters.records
     exporters.transform
     exporters.writers

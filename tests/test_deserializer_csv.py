@@ -1,5 +1,5 @@
 import unittest
-from exporters.deserializers.csv_deserializer import CSVDeserializer
+from exporters.deserializers import CSVDeserializer
 from exporters.iterio import IterIO
 import random
 

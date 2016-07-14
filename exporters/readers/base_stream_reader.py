@@ -1,7 +1,7 @@
 from exporters.readers.base_reader import BaseReader
 from exporters.iterio import cohere_stream
-from exporters.decompressors.zlib_decompressor import ZLibDecompressor
-from exporters.deserializers.json_deserializer import JsonLinesDeserializer
+from exporters.decompressors import ZLibDecompressor
+from exporters.deserializers import JsonLinesDeserializer
 
 
 class StreamBasedReader(BaseReader):
