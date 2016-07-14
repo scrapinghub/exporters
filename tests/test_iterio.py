@@ -32,3 +32,7 @@ class IterIOTest(unittest.TestCase):
     def test_read_lines(self):
         io = IterIO(iter(['he\n\nllo', '\nworl\nd']))
         assert io.readlines() == ['he\n', '\n', 'llo\n', 'worl\n', 'd']
+
+    def test_line_mode(self):
+        io = IterIO(iter(['he\n\nllo', '\nworl\nd']), mode="lines")
+        assert list(io) == ['he\n', '\n', 'llo\n', 'worl\n', 'd']

@@ -4,15 +4,30 @@ def cohere_stream(stream):
     return IterIO(stream)
 
 
+def iterate_chunks(file, chunk_size):
+    chunk = file.read(chunk_size)
+    while chunk:
+        yield chunk
+        chunk = file.read(chunk_size)
+
+
 class IterIO(object):
     """
-    Both an iterator (that iterates chunks, not necessarily lines) and a
-    file-like object.
+    Both an iterator and a file-like object.
+
+    Mode can be one one of:
+    - chunks: iterator yields chunks that can be of various sizes. If iterator
+              is a file-like object, chunks are of size chunk_size
+    - lines:  iterator yields lines like standard file-like objects
     """
-    def __init__(self, iterator):
+    def __init__(self, iterator, mode="chunks", chunk_size=1024):
         self._unconsumed = []
+        self.mode = mode
         self._pos = 0
-        self._iterator = iterator
+        if callable(getattr(iterator, 'read', None)):  # file-like object
+            self._iterator = iterate_chunks(iterator, chunk_size)
+        else:
+            self._iterator = iterator
         self.finished = False
         self.closed = False
 
@@ -32,6 +47,15 @@ class IterIO(object):
         return self
 
     def next(self):
+        if self.mode == 'chunks':
+            return self.next_chunk()
+        else:
+            line = self.readline()
+            if not line:
+                raise StopIteration
+            return line
+
+    def next_chunk(self):
         if self._unconsumed:
             data = self._unconsumed.pop()
         else:
@@ -47,7 +71,7 @@ class IterIO(object):
             data_readed = 0
             try:
                 while data_readed < size:
-                    chunk = self.next()
+                    chunk = self.next_chunk()
                     data_chunks.append(chunk)
                     data_readed += len(chunk)
             except StopIteration:
@@ -66,7 +90,7 @@ class IterIO(object):
         n_pos = -1
         try:
             while n_pos < 0:
-                line += self.next()
+                line += self.next_chunk()
                 n_pos = line.find('\n')
         except StopIteration:
             pass
@@ -100,11 +124,11 @@ class IterIO(object):
             if offset >= self.tell():
                 self.seek(offset - self.tell(), from_what=1)
             else:
-                raise NotImplementedError("Can't seek")
+                raise NotImplementedError("Can't seek backwards")
         elif from_what == 1:  # From the cursor position
             if offset < 0:
-                raise NotImplementedError("Can't seek")
+                raise NotImplementedError("Can't seek backwards")
             else:
                 self.read(offset)
         else:
-            raise NotImplementedError("Can't seek")
+            raise NotImplementedError("Can't seek from there")
