@@ -5,6 +5,7 @@ Random items generator, just for testing purposes
 """
 from exporters.readers.base_reader import BaseReader
 import random
+import six
 from exporters.records.base_record import BaseRecord
 
 
@@ -21,8 +22,8 @@ class RandomReader(BaseReader):
     """
 
     supported_options = {
-        'number_of_items': {'type': int, 'default': 1000},
-        'batch_size': {'type': int, 'default': 100}
+        'number_of_items': {'type': six.integer_types, 'default': 1000},
+        'batch_size': {'type': six.integer_types, 'default': 100}
     }
 
     def __init__(self, *args, **kwargs):

@@ -35,7 +35,7 @@ class FTPWriter(FilebaseBaseWriter):
         'host': {'type': six.string_types},
         'ftp_user': {'type': six.string_types, 'env_fallback': 'EXPORTERS_FTP_USER'},
         'ftp_password': {'type': six.string_types, 'env_fallback': 'EXPORTERS_FTP_PASSWORD'},
-        'port': {'type': int, 'default': 21},
+        'port': {'type': six.integer_types, 'default': 21},
     }
 
     def __init__(self, options, *args, **kwargs):

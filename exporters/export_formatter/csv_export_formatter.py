@@ -29,7 +29,7 @@ class CSVExportFormatter(BaseExportFormatter):
         'show_titles': {'type': bool, 'default': True},
         'fields': {'type': str_list, 'default': []},
         'schema': {'type': dict, 'default': {}},
-        'delimiter': {'type': basestring, 'default': ','},
+        'delimiter': {'type': six.string_types, 'default': ','},
     }
 
     def __init__(self, *args, **kwargs):

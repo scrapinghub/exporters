@@ -41,17 +41,17 @@ class HubstorageReader(BaseReader):
 
     # List of options to set up the reader
     supported_options = {
-        'batch_size': {'type': int, 'default': 10000},
-        'apikey': {'type': basestring, 'env_fallback': 'EXPORTERS_HS_APIKEY'},
-        'project_id': {'type': (basestring, int)},
-        'collection_name': {'type': basestring},
-        'count': {'type': int, 'default': 0},
+        'batch_size': {'type': six.integer_types, 'default': 10000},
+        'apikey': {'type': six.string_types, 'env_fallback': 'EXPORTERS_HS_APIKEY'},
+        'project_id': {'type': six.integer_types + six.string_types},
+        'collection_name': {'type': six.string_types},
+        'count': {'type': six.integer_types, 'default': 0},
         'prefixes': {'type': str_list, 'default': []},
         'exclude_prefixes': {'type': str_list, 'default': []},
         'secondary_collections': {'type': str_list, 'default': []},
         'has_many_collections': {'type': dict, 'default': {}},
-        'startts': {'type': (basestring, int), 'default': None},
-        'endts': {'type': (basestring, int), 'default': None},
+        'startts': {'type': six.integer_types + six.string_types, 'default': None},
+        'endts': {'type': six.integer_types + six.string_types, 'default': None},
     }
 
     def __init__(self, *args, **kwargs):

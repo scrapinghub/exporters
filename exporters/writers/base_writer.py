@@ -29,9 +29,9 @@ class BaseWriter(BasePipelineItem):
     This module receives a batch and writes it where needed.
     """
     supported_options = {
-        'items_per_buffer_write': {'type': int, 'default': ITEMS_PER_BUFFER_WRITE},
-        'size_per_buffer_write': {'type': int, 'default': SIZE_PER_BUFFER_WRITE},
-        'items_limit': {'type': int, 'default': 0},
+        'items_per_buffer_write': {'type': six.integer_types, 'default': ITEMS_PER_BUFFER_WRITE},
+        'size_per_buffer_write': {'type': six.integer_types, 'default': SIZE_PER_BUFFER_WRITE},
+        'items_limit': {'type': six.integer_types, 'default': 0},
         'check_consistency': {'type': bool, 'default': False},
         'compression': {'type': six.string_types, 'default': 'gz'}
     }

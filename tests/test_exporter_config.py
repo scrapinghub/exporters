@@ -1,4 +1,5 @@
 import unittest
+import six
 from exporters.exceptions import ConfigurationError
 from exporters.exporter_config import ExporterConfig, check_for_errors
 from tests.utils import valid_config_with_updates, VALID_EXPORTER_CONFIG
@@ -97,14 +98,15 @@ class ConfigValidationTest(unittest.TestCase):
             check_for_errors(config)
 
         exception = cm.exception
+        wrong_type_msg = 'Wrong type: found %s, expected %s'
         expected_errors = {
             'reader': {
-                'number_of_items': 'Wrong type: found <type \'dict\'>, expected <type \'int\'>',
-                'batch_size': 'Wrong type: found <type \'list\'>, expected <type \'int\'>'},
+                'number_of_items': wrong_type_msg % (dict, six.integer_types),
+                'batch_size': wrong_type_msg % (list, six.integer_types)},
             'transform': {
-                'jq_filter': 'Wrong type: found <type \'int\'>, expected <type \'basestring\'>'},
+                'jq_filter': wrong_type_msg % (int, six.string_types)},
             'persistence': {
-                'file_path': 'Wrong type: found <type \'int\'>, expected <type \'basestring\'>'}
+                'file_path': wrong_type_msg % (int, six.string_types)}
         }
         self.assertEqual(expected_errors, exception.errors)
         self.assertEqual(len(exception.errors), 3)
@@ -158,6 +160,18 @@ class ConfigValidationTest(unittest.TestCase):
         })
         with self.assertRaisesRegexp(ValueError, 'unsupported_options'):
             ExporterConfig(options)
+
+    def test_long_values(self):
+        options = valid_config_with_updates({
+            "reader": {
+                "name": "exporters.readers.hubstorage_reader.HubstorageReader",
+                "options": {
+                    "collection_name": "asd",
+                    "project_id": 2**70,  # long in PY2, int in PY3
+                }
+            }
+        })
+        ExporterConfig(options)  # should not raise
 
     def test_valid_formatter(self):
         options = valid_config_with_updates({

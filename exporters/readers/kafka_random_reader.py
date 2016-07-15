@@ -4,6 +4,7 @@ Kafka random reader
 from exporters.default_retries import retry_short
 import random
 import zlib
+import six
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 from exporters.utils import str_list
@@ -30,11 +31,11 @@ class KafkaRandomReader(BaseReader):
     """
 
     supported_options = {
-        'record_count': {'type': int},
-        'batch_size': {'type': int, 'default': 10000},
+        'record_count': {'type': six.integer_types},
+        'batch_size': {'type': six.integer_types, 'default': 10000},
         'brokers': {'type': str_list},
-        'topic': {'type': basestring},
-        'group': {'type': basestring}
+        'topic': {'type': six.string_types},
+        'group': {'type': six.string_types}
     }
 
     def __init__(self, *args, **kwargs):

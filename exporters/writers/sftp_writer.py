@@ -32,7 +32,7 @@ class SFTPWriter(FilebaseBaseWriter):
         'host': {'type': six.string_types},
         'sftp_user': {'type': six.string_types, 'env_fallback': 'EXPORTERS_SFTP_USER'},
         'sftp_password': {'type': six.string_types, 'env_fallback': 'EXPORTERS_SFTP_PASSWORD'},
-        'port': {'type': int, 'default': 22},
+        'port': {'type': six.integer_types, 'default': 22},
     }
 
     def __init__(self, options, *args, **kwargs):

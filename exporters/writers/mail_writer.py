@@ -34,7 +34,7 @@ class MailWriter(BaseWriter):
         'emails': {'type': str_list},
         'subject': {'type': six.string_types},
         'from': {'type': six.string_types},
-        'max_mails_sent': {'type': int, 'default': 5},
+        'max_mails_sent': {'type': six.integer_types, 'default': 5},
         'access_key': {
             'type': six.string_types,
             'env_fallback': 'EXPORTERS_MAIL_AWS_ACCESS_KEY',

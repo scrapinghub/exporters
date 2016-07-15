@@ -1,3 +1,4 @@
+import six
 import yaml
 from exporters.records.base_record import BaseRecord
 from exporters.transform.base_transform import BaseTransform
@@ -21,7 +22,7 @@ class JQTransform(BaseTransform):
             Valid jq filter
     """
     supported_options = {
-        'jq_filter': {'type': basestring}
+        'jq_filter': {'type': six.string_types}
     }
 
     def __init__(self, *args, **kwargs):

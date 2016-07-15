@@ -1,3 +1,4 @@
+import six
 import json
 import os
 import re
@@ -122,9 +123,9 @@ class SESMailNotifier(BaseNotifier):
     supported_options = {
         'team_mails': {'type': str_list, 'default': []},
         'client_mails': {'type': str_list, 'default': []},
-        'access_key': {'type': basestring, 'env_fallback': 'EXPORTERS_MAIL_AWS_ACCESS_KEY'},
-        'secret_key': {'type': basestring, 'env_fallback': 'EXPORTERS_MAIL_AWS_SECRET_KEY'},
-        'client_name': {'type': basestring, 'default': 'Customer'},
+        'access_key': {'type': six.string_types, 'env_fallback': 'EXPORTERS_MAIL_AWS_ACCESS_KEY'},
+        'secret_key': {'type': six.string_types, 'env_fallback': 'EXPORTERS_MAIL_AWS_SECRET_KEY'},
+        'client_name': {'type': six.string_types, 'default': 'Customer'},
     }
 
     def __init__(self, options, metadata):

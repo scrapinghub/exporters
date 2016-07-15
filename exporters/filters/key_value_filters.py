@@ -1,4 +1,5 @@
 import re
+import six
 
 from exporters.filters.base_filter import BaseFilter
 from exporters.utils import nested_dict_value
@@ -27,7 +28,7 @@ class KeyValueBaseFilter(BaseFilter):
 
     supported_options = {
         'keys': {'type': dict_list},
-        'nested_field_separator': {'type': basestring, 'default': '.'}
+        'nested_field_separator': {'type': six.string_types, 'default': '.'}
     }
 
     def __init__(self, *args, **kwargs):

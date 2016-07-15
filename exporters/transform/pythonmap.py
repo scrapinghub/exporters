@@ -1,3 +1,4 @@
+import six
 from exporters.transform.base_transform import BaseTransform
 from exporters.python_interpreter import Interpreter, create_context
 
@@ -6,7 +7,7 @@ class PythonMapTransform(BaseTransform):
     """Transform implementation that maps items using Python expressions
     """
     supported_options = {
-        "map": {'type': basestring},
+        "map": {'type': six.string_types},
     }
 
     def __init__(self, *args, **kwargs):

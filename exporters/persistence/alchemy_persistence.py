@@ -1,6 +1,7 @@
 import datetime
 import json
 import re
+import six
 
 import yaml
 from sqlalchemy import Boolean, Column, DateTime, Integer, Text, create_engine
@@ -24,11 +25,11 @@ class Job(Base):
 
 class BaseAlchemyPersistence(BasePersistence):
     supported_options = {
-        'user': {'type': basestring},
-        'password': {'type': basestring},
-        'host': {'type': basestring},
-        'port': {'type': int},
-        'database': {'type': basestring}
+        'user': {'type': six.string_types},
+        'password': {'type': six.string_types},
+        'host': {'type': six.string_types},
+        'port': {'type': six.integer_types},
+        'database': {'type': six.string_types}
     }
     PROTOCOL = None
 
@@ -177,9 +178,9 @@ class SqlitePersistence(BaseAlchemyPersistence):
     persistence_uri_re = '(?P<proto>sqlite)://(?P<database>.+):(?P<job_id>\d+)'
     supported_options = {
         # set defaults for unneeded options
-        'user': {'type': basestring, 'default': ''},
-        'password': {'type': basestring, 'default': ''},
-        'host': {'type': basestring, 'default': ''},
+        'user': {'type': six.string_types, 'default': ''},
+        'password': {'type': six.string_types, 'default': ''},
+        'host': {'type': six.string_types, 'default': ''},
         'port': {'type': int, 'default': ''},
     }
 
