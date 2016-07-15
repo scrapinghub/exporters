@@ -17,10 +17,14 @@ class DupeFilter(BaseFilter):
         super(DupeFilter, self).__init__(*args, **kwargs)
         self.key_field = self.read_option('key_field')
         self.key_set = set()
+        self.logger.info('{} initialized. Key field: "{}"'.format(
+            self.__class__.__name__, self.key_field))
 
     def filter(self, item):
-        items_key = item[self.key_field]
+        items_key = item.get(self.key_field)
         if not items_key:  # unable to determine duplicates, won't be filtered
+            self.logger.warning('Item without "key" found,'
+                                ' unable to filter it.')
             return True
 
         if items_key not in self.key_set:

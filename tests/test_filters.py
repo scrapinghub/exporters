@@ -343,8 +343,7 @@ class DupeFilterTest(unittest.TestCase):
         batch = filter.filter_batch(batch)
         batch = list(batch)
         self.assertEqual(3, len(batch))
-        for item in batch:
-            self.assertTrue(item['_key'] in keys)
+        self.assertEquals(set(keys), set([item['_key'] for item in batch]))
 
     def test_filter_duplicates_with_custom_key(self):
         keys = ['8062219f00c79c88', '1859834d918981df', 'e2abb7b480edf910']
@@ -356,6 +355,7 @@ class DupeFilterTest(unittest.TestCase):
             {'custom_key': keys[2], 'name': 'item3', 'country_code': 'uk'},
             {'custom_key': keys[2], 'name': 'item3', 'country_code': 'uk'}
         ]
+
         batch = []
         for item in items:
             record = BaseRecord(item)
@@ -365,14 +365,30 @@ class DupeFilterTest(unittest.TestCase):
         batch = filter.filter_batch(batch)
         batch = list(batch)
         self.assertEqual(3, len(batch))
-        for item in batch:
-            self.assertTrue(item['custom_key'] in keys)
+        self.assertEquals(set(keys),
+                          set([item['custom_key'] for item in batch]))
 
     def test_filter_duplicates_empty_key_dont_get_filtered(self):
         items = [
             {'_key': '', 'name': 'item1', 'country_code': 'es'},
             {'_key': '', 'name': 'item2', 'country_code': 'us'},
             {'_key': '', 'name': 'item3', 'country_code': 'uk'}
+        ]
+        batch = []
+        for item in items:
+            record = BaseRecord(item)
+            batch.append(record)
+        filter = DupeFilter({'options': {}}, meta())
+
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertEqual(3, len(batch))
+
+    def test_filter_duplicates_items_without_keys_dont_get_filtered(self):
+        items = [
+            {'name': 'item1', 'country_code': 'es'},
+            {'name': 'item2', 'country_code': 'us'},
+            {'name': 'item3', 'country_code': 'uk'}
         ]
         batch = []
         for item in items:
