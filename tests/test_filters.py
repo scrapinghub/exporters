@@ -344,6 +344,8 @@ class DupeFilterTest(unittest.TestCase):
         batch = list(batch)
         self.assertEqual(3, len(batch))
         self.assertEquals(set(keys), set([item['_key'] for item in batch]))
+        self.assertEquals(set(['item1', 'item3', 'item5']),
+                          set([item['name'] for item in batch]))
 
     def test_filter_duplicates_with_custom_key(self):
         keys = ['8062219f00c79c88', '1859834d918981df', 'e2abb7b480edf910']
@@ -367,6 +369,8 @@ class DupeFilterTest(unittest.TestCase):
         self.assertEqual(3, len(batch))
         self.assertEquals(set(keys),
                           set([item['custom_key'] for item in batch]))
+        self.assertEquals(set(['item1', 'item3', 'item5']),
+                          set([item['name'] for item in batch]))
 
     def test_filter_duplicates_empty_key_dont_get_filtered(self):
         items = [
