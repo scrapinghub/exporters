@@ -328,11 +328,11 @@ class DupeFilterTest(unittest.TestCase):
         keys = ['8062219f00c79c88', '1859834d918981df', 'e2abb7b480edf910']
         items = [
             {'_key': keys[0], 'name': 'item1', 'country_code': 'es'},
-            {'_key': keys[0], 'name': 'item1', 'country_code': 'es'},
-            {'_key': keys[1], 'name': 'item2', 'country_code': 'us'},
-            {'_key': keys[1], 'name': 'item2', 'country_code': 'us'},
-            {'_key': keys[2], 'name': 'item3', 'country_code': 'uk'},
-            {'_key': keys[2], 'name': 'item3', 'country_code': 'uk'}
+            {'_key': keys[0], 'name': 'item2', 'country_code': 'es'},
+            {'_key': keys[1], 'name': 'item3', 'country_code': 'us'},
+            {'_key': keys[1], 'name': 'item4', 'country_code': 'us'},
+            {'_key': keys[2], 'name': 'item5', 'country_code': 'uk'},
+            {'_key': keys[2], 'name': 'item6', 'country_code': 'uk'}
         ]
         batch = []
         for item in items:
@@ -349,11 +349,11 @@ class DupeFilterTest(unittest.TestCase):
         keys = ['8062219f00c79c88', '1859834d918981df', 'e2abb7b480edf910']
         items = [
             {'custom_key': keys[0], 'name': 'item1', 'country_code': 'es'},
-            {'custom_key': keys[0], 'name': 'item1', 'country_code': 'es'},
-            {'custom_key': keys[1], 'name': 'item2', 'country_code': 'us'},
-            {'custom_key': keys[1], 'name': 'item2', 'country_code': 'us'},
-            {'custom_key': keys[2], 'name': 'item3', 'country_code': 'uk'},
-            {'custom_key': keys[2], 'name': 'item3', 'country_code': 'uk'}
+            {'custom_key': keys[0], 'name': 'item2', 'country_code': 'es'},
+            {'custom_key': keys[1], 'name': 'item3', 'country_code': 'us'},
+            {'custom_key': keys[1], 'name': 'item4', 'country_code': 'us'},
+            {'custom_key': keys[2], 'name': 'item5', 'country_code': 'uk'},
+            {'custom_key': keys[2], 'name': 'item6', 'country_code': 'uk'}
         ]
 
         batch = []
