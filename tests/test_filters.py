@@ -2,6 +2,7 @@
 import random
 import unittest
 from exporters.filters.base_filter import BaseFilter
+from exporters.filters.dupe_filter import DupeFilter
 from exporters.filters.key_value_filter import KeyValueFilter
 from exporters.filters.key_value_filters import InvalidOperator
 from exporters.filters.key_value_regex_filter import KeyValueRegexFilter
@@ -319,3 +320,86 @@ class KeyValueFiltersTest(unittest.TestCase):
             batch.append(record)
         with self.assertRaisesRegexp(InvalidOperator, 'operator not valid'):
             KeyValueFilter({'options': {'keys': keys}}, meta())
+
+
+class DupeFilterTest(unittest.TestCase):
+
+    def test_filter_duplicates_with_default_key(self):
+        keys = ['8062219f00c79c88', '1859834d918981df', 'e2abb7b480edf910']
+        items = [
+            {'_key': keys[0], 'name': 'item1', 'country_code': 'es'},
+            {'_key': keys[0], 'name': 'item2', 'country_code': 'es'},
+            {'_key': keys[1], 'name': 'item3', 'country_code': 'us'},
+            {'_key': keys[1], 'name': 'item4', 'country_code': 'us'},
+            {'_key': keys[2], 'name': 'item5', 'country_code': 'uk'},
+            {'_key': keys[2], 'name': 'item6', 'country_code': 'uk'}
+        ]
+        batch = []
+        for item in items:
+            record = BaseRecord(item)
+            batch.append(record)
+        filter = DupeFilter({'options': {}}, meta())
+
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertEqual(3, len(batch))
+        self.assertEquals(set(keys), set([item['_key'] for item in batch]))
+        self.assertEquals(set(['item1', 'item3', 'item5']),
+                          set([item['name'] for item in batch]))
+
+    def test_filter_duplicates_with_custom_key(self):
+        keys = ['8062219f00c79c88', '1859834d918981df', 'e2abb7b480edf910']
+        items = [
+            {'custom_key': keys[0], 'name': 'item1', 'country_code': 'es'},
+            {'custom_key': keys[0], 'name': 'item2', 'country_code': 'es'},
+            {'custom_key': keys[1], 'name': 'item3', 'country_code': 'us'},
+            {'custom_key': keys[1], 'name': 'item4', 'country_code': 'us'},
+            {'custom_key': keys[2], 'name': 'item5', 'country_code': 'uk'},
+            {'custom_key': keys[2], 'name': 'item6', 'country_code': 'uk'}
+        ]
+
+        batch = []
+        for item in items:
+            record = BaseRecord(item)
+            batch.append(record)
+        filter = DupeFilter({'options': {'key_field': 'custom_key'}}, meta())
+
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertEqual(3, len(batch))
+        self.assertEquals(set(keys),
+                          set([item['custom_key'] for item in batch]))
+        self.assertEquals(set(['item1', 'item3', 'item5']),
+                          set([item['name'] for item in batch]))
+
+    def test_filter_duplicates_empty_key_dont_get_filtered(self):
+        items = [
+            {'_key': '', 'name': 'item1', 'country_code': 'es'},
+            {'_key': '', 'name': 'item2', 'country_code': 'us'},
+            {'_key': '', 'name': 'item3', 'country_code': 'uk'}
+        ]
+        batch = []
+        for item in items:
+            record = BaseRecord(item)
+            batch.append(record)
+        filter = DupeFilter({'options': {}}, meta())
+
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertEqual(3, len(batch))
+
+    def test_filter_duplicates_items_without_keys_dont_get_filtered(self):
+        items = [
+            {'name': 'item1', 'country_code': 'es'},
+            {'name': 'item2', 'country_code': 'us'},
+            {'name': 'item3', 'country_code': 'uk'}
+        ]
+        batch = []
+        for item in items:
+            record = BaseRecord(item)
+            batch.append(record)
+        filter = DupeFilter({'options': {}}, meta())
+
+        batch = filter.filter_batch(batch)
+        batch = list(batch)
+        self.assertEqual(3, len(batch))
