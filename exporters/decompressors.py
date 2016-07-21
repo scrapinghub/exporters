@@ -1,4 +1,5 @@
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
+import logging
 import zlib
 
 __all__ = ['BaseDecompressor', 'ZLibDecompressor', 'NoDecompressor']
@@ -18,14 +19,20 @@ def create_decompressor():
 
 class ZLibDecompressor(BaseDecompressor):
     def decompress(self, stream):
-        dec = create_decompressor()
-        for chunk in stream:
-            rv = dec.decompress(chunk)
-            if rv:
-                yield rv
-            if dec.unused_data:
-                stream.unshift(dec.unused_data)
-                dec = create_decompressor()
+        try:
+            dec = create_decompressor()
+            for chunk in stream:
+                rv = dec.decompress(chunk)
+                if rv:
+                    yield rv
+                if dec.unused_data:
+                    stream.unshift(dec.unused_data)
+                    dec = create_decompressor()
+        except zlib.error as e:
+            logging.error('Error decoding stream using ZlibDecompressor')
+            if str(e).startswith('Error -3 '):
+                logging.error("Use NoDecompressor if you're using uncompressed input")
+            raise
 
 
 class NoDecompressor(BaseDecompressor):
