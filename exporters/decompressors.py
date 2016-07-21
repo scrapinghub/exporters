@@ -1,6 +1,7 @@
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
-import logging
+import sys
 import zlib
+import six
 
 __all__ = ['BaseDecompressor', 'ZLibDecompressor', 'NoDecompressor']
 
@@ -29,10 +30,10 @@ class ZLibDecompressor(BaseDecompressor):
                     stream.unshift(dec.unused_data)
                     dec = create_decompressor()
         except zlib.error as e:
-            logging.error('Error decoding stream using ZlibDecompressor')
-            if str(e).startswith('Error -3 '):
-                logging.error("Use NoDecompressor if you're using uncompressed input")
-            raise
+            msg = str(e)
+            if msg.startswith('Error -3 '):
+                msg += ". Use NoDecompressor if you're using uncompressed input."
+            six.reraise(zlib.error, zlib.error(msg), sys.exc_info()[2])
 
 
 class NoDecompressor(BaseDecompressor):
