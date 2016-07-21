@@ -33,15 +33,17 @@ class StreamBasedReader(BaseReader):
     def iteritems(self):
         for file_obj, fn, size in self.get_read_streams():
             stream = cohere_stream(file_obj)
-            if fn in self.last_position['readed_streams']:
-                continue
-            stream = self.decompressor.decompress(stream)
-            stream = cohere_stream(stream)
-            items_iter = self.deserializer.deserialize(stream)
-            for record in items_iter:
-                yield record
-            stream.close()
-            self.last_position['readed_streams'].append(fn)
+            try:
+                if fn in self.last_position['readed_streams']:
+                    continue
+                stream = self.decompressor.decompress(stream)
+                stream = cohere_stream(stream)
+                items_iter = self.deserializer.deserialize(stream)
+                for record in items_iter:
+                    yield record
+                self.last_position['readed_streams'].append(fn)
+            finally:
+                stream.close()
         self.finished = True
 
     def get_next_batch(self):
