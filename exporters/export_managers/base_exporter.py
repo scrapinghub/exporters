@@ -10,6 +10,7 @@ from exporters.module_loader import ModuleLoader
 from exporters.notifications.notifiers_list import NotifiersList
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
 from exporters.writers.base_writer import ItemsLimitReached
+from exporters.readers.base_stream_reader import is_stream_reader
 
 
 class BaseExporter(object):
@@ -21,6 +22,13 @@ class BaseExporter(object):
         self.metadata = metadata
         self.reader = self.module_loader.load_reader(
             self.config.reader_options, metadata)
+        if is_stream_reader(self.reader):
+            deserializer = self.module_loader.load_deserializer(
+                self.config.deserializer_options, metadata)
+            decompressor = self.module_loader.load_decompressor(
+                self.config.decompressor_options, metadata)
+            self.reader.deserializer = deserializer
+            self.reader.decompressor = decompressor
         self.filter_before = self.module_loader.load_filter(
             self.config.filter_before_options, metadata)
         self.filter_after = self.module_loader.load_filter(

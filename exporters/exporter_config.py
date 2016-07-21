@@ -1,13 +1,15 @@
 import collections
 from importlib import import_module
-from inspect import getmembers, isclass
+from inspect import isclass
 import json
 from exporters.utils import maybe_cast_list
 from exporters.exceptions import ConfigCheckError
+from exporters.readers.base_stream_reader import StreamBasedReader
 from exporters.defaults import (
     DEFAULT_FILTER_CONFIG, DEFAULT_GROUPER_CONFIG, DEFAULT_PERSISTENCE_CONFIG,
     DEFAULT_STATS_MANAGER_CCONFIG, DEFAULT_FORMATTER_CONFIG, DEFAULT_LOGGER_LEVEL,
-    DEFAULT_LOGGER_NAME, DEFAULT_TRANSFORM_CONFIG
+    DEFAULT_LOGGER_NAME, DEFAULT_TRANSFORM_CONFIG, DEFAULT_DECOMPRESSOR_CONFIG,
+    DEFAULT_DESERIALIZER_CONFIG
 )
 
 
@@ -24,6 +26,8 @@ class ExporterConfig(object):
             self.filter_before_options = self._merge_options('filter_before', DEFAULT_FILTER_CONFIG)
         self.filter_after_options = self._merge_options('filter_after', DEFAULT_FILTER_CONFIG)
         self.transform_options = self._merge_options('transform', DEFAULT_TRANSFORM_CONFIG)
+        self.decompressor_options = self._merge_options('decompressor', DEFAULT_DECOMPRESSOR_CONFIG)
+        self.deserializer_options = self._merge_options('deserializer', DEFAULT_DESERIALIZER_CONFIG)
         self.grouper_options = self._merge_options('grouper', DEFAULT_GROUPER_CONFIG)
         self.writer_options = self._merge_options('writer')
         # Persistence module needs to know about the full configuration,
@@ -69,7 +73,7 @@ class ExporterConfig(object):
 
 MODULE_TYPES = ['readers', 'writers', 'transform', 'groupers',
                 'persistence', 'filters', 'stats_managers', 'export_formatter',
-                'notifications']
+                'notifications', 'decompressors', 'deserializers']
 
 
 def module_options():
@@ -87,6 +91,7 @@ def module_options():
 
 
 REQUIRED_CONFIG_SECTIONS = frozenset(['reader', 'writer'])
+STREAM_READER_SECTIONS = frozenset(['decompressor', 'deserializer'])
 
 
 Parameter = collections.namedtuple('Parameter', 'name options')
@@ -100,7 +105,8 @@ def check_for_errors(config, raise_exception=True):
     """
     errors = {}
     for section in ['reader', 'writer', 'filter', 'filter_before',
-                    'filter_after', 'transform', 'persistence']:
+                    'filter_after', 'transform', 'persistence',
+                    'decompressor', 'deserializer']:
         config_section = config.get(section)
         if config_section is None:
             if section in REQUIRED_CONFIG_SECTIONS:
@@ -115,6 +121,11 @@ def check_for_errors(config, raise_exception=True):
         section_errors = _get_section_errors(exporter_options['formatter'])
         if section_errors:
             errors['formatter'] = section_errors
+
+    if not _is_stream_reader(config):
+        for section in STREAM_READER_SECTIONS:
+            if config.get(section) and not errors.get(section):
+                errors[section] = 'The %r section can only be used with a stream reader.' % section
 
     for i, notificator in enumerate(exporter_options.get('notifications', [])):
         section_errors = _get_section_errors(notificator)
@@ -169,20 +180,36 @@ def _get_option_error(name, spec, config_options):
     return None
 
 
+def exported_classes(module):
+    names = module.__all__ if hasattr(module, '__all__') else dir(module)
+    classes = [(x, getattr(module, x)) for x in names]
+    return [(name, obj) for name, obj in classes if isclass(obj)]
+
+
 def _get_available_classes(module):
     classes_names = set()
-    for name, obj in getmembers(module):
-        if isclass(obj):
-            classes_names.add(obj.__module__ + '.' + obj.__name__)
+    for name, obj in exported_classes(module):
+        classes_names.add(obj.__module__ + '.' + obj.__name__)
     return classes_names
+
+
+def _get_module(module_name):
+    mod_path, class_name = module_name.rsplit('.', 1)
+    mod = import_module(mod_path)
+    return getattr(mod, class_name)
+
+
+def _is_stream_reader(config):
+    try:
+        reader = _get_module(config['reader']['name'])
+    except:
+        return True
+    return issubclass(reader, StreamBasedReader)
 
 
 def _get_module_supported_options(module_name):
     try:
-        class_path_list = module_name.split('.')
-        mod = import_module('.'.join(class_path_list[0:-1]))
-        supported_options = getattr(mod, class_path_list[-1]).supported_options
-        return supported_options
+        return _get_module(module_name).supported_options
     except Exception as e:
         raise ConfigCheckError(
             message='There was a problem loading {} class, exception: {}'
