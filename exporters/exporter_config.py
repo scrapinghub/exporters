@@ -194,9 +194,9 @@ def _get_available_classes(module):
 
 
 def _get_module(module_name):
-    class_path_list = module_name.split('.')
-    mod = import_module('.'.join(class_path_list[0:-1]))
-    return getattr(mod, class_path_list[-1])
+    mod_path, class_name = module_name.rsplit('.', 1)
+    mod = import_module(mod_path)
+    return getattr(mod, class_name)
 
 
 def _is_stream_reader(config):
