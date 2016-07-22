@@ -1,3 +1,4 @@
+import six
 import os
 import re
 import yaml
@@ -15,7 +16,7 @@ class PicklePersistence(BasePersistence):
             Path to store the pickle file
     """
     supported_options = {
-        'file_path': {'type': basestring, 'default': '.'}
+        'file_path': {'type': six.string_types, 'default': '.'}
     }
 
     uri_regex = "pickle:(([a-zA-Z\d-]|\/)+)"

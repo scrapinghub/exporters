@@ -1,3 +1,4 @@
+import six
 import json
 import gzip
 from exporters.default_retries import retry_long
@@ -20,7 +21,7 @@ class ODOWriter(BaseWriter):
 
     requirements = {
         'schema': {'type': object, 'required': True},
-        'odo_uri': {'type': basestring, 'required': True}
+        'odo_uri': {'type': six.string_types, 'required': True}
     }
 
     def __init__(self, options):

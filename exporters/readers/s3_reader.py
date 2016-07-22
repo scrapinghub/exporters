@@ -1,3 +1,4 @@
+import six
 import httplib
 import re
 import datetime
@@ -86,13 +87,13 @@ class S3BucketKeysFetcher(object):
             raise ConfigurationError('prefix and prefix_pointer options '
                                      'cannot be used together')
 
-        prefixes = [prefix] if isinstance(prefix, basestring) else prefix
+        prefixes = [prefix] if isinstance(prefix, six.string_types) else prefix
         if prefix_pointer:
             prefixes = self._fetch_prefixes_from_pointer(prefix_pointer)
         return prefixes
 
     def _get_prefix_formatting_dates(self, prefix_dates):
-        if not prefix_dates or isinstance(prefix_dates, basestring):
+        if not prefix_dates or isinstance(prefix_dates, six.string_types):
             prefix_dates = (prefix_dates, prefix_dates)
         return prefix_dates
 
@@ -159,19 +160,19 @@ class S3Reader(StreamBasedReader):
 
     # List of options to set up the reader
     supported_options = {
-        'bucket': {'type': basestring},
+        'bucket': {'type': six.string_types},
         'aws_access_key_id': {
-            'type': basestring,
+            'type': six.string_types,
             'env_fallback': 'EXPORTERS_S3READER_AWS_KEY'
         },
         'aws_secret_access_key': {
-            'type': basestring,
+            'type': six.string_types,
             'env_fallback': 'EXPORTERS_S3READER_AWS_SECRET'
         },
-        'prefix': {'type': (basestring, list), 'default': ''},
-        'prefix_pointer': {'type': basestring, 'default': None},
-        'pattern': {'type': basestring, 'default': None},
-        'prefix_format_using_date': {'type': (basestring, tuple, list), 'default': None}
+        'prefix': {'type': six.string_types + (list,), 'default': ''},
+        'prefix_pointer': {'type': six.string_types, 'default': None},
+        'pattern': {'type': six.string_types, 'default': None},
+        'prefix_format_using_date': {'type': six.string_types + (tuple, list), 'default': None}
     }
 
     def __init__(self, *args, **kwargs):

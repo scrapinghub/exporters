@@ -1,6 +1,7 @@
 """
 Kafka reader
 """
+import six
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 from exporters.default_retries import retry_short
@@ -29,10 +30,10 @@ class KafkaScannerReader(BaseReader):
 
     # List of options to set up the reader
     supported_options = {
-        'batch_size': {'type': int, 'default': 10000},
+        'batch_size': {'type': six.integer_types, 'default': 10000},
         'brokers': {'type': str_list},
-        'topic': {'type': basestring},
-        'group': {'type': basestring},
+        'topic': {'type': six.string_types},
+        'group': {'type': six.string_types},
         'partitions': {'type': str_list, 'default': None}
     }
 

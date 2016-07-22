@@ -1,3 +1,4 @@
+import six
 from exporters.readers.base_reader import BaseReader
 from exporters.iterio import cohere_stream
 from exporters.decompressors import ZLibDecompressor
@@ -19,7 +20,7 @@ class StreamBasedReader(BaseReader):
 
     # List of options to set up the reader
     supported_options = {
-        'batch_size': {'type': int, 'default': 10000},
+        'batch_size': {'type': six.integer_types, 'default': 10000},
     }
 
     def __init__(self, *args, **kwargs):
