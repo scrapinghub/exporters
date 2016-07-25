@@ -98,9 +98,14 @@ class FlatsonTransformTest(unittest.TestCase):
         }
 
         self.batch = [
-            BaseRecord({'name': 'item1', 'age': '10'}),
-            BaseRecord({'name': 'item2', 'age': '22'}),
-            BaseRecord({'name': 'item3', 'age': '49'})
+            BaseRecord({
+                "name": "Claudio", "age": 42,
+                "address": {"city": "Paris", "street": "Rue de Sevres"},
+                "skills": ["hacking", "soccer"]}),
+            BaseRecord({
+                "name": "Marcelo", "age": 22,
+                "address": {"city": "Sao Paulo", "street": "25 de Marco"},
+                "skills": ["guitar", "piano"]}),
         ]
 
         self.transform = FlatsonTransform(
@@ -111,6 +116,16 @@ class FlatsonTransformTest(unittest.TestCase):
                     "properties": {
                         "name": {"type": "string"},
                         "age": {"type": "number"},
+                        "address": {
+                            "type": "object",
+                            "properties": {
+                                "city": {"type": "string"},
+                                "street": {"type": "string"}
+                            }
+                        },
+                        "skills": {
+                            "type": "array", "items": {"type": "string"}
+                        }
                     }
                 }
             }}
@@ -121,7 +136,8 @@ class FlatsonTransformTest(unittest.TestCase):
 
     def test_transform_batch(self):
         result = list(self.transform.transform_batch(self.batch))
-        self.assertEqual(len(result), 3)
-        self.assertEqual(len(result[0]), 2)
-        self.assertIn('item1', result[0])
-        self.assertIn('49', result[2])
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0][0], 'Paris')
+        self.assertEqual(result[0][4], u'["hacking","soccer"]')
+        self.assertEqual(result[1][0], 'Sao Paulo')
+        self.assertEqual(result[1][4], u'["guitar","piano"]')

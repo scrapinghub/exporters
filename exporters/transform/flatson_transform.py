@@ -1,5 +1,4 @@
 from exporters.transform.base_transform import BaseTransform
-from flatson import Flatson
 
 
 class FlatsonTransform(BaseTransform):
@@ -18,20 +17,13 @@ class FlatsonTransform(BaseTransform):
     }
 
     def __init__(self, *args, **kwargs):
+        from flatson import Flatson
         super(FlatsonTransform, self).__init__(*args, **kwargs)
         self.flatson_schema = self.read_option('flatson_schema')
-        if not self.is_valid_schema(self.flatson_schema):
-            raise ValueError('Invalid flatson schema')
+        self.flatson = Flatson(self.flatson_schema)
         self.logger.info(
             'FlatsonTransform has been initiated. Schema: {!r}'.format(
                 self.flatson_schema))
-
-    def is_valid_schema(self, schema):
-        try:
-            self.flatson = Flatson(schema)
-            return True
-        except ValueError:
-            return False
 
     def transform_batch(self, batch):
         for record in batch:
