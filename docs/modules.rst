@@ -294,7 +294,7 @@ HubstorageWriter
 Transform
 ~~~~~~~~~
 You can apply some item transformations as a part of an export job. Using this module, read items can
-be modified or cleaned before being written. To add a new transform module, you must overwrite the following method: 
+be modified or cleaned before being written. To add a new transform module, you must overwrite the following method:
 
     - transform_batch(batch)
          Receives the batch, transforms its items and yields them,
@@ -331,6 +331,13 @@ PythonexpTransform
 PythonmapTransform
 ##################
 .. automodule:: exporters.transform.pythonmap
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+FlatsonTransform
+##################
+.. automodule:: exporters.transform.flatson_transform
     :members:
     :undoc-members:
     :show-inheritance:

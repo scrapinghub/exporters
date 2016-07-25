@@ -3,6 +3,7 @@ from exporters.records.base_record import BaseRecord
 from exporters.transform.base_transform import BaseTransform
 from exporters.transform.no_transform import NoTransform
 from exporters.transform.pythonexp_transform import PythonexpTransform
+from exporters.transform.flatson_transform import FlatsonTransform
 from exporters.module_loader import ModuleLoader
 
 from .utils import meta
@@ -85,3 +86,42 @@ class PythonexpTransformTest(unittest.TestCase):
             self.assertIn('name', item)
             self.assertIn('new_field', item)
             self.assertEqual(item['new_field'], item['country_code'] + '-' + item['name'])
+
+
+class FlatsonTransformTest(unittest.TestCase):
+    def setUp(self):
+        self.options = {
+            'exporter_options': {
+                'log_level': 'DEBUG',
+                'logger_name': 'export-pipeline'
+            },
+        }
+
+        self.batch = [
+            BaseRecord({'name': 'item1', 'age': '10'}),
+            BaseRecord({'name': 'item2', 'age': '22'}),
+            BaseRecord({'name': 'item3', 'age': '49'})
+        ]
+
+        self.transform = FlatsonTransform(
+            {'options': {
+                'flatson_schema': {
+                    "$schema": "http://json-schema.org/draft-04/schema",
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                        "age": {"type": "number"},
+                    }
+                }
+            }}
+        )
+
+    def test_transform_empty_batch(self):
+        self.assertEqual(list(self.transform.transform_batch([])), [])
+
+    def test_transform_batch(self):
+        result = list(self.transform.transform_batch(self.batch))
+        self.assertEqual(len(result), 3)
+        self.assertEqual(len(result[0]), 2)
+        self.assertIn('item1', result[0])
+        self.assertIn('49', result[2])
