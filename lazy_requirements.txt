@@ -34,3 +34,5 @@ dropbox
 
 dicttoxml
 bz2file
+
+flatson
