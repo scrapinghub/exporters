@@ -27,4 +27,4 @@ class FlatsonTransform(BaseTransform):
 
     def transform_batch(self, batch):
         for record in batch:
-            yield self.flatson.flatten(record)
+            yield self.flatson.flatten_dict(record)

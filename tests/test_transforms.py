@@ -1,4 +1,5 @@
 import unittest
+from collections import OrderedDict
 from exporters.records.base_record import BaseRecord
 from exporters.transform.base_transform import BaseTransform
 from exporters.transform.no_transform import NoTransform
@@ -136,8 +137,14 @@ class FlatsonTransformTest(unittest.TestCase):
 
     def test_transform_batch(self):
         result = list(self.transform.transform_batch(self.batch))
-        self.assertEqual(len(result), 2)
-        self.assertEqual(result[0][0], 'Paris')
-        self.assertEqual(result[0][4], u'["hacking","soccer"]')
-        self.assertEqual(result[1][0], 'Sao Paulo')
-        self.assertEqual(result[1][4], u'["guitar","piano"]')
+        expected = [
+            OrderedDict(
+                [(u'address.city', 'Paris'),
+                 (u'address.street', 'Rue de Sevres'), ('age', 42),
+                 ('name', 'Claudio'), ('skills', u'["hacking","soccer"]')]),
+            OrderedDict(
+                [(u'address.city', 'Sao Paulo'),
+                 (u'address.street', '25 de Marco'), ('age', 22),
+                 ('name', 'Marcelo'), ('skills', u'["guitar","piano"]')])
+        ]
+        self.assertEqual(result, expected)
