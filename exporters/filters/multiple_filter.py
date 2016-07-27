@@ -31,7 +31,7 @@ class MultipleFilter(BaseFilter):
             {"name": "exporters.filters.key_value_regex_filter.KeyValueRegexFilter",
              "options": {
                  "keys": [
-                     {"name": "city", "value": "New York"}
+                     {"name": "status", "value": "Verified"}
                  ]
              }
             },
@@ -39,14 +39,14 @@ class MultipleFilter(BaseFilter):
                 {"name": "exporters.filters.key_value_regex_filter.KeyValueRegexFilter",
                  "options": {
                      "keys": [
-                         {"name": "country", "value": "Canada"}
+                         {"name": "city", "value": "New York"}
                      ]
                  }
                 },
                 {"name": "exporters.filters.key_value_regex_filter.KeyValueRegexFilter",
                  "options": {
                      "keys": [
-                         {"name": "city", "value": "Montreal"}
+                         {"name": "city", "value": "Los Angeles"}
                      ]
                  }
                 },
@@ -54,8 +54,8 @@ class MultipleFilter(BaseFilter):
         ]
 
         The config above could be translated to:
-        (country == 'United States' and city == 'New York') or
-        (country == 'Canada' and city == 'Montreal')
+        country == 'United States' and status == 'Verified' and
+        (city == 'New York' or city == 'Los Angeles')
     """
 
     # List of options

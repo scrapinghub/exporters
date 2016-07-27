@@ -471,7 +471,6 @@ class MultipleFilterTest(unittest.TestCase):
             {'or': [self.true, self.false]}
         ]}
         filter = MultipleFilter({'options': filter_options}, meta())
-        print filter_options
         self.assertFalse(filter.filter(self.items))
 
         for no_of_filters in xrange(1, 5):
