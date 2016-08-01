@@ -1,13 +1,6 @@
-from itertools import izip_longest
 from exporters.filters.base_filter import BaseFilter
 from exporters.module_loader import ModuleLoader
 from exporters.utils import dict_list
-
-
-def grouper(n, iterable, fillvalue=None):
-    "grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx"
-    args = [iter(iterable)] * n
-    return izip_longest(fillvalue=fillvalue, *args)
 
 
 class MultipleFilter(BaseFilter):
