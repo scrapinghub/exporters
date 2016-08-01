@@ -68,43 +68,38 @@ class MultipleFilter(BaseFilter):
         self.module_loader = ModuleLoader()
         self.filter_options = self.read_option('filters')
         self.filters = self._load_filters(self.filter_options)
+        self.filter_func = self._create_filter_func(self.filters)
         self.logger.info('MultipleFilter instantiated.')
 
     def filter(self, item):
-        return self._parse_filter(item, self.filters)
+        return self.filter_func(item)
 
-    def _parse_filter(self, item, filters, operator='and'):
-        """ This function will parse 2 filters at time and evaluate them after
-        all filters were evaluated it returns the final evaluation """
-        last_evaluation = None
-        for left, right in grouper(2, filters, fillvalue={}):
-            left_filter = left.get('name') or left.get('or')
-            right_filter = right.get('name') or right.get('or')
-
-            if not isinstance(left_filter, list):
-                left_result = left_filter.filter(item)
+    def _create_filter_func(self, filters):
+        """ Should generate a list of functions and return a function
+        that check if all the functions in list return True """
+        filter_functions = []
+        for f in filters:
+            _filter = f.get('name') or f.get('or')
+            if isinstance(_filter, list):
+                filter_func = self._create_or_filter(_filter)
             else:
-                left_result = self._parse_filter(item, left_filter, 'or')
+                filter_func = _filter.filter
+            filter_functions.append(filter_func)
 
-            if right and not isinstance(right_filter, list):
-                right_result = right_filter.filter(item)
-            elif right and right_filter:
-                right_result = self._parse_filter(item, right_filter, 'or')
-            else:
-                right_result = last_evaluation or left_result
+        def filter_func(item):
+            results = [f(item) for f in filter_functions]
+            return all(results)
 
-            if operator == 'and':
-                evaluation = left_result and right_result
-            elif operator == 'or':
-                evaluation = left_result or right_result
+        return filter_func
 
-            last_evaluation = evaluation
-
-        return last_evaluation
+    def _create_or_filter(self, filters):
+        def or_filter(item):
+            return any(f['name'].filter(item) for f in filters)
+        return or_filter
 
     def _load_filters(self, filters):
-        """ Receives a list of filter options and return a dict where the key
-        is the filter name and the value is it's instance """
+        """ Receives a list of filter options and return a list of filter
+        instances """
         filter_instances = []
         for f in filters:
             if f.keys()[0] == 'or':

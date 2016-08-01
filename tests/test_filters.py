@@ -419,10 +419,7 @@ class FilterFalse(BaseFilter):
 class MultipleFilterTest(unittest.TestCase):
 
     def setUp(self):
-        self.items = [
-            {'name': 'item1', 'country_code': 'es'},
-            {'name': 'item2', 'country_code': 'us'},
-        ]
+        self.item = {'name': 'item1', 'country_code': 'es'},
         self.false = {"name": "tests.test_filters.FilterFalse"}
         self.true = {"name": "tests.test_filters.FilterTrue"}
 
@@ -437,49 +434,48 @@ class MultipleFilterTest(unittest.TestCase):
     def test_and_true_true(self):
         filter_options = {"filters": [self.true, self.true]}
         filter = MultipleFilter({'options': filter_options}, meta())
-        self.assertTrue(filter.filter(self.items))
+        self.assertTrue(filter.filter(self.item))
 
     def test_and_true_false(self):
         filter_options = {"filters": [self.true, self.false]}
         filter = MultipleFilter({'options': filter_options}, meta())
-        self.assertFalse(filter.filter(self.items))
+        self.assertFalse(filter.filter(self.item))
 
     def test_and_false_false(self):
         filter_options = {"filters": [self.false, self.false]}
         filter = MultipleFilter({'options': filter_options}, meta())
-        self.assertFalse(filter.filter(self.items))
+        self.assertFalse(filter.filter(self.item))
 
     def test_true_or_false_is_true(self):
         filter_options = {"filters": [{'or': [self.true, self.true]}]}
         filter = MultipleFilter({'options': filter_options}, meta())
-        self.assertTrue(filter.filter(self.items))
+        self.assertTrue(filter.filter(self.item))
 
     def test_true_or_true_is_true(self):
         filter_options = {"filters": [{'or': [self.true, self.true]}]}
         filter = MultipleFilter({'options': filter_options}, meta())
-        self.assertTrue(filter.filter(self.items))
+        self.assertTrue(filter.filter(self.item))
 
     def test_false_or_false_is_false(self):
         filter_options = {"filters": [{'or': [self.false, self.false]}]}
         filter = MultipleFilter({'options': filter_options}, meta())
-        self.assertFalse(filter.filter(self.items))
+        self.assertFalse(filter.filter(self.item))
 
     def test_complex_and_or_logic(self):
-
         filter_options = {"filters": [
             self.false,
             {'or': [self.true, self.false]}
         ]}
         filter = MultipleFilter({'options': filter_options}, meta())
-        self.assertFalse(filter.filter(self.items))
+        self.assertFalse(filter.filter(self.item))
 
         for no_of_filters in xrange(1, 5):
+            print 'No of filters: {}'.format(no_of_filters)
             filter_options = {"filters": [self.true] * no_of_filters + [
                 {'or': [self.true, self.false]}
             ]}
             filter = MultipleFilter({'options': filter_options}, meta())
-            print filter_options
-            self.assertTrue(filter.filter(self.items))
+            self.assertTrue(filter.filter(self.item))
 
             filter_options = {
                 "filters": [self.true] * no_of_filters + [
@@ -487,7 +483,7 @@ class MultipleFilterTest(unittest.TestCase):
                 ]
             }
             filter = MultipleFilter({'options': filter_options}, meta())
-            self.assertFalse(filter.filter(self.items))
+            self.assertFalse(filter.filter(self.item))
 
             filter_options = {
                 "filters": [self.true] * no_of_filters + [
@@ -495,7 +491,7 @@ class MultipleFilterTest(unittest.TestCase):
                 ]
             }
             filter = MultipleFilter({'options': filter_options}, meta())
-            self.assertTrue(filter.filter(self.items))
+            self.assertTrue(filter.filter(self.item))
 
             filter_options = {
                 "filters": [self.true] * no_of_filters + [
@@ -503,26 +499,26 @@ class MultipleFilterTest(unittest.TestCase):
                 ]
             }
             filter = MultipleFilter({'options': filter_options}, meta())
-            self.assertTrue(filter.filter(self.items))
+            self.assertTrue(filter.filter(self.item))
 
     def test_complex_only_or_expressions(self):
         filter_options = {"filters": [
             {'or': [self.true, self.false, self.false]}]}
         filter = MultipleFilter({'options': filter_options}, meta())
-        self.assertTrue(filter.filter(self.items))
+        self.assertTrue(filter.filter(self.item))
 
         filter_options = {"filters": [
             {'or': [self.false, self.false, self.true]}]}
         filter = MultipleFilter({'options': filter_options}, meta())
-        self.assertTrue(filter.filter(self.items))
+        self.assertTrue(filter.filter(self.item))
 
         filter_options = {"filters": [{'or': [self.false] * 3}]}
         filter = MultipleFilter({'options': filter_options}, meta())
-        self.assertFalse(filter.filter(self.items))
+        self.assertFalse(filter.filter(self.item))
 
         filter_options = {"filters": [
             {'or': [self.true, self.false]},
             {'or': [self.false, self.true]},
         ]}
         filter = MultipleFilter({'options': filter_options}, meta())
-        self.assertTrue(filter.filter(self.items))
+        self.assertTrue(filter.filter(self.item))
