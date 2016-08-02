@@ -61,44 +61,48 @@ class MultipleFilter(BaseFilter):
         self.module_loader = ModuleLoader()
         self.filter_options = self.read_option('filters')
         self.filters = self._load_filters(self.filter_options)
-        self.filter_func = self._create_filter_func(self.filters)
+        operator = 'or' if self.filters[0].keys()[0] == 'or' else 'and'
+        self.filter_func = self._create_filter_func(self.filters, operator)
         self.logger.info('MultipleFilter instantiated.')
 
     def filter(self, item):
         return self.filter_func(item)
 
-    def _create_filter_func(self, filters):
-        """ Should generate a list of functions and return a function
-        that check if all the functions in list return True """
-        filter_functions = []
+    def _create_filter_func(self, filters, operator='and'):
+        functions = []
         for f in filters:
-            _filter = f.get('name') or f.get('or')
-            if isinstance(_filter, list):
-                filter_func = self._create_or_filter(_filter)
-            else:
-                filter_func = _filter.filter
-            filter_functions.append(filter_func)
+            nested_filters = f.get('and') or f.get('or')
+            if nested_filters:
+                _operator = f.keys()[0]
+                functions.append(self._create_filter_func(
+                    nested_filters, _operator))
+            elif f.get('name'):
+                functions.append(f['name'].filter)
 
-        def filter_func(item):
-            results = [f(item) for f in filter_functions]
-            return all(results)
-
-        return filter_func
-
-    def _create_or_filter(self, filters):
         def or_filter(item):
-            return any(f['name'].filter(item) for f in filters)
-        return or_filter
+            return any(f(item) for f in functions)
+
+        def and_filter(item):
+            return all(f(item) for f in functions)
+
+        return and_filter if operator == 'and' else or_filter
 
     def _load_filters(self, filters):
         """ Receives a list of filter options and return a list of filter
         instances """
         filter_instances = []
-        for f in filters:
-            if f.keys()[0] == 'or':
-                filter_instances.append({'or': self._load_filters(f['or'])})
-            else:
-                filter_instances.append({
-                    'name': self.module_loader.load_filter(f, self.metadata)
-                })
+        try:
+            for f in filters:
+                if f.keys()[0] in ('or', 'and'):
+                    key = f.keys()[0]
+                    filter_instances.append({key: self._load_filters(f[key])})
+                else:
+                    filter_instances.append({
+                        'name': self.module_loader.load_filter(f, self.metadata)
+                    })
+        except (IndexError, KeyError):
+            # IndexError occurs in f.keys()[0] if f is a empty dict
+            # KeyError occurs if we call to load_filter with an invalid dict
+            # like {'invalid': 'x'}
+            raise ValueError('Invalid filter option {!r}'.format(f))
         return filter_instances

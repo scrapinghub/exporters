@@ -522,3 +522,66 @@ class MultipleFilterTest(unittest.TestCase):
         ]}
         filter = MultipleFilter({'options': filter_options}, meta())
         self.assertTrue(filter.filter(self.item))
+
+    def test_or_with_and_inside(self):
+        # should be translated to self.false OR (self.true AND self.true)
+        filter_options = {"filters": [
+            {'or': [
+                self.false,
+                {'and': [self.true, self.true]}
+            ]}
+        ]}
+        filter = MultipleFilter({'options': filter_options}, meta())
+        self.assertTrue(filter.filter(self.item))
+
+        # should be translated to self.false OR (self.false AND self.true)
+        filter_options = {"filters": [
+            {'or': [
+                self.false,
+                {'and': [self.false, self.true]}
+            ]}
+        ]}
+        filter = MultipleFilter({'options': filter_options}, meta())
+        self.assertFalse(filter.filter(self.item))
+
+    def test_explicit_and(self):
+        filter_options = {"filters": [
+            {'and': [self.false, self.true, self.true]}
+        ]}
+        filter = MultipleFilter({'options': filter_options}, meta())
+        self.assertFalse(filter.filter(self.item))
+
+        filter_options = {"filters": [
+            {'and': [self.true, self.true]}
+        ]}
+        filter = MultipleFilter({'options': filter_options}, meta())
+        self.assertTrue(filter.filter(self.item))
+
+        # should be translated to self.true AND (self.false OR self.true)
+        filter_options = {"filters": [
+            {'and': [
+                self.true,
+                {'or': [self.false, self.true]}
+            ]}
+        ]}
+        filter = MultipleFilter({'options': filter_options}, meta())
+        self.assertTrue(filter.filter(self.item))
+
+        # should be translated to self.false AND (self.false OR self.true)
+        filter_options = {"filters": [
+            {'and': [
+                self.false,
+                {'or': [self.false, self.true]}
+            ]}
+        ]}
+        filter = MultipleFilter({'options': filter_options}, meta())
+        self.assertFalse(filter.filter(self.item))
+
+    def test_raise_value_error(self):
+        filter_options = {"filters": [{}]}
+        with self.assertRaises(ValueError):
+            MultipleFilter({'options': filter_options}, meta())
+
+        filter_options = {"filters": [{'invalid_name': ''}]}
+        with self.assertRaises(ValueError):
+            MultipleFilter({'options': filter_options}, meta())
