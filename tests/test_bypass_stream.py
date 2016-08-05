@@ -99,7 +99,8 @@ class StreamBypassTest(unittest.TestCase):
     @mock.patch('exporters.readers.s3_reader.S3Reader.get_read_streams')
     @mock.patch('exporters.readers.s3_reader.S3Reader.open_stream')
     @mock.patch('exporters.writers.gstorage_writer.GStorageWriter.write_stream')
-    def test_bypass_stream(self, write_stream_mock, open_stream_mock, get_read_streams_mock, *othermocks):
+    def test_bypass_stream(self, write_stream_mock, open_stream_mock,
+                           get_read_streams_mock, *othermocks):
         # given
         file_len = 50
         file_obj = IterIO(BytesIO('a'*file_len))
@@ -121,7 +122,8 @@ class StreamBypassTest(unittest.TestCase):
     @mock.patch('exporters.readers.s3_reader.S3Reader.get_read_streams')
     @mock.patch('exporters.readers.s3_reader.S3Reader.open_stream')
     @mock.patch('exporters.writers.gstorage_writer.GStorageWriter.write_stream')
-    def test_resume_bypass(self, write_stream_mock, open_stream_mock, get_streams_mock, *othermocks):
+    def test_resume_bypass(self, write_stream_mock, open_stream_mock,
+                           get_streams_mock, *othermocks):
         # given
         options = create_stream_bypass_simple_config()
         options.persistence_options.update(
@@ -130,7 +132,6 @@ class StreamBypassTest(unittest.TestCase):
         )
         options.persistence_options['options']['file_path'] = self.data_dir
         file_len = 50
-        file_obj_a = IterIO(BytesIO('a'*file_len))
         file_obj_b = IterIO(BytesIO('b'*file_len))
         stream_a = Stream('file_a', file_len, None)
         stream_b = Stream('file_b', file_len, None)
