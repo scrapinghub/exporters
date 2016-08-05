@@ -75,7 +75,7 @@ class GStorageWriterTest(unittest.TestCase):
             file_len = len('hello')
 
             # when:
-            writer.write_stream(Stream(file_obj, file_name, file_len))
+            writer.write_stream(Stream(file_name, file_len, None), file_obj)
 
             # then
             bucket_mock = get_client().bucket()

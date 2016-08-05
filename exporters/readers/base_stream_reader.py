@@ -1,4 +1,5 @@
 import six
+from exporters.default_retries import retry_long
 from exporters.readers.base_reader import BaseReader
 from exporters.iterio import cohere_stream
 from exporters.decompressors import ZLibDecompressor
@@ -31,20 +32,31 @@ class StreamBasedReader(BaseReader):
     decompressor = ZLibDecompressor({}, None)
     deserializer = JsonLinesDeserializer({}, None)
 
+    @retry_long
+    def iteritems_retrying(self, stream_data):
+        if stream_data in self.last_position['readed_streams']:
+            return
+        stream = self.open_stream(stream_data)
+        try:
+            stream = self.decompressor.decompress(stream)
+            stream = cohere_stream(stream)
+            items_readed = 0
+            stream_offset = self.last_position['stream_offset']
+            items_offset = stream_offset.get(stream_data, 0)
+            for item in self.deserializer.deserialize(stream):
+                items_readed += 1
+                if items_readed > items_offset:
+                    yield item
+                    stream_offset[stream_data] = items_readed
+        finally:
+            stream.close()
+        self.last_position['readed_streams'].append(stream_data)
+        del stream_offset[stream_data]
+
     def iteritems(self):
-        for file_obj, fn, size in self.get_read_streams():
-            stream = cohere_stream(file_obj)
-            try:
-                if fn in self.last_position['readed_streams']:
-                    continue
-                stream = self.decompressor.decompress(stream)
-                stream = cohere_stream(stream)
-                items_iter = self.deserializer.deserialize(stream)
-                for record in items_iter:
-                    yield record
-                self.last_position['readed_streams'].append(fn)
-            finally:
-                stream.close()
+        for stream in self.get_read_streams():
+            for record in self.iteritems_retrying(stream):
+                yield record
         self.finished = True
 
     def get_next_batch(self):
@@ -75,6 +87,7 @@ class StreamBasedReader(BaseReader):
         """
         last_position = last_position or {}
         last_position.setdefault('readed_streams', [])
+        last_position.setdefault('stream_offset', {})
         self.last_position = last_position
 
 

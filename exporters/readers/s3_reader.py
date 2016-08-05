@@ -190,9 +190,11 @@ class S3Reader(StreamBasedReader):
         self.keys = self.keys_fetcher.pending_keys()
         self.logger.info('S3Reader has been initiated')
 
+    def open_stream(self, stream):
+        return urlopen(self.bucket.get_key(stream.filename).generate_url(S3_URL_EXPIRES_IN))
+
     def get_read_streams(self):
         from exporters.bypasses.stream_bypass import Stream
         for key_name in self.keys:
             key = self.bucket.get_key(key_name)
-            file_obj = urlopen(key.generate_url(S3_URL_EXPIRES_IN))
-            yield Stream(file_obj, key_name, key.size)
+            yield Stream(key_name, key.size, None)

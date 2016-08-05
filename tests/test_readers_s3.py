@@ -302,7 +302,7 @@ class S3ReaderTest(unittest.TestCase):
                               'test_list/dump_p2_US_a', 'test_list/dump_p_US_a'])
             streams = list(reader.get_read_streams())
             for stream_data, file_name in zip(streams, file_names):
-                file_obj, name, size = stream_data
+                name, size, _ = stream_data
                 assert name in file_names
                 file_names.remove(name)
             assert file_names == set()
