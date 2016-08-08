@@ -1,5 +1,5 @@
 import six
-from exporters.default_retries import retry_long
+from exporters.default_retries import retry_generator
 from exporters.readers.base_reader import BaseReader
 from exporters.iterio import cohere_stream
 from exporters.decompressors import ZLibDecompressor
@@ -32,7 +32,7 @@ class StreamBasedReader(BaseReader):
     decompressor = ZLibDecompressor({}, None)
     deserializer = JsonLinesDeserializer({}, None)
 
-    @retry_long
+    @retry_generator
     def iteritems_retrying(self, stream_data):
         if stream_data in self.last_position['readed_streams']:
             return
@@ -46,8 +46,8 @@ class StreamBasedReader(BaseReader):
             for item in self.deserializer.deserialize(stream):
                 items_readed += 1
                 if items_readed > items_offset:
-                    yield item
                     stream_offset[stream_data] = items_readed
+                    yield item
         finally:
             stream.close()
         self.last_position['readed_streams'].append(stream_data)
