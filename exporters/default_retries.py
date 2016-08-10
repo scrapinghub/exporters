@@ -79,15 +79,15 @@ retry_long = initialized_retry(
 )
 
 
-def retry_generator(fn, max_retries=8, retry_multiplier=5.0):
-    """
-    Retry a generator. The if you don't expect already yielded items to be
-    yielded again, the generator will need to keep state about what items have
-    already been successfully yielded.
-    """
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        for retry in range(max_retries):
+def retry_generator(fn=None, max_retries=8, retry_multiplier=5.0, *args, **kwargs):
+    @decorator
+    def _decor_(fn, *args, **kwargs):
+        """
+        Retry a generator. The if you don't expect already yielded items to be
+        yielded again, the generator will need to keep state about what items have
+        already been successfully yielded.
+        """
+        for retry in range(1, max_retries + 1):
             try:
                 generator = fn(*args, **kwargs)
                 for i in generator:
@@ -95,9 +95,13 @@ def retry_generator(fn, max_retries=8, retry_multiplier=5.0):
             except StopIteration:
                 raise
             except Exception as e:
-                logging.warning("Retrying: {} (message was: {})".format(
-                    fn.__name__, str(e)))
-                time.sleep((retry+1)*retry_multiplier)
+                if retry < max_retries:
+                    logging.warning("Retrying: {} (message was: {})".format(
+                        fn.__name__, str(e)))
+                    time.sleep(retry * retry_multiplier)
+                else:
+                    raise
             else:
                 break
-    return wrapper
+
+    return _decor_(fn, *args, **kwargs) if fn is not None else _decor_
