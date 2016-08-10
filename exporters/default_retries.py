@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from decorator import decorator
 from retrying import Retrying
 from functools import wraps
+from types import GeneratorType
 
 
 __all__ = ['retry_short', 'retry_long', 'set_retry_init', 'disable_retries', 'retry_generator']
@@ -79,6 +80,10 @@ retry_long = initialized_retry(
 )
 
 
+class NonGeneratorError(Exception):
+    pass
+
+
 def retry_generator(fn=None, max_retries=8, retry_multiplier=5.0, *args, **kwargs):
     @decorator
     def _decor_(fn, *args, **kwargs):
@@ -90,9 +95,12 @@ def retry_generator(fn=None, max_retries=8, retry_multiplier=5.0, *args, **kwarg
         for retry in range(1, max_retries + 1):
             try:
                 generator = fn(*args, **kwargs)
+                if not isinstance(generator, GeneratorType):
+                    raise NonGeneratorError("@retry_generator cannot be used in non-generator functions")
+
                 for i in generator:
                     yield i
-            except StopIteration:
+            except (StopIteration, NonGeneratorError):
                 raise
             except Exception as e:
                 if retry < max_retries:
