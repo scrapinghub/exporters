@@ -96,7 +96,8 @@ def retry_generator(fn=None, max_retries=8, retry_multiplier=5.0, *args, **kwarg
             try:
                 generator = fn(*args, **kwargs)
                 if not isinstance(generator, GeneratorType):
-                    raise NonGeneratorError("@retry_generator cannot be used in non-generator functions")
+                    msg = "@retry_generator cannot be used in non-generator functions"
+                    raise NonGeneratorError(msg)
 
                 for i in generator:
                     yield i
