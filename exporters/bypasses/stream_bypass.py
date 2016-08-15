@@ -4,8 +4,9 @@ from contextlib import closing
 
 from exporters.bypasses.base import BaseBypass
 from exporters.module_loader import ModuleLoader
+from exporters.iterio import cohere_stream
 
-Stream = namedtuple('Stream', 'file_obj filename size')
+Stream = namedtuple('Stream', 'filename size meta')
 
 
 class StreamBypassState(object):
@@ -26,9 +27,9 @@ class StreamBypassState(object):
     def _get_state(self):
         return dict(done=self.done, skipped=self.skipped, stats=self.stats)
 
-    def commit_copied(self, name, size):
-        self.increment_bytes(size)
-        self.done.append(name)
+    def commit_copied(self, stream):
+        self.increment_bytes(stream.size)
+        self.done.append(stream)
         self.state.commit_position(self._get_state())
 
     def increment_bytes(self, cnt):
@@ -36,24 +37,6 @@ class StreamBypassState(object):
 
     def delete(self):
         self.state.delete()
-
-
-def ensure_tell_method(fileobj):
-    """
-    Adds a tell() method if the file doesn't have one already.
-    This is accomplished by monkey-patching read()
-    """
-    if not hasattr(fileobj, 'tell') and not hasattr(fileobj, 'seek'):
-        old_read = fileobj.read
-
-        def new_read(num=-1):
-            buf = old_read(num)
-            new_read.pos = new_read.pos + len(buf)
-            return buf
-        new_read.pos = 0
-
-        fileobj.read = new_read
-        fileobj.tell = lambda: new_read.pos
 
 
 class StreamBypass(BaseBypass):
@@ -110,8 +93,9 @@ class StreamBypass(BaseBypass):
         except:
             cls._log_skip_reason("Can't load reader and/or writer")
             return False
-        if not hasattr(reader, 'get_read_streams'):
-            cls._log_skip_reason("Reader doesn't support get_read_streams()")
+        if not callable(getattr(reader, 'get_read_streams', None)) or\
+           not callable(getattr(reader, 'open_stream', None)):
+            cls._log_skip_reason("Reader doesn't support get_read_streams()/open_stream()")
             return False
         if not hasattr(writer, 'write_stream'):
             cls._log_skip_reason("Writer doesn't support write_stream()")
@@ -127,16 +111,15 @@ class StreamBypass(BaseBypass):
         writer = module_loader.load_writer(self.config.writer_options, self.metadata)
         with closing(reader), closing(writer):
             for stream in reader.get_read_streams():
-                if stream.filename not in self.bypass_state.skipped:
-                    ensure_tell_method(stream.file_obj)
+                if stream not in self.bypass_state.skipped:
+                    file_obj = cohere_stream(reader.open_stream(stream))
                     logging.log(logging.INFO, 'Starting to copy file {}'.format(stream.filename))
                     try:
-                        writer.write_stream(stream)
+                        writer.write_stream(stream, file_obj)
                     finally:
-                        if hasattr(stream, 'close'):
-                            stream.close()
+                        file_obj.close()
                     logging.log(logging.INFO, 'Finished copying file {}'.format(stream.filename))
-                    self.bypass_state.commit_copied(stream.filename, stream.size)
+                    self.bypass_state.commit_copied(stream)
                 else:
                     logging.log(logging.INFO, 'Skip file {}'.format(stream.filename))
 

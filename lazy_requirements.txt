@@ -30,7 +30,7 @@ jdatetime==1.7.2
 
 azure-storage==0.30.0
 
-dropbox
+dropbox==6.5.0
 
 dicttoxml
 bz2file

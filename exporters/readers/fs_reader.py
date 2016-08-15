@@ -130,8 +130,10 @@ class FSReader(StreamBasedReader):
             if all(mf(filepath) for mf in match_funcs)
         ]
 
+    def open_stream(self, stream):
+        return open(stream.filename, 'rb')
+
     def get_read_streams(self):
         for fpath in sorted(self.files):
             size = os.path.getsize(fpath)
-            with open(fpath, 'rb') as f:
-                yield Stream(f, fpath, size)
+            yield Stream(fpath, size, None)

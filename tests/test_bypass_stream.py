@@ -4,9 +4,10 @@ from contextlib import closing
 
 import mock
 from six import BytesIO
-from exporters.bypasses.stream_bypass import ensure_tell_method, StreamBypass, Stream
+from exporters.bypasses.stream_bypass import StreamBypass, Stream
 from exporters.exporter_config import ExporterConfig
 from exporters.utils import remove_if_exists
+from exporters.iterio import IterIO
 from .utils import meta
 
 
@@ -39,22 +40,6 @@ class FooFile(object):
     """ file-like object that returns f's """
     def read(self, num_bytes):
         return "f"*num_bytes
-
-
-class TestEnsureTell(unittest.TestCase):
-    def test_foo_file(self):
-        assert FooFile().read(5) == 'fffff'
-
-    def test_ensure_tell(self):
-        ff = FooFile()
-        ensure_tell_method(ff)
-        assert ff.tell() == 0
-        ff.read(10)
-        assert ff.tell() == 10
-        ff.read(5)
-        assert ff.tell() == 15
-        ff.read(0)
-        assert ff.tell() == 15
 
 
 class StreamBypassConditionsTest(unittest.TestCase):
@@ -112,12 +97,15 @@ class StreamBypassTest(unittest.TestCase):
     @mock.patch('gcloud.storage.Client')
     @mock.patch('boto.connect_s3')
     @mock.patch('exporters.readers.s3_reader.S3Reader.get_read_streams')
+    @mock.patch('exporters.readers.s3_reader.S3Reader.open_stream')
     @mock.patch('exporters.writers.gstorage_writer.GStorageWriter.write_stream')
-    def test_bypass_stream(self, write_stream_mock, get_read_streams_mock, *othermocks):
+    def test_bypass_stream(self, write_stream_mock, open_stream_mock,
+                           get_read_streams_mock, *othermocks):
         # given
         file_len = 50
-        file_obj = BytesIO('a'*file_len)
-        get_read_streams_mock.return_value = [Stream(file_obj, 'name', file_len)]
+        file_obj = IterIO(BytesIO('a'*file_len))
+        get_read_streams_mock.return_value = [Stream('name', file_len, None)]
+        open_stream_mock.return_value = file_obj
         options = create_stream_bypass_simple_config()
 
         # when:
@@ -125,15 +113,17 @@ class StreamBypassTest(unittest.TestCase):
             bypass.execute()
 
         # then:
-        write_stream_mock.assert_called_once_with(Stream(file_obj, 'name', file_len))
+        write_stream_mock.assert_called_once_with(Stream('name', file_len, None), file_obj)
         self.assertEquals(bypass.bypass_state.stats['bytes_copied'], 50,
                           'Wrong number of bytes written')
 
     @mock.patch('gcloud.storage.Client')
     @mock.patch('boto.connect_s3')
     @mock.patch('exporters.readers.s3_reader.S3Reader.get_read_streams')
+    @mock.patch('exporters.readers.s3_reader.S3Reader.open_stream')
     @mock.patch('exporters.writers.gstorage_writer.GStorageWriter.write_stream')
-    def test_resume_bypass(self, write_stream_mock, get_streams_mock, *othermocks):
+    def test_resume_bypass(self, write_stream_mock, open_stream_mock,
+                           get_streams_mock, *othermocks):
         # given
         options = create_stream_bypass_simple_config()
         options.persistence_options.update(
@@ -142,18 +132,19 @@ class StreamBypassTest(unittest.TestCase):
         )
         options.persistence_options['options']['file_path'] = self.data_dir
         file_len = 50
-        file_obj_a = BytesIO('a'*file_len)
-        file_obj_b = BytesIO('b'*file_len)
-        get_streams_mock.return_value = [Stream(file_obj_a, 'file_a', file_len),
-                                         Stream(file_obj_b, 'file_b', file_len)]
+        file_obj_b = IterIO(BytesIO('b'*file_len))
+        stream_a = Stream('file_a', file_len, None)
+        stream_b = Stream('file_b', file_len, None)
+        get_streams_mock.return_value = [stream_a, stream_b]
+        open_stream_mock.return_value = file_obj_b
         # Initial state is:
-        # skipped = ['name_a'] stats = {'bytes_copied': 50}
+        # done = [(file_a, 50, None)] stats = {'bytes_copied': 50}
 
         # when:
         with closing(StreamBypass(options, meta())) as bypass:
             bypass.execute()
 
         # then:
-        write_stream_mock.assert_called_once_with(Stream(file_obj_b, 'file_b', file_len))
-        self.assertEquals(bypass.bypass_state.stats['bytes_copied'], 100,
-                          'Wrong number of bytes written')
+        write_stream_mock.assert_called_once_with(stream_b, file_obj_b)
+        assert bypass.bypass_state.stats['bytes_copied'] == 100,\
+            'Wrong number of bytes written'
