@@ -11,11 +11,14 @@ from exporters.notifications.notifiers_list import NotifiersList
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
 from exporters.writers.base_writer import ItemsLimitReached
 from exporters.readers.base_stream_reader import is_stream_reader
+from six.moves.queue import Queue
+from threading import Thread
 
 
 class BaseExporter(object):
     def __init__(self, configuration):
         self.config = ExporterConfig(configuration)
+        self.threaded = self.config.exporter_options.get('threaded', False)
         self.logger = ExportManagerLogger(self.config.log_options)
         self.module_loader = ModuleLoader()
         metadata = ExportMeta(configuration)
@@ -164,18 +167,61 @@ class BaseExporter(object):
                 break
         self.writer.flush()
 
+    def _reader_thread(self):
+        self.logger.info('Starting reader thread')
+        while not self.reader.is_finished():
+            self.process_queue.put(list(self.reader.get_next_batch()))
+        self.reader_finished = True
+
+    def _process_thread(self):
+        self.logger.info('Starting processing thread')
+        while not self.reader_finished or not self.process_queue.empty():
+            next_batch = self.process_queue.get()
+            next_batch = self.filter_before.filter_batch(next_batch)
+            next_batch = self.transform.transform_batch(next_batch)
+            next_batch = self.filter_after.filter_batch(next_batch)
+            next_batch = self.grouper.group_batch(next_batch)
+            self.writer_queue.put(next_batch)
+        self.process_finished = True
+
+    def _writer_thread(self):
+        self.logger.info('Starting writer thread')
+        while not self.process_finished or not self.writer_queue.empty():
+            batch = self.writer_queue.get()
+            self.writer.write_batch(batch=batch)
+        self.writer.finish_writing()
+        self.writer.flush()
+
+    def _run_threads(self):
+        self.reader_finished = False
+        self.process_finished = False
+        self.process_queue = Queue(1000)
+        self.writer_queue = Queue(1000)
+        reader_thread = Thread(target=self._reader_thread)
+        process_thread = Thread(target=self._process_thread)
+        writer_thread = Thread(target=self._writer_thread)
+        reader_thread.start()
+        process_thread.start()
+        writer_thread.start()
+        reader_thread.join()
+        process_thread.join()
+        writer_thread.join()
+
     def export(self):
         if not self.bypass():
             try:
                 self._init_export_job()
-                self._run_pipeline()
-                self._finish_export_job()
+                if self.threaded:
+                    self._run_threads()
+                else:
+                    self._run_pipeline()
+                    self._finish_export_job()
                 self._final_stats_report()
                 self.persistence.close()
                 self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM])
             except Exception as e:
                 self._handle_export_exception(e)
-                raise e
+                raise
             finally:
                 self._clean_export_job()
         else:
