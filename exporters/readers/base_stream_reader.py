@@ -36,7 +36,7 @@ class StreamBasedReader(BaseReader):
     def iteritems_retrying(self, stream_data):
         if stream_data in self.last_position['readed_streams']:
             return
-        stream = self.open_stream(stream_data)
+        stream = cohere_stream(self.open_stream(stream_data))
         try:
             stream = self.decompressor.decompress(stream)
             stream = cohere_stream(stream)
