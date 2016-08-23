@@ -34,7 +34,7 @@ class StreamBasedReader(BaseReader):
 
     @retry_generator
     def iteritems_retrying(self, stream_data):
-        if stream_data in self.last_position['readed_streams']:
+        if stream_data.filename in self.last_position['readed_streams']:
             return
         stream = cohere_stream(self.open_stream(stream_data))
         try:
@@ -42,16 +42,16 @@ class StreamBasedReader(BaseReader):
             stream = cohere_stream(stream)
             items_readed = 0
             stream_offset = self.last_position['stream_offset']
-            items_offset = stream_offset.get(stream_data, 0)
+            items_offset = stream_offset.get(stream_data.filename, 0)
             for item in self.deserializer.deserialize(stream):
                 items_readed += 1
                 if items_readed > items_offset:
-                    stream_offset[stream_data] = items_readed
+                    stream_offset[stream_data.filename] = items_readed
                     yield item
         finally:
             stream.close()
-        self.last_position['readed_streams'].append(stream_data)
-        del stream_offset[stream_data]
+        self.last_position['readed_streams'].append(stream_data.filename)
+        del stream_offset[stream_data.filename]
 
     def iteritems(self):
         for stream in self.get_read_streams():
