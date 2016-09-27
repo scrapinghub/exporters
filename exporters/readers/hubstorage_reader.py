@@ -49,7 +49,6 @@ class HubstorageReader(BaseReader):
         'prefixes': {'type': str_list, 'default': []},
         'exclude_prefixes': {'type': str_list, 'default': []},
         'secondary_collections': {'type': str_list, 'default': []},
-        'has_many_collections': {'type': dict, 'default': {}},
         'startts': {'type': six.integer_types + six.string_types, 'default': None},
         'endts': {'type': six.integer_types + six.string_types, 'default': None},
     }
@@ -75,7 +74,6 @@ class HubstorageReader(BaseReader):
                                  prefix=self.read_option('prefixes'),
                                  exclude_prefixes=self.read_option('exclude_prefixes'),
                                  secondary_collections=self.read_option('secondary_collections'),
-                                 has_many_collections=self.read_option('has_many_collections'),
                                  startts=self.read_option('startts'),
                                  endts=self.read_option('endts'),
                                  meta=['_key'])
