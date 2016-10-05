@@ -173,9 +173,10 @@ class BaseExporter(object):
         self.logger.info('Starting reader thread')
         while not self.reader.is_finished():
             self.process_queue.put(list(self.reader.get_next_batch()))
-            if len(self.process_queue) > 0.5*self.queue_size:
+            qsize = self.process_queue.qsize()
+            if qsize > 0.5*self.queue_size:
                 # Queues are getting full, throttle the reader so the processor/writer can keep up
-                time.sleep((len(self.process_queue)*10.0 / self.queue_size) - 5)
+                time.sleep((qsize*10.0 / self.queue_size) - 5)
         self.reader_finished = True
 
     def _process_thread(self):
