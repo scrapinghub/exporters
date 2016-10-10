@@ -169,7 +169,7 @@ class BaseExporter(object):
             obj = getattr(self, key, None)
             if obj:
                 print('Prof %s' % key)
-                h.iso(obj)
+                print(str(h.iso(obj)))
 
     def _run_pipeline(self):
         last_profiled = datetime.datetime.now()
