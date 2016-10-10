@@ -170,7 +170,7 @@ class BaseExporter(object):
         uniqs = muppy.filter(all_objects, Type=unicode)
         import objgraph
 
-        cnt = 5000
+        cnt = 500
         for s in uniqs:
             if s == 'title':
                 cnt -= 1
