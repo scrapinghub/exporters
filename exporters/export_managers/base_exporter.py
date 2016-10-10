@@ -171,6 +171,7 @@ class BaseExporter(object):
         import objgraph
 
         cnt = 500
+        print(len(uniqs))
         for s in uniqs:
             if s == 'title':
                 cnt -= 1
