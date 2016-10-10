@@ -166,7 +166,10 @@ class BaseExporter(object):
         kbytes = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         print('Memory used after GC: %s MB' % (kbytes / 1024))
         from pympler import muppy
+        from pympler import summary
         all_objects = muppy.get_objects()
+        sum1 = summary.summarize(all_objects)
+        summary.print_(sum1)
         uniqs = muppy.filter(all_objects, Type=unicode)
         import objgraph
 
