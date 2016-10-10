@@ -155,13 +155,26 @@ class BaseExporter(object):
         except Exception as e:
             self.logger.error('Error making final stats report: {}'.format(str(e)))
 
+    def profile_memory(self):
+        import resource
+        kbytes = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        print('Memory used: %s' % (kbytes / 1024))
+        from guppy import hpy
+        print(str(hpy().heap()))
+
     def _run_pipeline(self):
+        self.profile_memory()
+        last_profiled = datetime.datetime.now()
         while not self.reader.is_finished():
             try:
                 self._run_pipeline_iteration()
             except ItemsLimitReached as e:
                 self.logger.info('{!r}'.format(e))
                 break
+            if (datetime.datetime.now() - last_profiled).total_seconds() > 10:
+                self.profile_memory()
+                last_profiled = datetime.datetime.now()
+        self.profile_memory()
         self.writer.flush()
 
     def export(self):
