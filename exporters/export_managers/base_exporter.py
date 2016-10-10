@@ -162,15 +162,12 @@ class BaseExporter(object):
         # self.tr.print_diff()
         from pympler import muppy
         all_objects = muppy.get_objects()
-        uniqs = muppy.filter(all_objects, Type=unicode)
-        from collections import Counter
-        c = Counter()
-        l = Counter()
-        for key in uniqs:
-            c[key] += 1
-            l[len(key)] += 1
-        print(c.most_common(10))
-        print(l.most_common(10))
+        from collections import OrderedDict
+        from pympler import refbrowser
+        uniqs = muppy.filter(all_objects, Type=OrderedDict)
+        print(len(uniqs))
+        for obj in uniqs:
+            refbrowser.ConsoleBrowser(obj, maxdepth=3).print_tree()
 
     def _run_pipeline(self):
         last_profiled = datetime.datetime.now()
