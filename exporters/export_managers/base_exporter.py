@@ -196,7 +196,7 @@ class BaseExporter(object):
                 self.profile_memory()
                 last_profiled = datetime.datetime.now()
         import sys
-        sys.exc_clear()
+        #sys.exc_clear()
         self.profile_memory()
         self.writer.flush()
 
