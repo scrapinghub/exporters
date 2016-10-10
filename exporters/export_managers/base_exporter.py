@@ -160,6 +160,10 @@ class BaseExporter(object):
         kbytes = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         print('Memory used: %s MB' % (kbytes / 1024))
         # self.tr.print_diff()
+        import gc
+        gc.collect()
+        kbytes = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        print('Memory used after GC: %s MB' % (kbytes / 1024))
         from pympler import muppy
         all_objects = muppy.get_objects()
         from collections import OrderedDict
