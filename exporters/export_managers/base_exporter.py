@@ -159,7 +159,18 @@ class BaseExporter(object):
         import resource
         kbytes = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         print('Memory used: %s MB' % (kbytes / 1024))
-        self.tr.print_diff()
+        # self.tr.print_diff()
+        from pympler import muppy
+        all_objects = muppy.get_objects()
+        uniqs = muppy.filter(all_objects, Type=unicode)
+        from collections import Counter
+        c = Counter()
+        l = Counter()
+        for key in uniqs:
+            c[key] += 1
+            l[len(key)] += 1
+        print(c.most_common(10))
+        print(l.most_common(10))
 
     def _run_pipeline(self):
         last_profiled = datetime.datetime.now()
@@ -176,8 +187,8 @@ class BaseExporter(object):
         self.writer.flush()
 
     def export(self):
-        from pympler import tracker
-        self.tr = tracker.SummaryTracker()
+        #from pympler import tracker
+        #self.tr = tracker.SummaryTracker()
 
         if not self.bypass():
             try:
