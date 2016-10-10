@@ -167,7 +167,7 @@ class BaseExporter(object):
         uniqs = muppy.filter(all_objects, Type=OrderedDict)
         print(len(uniqs))
         for obj in uniqs:
-            refbrowser.ConsoleBrowser(obj, maxdepth=3).print_tree()
+            refbrowser.ConsoleBrowser(obj, maxdepth=2).print_tree()
 
     def _run_pipeline(self):
         last_profiled = datetime.datetime.now()
