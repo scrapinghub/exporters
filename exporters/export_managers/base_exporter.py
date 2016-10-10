@@ -170,12 +170,15 @@ class BaseExporter(object):
         uniqs = muppy.filter(all_objects, Type=unicode)
         import objgraph
 
+        cnt = 5000
         for s in uniqs:
             if s == 'title':
-                objgraph.show_chain(
-                    objgraph.find_backref_chain(s, objgraph.is_proper_module),
-                    filename='chain.png')
-                break
+                cnt -= 1
+                if cnt == 0:
+                    objgraph.show_chain(
+                        objgraph.find_backref_chain(s, objgraph.is_proper_module),
+                        filename='chain.png')
+                    break
 
     def _run_pipeline(self):
         last_profiled = datetime.datetime.now()
