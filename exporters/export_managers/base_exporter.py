@@ -165,20 +165,17 @@ class BaseExporter(object):
         gc.collect()
         kbytes = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         print('Memory used after GC: %s MB' % (kbytes / 1024))
-        # from pympler import muppy
-        # all_objects = muppy.get_objects()
-        # from collections import OrderedDict
-        # uniqs = muppy.filter(all_objects, Type=OrderedDict)
+        from pympler import muppy
+        all_objects = muppy.get_objects()
+        uniqs = muppy.filter(all_objects, Type=unicode)
         import objgraph
-        # objgraph.show_refs([uniqs[3]], filename='foog.png')
-        objgraph.show_most_common_types(limit=20)
-        graphs = objgraph.by_type('OffsetAndMessage')
 
-        if len(graphs):
-            g = graphs[len(graphs)/2]
-            objgraph.show_chain(
-                objgraph.find_backref_chain(g, objgraph.is_proper_module),
-                filename='chain.png')
+        for s in uniqs:
+            if s == 'title':
+                objgraph.show_chain(
+                    objgraph.find_backref_chain(s, objgraph.is_proper_module),
+                    filename='chain.png')
+                break
 
     def _run_pipeline(self):
         last_profiled = datetime.datetime.now()
