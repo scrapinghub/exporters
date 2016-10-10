@@ -171,7 +171,9 @@ class BaseExporter(object):
         # uniqs = muppy.filter(all_objects, Type=OrderedDict)
         import objgraph
         # objgraph.show_refs([uniqs[3]], filename='foog.png')
-        graphs = objgraph.by_type('BaseItem')
+        objgraph.show_most_common_types(limit=20)
+        graphs = objgraph.by_type('dict')
+
         if len(graphs):
             g = graphs[len(graphs)/2]
             objgraph.show_chain(
