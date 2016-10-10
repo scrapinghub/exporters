@@ -185,11 +185,11 @@ class BaseExporter(object):
             except ItemsLimitReached as e:
                 self.logger.info('{!r}'.format(e))
                 break
-            import sys
-            sys.exc_clear()
             if (datetime.datetime.now() - last_profiled).total_seconds() > 10:
                 self.profile_memory()
                 last_profiled = datetime.datetime.now()
+        import sys
+        sys.exc_clear()
         self.profile_memory()
         self.writer.flush()
 
