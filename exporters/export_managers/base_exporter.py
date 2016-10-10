@@ -158,12 +158,20 @@ class BaseExporter(object):
     def profile_memory(self):
         import resource
         kbytes = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-        print('Memory used: %s' % (kbytes / 1024))
+        print('Memory used: %s MB' % (kbytes / 1024))
         from guppy import hpy
-        print(str(hpy().heap()))
+        h = hpy()
+        print(str(h.heap()))
+
+        for key in ("config", "export_formatter", "filter_after", "filter_before", "grouper",
+                    "logger", "metadata", "module_loader", "notifiers", "persistence", "reader",
+                    "stats_manager", "transform", "writer"):
+            obj = getattr(self, key, None)
+            if obj:
+                print('Prof %s' % key)
+                h.iso(obj)
 
     def _run_pipeline(self):
-        self.profile_memory()
         last_profiled = datetime.datetime.now()
         while not self.reader.is_finished():
             try:
@@ -178,8 +186,10 @@ class BaseExporter(object):
         self.writer.flush()
 
     def export(self):
+        print('asd')
         if not self.bypass():
             try:
+                self.profile_memory()
                 self._init_export_job()
                 self._run_pipeline()
                 self._finish_export_job()
