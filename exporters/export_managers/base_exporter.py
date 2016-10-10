@@ -58,6 +58,7 @@ class BaseExporter(object):
             next_batch = list(self.reader.get_next_batch())
         else:
             next_batch = self.reader.get_next_batch()
+        next_batch = list(self.reader.get_next_batch())
         times.update(read=datetime.datetime.now())
         next_batch = self.filter_before.filter_batch(next_batch)
         times.update(filtered=datetime.datetime.now())
