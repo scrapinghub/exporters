@@ -172,7 +172,7 @@ class BaseExporter(object):
         import objgraph
         # objgraph.show_refs([uniqs[3]], filename='foog.png')
         objgraph.show_most_common_types(limit=20)
-        graphs = objgraph.by_type('dict')
+        graphs = objgraph.by_type('OffsetAndMessage')
 
         if len(graphs):
             g = graphs[len(graphs)/2]
