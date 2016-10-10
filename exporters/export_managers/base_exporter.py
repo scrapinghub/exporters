@@ -172,7 +172,7 @@ class BaseExporter(object):
         # objgraph.show_refs([uniqs[3]], filename='foog.png')
         objgraph.show_chain(
             objgraph.find_backref_chain(
-                objgraph.by_type('OrderedDict'),
+                objgraph.by_type('OrderedDict')[3],
                 objgraph.is_proper_module),
             filename='chain.png')
 
