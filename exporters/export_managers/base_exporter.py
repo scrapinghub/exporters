@@ -170,11 +170,11 @@ class BaseExporter(object):
         # uniqs = muppy.filter(all_objects, Type=OrderedDict)
         import objgraph
         # objgraph.show_refs([uniqs[3]], filename='foog.png')
-        objgraph.show_chain(
-            objgraph.find_backref_chain(
-                objgraph.by_type('OrderedDict')[3],
-                objgraph.is_proper_module),
-            filename='chain.png')
+        graphs = objgraph.by_type('MessageCache')
+        for g in graphs:
+            objgraph.show_chain(
+                objgraph.find_backref_chain(g, objgraph.is_proper_module),
+                filename='chain.png')
 
     def _run_pipeline(self):
         last_profiled = datetime.datetime.now()
