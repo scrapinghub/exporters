@@ -172,7 +172,7 @@ class BaseExporter(object):
         import objgraph
         # objgraph.show_refs([uniqs[3]], filename='foog.png')
         graphs = objgraph.by_type('unicode')
-        for g in graphs[len(graphs/2)]:
+        for g in graphs[len(graphs)/2]:
             objgraph.show_chain(
                 objgraph.find_backref_chain(g, objgraph.is_proper_module),
                 filename='chain.png')
