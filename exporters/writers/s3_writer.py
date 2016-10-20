@@ -13,8 +13,8 @@ DEFAULT_BUCKET_REGION = 'us-east-1'
 
 
 @contextmanager
-def multipart_upload(bucket, key_name):
-    mp = bucket.initiate_multipart_upload(key_name)
+def multipart_upload(bucket, key_name, **kwargs):
+    mp = bucket.initiate_multipart_upload(key_name, **kwargs)
     try:
         yield mp
         mp.complete_upload()
@@ -128,26 +128,23 @@ class S3Writer(FilebaseBaseWriter):
         except S3ResponseError:
             self.logger.warning('We have no READ_ACP/WRITE_ACP permissions')
 
-    def _set_key_metadata(self, key, metadata):
-        from boto.exception import S3ResponseError
-        try:
-            for name, value in metadata.iteritems():
-                key.set_metadata(name, value)
-        except S3ResponseError:
-            self.logger.warning(
-                    'We have no READ_ACP/WRITE_ACP permissions, '
-                    'so we could not add metadata info')
+    def _create_key_metadata(self, dump_path, md5=None):
+        from boto.utils import compute_md5
+        metadata = {}
+        metadata['total'] = self._get_total_count(dump_path)
+        if md5:
+            metadata['md5'] = md5
+        else:
+            with open(dump_path, 'r') as f:
+                metadata['md5'] = compute_md5(f)
+        return metadata
 
     def _save_metadata_for_key(self, key, dump_path, md5=None):
         from boto.exception import S3ResponseError
-        from boto.utils import compute_md5
+        metadata = self._create_key_metadata(dump_path, md5)
         try:
-            key.set_metadata('total', self._get_total_count(dump_path))
-            if md5:
-                key.set_metadata('md5', md5)
-            else:
-                with open(dump_path, 'r') as f:
-                    key.set_metadata('md5', compute_md5(f))
+            for k, v in metadata.items():
+                key.set_metadata(k, v)
         except S3ResponseError:
             self.logger.warning(
                     'We have no READ_ACP/WRITE_ACP permissions, '
@@ -169,16 +166,15 @@ class S3Writer(FilebaseBaseWriter):
 
     def _upload_large_file(self, dump_path, key_name):
         self.logger.debug('Using multipart S3 uploader')
-        with multipart_upload(self.bucket, key_name) as mp:
+        md5 = None
+        if self.save_metadata:
+            md5 = calculate_multipart_etag(dump_path, CHUNK_SIZE)
+        metadata = self._create_key_metadata(dump_path, md5=md5)
+        with multipart_upload(self.bucket, key_name, metadata=metadata) as mp:
             for chunk in split_file(dump_path):
                 self._upload_chunk(mp, chunk)
                 self.logger.debug(
                         'Uploaded chunk number {}'.format(chunk.number))
-        with closing(self.bucket.get_key(key_name)) as key:
-            self._ensure_proper_key_permissions(key)
-            if self.save_metadata:
-                md5 = calculate_multipart_etag(dump_path, CHUNK_SIZE)
-                self._save_metadata_for_key(key, dump_path, md5=md5)
 
     def _write_s3_key(self, dump_path, key_name):
         destination = 's3://{}/{}'.format(self.bucket.name, key_name)
