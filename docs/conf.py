@@ -53,8 +53,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'DataServices'
-copyright = u'2015, Scrapinghub'
+project = u'Exporters'
+copyright = u'2016, Scrapinghub'
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -186,7 +186,7 @@ html_static_path = ['_static']
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'dataservicesdoc'
+htmlhelp_basename = 'exportersdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------
@@ -206,8 +206,8 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-    ('index', 'dataservices.tex',
-     u'DataServices Documentation',
+    ('index', 'exporters.tex',
+     u'Exporters Documentation',
      u'Scrapinghub', 'manual'),
 ]
 
@@ -237,8 +237,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'dataservices',
-     u'DataServices Documentation',
+    ('index', 'exporters',
+     u'Exporters Documentation',
      [u'Scrapinghub'], 1)
 ]
 
@@ -252,10 +252,10 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'dataservices',
-     u'DataServices Documentation',
+    ('index', 'exporters',
+     u'Exporters Documentation',
      u'Scrapinghub',
-     'dataservices',
+     'exporters',
      'One line description of project.',
      'Miscellaneous'),
 ]

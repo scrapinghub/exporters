@@ -2,6 +2,7 @@
 Credits
 =======
 
+This project is maintained by Scrapinghub, you can reach us at info@scrapinghub.com.
 
 Committers
 ----------
