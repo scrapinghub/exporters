@@ -14,6 +14,7 @@ Contents:
    contributing
    docs
    tutorials
+   authors
 
 
 Indices and tables
