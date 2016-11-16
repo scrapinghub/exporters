@@ -1,4 +1,4 @@
-boto==2.38.0
+boto==2.43.0
 filechunkio
 hubstorage==0.16.1
 -e git+git://github.com/scrapinghub/collection-scanner.git#egg=collection_scanner
