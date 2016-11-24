@@ -34,7 +34,8 @@ class KafkaScannerReader(BaseReader):
         'brokers': {'type': str_list},
         'topic': {'type': six.string_types},
         'group': {'type': six.string_types},
-        'partitions': {'type': str_list, 'default': None}
+        'partitions': {'type': str_list, 'default': None},
+        'ssl_configs': {'type': dict, 'default': None},
     }
 
     def __init__(self, *args, **kwargs):
@@ -46,7 +47,8 @@ class KafkaScannerReader(BaseReader):
         partitions = self.read_option('partitions')
 
         scanner = KafkaScanner(brokers, topic, group, partitions=partitions,
-                               batchsize=self.read_option('batch_size'))
+                               batchsize=self.read_option('batch_size'),
+                               ssl_configs=self.read_option('ssl_configs'))
 
         self.batches = scanner.scan_topic_batches()
 
