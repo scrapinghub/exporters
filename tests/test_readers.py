@@ -1,9 +1,6 @@
-import copy
-import mock
 import unittest
 from exporters.readers.base_reader import BaseReader
 from exporters.readers.random_reader import RandomReader
-from exporters.readers.kafka_scanner_reader import KafkaScannerReader
 
 from .utils import meta
 
@@ -63,48 +60,3 @@ class RandomReaderTest(unittest.TestCase):
     def test_set_last_position_none(self):
         self.reader.set_last_position({'last_read': 123})
         self.assertEqual({'last_read': 123}, self.reader.last_position)
-
-
-class KafkaScannerReaderTest(unittest.TestCase):
-    def patch_scanners(self):
-        return mock.patch.multiple('kafka_scanner', KafkaScanner=mock.DEFAULT,
-                                   KafkaScannerSimple=mock.DEFAULT)
-
-    def assertScannerClassUsed(self, scanner_module, class_name):
-        for cls in ['KafkaScanner', 'KafkaScannerSimple']:
-            if cls == class_name:
-                self.assertGreater(len(scanner_module[cls].mock_calls), 0,
-                                   msg='Class {} should be used'.format(cls))
-            else:
-                self.assertEqual(len(scanner_module[cls].mock_calls), 0,
-                                 msg='Class {} should not be used'.format(cls))
-
-    def basic_options(self):
-        return copy.deepcopy({
-            'name': 'exporters.readers.kafka_scanner_reader.KafkaScannerReader',
-            'options': {
-                'brokers': ['b1'],
-                'topic': 'topic',
-                'group': 'some-group'
-            }
-        })
-
-    def test_scanner_choice_with_no_partitions(self):
-        options = self.basic_options()
-        with self.patch_scanners() as mocked_module:
-            KafkaScannerReader(options, meta())
-            self.assertScannerClassUsed(mocked_module, 'KafkaScanner')
-
-    def test_scanner_choice_with_some_partitions(self):
-        options = self.basic_options()
-        options['options']['partitions'] = ['1', '2']
-        with self.patch_scanners() as mocked_module:
-            KafkaScannerReader(options, meta())
-            self.assertScannerClassUsed(mocked_module, 'KafkaScanner')
-
-    def test_scanner_choice_with_single_partition(self):
-        options = self.basic_options().copy()
-        options['options']['partitions'] = ['single']
-        with self.patch_scanners() as mocked_module:
-            KafkaScannerReader(options, meta())
-            self.assertScannerClassUsed(mocked_module, 'KafkaScannerSimple')
