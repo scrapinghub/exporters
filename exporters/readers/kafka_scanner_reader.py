@@ -38,20 +38,15 @@ class KafkaScannerReader(BaseReader):
     }
 
     def __init__(self, *args, **kwargs):
-        from kafka_scanner import KafkaScanner, KafkaScannerSimple
+        from kafka_scanner import KafkaScanner
         super(KafkaScannerReader, self).__init__(*args, **kwargs)
         brokers = self.read_option('brokers')
         group = self.read_option('group')
         topic = self.read_option('topic')
         partitions = self.read_option('partitions')
-        if partitions and len(partitions) == 1:
-            scanner_class = KafkaScannerSimple
-        else:
-            scanner_class = KafkaScanner
 
-        scanner = scanner_class(brokers, topic, group, partitions=partitions,
-                                batchsize=self.read_option('batch_size'),
-                                keep_offsets=self.read_option('RESUME'))
+        scanner = KafkaScanner(brokers, topic, group, partitions=partitions,
+                               batchsize=self.read_option('batch_size'))
 
         self.batches = scanner.scan_topic_batches()
 
