@@ -80,6 +80,7 @@ class S3Writer(FilebaseBaseWriter):
 
     def __init__(self, options, *args, **kwargs):
         import boto
+        from boto.s3.connection import OrdinaryCallingFormat
         super(S3Writer, self).__init__(options, *args, **kwargs)
         access_key = self.read_option('aws_access_key_id')
         secret_key = self.read_option('aws_secret_access_key')
@@ -93,7 +94,8 @@ class S3Writer(FilebaseBaseWriter):
 
         self.conn = boto.s3.connect_to_region(self.aws_region,
                                               aws_access_key_id=access_key,
-                                              aws_secret_access_key=secret_key)
+                                              aws_secret_access_key=secret_key,
+                                              calling_format=OrdinaryCallingFormat())
         self.bucket = self.conn.get_bucket(bucket_name, validate=False)
         self.save_metadata = self.read_option('save_metadata')
         self.set_metadata('files_counter', Counter())
