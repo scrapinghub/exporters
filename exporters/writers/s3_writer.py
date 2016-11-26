@@ -101,8 +101,9 @@ class S3Writer(FilebaseBaseWriter):
 
     def _get_bucket_location(self, access_key, secret_key, bucket):
         import boto
+        from boto.s3.connection import OrdinaryCallingFormat
         try:
-            conn = boto.connect_s3(access_key, secret_key)
+            conn = boto.connect_s3(access_key, secret_key, calling_format=OrdinaryCallingFormat())
             return conn.get_bucket(bucket).get_location() or DEFAULT_BUCKET_REGION
         except:
             return DEFAULT_BUCKET_REGION

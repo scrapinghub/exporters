@@ -26,6 +26,7 @@ httplib.HTTPResponse.read = patch_http_response_read(httplib.HTTPResponse.read)
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
     import boto
+    from boto.s3.connection import OrdinaryCallingFormat
 
     bucket = get_bucket_name(bucket)
 
@@ -33,7 +34,8 @@ def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
         logging.warn("The AWS credential keys aren't in the usual size,"
                      " are you using the correct ones?")
 
-    connection = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
+    connection = boto.connect_s3(aws_access_key_id, aws_secret_access_key,
+                                 calling_format=OrdinaryCallingFormat())
     try:
         return connection.get_bucket(bucket)
     except boto.exception.S3ResponseError:
