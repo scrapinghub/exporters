@@ -8,7 +8,7 @@ from exporters.default_retries import retry_short
 from exporters.exceptions import ConfigurationError, InvalidDateRangeError
 import logging
 
-from exporters.utils import get_bucket_name
+from exporters.utils import get_bucket_name, get_boto_connection
 
 S3_URL_EXPIRES_IN = 1800  # half an hour should be enough
 
@@ -26,7 +26,6 @@ httplib.HTTPResponse.read = patch_http_response_read(httplib.HTTPResponse.read)
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
     import boto
-    from boto.s3.connection import OrdinaryCallingFormat
 
     bucket = get_bucket_name(bucket)
 
@@ -34,8 +33,8 @@ def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
         logging.warn("The AWS credential keys aren't in the usual size,"
                      " are you using the correct ones?")
 
-    connection = boto.connect_s3(aws_access_key_id, aws_secret_access_key,
-                                 calling_format=OrdinaryCallingFormat())
+    connection = get_boto_connection(aws_access_key_id, aws_secret_access_key,
+                                     bucketname=bucket)
     try:
         return connection.get_bucket(bucket)
     except boto.exception.S3ResponseError:
