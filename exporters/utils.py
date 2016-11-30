@@ -110,6 +110,22 @@ def get_bucket_name(bucket):
     return re.match(BUCKET_RE, bucket).groups()[1]
 
 
+def get_boto_connection(aws_access_key_id, aws_secret_access_key, region=None, bucketname=None):
+    """
+    Conection parameters must be different only if bucket name has a period
+    """
+    import boto
+    from boto.s3.connection import OrdinaryCallingFormat
+    extra_args = {}
+    if bucketname is not None and '.' in bucketname:
+        extra_args['calling_format'] = OrdinaryCallingFormat()
+    if region is None:
+        return boto.connect_s3(aws_access_key_id, aws_secret_access_key, **extra_args)
+    return boto.s3.connect_to_region(region, aws_access_key_id=aws_access_key_id,
+                                     aws_secret_access_key=aws_secret_access_key,
+                                     **extra_args)
+
+
 def maybe_cast_list(value, types):
     """
     Try to coerce list values into more specific list subclasses in types.

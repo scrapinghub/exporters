@@ -4,7 +4,8 @@ from contextlib import closing, contextmanager
 import six
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
-from exporters.utils import CHUNK_SIZE, split_file, calculate_multipart_etag, get_bucket_name
+from exporters.utils import CHUNK_SIZE, split_file, calculate_multipart_etag, get_bucket_name, \
+                            get_boto_connection
 from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 
@@ -79,8 +80,6 @@ class S3Writer(FilebaseBaseWriter):
     }
 
     def __init__(self, options, *args, **kwargs):
-        import boto
-        from boto.s3.connection import OrdinaryCallingFormat
         super(S3Writer, self).__init__(options, *args, **kwargs)
         access_key = self.read_option('aws_access_key_id')
         secret_key = self.read_option('aws_secret_access_key')
@@ -92,20 +91,16 @@ class S3Writer(FilebaseBaseWriter):
             self.aws_region = self._get_bucket_location(access_key, secret_key,
                                                         bucket_name)
 
-        self.conn = boto.s3.connect_to_region(self.aws_region,
-                                              aws_access_key_id=access_key,
-                                              aws_secret_access_key=secret_key,
-                                              calling_format=OrdinaryCallingFormat())
+        self.conn = get_boto_connection(access_key, secret_key, self.aws_region,
+                                        bucket_name)
         self.bucket = self.conn.get_bucket(bucket_name, validate=False)
         self.save_metadata = self.read_option('save_metadata')
         self.set_metadata('files_counter', Counter())
         self.set_metadata('keys_written', [])
 
     def _get_bucket_location(self, access_key, secret_key, bucket):
-        import boto
-        from boto.s3.connection import OrdinaryCallingFormat
         try:
-            conn = boto.connect_s3(access_key, secret_key, calling_format=OrdinaryCallingFormat())
+            conn = get_boto_connection(access_key, secret_key, bucketname=bucket)
             return conn.get_bucket(bucket).get_location() or DEFAULT_BUCKET_REGION
         except:
             return DEFAULT_BUCKET_REGION
