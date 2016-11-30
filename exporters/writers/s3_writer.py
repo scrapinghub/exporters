@@ -80,7 +80,6 @@ class S3Writer(FilebaseBaseWriter):
     }
 
     def __init__(self, options, *args, **kwargs):
-        import boto
         super(S3Writer, self).__init__(options, *args, **kwargs)
         access_key = self.read_option('aws_access_key_id')
         secret_key = self.read_option('aws_secret_access_key')
@@ -100,7 +99,6 @@ class S3Writer(FilebaseBaseWriter):
         self.set_metadata('keys_written', [])
 
     def _get_bucket_location(self, access_key, secret_key, bucket):
-        import boto
         try:
             conn = get_boto_connection(access_key, secret_key, bucketname=bucket)
             return conn.get_bucket(bucket).get_location() or DEFAULT_BUCKET_REGION
