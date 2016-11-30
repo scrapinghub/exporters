@@ -112,7 +112,8 @@ class S3Bypass(BaseS3Bypass):
                 dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
         except S3ResponseError, e:
             self.logger.warning('No direct copy supported for key {}.'.format(key_name))
-            self.logger.warning("Message: %s, Error code: %s, Reason: %s, Status: %s, Body: %s", e.message,
+            self.logger.warning("Message: %s, Error code: %s, Reason: %s, Status: %s, Body: %s",
+                                e.message,
                                 e.error_code, e.reason,
                                 e.status, e.body)
             self._copy_without_permissions(dest_bucket, dest_key_name, source_bucket, key_name)
