@@ -33,6 +33,9 @@ def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
         logging.warn("The AWS credential keys aren't in the usual size,"
                      " are you using the correct ones?")
 
+    if ' ' in aws_access_key_id or ' ' in aws_secret_access_key:
+        logging.warn("There is space in AWS keys s3 reader section of your config.")
+
     connection = get_boto_connection(aws_access_key_id, aws_secret_access_key,
                                      bucketname=bucket)
     try:

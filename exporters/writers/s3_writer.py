@@ -8,6 +8,7 @@ from exporters.utils import CHUNK_SIZE, split_file, calculate_multipart_etag, ge
                             get_boto_connection
 from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
+import logging
 
 
 DEFAULT_BUCKET_REGION = 'us-east-1'
@@ -86,6 +87,13 @@ class S3Writer(FilebaseBaseWriter):
         self.aws_region = self.read_option('aws_region')
         bucket_name = get_bucket_name(self.read_option('bucket'))
         self.logger.info('Starting S3Writer for bucket: %s' % bucket_name)
+
+        if len(access_key) > len(secret_key):
+            logging.warn("The AWS credential keys aren't in the usual size,"
+                         " are you using the correct ones?")
+
+        if ' ' in access_key or ' ' in secret_key:
+            logging.warn("There is space in AWS keys s3 writer section of your config.")
 
         if self.aws_region is None:
             self.aws_region = self._get_bucket_location(access_key, secret_key,
