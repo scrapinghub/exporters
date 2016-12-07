@@ -118,8 +118,8 @@ def get_boto_connection(aws_access_key_id, aws_secret_access_key, region=None, b
     """
     m = _AWS_ACCESS_KEY_ID_RE.match(aws_access_key_id)
     if m is None or m.group() != aws_access_key_id:
-        logging.error('The provided aws_access_key_id has no correct format. It must be an \
-                      contain between 16 and 32 alphanumeric characters.')
+        logging.error('The provided aws_access_key_id is not in the correct format. It must \
+                      be alphanumeric and contain between 16 and 32 characters.')
 
     if len(aws_access_key_id) > len(aws_secret_access_key):
         logging.warn("The AWS credential keys aren't in the usual size,"
