@@ -109,11 +109,22 @@ BUCKET_RE = '(s3:\/\/|)([a-zA-Z\.0-9_\-]*)(\/|)'
 def get_bucket_name(bucket):
     return re.match(BUCKET_RE, bucket).groups()[1]
 
+_AWS_ACCESS_KEY_ID_RE = re.compile(r'\w{16,32}')
+
 
 def get_boto_connection(aws_access_key_id, aws_secret_access_key, region=None, bucketname=None):
     """
     Conection parameters must be different only if bucket name has a period
     """
+    m = _AWS_ACCESS_KEY_ID_RE.match(aws_access_key_id)
+    if m is None or m.group() != aws_access_key_id:
+        logging.error('The provided aws_access_key_id is not in the correct format. It must \
+                      be alphanumeric and contain between 16 and 32 characters.')
+
+    if len(aws_access_key_id) > len(aws_secret_access_key):
+        logging.warn("The AWS credential keys aren't in the usual size,"
+                     " are you using the correct ones?")
+
     import boto
     from boto.s3.connection import OrdinaryCallingFormat
     extra_args = {}
