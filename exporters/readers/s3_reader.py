@@ -29,10 +29,6 @@ def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
 
     bucket = get_bucket_name(bucket)
 
-    if len(aws_access_key_id) > len(aws_secret_access_key):
-        logging.warn("The AWS credential keys aren't in the usual size,"
-                     " are you using the correct ones?")
-
     connection = get_boto_connection(aws_access_key_id, aws_secret_access_key,
                                      bucketname=bucket)
     try:
