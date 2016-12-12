@@ -5,7 +5,7 @@ import six
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 from exporters.default_retries import retry_short
-from exporters.utils import str_list
+from exporters.utils import str_list, int_list
 
 
 class KafkaScannerReader(BaseReader):
@@ -34,7 +34,7 @@ class KafkaScannerReader(BaseReader):
         'brokers': {'type': str_list},
         'topic': {'type': six.string_types},
         'group': {'type': six.string_types},
-        'partitions': {'type': str_list, 'default': None},
+        'partitions': {'type': int_list, 'default': None},
         'ssl_configs': {'type': dict, 'default': None},
     }
 
