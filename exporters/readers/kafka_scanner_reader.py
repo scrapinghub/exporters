@@ -24,8 +24,6 @@ class KafkaScannerReader(BaseReader):
         - partitions (list)
             Partitions to read from.
 
-        - group (str)
-            Reading group for kafka client.
     """
 
     # List of options to set up the reader
@@ -33,7 +31,6 @@ class KafkaScannerReader(BaseReader):
         'batch_size': {'type': six.integer_types, 'default': 10000},
         'brokers': {'type': str_list},
         'topic': {'type': six.string_types},
-        'group': {'type': six.string_types},
         'partitions': {'type': int_list, 'default': None},
         'ssl_configs': {'type': dict, 'default': None},
     }
@@ -42,11 +39,10 @@ class KafkaScannerReader(BaseReader):
         from kafka_scanner import KafkaScanner
         super(KafkaScannerReader, self).__init__(*args, **kwargs)
         brokers = self.read_option('brokers')
-        group = self.read_option('group')
         topic = self.read_option('topic')
         partitions = self.read_option('partitions')
 
-        scanner = KafkaScanner(brokers, topic, group, partitions=partitions,
+        scanner = KafkaScanner(brokers, topic, partitions=partitions,
                                batchsize=self.read_option('batch_size'),
                                ssl_configs=self.read_option('ssl_configs'))
 
@@ -57,7 +53,7 @@ class KafkaScannerReader(BaseReader):
         else:
             topic_str = topic
         self.logger.info('KafkaScannerReader has been initiated.'
-                         'Topic: {}. Group: {}'.format(topic_str, group))
+                         'Topic: {}.'.format(topic_str))
 
     @retry_short
     def get_from_kafka(self):
