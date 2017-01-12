@@ -118,7 +118,8 @@ class GroupingBufferFilesTracker(object):
     that is cleaned up when calling close().
     """
 
-    def __init__(self, formatter, compression_format):
+    def __init__(self, formatter=None, compression_format=None, *args, **kwargs):
+        super(GroupingBufferFilesTracker, self).__init__(*args, **kwargs)
         self.grouping_info = GroupingInfo()
         self.file_extension = formatter.file_extension
         self.formatter = formatter
@@ -142,7 +143,7 @@ class GroupingBufferFilesTracker(object):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
     def create_new_group_file(self, key):
-        new_buffer_file = BufferFile(self.formatter, self.tmp_folder, self.compression_format)
+        new_buffer_file = self._create_buffer_file()
         self.grouping_info.add_buffer_file_to_group(key, new_buffer_file)
         self.grouping_info.reset_key(key)
         return new_buffer_file
@@ -153,6 +154,10 @@ class GroupingBufferFilesTracker(object):
         else:
             buffer_file = self.create_new_group_file(key)
         return buffer_file
+
+    def _create_buffer_file(self, file_name=None):
+        return BufferFile(self.formatter, self.tmp_folder,
+                          self.compression_format, file_name=file_name)
 
 
 class WriteBuffer(object):
