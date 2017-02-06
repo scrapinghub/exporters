@@ -69,7 +69,7 @@ class HubstorageReader(BaseReader):
         return CollectionScanner(self.read_option('apikey'), str(self.read_option('project_id')),
                                  self.read_option('collection_name'),
                                  batchsize=self.batch_size,
-                                 startafter=self.last_position.get('last_key', ''),
+                                 startafter=self.last_position.get('last_key', None),
                                  count=self.read_option('count'),
                                  prefix=self.read_option('prefixes'),
                                  exclude_prefixes=self.read_option('exclude_prefixes'),
