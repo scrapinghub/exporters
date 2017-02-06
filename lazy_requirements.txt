@@ -1,7 +1,7 @@
 boto==2.43.0
 filechunkio
 hubstorage==0.16.1
--e git+git://github.com/scrapinghub/collection-scanner.git@0.1.6#egg=collection_scanner
+-e git+git://github.com/scrapinghub/collection-scanner.git@0.1.5#egg=collection_scanner
 kafka-python==0.9.5
 msgpack-python==0.4.2
 -e git+git://github.com/scrapinghub/kafka-scanner.git@0.2.6#egg=kafka_scanner
