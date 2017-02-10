@@ -3,10 +3,9 @@ from exporters.export_formatter import DEFAULT_FORMATTER_CLASS
 from exporters.compression import FILE_COMPRESSION
 from exporters.exceptions import ConfigurationError
 from exporters.logger.base_logger import WriterLogger
+from exporters.module_loader import ModuleLoader
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
-from exporters.write_buffer import WriteBuffer, GroupingBufferFilesTracker
-from exporters.reservoir_sampling_buffer import (ReservoirSamplingWriteBuffer,
-                                                 ReservoirSamplingGroupingBufferFilesTracker)
+from exporters.write_buffers import DEFAULT_WRITE_BUFFER
 
 
 class ItemsLimitReached(Exception):
@@ -36,7 +35,7 @@ class BaseWriter(BasePipelineItem):
         'items_limit': {'type': six.integer_types, 'default': 0},
         'check_consistency': {'type': bool, 'default': False},
         'compression': {'type': six.string_types, 'default': 'gz'},
-        'reservoir_sampling': {'type': bool, 'default': False}
+        'write_buffer': {'type': six.string_types, 'default': DEFAULT_WRITE_BUFFER}
     }
 
     hash_algorithm = None
@@ -64,28 +63,17 @@ class BaseWriter(BasePipelineItem):
         return compression
 
     def _get_write_buffer(self):
-        items_per_buffer_write = self.read_option('items_per_buffer_write')
-        size_per_buffer_write = self.read_option('size_per_buffer_write')
-        if self.read_option('reservoir_sampling'):
-            return ReservoirSamplingWriteBuffer(items_per_buffer_write,
-                                                size_per_buffer_write,
-                                                self._items_group_files_handler(),
-                                                self.compression_format,
-                                                self.hash_algorithm)
-        return WriteBuffer(items_per_buffer_write,
-                           size_per_buffer_write,
-                           self._items_group_files_handler(),
-                           self.compression_format,
-                           self.hash_algorithm)
+        kwargs = {
+             'items_per_buffer_write': self.read_option('items_per_buffer_write'),
+             'size_per_buffer_write': self.read_option('size_per_buffer_write'),
+             'formatter': self.export_formatter,
+             'items_group_files_handler': self._items_group_files_handler(),
+             'compression_format': self.compression_format,
+             'hash_algorithm': self.hash_algorithm}
+        return ModuleLoader().load_write_buffer(self.read_option('write_buffer'), **kwargs)
 
     def _items_group_files_handler(self):
-        kwargs = {'formatter': self.export_formatter,
-                  'compression_format': self.compression_format}
-
-        if self.read_option('reservoir_sampling'):
-            kwargs['sample_size'] = self.read_option('items_per_buffer_write')
-            return ReservoirSamplingGroupingBufferFilesTracker(**kwargs)
-        return GroupingBufferFilesTracker(**kwargs)
+        return None
 
     def write(self, path, key):
         """

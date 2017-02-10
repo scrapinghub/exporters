@@ -9,6 +9,7 @@ from exporters.records.base_record import BaseRecord
 from exporters.writers import FSWriter
 from exporters.writers.base_writer import BaseWriter
 from exporters.groupers import PythonExpGrouper
+from exporters.write_buffers import RESERVOIR_SAMPLING_WRITE_BUFFER
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 from .utils import meta
 
@@ -60,7 +61,8 @@ class CustomWriterTest(unittest.TestCase):
 
     def run_fake_writer(self):
         # given:
-        writer = FakeWriter({'options': {'reservoir_sampling': True,
+        writer = FakeWriter({'options': {
+                            'write_buffer': RESERVOIR_SAMPLING_WRITE_BUFFER,
                             'items_per_buffer_write': self.sample_size}},
                             {})
         # when:
@@ -90,7 +92,7 @@ class FilebaseBaseWriterTest(unittest.TestCase):
         writer_config = {
             'options': {
                 'filebase': '/tmp/',
-                'reservoir_sampling': True,
+                'write_buffer': RESERVOIR_SAMPLING_WRITE_BUFFER,
                 'items_per_buffer_write': 10
             }
         }
@@ -115,7 +117,7 @@ class FSWriterTest(unittest.TestCase):
             'name': 'exporters.writers.fs_writer.FSWriter',
             'options': {
                 'filebase': '{}/exporter_test'.format(self.tmp_dir),
-                'reservoir_sampling': True,
+                'write_buffer': RESERVOIR_SAMPLING_WRITE_BUFFER,
                 'items_per_buffer_write': self.sample_size
             }
         }

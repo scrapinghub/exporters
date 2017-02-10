@@ -9,6 +9,7 @@ from exporters.records.base_record import BaseRecord
 from exporters.utils import TmpFile
 from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.s3_writer import S3Writer
+from exporters.write_buffers import RESERVOIR_SAMPLING_WRITE_BUFFER
 
 from .utils import meta
 
@@ -263,7 +264,8 @@ class S3WriterTest(unittest.TestCase):
         items_to_write = [BaseRecord({u'key1': u'value1{}'.format(i),
                                      u'key2': u'value2{}'.format(i)}) for i in range(100)]
         options = self.get_writer_config()
-        options['options'].update({'reservoir_sampling': True,
+        options['options'].update({
+                                  'write_buffer': RESERVOIR_SAMPLING_WRITE_BUFFER,
                                   'items_per_buffer_write': 10})
 
         # when:

@@ -5,8 +5,10 @@ import re
 import uuid
 import six
 
-from exporters.write_buffer import GroupingBufferFilesTracker, get_filename
-from exporters.reservoir_sampling_buffer import ReservoirSamplingGroupingBufferFilesTracker
+from exporters.write_buffers import RESERVOIR_SAMPLING_WRITE_BUFFER
+from exporters.write_buffers.base_buffer import GroupingBufferFilesTracker, get_filename
+from exporters.write_buffers.reservoir_sampling_buffer import (
+                                                        ReservoirSamplingGroupingBufferFilesTracker)
 from exporters.writers.base_writer import BaseWriter
 
 MD5_FILE_NAME = 'md5checksum.md5'
@@ -132,7 +134,7 @@ class FilebaseBaseWriter(BaseWriter):
                   'start_file_count': self.read_option('start_file_count'),
                   'compression_format': self.read_option('compression')}
 
-        if self.read_option('reservoir_sampling'):
+        if self.read_option('write_buffer') == RESERVOIR_SAMPLING_WRITE_BUFFER:
             kwargs['sample_size'] = self.read_option('items_per_buffer_write')
             return FilebasedReservoirSamplingBufferFilesTracker(**kwargs)
         return FilebasedGroupingBufferFilesTracker(**kwargs)

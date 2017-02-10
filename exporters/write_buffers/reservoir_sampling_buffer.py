@@ -1,5 +1,7 @@
 from random import randint
-from exporters.write_buffer import BufferFile, WriteBuffer, GroupingBufferFilesTracker, GroupingInfo
+
+from exporters.write_buffers.base_buffer import (BufferFile, BaseBuffer,
+                                                 GroupingBufferFilesTracker, GroupingInfo)
 
 
 class ReservoirSamplingGroupingInfo(GroupingInfo):
@@ -92,7 +94,13 @@ class ReservoirSamplingGroupingBufferFilesTracker(GroupingBufferFilesTracker):
                                   self.compression_format, self.sample_size, file_name=file_name)
 
 
-class ReservoirSamplingWriteBuffer(WriteBuffer):
+class ReservoirSamplingWriteBuffer(BaseBuffer):
+
+    def _items_group_files_handler(self):
+        return ReservoirSamplingGroupingBufferFilesTracker(
+                                                         sample_size=self.items_per_buffer_write,
+                                                         formatter=self.formatter,
+                                                         compression_format=self.compression_format)
 
     def should_write_buffer(self, key):
         return False

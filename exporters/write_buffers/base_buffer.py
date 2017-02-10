@@ -160,19 +160,29 @@ class GroupingBufferFilesTracker(object):
                           self.compression_format, file_name=file_name)
 
 
-class WriteBuffer(object):
+class BaseBuffer(object):
 
     def __init__(self, items_per_buffer_write, size_per_buffer_write,
-                 items_group_files_handler, compression_format='gz',
-                 hash_algorithm=None):
+                 formatter=None, compression_format='gz', hash_algorithm=None,
+                 items_group_files_handler=None, *args, **kwargs):
+        super(BaseBuffer, self).__init__(*args, **kwargs)
         self.files = []
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
         self.hash_algorithm = hash_algorithm
-        self.items_group_files = items_group_files_handler
+        self.formatter = formatter
         self.compression_format = compression_format
         self.metadata = {}
         self.is_new_buffer = True
+
+        if items_group_files_handler:
+            self.items_group_files = items_group_files_handler
+        else:
+            self.items_group_files = self._items_group_files_handler()
+
+    def _items_group_files_handler(self):
+        return GroupingBufferFilesTracker(formatter=self.formatter,
+                                          compression_format=self.compression_format)
 
     def buffer(self, item):
         """
