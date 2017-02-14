@@ -5,7 +5,10 @@ import re
 import uuid
 import six
 
-from exporters.write_buffer import BufferFile, GroupingBufferFilesTracker, get_filename
+from exporters.write_buffers import RESERVOIR_SAMPLING_WRITE_BUFFER
+from exporters.write_buffers.base_buffer import GroupingBufferFilesTracker, get_filename
+from exporters.write_buffers.reservoir_sampling_buffer import (
+                                                        ReservoirSamplingGroupingBufferFilesTracker)
 from exporters.writers.base_writer import BaseWriter
 
 MD5_FILE_NAME = 'md5checksum.md5'
@@ -65,11 +68,10 @@ class Filebase(object):
 
 class FilebasedGroupingBufferFilesTracker(GroupingBufferFilesTracker):
 
-    def __init__(self, formatter, filebase, compression_format, start_file_count=0):
-        super(FilebasedGroupingBufferFilesTracker, self).__init__(formatter, compression_format)
+    def __init__(self, filebase=None, start_file_count=0, *args, **kwargs):
+        super(FilebasedGroupingBufferFilesTracker, self).__init__(*args, **kwargs)
         self.filebase = filebase
         self.start_file_count = start_file_count
-        self.compression_format = compression_format
 
     def create_new_group_file(self, key):
         group_files = self.grouping_info[key]['group_file']
@@ -80,8 +82,7 @@ class FilebasedGroupingBufferFilesTracker(GroupingBufferFilesTracker):
                 groups=group_info, file_number=current_file_count)
         file_name = get_filename(name_without_ext, self.file_extension, self.compression_format)
         file_name = os.path.join(group_folder, file_name)
-        new_buffer_file = BufferFile(
-                self.formatter, self.tmp_folder, self.compression_format, file_name=file_name)
+        new_buffer_file = self._create_buffer_file(file_name=file_name)
         self.grouping_info.add_buffer_file_to_group(key, new_buffer_file)
         self.grouping_info.reset_key(key)
         return new_buffer_file
@@ -92,6 +93,11 @@ class FilebasedGroupingBufferFilesTracker(GroupingBufferFilesTracker):
         group_folder = os.path.join(self.tmp_folder, str(uuid.uuid4()))
         os.mkdir(group_folder)
         return group_folder
+
+
+class FilebasedReservoirSamplingBufferFilesTracker(ReservoirSamplingGroupingBufferFilesTracker,
+                                                   FilebasedGroupingBufferFilesTracker):
+    pass
 
 
 class FilebaseBaseWriter(BaseWriter):
@@ -123,12 +129,15 @@ class FilebaseBaseWriter(BaseWriter):
                         self.__class__.__name__, self.filebase.template))
 
     def _items_group_files_handler(self):
-        return FilebasedGroupingBufferFilesTracker(
-                self.export_formatter,
-                filebase=Filebase(self.read_option('filebase')),
-                start_file_count=self.read_option('start_file_count'),
-                compression_format=self.read_option('compression')
-        )
+        kwargs = {'formatter': self.export_formatter,
+                  'filebase': Filebase(self.read_option('filebase')),
+                  'start_file_count': self.read_option('start_file_count'),
+                  'compression_format': self.read_option('compression')}
+
+        if self.read_option('write_buffer') == RESERVOIR_SAMPLING_WRITE_BUFFER:
+            kwargs['sample_size'] = self.read_option('items_per_buffer_write')
+            return FilebasedReservoirSamplingBufferFilesTracker(**kwargs)
+        return FilebasedGroupingBufferFilesTracker(**kwargs)
 
     def write(self, path, key, file_name=False):
         """

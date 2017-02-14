@@ -118,7 +118,8 @@ class GroupingBufferFilesTracker(object):
     that is cleaned up when calling close().
     """
 
-    def __init__(self, formatter, compression_format):
+    def __init__(self, formatter=None, compression_format=None, *args, **kwargs):
+        super(GroupingBufferFilesTracker, self).__init__(*args, **kwargs)
         self.grouping_info = GroupingInfo()
         self.file_extension = formatter.file_extension
         self.formatter = formatter
@@ -142,7 +143,7 @@ class GroupingBufferFilesTracker(object):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
     def create_new_group_file(self, key):
-        new_buffer_file = BufferFile(self.formatter, self.tmp_folder, self.compression_format)
+        new_buffer_file = self._create_buffer_file()
         self.grouping_info.add_buffer_file_to_group(key, new_buffer_file)
         self.grouping_info.reset_key(key)
         return new_buffer_file
@@ -154,20 +155,34 @@ class GroupingBufferFilesTracker(object):
             buffer_file = self.create_new_group_file(key)
         return buffer_file
 
+    def _create_buffer_file(self, file_name=None):
+        return BufferFile(self.formatter, self.tmp_folder,
+                          self.compression_format, file_name=file_name)
 
-class WriteBuffer(object):
+
+class BaseBuffer(object):
 
     def __init__(self, items_per_buffer_write, size_per_buffer_write,
-                 items_group_files_handler, compression_format='gz',
-                 hash_algorithm=None):
+                 formatter=None, compression_format='gz', hash_algorithm=None,
+                 items_group_files_handler=None, *args, **kwargs):
+        super(BaseBuffer, self).__init__(*args, **kwargs)
         self.files = []
         self.items_per_buffer_write = items_per_buffer_write
         self.size_per_buffer_write = size_per_buffer_write
         self.hash_algorithm = hash_algorithm
-        self.items_group_files = items_group_files_handler
+        self.formatter = formatter
         self.compression_format = compression_format
         self.metadata = {}
         self.is_new_buffer = True
+
+        if items_group_files_handler:
+            self.items_group_files = items_group_files_handler
+        else:
+            self.items_group_files = self._items_group_files_handler()
+
+    def _items_group_files_handler(self):
+        return GroupingBufferFilesTracker(formatter=self.formatter,
+                                          compression_format=self.compression_format)
 
     def buffer(self, item):
         """

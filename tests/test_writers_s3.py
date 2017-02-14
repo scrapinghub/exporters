@@ -9,6 +9,7 @@ from exporters.records.base_record import BaseRecord
 from exporters.utils import TmpFile
 from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.s3_writer import S3Writer
+from exporters.write_buffers import RESERVOIR_SAMPLING_WRITE_BUFFER
 
 from .utils import meta
 
@@ -186,8 +187,8 @@ class S3WriterTest(unittest.TestCase):
             'name': 'exporters.writers.s3_writer.S3Writer',
             'options': {
                 'bucket': 'fake_bucket',
-                'aws_access_key_id': 'FAKE_ACCESS_KEY',
-                'aws_secret_access_key': 'FAKE_SECRET_KEY',
+                'aws_access_key_id': 'FAKE_ACCESS_KEY00',
+                'aws_secret_access_key': 'FAKE_SECRET_KEY00',
                 'filebase': 'tests/{file_number}',
             }
         }
@@ -257,3 +258,26 @@ class S3WriterTest(unittest.TestCase):
         # then:
         with self.assertRaisesRegexp(InconsistentWriteState, 'Unexpected number of records'):
             writer.finish_writing()
+
+    def test_write_reservoir_sample_s3(self):
+        # given
+        items_to_write = [BaseRecord({u'key1': u'value1{}'.format(i),
+                                     u'key2': u'value2{}'.format(i)}) for i in range(100)]
+        options = self.get_writer_config()
+        options['options'].update({
+                                  'write_buffer': RESERVOIR_SAMPLING_WRITE_BUFFER,
+                                  'items_per_buffer_write': 10})
+
+        # when:
+        writer = S3Writer(options, meta())
+        try:
+            writer.write_batch(items_to_write)
+            writer.flush()
+        finally:
+            writer.close()
+
+        # then:
+        bucket = self.s3_conn.get_bucket('fake_bucket')
+        saved_keys = [k for k in bucket.list()]
+        self.assertEquals(1, len(saved_keys))
+        self.assertEqual(saved_keys[0].name, 'tests/0.jl.gz')
