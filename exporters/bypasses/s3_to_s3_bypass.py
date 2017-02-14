@@ -3,7 +3,7 @@ import logging
 from contextlib import closing, contextmanager
 from exporters.bypasses.base_s3_bypass import BaseS3Bypass
 from exporters.default_retries import retry_long
-from exporters.progress_callback import BotoUploadProgress
+from exporters.progress_callback import BotoUploadProgress, BotoDownloadProgress
 from exporters.readers.s3_reader import get_bucket
 from exporters.utils import TmpFile, split_file, calculate_multipart_etag, CHUNK_SIZE
 from exporters.writers.s3_writer import should_use_multipart_upload, multipart_upload
@@ -195,7 +195,8 @@ class S3Bypass(BaseS3Bypass):
     def _copy_without_permissions(self, dest_bucket, dest_key_name, source_bucket, key_name):
         key = source_bucket.get_key(key_name)
         with TmpFile() as tmp_filename:
-            key.get_contents_to_filename(tmp_filename)
+            download_progress = BotoDownloadProgress(self.logger)
+            key.get_contents_to_filename(tmp_filename, cb=download_progress)
             if should_use_multipart_upload(tmp_filename, dest_bucket):
                 self._upload_large_file(dest_bucket, tmp_filename, dest_key_name)
                 self._check_multipart_copy_integrity(key, dest_bucket, dest_key_name, tmp_filename)
