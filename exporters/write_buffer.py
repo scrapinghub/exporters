@@ -157,6 +157,8 @@ class GroupingBufferFilesTracker(object):
 
 class WriteBuffer(object):
 
+    group_files_tracker_class = GroupingBufferFilesTracker
+
     def __init__(self, items_per_buffer_write, size_per_buffer_write,
                  items_group_files_handler, compression_format='gz',
                  hash_algorithm=None):

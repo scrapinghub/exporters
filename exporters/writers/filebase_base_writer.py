@@ -122,7 +122,7 @@ class FilebaseBaseWriter(BaseWriter):
                 '{} has been initiated. Writing to: {}'.format(
                         self.__class__.__name__, self.filebase.template))
 
-    def _items_group_files_handler(self):
+    def _items_group_files_handler(self, *cargs):
         return FilebasedGroupingBufferFilesTracker(
                 self.export_formatter,
                 filebase=Filebase(self.read_option('filebase')),
