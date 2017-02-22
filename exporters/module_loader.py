@@ -48,6 +48,14 @@ class ModuleLoader(object):
         from exporters.stats_managers.base_stats_manager import BaseStatsManager
         return self._load_module(options, metadata, BaseStatsManager, **kwargs)
 
+    def load_write_buffer(self, module_name, **kwargs):
+        from exporters.write_buffer import WriteBuffer
+        cls = self.load_class(module_name)
+        instance = cls(**kwargs)
+        if not isinstance(instance, WriteBuffer):
+            raise TypeError('Module must inherit from ' + str(WriteBuffer))
+        return instance
+
     def load_class(self, class_path):
         mod_path, class_name = class_path.rsplit('.', 1)
         module = import_module(mod_path)
