@@ -305,14 +305,14 @@ class CustomWriterTest(unittest.TestCase):
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
         item_writer = GroupingBufferFilesTracker(JsonExportFormatter({}, meta()), 'gz')
-        self.write_buffer = WriteBuffer(1000, 1000, item_writer)
+        self.write_buffer = WriteBuffer({}, meta(), items_group_files_handler=item_writer)
 
     def tearDown(self):
         self.write_buffer.close()
 
     def test_get_metadata(self):
         # given:
-        self.write_buffer.metadata['somekey'] = {'items': 10}
+        self.write_buffer.set_metadata('somekey', {'items': 10})
         # then
         self.assertEqual(self.write_buffer.get_metadata('somekey', 'items'), 10,
                          'Wrong metadata')
@@ -629,7 +629,8 @@ class FSWriterTest(unittest.TestCase):
 
         options = self.get_writer_config()
         options['options']['filebase'] = os.path.join(self.tmp_dir, '{groups[0]}/{groups[1]}/file')
-        options['options']['items_per_buffer_write'] = 2
+        options['options']['write_buffer'] = {'name': 'exporters.write_buffer.WriteBuffer',
+                                              'options': {'items_per_buffer_write': 2}}
         writer = FSWriter(options=options, metadata=meta())
 
         # when:

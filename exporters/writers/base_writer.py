@@ -1,6 +1,7 @@
 import six
 from exporters.export_formatter import DEFAULT_FORMATTER_CLASS
 from exporters.compression import FILE_COMPRESSION
+from exporters.defaults import DEFAULT_WRITE_BUFFER_CONFIG
 from exporters.exceptions import ConfigurationError
 from exporters.logger.base_logger import WriterLogger
 from exporters.module_loader import ModuleLoader
@@ -19,22 +20,15 @@ class InconsistentWriteState(Exception):
     """
 
 
-ITEMS_PER_BUFFER_WRITE = 500000
-# Setting a default limit of 4Gb per file
-SIZE_PER_BUFFER_WRITE = 4000000000
-
-
 class BaseWriter(BasePipelineItem):
     """
     This module receives a batch and writes it where needed.
     """
     supported_options = {
-        'items_per_buffer_write': {'type': six.integer_types, 'default': ITEMS_PER_BUFFER_WRITE},
-        'size_per_buffer_write': {'type': six.integer_types, 'default': SIZE_PER_BUFFER_WRITE},
         'items_limit': {'type': six.integer_types, 'default': 0},
         'check_consistency': {'type': bool, 'default': False},
         'compression': {'type': six.string_types, 'default': 'gz'},
-        'write_buffer': {'type': six.string_types, 'default': 'exporters.write_buffer.WriteBuffer'}
+        'write_buffer': {'type': dict, 'default': DEFAULT_WRITE_BUFFER_CONFIG}
     }
 
     hash_algorithm = None
@@ -64,18 +58,13 @@ class BaseWriter(BasePipelineItem):
     def _get_write_buffer(self):
         module_loader = ModuleLoader()
 
-        write_buffer_module = self.read_option('write_buffer')
-        write_buffer_class = module_loader.load_class(write_buffer_module)
-
+        write_buffer_class = module_loader.load_write_buffer_class(self.read_option('write_buffer'))
         file_handler = self._items_group_files_handler(
                                                        write_buffer_class.group_files_tracker_class)
-        kwargs = {
-             'items_per_buffer_write': self.read_option('items_per_buffer_write'),
-             'size_per_buffer_write': self.read_option('size_per_buffer_write'),
-             'items_group_files_handler': file_handler,
-             'compression_format': self.compression_format,
-             'hash_algorithm': self.hash_algorithm}
-        return module_loader.load_write_buffer(write_buffer_module, **kwargs)
+        return module_loader.load_write_buffer(self.read_option('write_buffer'),
+                                               self.metadata,
+                                               items_group_files_handler=file_handler,
+                                               hash_algorithm=self.hash_algorithm)
 
     def _items_group_files_handler(self, group_files_tracker_class):
         return group_files_tracker_class(self.export_formatter, self.compression_format)

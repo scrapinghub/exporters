@@ -69,7 +69,6 @@ class FilebasedGroupingBufferFilesTracker(GroupingBufferFilesTracker):
         super(FilebasedGroupingBufferFilesTracker, self).__init__(formatter, compression_format)
         self.filebase = filebase
         self.start_file_count = start_file_count
-        self.compression_format = compression_format
 
     def create_new_group_file(self, key):
         group_files = self.grouping_info[key]['group_file']
