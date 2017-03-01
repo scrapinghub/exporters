@@ -8,6 +8,7 @@ from six.moves import UserDict
 
 from exporters.compression import get_compress_file
 from exporters.utils import remove_if_exists
+from exporters.pipeline.base_pipeline_item import BasePipelineItem
 
 
 def get_filename(name_without_ext, file_extension, compression_format):
@@ -155,19 +156,21 @@ class GroupingBufferFilesTracker(object):
         return buffer_file
 
 
-class WriteBuffer(object):
+class WriteBuffer(BasePipelineItem):
 
     group_files_tracker_class = GroupingBufferFilesTracker
+    supported_options = {
+    }
 
-    def __init__(self, items_per_buffer_write, size_per_buffer_write,
-                 items_group_files_handler, compression_format='gz',
-                 hash_algorithm=None):
+    def __init__(self, options, metadata, *args, **kwargs):
+        super(WriteBuffer, self).__init__(options, metadata, *args, **kwargs)
+        self.check_options()
         self.files = []
-        self.items_per_buffer_write = items_per_buffer_write
-        self.size_per_buffer_write = size_per_buffer_write
-        self.hash_algorithm = hash_algorithm
-        self.items_group_files = items_group_files_handler
-        self.compression_format = compression_format
+        self.items_per_buffer_write = kwargs['items_per_buffer_write']
+        self.size_per_buffer_write = kwargs['size_per_buffer_write']
+        self.hash_algorithm = kwargs['hash_algorithm']
+        self.items_group_files = kwargs['items_group_files_handler']
+        self.compression_format = kwargs['compression_format']
         self.metadata = {}
         self.is_new_buffer = True
 
