@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'exporters',
-    version = '0.6.10',
+    version = '0.6.11',
     description = 'Exporters is an extensible export pipeline library that supports filter, '
                   'transform and several sources and destinations.',
     long_description = 'Exporters is an extensible export pipeline library that supports filter, '
