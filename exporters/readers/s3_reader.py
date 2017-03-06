@@ -188,6 +188,7 @@ class S3Reader(StreamBasedReader):
         self.logger.info('S3Reader has been initiated')
 
     def open_stream(self, stream):
+        self.logger.info('Opening {}'.format(stream.filename))
         return urlopen(self.bucket.get_key(stream.filename).generate_url(S3_URL_EXPIRES_IN))
 
     def get_read_streams(self):
