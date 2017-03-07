@@ -78,8 +78,8 @@ class BaseWriter(BasePipelineItem):
              'hash_algorithm': self.hash_algorithm,
         }
         write_buffer_options = {
-            'name': self.options['write_buffer'],
-            'options': self.options['write_buffer_options'],
+            'name': self.read_option('write_buffer'),
+            'options': self.read_option('write_buffer_options'),
         }
         return module_loader.load_write_buffer(write_buffer_options, self.metadata, **kwargs)
 

@@ -168,10 +168,9 @@ class WriteBuffer(BasePipelineItem):
         self.files = []
         self.items_per_buffer_write = kwargs['items_per_buffer_write']
         self.size_per_buffer_write = kwargs['size_per_buffer_write']
-        self.hash_algorithm = kwargs['hash_algorithm']
+        self.hash_algorithm = kwargs.get('hash_algorithm')
         self.items_group_files = kwargs['items_group_files_handler']
-        self.compression_format = kwargs['compression_format']
-        self.metadata = {}
+        self.compression_format = kwargs.get('compression_format', 'gz')
         self.is_new_buffer = True
 
     def buffer(self, item):
@@ -204,7 +203,7 @@ class WriteBuffer(BasePipelineItem):
             'size': file_size,
             'file_hash': file_hash,
         }
-        self.metadata[file_path] = write_info
+        self.set_metadata_for_file(file_path, **write_info)
         return write_info
 
     def add_new_buffer_for_group(self, key):
@@ -231,10 +230,21 @@ class WriteBuffer(BasePipelineItem):
     def grouping_info(self):
         return self.items_group_files.grouping_info
 
-    def get_metadata(self, buffer_path, meta_key):
-        return self.metadata.get(buffer_path, {}).get(meta_key)
+    def set_metadata(self, key, value, module='write_buffer'):
+        super(WriteBuffer, self).set_metadata(key, value, module)
+
+    def get_metadata(self, key, module='write_buffer'):
+        return super(WriteBuffer, self).get_metadata(key, module) or {}
+
+    def get_all_metadata(self, module='write_buffer'):
+        return super(WriteBuffer, self).get_all_metadata(module)
 
     def set_metadata_for_file(self, file_name, **kwargs):
-        if file_name not in self.metadata:
-            self.metadata[file_name] = {}
-        self.metadata[file_name].update(**kwargs)
+        if file_name not in self.get_all_metadata():
+            self.set_metadata(file_name, kwargs)
+        else:
+            self.get_metadata(file_name).update(**kwargs)
+
+    def get_metadata_for_file(self, file_name, key):
+        file_meta = self.get_metadata(file_name)
+        return file_meta.get(key) if file_meta else None

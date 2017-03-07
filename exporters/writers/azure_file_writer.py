@@ -48,7 +48,7 @@ class AzureFileWriter(FilebaseBaseWriter):
         self._write_file(dump_path, group_key, file_name)
 
     def _update_metadata(self, dump_path, filebase_path, file_name):
-        buffer_info = self.write_buffer.metadata[dump_path]
+        buffer_info = self.write_buffer.get_metadata(dump_path)
         file_info = {
             'file_name': file_name,
             'filebase_path': filebase_path,

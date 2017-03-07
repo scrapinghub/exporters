@@ -44,7 +44,7 @@ class SFTPWriter(FilebaseBaseWriter):
         self.set_metadata('files_written', [])
 
     def _update_metadata(self, dump_path, destination):
-        buffer_info = self.write_buffer.metadata.get(dump_path, {})
+        buffer_info = self.write_buffer.get_metadata(dump_path)
         file_info = {
             'filename': destination,
             'size': buffer_info.get('size'),
