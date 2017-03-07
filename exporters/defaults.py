@@ -22,5 +22,11 @@ DEFAULT_DECOMPRESSOR_CONFIG = {
     "name": "exporters.decompressors.ZLibDecompressor",
     "options": {}
 }
+
+DEFAULT_WRITE_BUFFER_CONFIG = {
+    "name": "exporters.write_buffer.WriteBuffer",
+    "options": {}
+}
+
 DEFAULT_LOGGER_LEVEL = 'INFO'
 DEFAULT_LOGGER_NAME = 'export-pipeline'
