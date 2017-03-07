@@ -305,18 +305,21 @@ class CustomWriterTest(unittest.TestCase):
 class WriteBufferTest(unittest.TestCase):
     def setUp(self):
         item_writer = GroupingBufferFilesTracker(JsonExportFormatter({}, meta()), 'gz')
-        self.write_buffer = WriteBuffer(1000, 1000, item_writer)
+        self.write_buffer = WriteBuffer({}, meta(),
+                                        items_per_buffer_write=1000,
+                                        size_per_buffer_write=1000,
+                                        items_group_files_handler=item_writer)
 
     def tearDown(self):
         self.write_buffer.close()
 
     def test_get_metadata(self):
         # given:
-        self.write_buffer.metadata['somekey'] = {'items': 10}
+        self.write_buffer.set_metadata_for_file('somekey', **{'items': 10})
         # then
-        self.assertEqual(self.write_buffer.get_metadata('somekey', 'items'), 10,
+        self.assertEqual(self.write_buffer.get_metadata('somekey').get('items'), 10,
                          'Wrong metadata')
-        self.assertIsNone(self.write_buffer.get_metadata('somekey', 'nokey'))
+        self.assertIsNone(self.write_buffer.get_metadata('somekey').get('nokey'))
 
 
 class ConsoleWriterTest(unittest.TestCase):

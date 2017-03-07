@@ -106,7 +106,7 @@ class S3Writer(FilebaseBaseWriter):
             return DEFAULT_BUCKET_REGION
 
     def _update_metadata(self, dump_path, key_name):
-        buffer_info = self.write_buffer.metadata[dump_path]
+        buffer_info = self.write_buffer.get_metadata(dump_path)
         key_info = {
             'key_name': key_name,
             'size': buffer_info['size'],
@@ -117,7 +117,7 @@ class S3Writer(FilebaseBaseWriter):
         self.set_metadata('keys_written', keys_written)
 
     def _get_total_count(self, dump_path):
-        return self.write_buffer.get_metadata(dump_path, 'number_of_records') or 0
+        return self.write_buffer.get_metadata_for_file(dump_path, 'number_of_records') or 0
 
     def _ensure_proper_key_permissions(self, key):
         from boto.exception import S3ResponseError
@@ -150,7 +150,7 @@ class S3Writer(FilebaseBaseWriter):
 
     def _upload_small_file(self, dump_path, key_name):
         with closing(self.bucket.new_key(key_name)) as key, open(dump_path, 'r') as f:
-            buffer_info = self.write_buffer.metadata[dump_path]
+            buffer_info = self.write_buffer.get_metadata(dump_path)
             md5 = key.get_md5_from_hexdigest(buffer_info['file_hash'])
             if self.save_metadata:
                 self._save_metadata_for_key(key, dump_path, md5)

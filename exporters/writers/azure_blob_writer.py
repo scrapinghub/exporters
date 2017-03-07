@@ -66,7 +66,7 @@ class AzureBlobWriter(BaseWriter):
         self._update_metadata(dump_path, blob_name)
 
     def _update_metadata(self, dump_path, blob_name):
-        buffer_info = self.write_buffer.metadata[dump_path]
+        buffer_info = self.write_buffer.get_metadata(dump_path)
         file_info = {
             'blob_name': blob_name,
             'size': buffer_info['size'],

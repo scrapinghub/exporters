@@ -93,7 +93,7 @@ class GDriveWriter(FilebaseBaseWriter):
         self.logger.info('Uploaded file {}'.format(file['title']))
 
     def _update_metadata(self, dump_path, file):
-        buffer_info = self.write_buffer.metadata[dump_path]
+        buffer_info = self.write_buffer.get_metadata(dump_path)
         key_info = {
             'size': buffer_info['size'],
             'remote_size': file['fileSize'],
