@@ -120,7 +120,7 @@ class GroupingBufferFilesTracker(object):
     """
 
     def __init__(self, formatter, compression_format):
-        self.grouping_info = GroupingInfo()
+        self.grouping_info = self._create_grouping_info()
         self.file_extension = formatter.file_extension
         self.formatter = formatter
         self.tmp_folder = tempfile.mkdtemp()
@@ -143,7 +143,7 @@ class GroupingBufferFilesTracker(object):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
 
     def create_new_group_file(self, key):
-        new_buffer_file = BufferFile(self.formatter, self.tmp_folder, self.compression_format)
+        new_buffer_file = self._create_buffer_file()
         self.grouping_info.add_buffer_file_to_group(key, new_buffer_file)
         self.grouping_info.reset_key(key)
         return new_buffer_file
@@ -154,6 +154,13 @@ class GroupingBufferFilesTracker(object):
         else:
             buffer_file = self.create_new_group_file(key)
         return buffer_file
+
+    def _create_grouping_info(self):
+        return GroupingInfo()
+
+    def _create_buffer_file(self, file_name=None):
+        return BufferFile(self.formatter, self.tmp_folder,
+                          self.compression_format, file_name=file_name)
 
 
 class WriteBuffer(BasePipelineItem):

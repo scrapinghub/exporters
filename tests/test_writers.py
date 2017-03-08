@@ -25,6 +25,8 @@ from exporters.groupers import PythonExpGrouper
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 from .utils import meta
 
+RESERVOIR_SAMPLING_BUFFER_CLASS = 'exporters.reservoir_sampling_buffer.ReservoirSamplingWriteBuffer'
+
 
 class BaseWriterTest(unittest.TestCase):
     def setUp(self):
@@ -320,6 +322,39 @@ class WriteBufferTest(unittest.TestCase):
         self.assertEqual(self.write_buffer.get_metadata('somekey').get('items'), 10,
                          'Wrong metadata')
         self.assertIsNone(self.write_buffer.get_metadata('somekey').get('nokey'))
+
+
+class ReservoirSamplingWriterTest(unittest.TestCase):
+    def setUp(self):
+        self.sample_size = 10
+        self.batch = [BaseRecord({u'key1': u'value1{}'.format(i),
+                                 u'key2': u'value2{}'.format(i)}) for i in range(100)]
+
+    def run_fake_writer(self):
+        # given:
+        writer = FakeWriter({'options': {
+                            'write_buffer': RESERVOIR_SAMPLING_BUFFER_CLASS,
+                            'write_buffer_options': {'sample_size': self.sample_size}}},
+                            {})
+        # when:
+        try:
+            writer.write_batch(self.batch)
+            writer.flush()
+        finally:
+            writer.close()
+
+        # then:
+        return writer.custom_output[()]
+
+    def test_sample_writer(self):
+        output = self.run_fake_writer()
+        self.assertEquals(self.sample_size, len(output.splitlines()))
+        # test duplicates
+        self.assertEquals(self.sample_size, len(set(output.splitlines())))
+
+    def test_different_samples(self):
+        outputs = [self.run_fake_writer() for i in range(2)]
+        self.assertNotEquals(outputs[0].splitlines(), outputs[1].splitlines())
 
 
 class ConsoleWriterTest(unittest.TestCase):
