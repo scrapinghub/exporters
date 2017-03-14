@@ -67,8 +67,8 @@ class ReservoirSamplingGroupingBufferFilesTracker(GroupingBufferFilesTracker):
     It implements reservoir sampling logic to randomly choose items positions in resut file.
     """
 
-    def __init__(self, formatter, compression_format, sample_size=1000):
-        self.sample_size = sample_size
+    def __init__(self, formatter, compression_format, **kwargs):
+        self.sample_size = kwargs.get('sample_size', 1000)
         super(ReservoirSamplingGroupingBufferFilesTracker, self).__init__(formatter,
                                                                           compression_format)
 

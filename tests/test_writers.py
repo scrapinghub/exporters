@@ -348,9 +348,9 @@ class ReservoirSamplingWriterTest(unittest.TestCase):
 
     def test_sample_writer(self):
         output = self.run_fake_writer()
-        self.assertEquals(self.sample_size, len(output.splitlines()))
+        self.assertEquals(self.sample_size, len(output.strip().splitlines()))
         # test duplicates
-        self.assertEquals(self.sample_size, len(set(output.splitlines())))
+        self.assertEquals(self.sample_size, len(set(output.strip().splitlines())))
 
     def test_different_samples(self):
         outputs = [self.run_fake_writer() for i in range(2)]

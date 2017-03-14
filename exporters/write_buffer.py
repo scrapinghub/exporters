@@ -119,7 +119,7 @@ class GroupingBufferFilesTracker(object):
     that is cleaned up when calling close().
     """
 
-    def __init__(self, formatter, compression_format):
+    def __init__(self, formatter, compression_format, **kwargs):
         self.grouping_info = self._create_grouping_info()
         self.file_extension = formatter.file_extension
         self.formatter = formatter
