@@ -34,7 +34,8 @@ class BaseWriter(BasePipelineItem):
         'items_limit': {'type': six.integer_types, 'default': 0},
         'check_consistency': {'type': bool, 'default': False},
         'compression': {'type': six.string_types, 'default': 'gz'},
-        'write_buffer': {'type': six.string_types, 'default': 'exporters.write_buffer.WriteBuffer'},
+        'write_buffer': {'type': six.string_types,
+                         'default': 'exporters.write_buffers.base.WriteBuffer'},
         'write_buffer_options': {'type': dict, 'default': {}},
     }
 

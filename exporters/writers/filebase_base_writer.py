@@ -5,7 +5,8 @@ import re
 import uuid
 import six
 
-from exporters.write_buffer import BufferFile, GroupingBufferFilesTracker, get_filename
+from exporters.write_buffers.grouping import BufferFile, GroupingBufferFilesTracker
+from exporters.write_buffers.utils import get_filename
 from exporters.writers.base_writer import BaseWriter
 
 MD5_FILE_NAME = 'md5checksum.md5'

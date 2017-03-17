@@ -1,8 +1,14 @@
-import six
 from random import randint
 
-from exporters.write_buffer import (BufferFile, WriteBuffer,
-                                    GroupingBufferFilesTracker, GroupingInfo)
+import six
+
+from exporters.write_buffers.grouping import (
+    BufferFile,
+    GroupingBufferFilesTracker,
+    GroupingInfo
+)
+
+from exporters.write_buffers.base import WriteBuffer
 
 
 class ReservoirSamplingGroupingInfo(GroupingInfo):

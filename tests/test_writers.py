@@ -15,7 +15,8 @@ from exporters.exceptions import ConfigurationError
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.xml_export_formatter import XMLExportFormatter
 from exporters.records.base_record import BaseRecord
-from exporters.write_buffer import WriteBuffer, GroupingBufferFilesTracker
+from exporters.write_buffers.base import WriteBuffer
+from exporters.write_buffers.grouping import GroupingBufferFilesTracker
 from exporters.writers import FSWriter
 from exporters.writers.base_writer import BaseWriter, InconsistentWriteState
 from exporters.writers.console_writer import ConsoleWriter
@@ -25,7 +26,8 @@ from exporters.groupers import PythonExpGrouper
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 from .utils import meta
 
-RESERVOIR_SAMPLING_BUFFER_CLASS = 'exporters.reservoir_sampling_buffer.ReservoirSamplingWriteBuffer'
+RESERVOIR_SAMPLING_BUFFER_CLASS = \
+    'exporters.write_buffers.reservoir_sampling_buffer.ReservoirSamplingWriteBuffer'
 
 
 class BaseWriterTest(unittest.TestCase):
