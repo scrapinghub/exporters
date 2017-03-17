@@ -163,9 +163,40 @@ class GroupingBufferFilesTracker(object):
                           self.compression_format, file_name=file_name)
 
 
+class FilebasedGroupingBufferFilesTracker(GroupingBufferFilesTracker):
+
+    def __init__(self, formatter, filebase, compression_format, start_file_count=0, **kwargs):
+        super(FilebasedGroupingBufferFilesTracker, self).__init__(formatter,
+                                                                  compression_format, **kwargs)
+        self.filebase = filebase
+        self.start_file_count = start_file_count
+
+    def create_new_group_file(self, key):
+        group_files = self.grouping_info[key]['group_file']
+        group_folder = self._get_group_folder(group_files)
+        current_file_count = len(group_files) + self.start_file_count
+        group_info = self.grouping_info[key]['path_safe_keys']
+        name_without_ext = self.filebase.formatted_prefix(
+                groups=group_info, file_number=current_file_count)
+        file_name = get_filename(name_without_ext, self.file_extension, self.compression_format)
+        file_name = os.path.join(group_folder, file_name)
+        new_buffer_file = self._create_buffer_file(file_name=file_name)
+        self.grouping_info.add_buffer_file_to_group(key, new_buffer_file)
+        self.grouping_info.reset_key(key)
+        return new_buffer_file
+
+    def _get_group_folder(self, group_files):
+        if group_files:
+            return os.path.dirname(group_files[0].path)
+        group_folder = os.path.join(self.tmp_folder, str(uuid.uuid4()))
+        os.mkdir(group_folder)
+        return group_folder
+
+
 class WriteBuffer(BasePipelineItem):
 
     group_files_tracker_class = GroupingBufferFilesTracker
+    filebased_group_files_tracker_class = FilebasedGroupingBufferFilesTracker
     supported_options = {
     }
 

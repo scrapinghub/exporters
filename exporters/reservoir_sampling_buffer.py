@@ -1,8 +1,10 @@
 import six
 from random import randint
 
-from exporters.write_buffer import (BufferFile, WriteBuffer,
-                                    GroupingBufferFilesTracker, GroupingInfo)
+from exporters.write_buffer import (BufferFile, WriteBuffer, GroupingInfo,
+                                    GroupingBufferFilesTracker, FilebasedGroupingBufferFilesTracker)
+
+RESERVOIR_SAMPLING_BUFFER_CLASS = 'exporters.reservoir_sampling_buffer.ReservoirSamplingWriteBuffer'
 
 
 class ReservoirSamplingGroupingInfo(GroupingInfo):
@@ -92,9 +94,15 @@ class ReservoirSamplingGroupingBufferFilesTracker(GroupingBufferFilesTracker):
                                   self.compression_format, self.sample_size, file_name=file_name)
 
 
+class FilebasedReservoirSamplingBufferFilesTracker(FilebasedGroupingBufferFilesTracker,
+                                                   ReservoirSamplingGroupingBufferFilesTracker):
+    pass
+
+
 class ReservoirSamplingWriteBuffer(WriteBuffer):
 
     group_files_tracker_class = ReservoirSamplingGroupingBufferFilesTracker
+    filebased_group_files_tracker_class = FilebasedReservoirSamplingBufferFilesTracker
     supported_options = {
         'sample_size': {'type': six.integer_types, 'default': 1000},
     }

@@ -5,7 +5,6 @@ import re
 import uuid
 import six
 
-from exporters.write_buffer import BufferFile, GroupingBufferFilesTracker, get_filename
 from exporters.writers.base_writer import BaseWriter
 
 MD5_FILE_NAME = 'md5checksum.md5'
@@ -63,37 +62,6 @@ class Filebase(object):
         return prefix_name
 
 
-class FilebasedGroupingBufferFilesTracker(GroupingBufferFilesTracker):
-
-    def __init__(self, formatter, filebase, compression_format, start_file_count=0):
-        super(FilebasedGroupingBufferFilesTracker, self).__init__(formatter, compression_format)
-        self.filebase = filebase
-        self.start_file_count = start_file_count
-        self.compression_format = compression_format
-
-    def create_new_group_file(self, key):
-        group_files = self.grouping_info[key]['group_file']
-        group_folder = self._get_group_folder(group_files)
-        current_file_count = len(group_files) + self.start_file_count
-        group_info = self.grouping_info[key]['path_safe_keys']
-        name_without_ext = self.filebase.formatted_prefix(
-                groups=group_info, file_number=current_file_count)
-        file_name = get_filename(name_without_ext, self.file_extension, self.compression_format)
-        file_name = os.path.join(group_folder, file_name)
-        new_buffer_file = BufferFile(
-                self.formatter, self.tmp_folder, self.compression_format, file_name=file_name)
-        self.grouping_info.add_buffer_file_to_group(key, new_buffer_file)
-        self.grouping_info.reset_key(key)
-        return new_buffer_file
-
-    def _get_group_folder(self, group_files):
-        if group_files:
-            return os.path.dirname(group_files[0].path)
-        group_folder = os.path.join(self.tmp_folder, str(uuid.uuid4()))
-        os.mkdir(group_folder)
-        return group_folder
-
-
 class FilebaseBaseWriter(BaseWriter):
     """
     This writer is a base writer providing common methods to all file based writers
@@ -122,13 +90,13 @@ class FilebaseBaseWriter(BaseWriter):
                 '{} has been initiated. Writing to: {}'.format(
                         self.__class__.__name__, self.filebase.template))
 
-    def _items_group_files_handler(self, *cargs):
-        return FilebasedGroupingBufferFilesTracker(
-                self.export_formatter,
-                filebase=Filebase(self.read_option('filebase')),
-                start_file_count=self.read_option('start_file_count'),
-                compression_format=self.read_option('compression')
-        )
+    def _items_group_files_handler(self, write_buffer_class, **kwargs):
+        group_files_class = write_buffer_class.filebased_group_files_tracker_class
+        return group_files_class(self.export_formatter,
+                                 filebase=Filebase(self.read_option('filebase')),
+                                 start_file_count=self.read_option('start_file_count'),
+                                 compression_format=self.read_option('compression'),
+                                 **kwargs)
 
     def write(self, path, key, file_name=False):
         """

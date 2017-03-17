@@ -23,9 +23,8 @@ from exporters.writers.filebase_base_writer import Filebase
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.groupers import PythonExpGrouper
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
+from exporters.reservoir_sampling_buffer import RESERVOIR_SAMPLING_BUFFER_CLASS
 from .utils import meta
-
-RESERVOIR_SAMPLING_BUFFER_CLASS = 'exporters.reservoir_sampling_buffer.ReservoirSamplingWriteBuffer'
 
 
 class BaseWriterTest(unittest.TestCase):
