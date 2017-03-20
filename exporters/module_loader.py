@@ -49,7 +49,7 @@ class ModuleLoader(object):
         return self._load_module(options, metadata, BaseStatsManager, **kwargs)
 
     def load_write_buffer(self, options, metadata, **kwargs):
-        from exporters.write_buffer import WriteBuffer
+        from exporters.write_buffers.base import WriteBuffer
         return self._load_module(options, metadata, WriteBuffer, **kwargs)
 
     def load_class(self, class_path):

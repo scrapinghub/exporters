@@ -34,7 +34,8 @@ class BaseWriter(BasePipelineItem):
         'items_limit': {'type': six.integer_types, 'default': 0},
         'check_consistency': {'type': bool, 'default': False},
         'compression': {'type': six.string_types, 'default': 'gz'},
-        'write_buffer': {'type': six.string_types, 'default': 'exporters.write_buffer.WriteBuffer'},
+        'write_buffer': {'type': six.string_types,
+                         'default': 'exporters.write_buffers.base.WriteBuffer'},
         'write_buffer_options': {'type': dict, 'default': {}},
     }
 
@@ -67,9 +68,13 @@ class BaseWriter(BasePipelineItem):
 
         write_buffer_module = self.read_option('write_buffer')
         write_buffer_class = module_loader.load_class(write_buffer_module)
+        write_buffer_options = {
+            'name': self.read_option('write_buffer'),
+            'options': self.read_option('write_buffer_options'),
+        }
 
-        file_handler = self._items_group_files_handler(write_buffer_class.group_files_tracker_class)
-
+        file_handler = self._items_group_files_handler(write_buffer_class,
+                                                       **write_buffer_options['options'])
         kwargs = {
              'items_per_buffer_write': self.read_option('items_per_buffer_write'),
              'size_per_buffer_write': self.read_option('size_per_buffer_write'),
@@ -77,14 +82,11 @@ class BaseWriter(BasePipelineItem):
              'compression_format': self.compression_format,
              'hash_algorithm': self.hash_algorithm,
         }
-        write_buffer_options = {
-            'name': self.read_option('write_buffer'),
-            'options': self.read_option('write_buffer_options'),
-        }
         return module_loader.load_write_buffer(write_buffer_options, self.metadata, **kwargs)
 
-    def _items_group_files_handler(self, group_files_tracker_class):
-        return group_files_tracker_class(self.export_formatter, self.compression_format)
+    def _items_group_files_handler(self, write_buffer_class, **kwargs):
+        return write_buffer_class.group_files_tracker_class(self.export_formatter,
+                                                            self.compression_format, **kwargs)
 
     def write(self, path, key):
         """
