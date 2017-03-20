@@ -6,11 +6,13 @@ import mock
 from exporters.meta import ExportMeta
 from exporters.notifications.base_notifier import BaseNotifier
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
-from exporters.notifications.ses_mail_notifier import (DEFAULT_MAIN_FROM,
-                                                       InvalidMailProvided,
+from exporters.notifications.ses_mail_notifier import (InvalidMailProvided,
                                                        SESMailNotifier)
 from exporters.notifications.webhook_notifier import WebhookNotifier
 from tests.utils import environment
+
+
+_MAIL_FROM = 'tesmail@test.com'
 
 
 class BaseNotifierTest(unittest.TestCase):
@@ -91,7 +93,8 @@ class SESMailNotifierTest(unittest.TestCase):
                                 'team_mails': ['team@example.com'],
                                 'client_mails': ['client@example.com'],
                                 'access_key': 'somelogin',
-                                'secret_key': 'somekey'
+                                'secret_key': 'somekey',
+                                'mail_from': _MAIL_FROM,
                             }
                     }
                 ]
@@ -115,7 +118,7 @@ class SESMailNotifierTest(unittest.TestCase):
     def test_start_dump(self, mock_ses):
         self.notifier.notify_start_dump([CLIENTS, TEAM])
         mock_ses.return_value.send_email.assert_called_once_with(
-            DEFAULT_MAIN_FROM,
+            _MAIL_FROM,
             'Started Customer export job',
             u'\nExport job started with following parameters:\n\nWriter: somewriter'
             u'\nBucket: SOMEBUCKET\nFilebase: FILEBASE',
@@ -136,11 +139,9 @@ class SESMailNotifierTest(unittest.TestCase):
     def test_complete_dump(self, mock_ses):
         self.notifier.notify_complete_dump([CLIENTS, TEAM])
         mock_ses.return_value.send_email.assert_called_once_with(
-            DEFAULT_MAIN_FROM,
+            _MAIL_FROM,
             'Customer export job finished',
-            u'\nExport job finished successfully.\n\nTotal records exported: 2.\n\n'
-            'If you have any questions or concerns about the data you have received, '
-            'email us at dataservices@scrapinghub.com.\n',
+            u'\nExport job finished successfully.\n\nTotal records exported: 2.',
             ['client@example.com', 'team@example.com']
         )
 
@@ -150,11 +151,9 @@ class SESMailNotifierTest(unittest.TestCase):
         self.notifier.notify_complete_dump(['test@test.com'])
         self.meta.accurate_items_count = False
         mock_ses.return_value.send_email.assert_called_once_with(
-            DEFAULT_MAIN_FROM,
+            _MAIL_FROM,
             'Customer export job finished',
-            u'\nExport job finished successfully.\n\n\n\n'
-            'If you have any questions or concerns about the data you have received, '
-            'email us at dataservices@scrapinghub.com.\n',
+            u'\nExport job finished successfully.\n\n',
             mock.ANY
         )
 
@@ -162,7 +161,7 @@ class SESMailNotifierTest(unittest.TestCase):
     def test_failed_dump(self, mock_ses):
         self.notifier.notify_failed_job('REASON', 'STACKTRACE', ['test@test.com'])
         mock_ses.return_value.send_email.assert_called_once_with(
-            DEFAULT_MAIN_FROM,
+            _MAIL_FROM,
             'Failed export job for Customer',
             u'\nExport job failed with following error:\n\n'
             u'REASON\n\n'
@@ -177,7 +176,7 @@ class SESMailNotifierTest(unittest.TestCase):
             self.notifier.notify_failed_job('REASON', 'STACKTRACE', ['test@test.com'])
 
         mock_ses.return_value.send_email.assert_called_once_with(
-            DEFAULT_MAIN_FROM,
+            _MAIL_FROM,
             'Failed export job for Customer',
             u'\nExport job failed with following error:\n\n'
             u'REASON\n\n'
@@ -201,7 +200,8 @@ class SESMailNotifierTest(unittest.TestCase):
                                 'team_mails': ['badmail'],
                                 'client_mails': [],
                                 'access_key': 'somelogin',
-                                'secret_key': 'somekey'
+                                'secret_key': 'somekey',
+                                'mail_from': _MAIL_FROM,
                             }
                     }
                 ]
