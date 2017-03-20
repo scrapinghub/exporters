@@ -9,9 +9,6 @@ from exporters.notifications.receiver_groups import CLIENTS, TEAM
 from exporters.utils import str_list
 
 
-DEFAULT_MAIN_FROM = 'Scrapinghub data services <dataservices@scrapinghub.com>'
-
-
 def get_scrapy_cloud_link(jobkey):
     if not jobkey:
         return ''
@@ -124,7 +121,7 @@ class SESMailNotifier(BaseNotifier):
         'access_key': {'type': six.string_types, 'env_fallback': 'EXPORTERS_MAIL_AWS_ACCESS_KEY'},
         'secret_key': {'type': six.string_types, 'env_fallback': 'EXPORTERS_MAIL_AWS_SECRET_KEY'},
         'client_name': {'type': six.string_types, 'default': 'Customer'},
-        'mail_from': {'type': six.string_types, 'default': DEFAULT_MAIN_FROM},
+        'mail_from': {'type': six.string_types, 'env_fallback': 'EXPORTERS_MAIL_FROM'},
     }
 
     def __init__(self, options, metadata):
