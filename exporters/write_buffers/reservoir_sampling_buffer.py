@@ -9,6 +9,7 @@ from exporters.write_buffers.grouping import (
 )
 
 from exporters.write_buffers.base import WriteBuffer
+from exporters.writers.filebase_base_writer import FilebasedGroupingBufferFilesTracker
 
 
 class ReservoirSamplingGroupingInfo(GroupingInfo):
@@ -98,9 +99,15 @@ class ReservoirSamplingGroupingBufferFilesTracker(GroupingBufferFilesTracker):
                                   self.compression_format, self.sample_size, file_name=file_name)
 
 
+class FilebasedReservoirSamplingBufferFilesTracker(FilebasedGroupingBufferFilesTracker,
+                                                   ReservoirSamplingGroupingBufferFilesTracker):
+    pass
+
+
 class ReservoirSamplingWriteBuffer(WriteBuffer):
 
     group_files_tracker_class = ReservoirSamplingGroupingBufferFilesTracker
+    filebased_group_files_tracker_class = FilebasedReservoirSamplingBufferFilesTracker
     supported_options = {
         'sample_size': {'type': six.integer_types, 'default': 1000},
     }

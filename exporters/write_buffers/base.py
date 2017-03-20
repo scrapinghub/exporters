@@ -2,6 +2,7 @@ import os
 
 from exporters.utils import remove_if_exists
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
+from exporters.writers.filebase_base_writer import FilebasedGroupingBufferFilesTracker
 
 from .utils import hash_for_file
 from .grouping import GroupingBufferFilesTracker
@@ -10,6 +11,7 @@ from .grouping import GroupingBufferFilesTracker
 class WriteBuffer(BasePipelineItem):
 
     group_files_tracker_class = GroupingBufferFilesTracker
+    filebased_group_files_tracker_class = FilebasedGroupingBufferFilesTracker
     supported_options = {
     }
 
