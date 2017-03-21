@@ -16,6 +16,7 @@ class BaseS3Bypass(BaseBypass):
         - No grouper module is set up.
         - writer has no option items_limit set in configuration.
         - writer has default items_per_buffer_write and size_per_buffer_write per default.
+        - writer has default write_buffer.
     """
 
     def __init__(self, config, metadata):
@@ -47,6 +48,10 @@ class BaseS3Bypass(BaseBypass):
             return False
         if config.writer_options['options'].get('size_per_buffer_write'):
             cls._log_skip_reason('buffer limit configuration (size_per_buffer_write)')
+            return False
+        write_buffer = config.writer_options['options'].get('write_buffer')
+        if write_buffer and not write_buffer.endswith('base.WriteBuffer'):
+            cls._log_skip_reason('custom write buffer configuration')
             return False
         return True
 
