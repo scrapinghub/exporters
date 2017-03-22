@@ -308,6 +308,7 @@ class BaseByPassTest(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             bypass_script.execute()
 
+
 JSON_FORMATTER = {"name": "exporters.export_formatter.json_export_formatter.JsonExportFormatter"}
 
 

@@ -18,6 +18,7 @@ class S3AzureFileBypass(BaseS3Bypass):
         - No grouper module is set up.
         - AzureFileWriter has not a items_limit set in configuration.
         - AzureFileWriter has default items_per_buffer_write and size_per_buffer_write per default.
+        - AzureFileWriter has default write_buffer.
     """
 
     def __init__(self, config, metadata):

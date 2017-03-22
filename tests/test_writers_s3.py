@@ -287,3 +287,4 @@ class S3WriterTest(unittest.TestCase):
         self.assertEqual(saved_keys[0].name, 'tests/0.jl')
         content = saved_keys[0].get_contents_as_string()
         self.assertEquals(len(content.strip().splitlines()), sample_size)
+        self.assertNotEquals(content.strip().splitlines(), items_to_write[:sample_size])

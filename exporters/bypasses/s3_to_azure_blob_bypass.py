@@ -17,6 +17,7 @@ class S3AzureBlobBypass(BaseS3Bypass):
         - No grouper module is set up.
         - AzureBlobWriter has not a items_limit set in configuration.
         - AzureBlobWriter has default items_per_buffer_write and size_per_buffer_write per default.
+        - AzureBlobWriter has default write_buffer.
     """
 
     def __init__(self, config, metadata):

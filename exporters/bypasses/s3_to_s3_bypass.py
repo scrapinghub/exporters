@@ -56,6 +56,7 @@ class S3Bypass(BaseS3Bypass):
         - No grouper module is set up.
         - S3 Writer has not a items_limit set in configuration.
         - S3 Writer has default items_per_buffer_write and size_per_buffer_write per default.
+        - S3 Writer has default write_buffer.
 
     This bypass tries to directly copy the S3 keys between the read and write buckets. If
     is is not possible due to permission issues, it will download the key from the read bucket
