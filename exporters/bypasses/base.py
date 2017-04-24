@@ -35,5 +35,11 @@ class BaseBypass(object):
         options = getattr(self.config, options_name)['options']
         return read_option(option, options, self.supported_options[module])
 
+    def set_metadata(self, key, value, module='bypass'):
+        self.metadata.per_module[module][key] = value
+
+    def get_metadata(self, key, module='bypass'):
+        return self.metadata.per_module[module].get(key)
+
     def close(self):
         pass
