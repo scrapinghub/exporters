@@ -22,6 +22,8 @@ class BaseS3Bypass(BaseBypass):
     def __init__(self, config, metadata):
         super(BaseS3Bypass, self).__init__(config, metadata)
         self.bypass_state = None
+        self.set_metadata('keys_written', [])
+        self.set_metadata('items_count', 0)
 
     @classmethod
     def meets_conditions(cls, config):
@@ -71,12 +73,26 @@ class BaseS3Bypass(BaseBypass):
             self.bypass_state.commit_copied_key(key)
             logging.log(logging.INFO, 'Copied key {}'.format(key))
 
+    def _update_metadata(self, key, total):
+        key_info = {
+            'key_name': key.name,
+            'number_of_records': total,
+        }
+        keys_written = self.get_metadata('keys_written')
+        keys_written.append(key_info)
+
+        items_count = self.get_metadata('items_count')
+        items_count += total
+        self.set_metadata('keys_written', keys_written)
+        self.set_metadata('items_count', items_count)
+
     def _copy_key(self, source_bucket, key_name):
         key = source_bucket.get_key(key_name)
         if key.get_metadata('total'):
             total = int(key.get_metadata('total'))
             self.increment_items(total)
             self.bypass_state.increment_items(total)
+            self._update_metadata(key, total)
         else:
             self.valid_total_count = False
         self._copy_s3_key(key)
