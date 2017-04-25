@@ -209,10 +209,21 @@ class S3Bypass(BaseS3Bypass):
                 self._check_copy_integrity(key, dest_bucket, dest_key_name)
         self.logger.info('Uploaded key {}'.format(dest_key_name))
 
+    def _update_metadata(self, dest_key_name, total):
+        key_info = {
+            'key_name': dest_key_name,
+            'number_of_records': int(total),
+        }
+        keys_written = self.get_metadata('keys_written')
+        keys_written.append(key_info)
+
+        self.set_metadata('keys_written', keys_written)
+
     @retry_long
     def _copy_s3_key(self, key):
         dest_key_name = self.get_dest_key_name(key.name)
         self._ensure_copy_key(self.dest_bucket, dest_key_name, key.bucket, key.name)
+        self._update_metadata(dest_key_name, key.get_metadata('total'))
 
     def close(self):
         if self.bypass_state:
