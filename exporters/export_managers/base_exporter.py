@@ -126,6 +126,7 @@ class BaseExporter(object):
             'items_count', self.writer.get_metadata('items_count') + bypass.total_items)
         self.logger.info(
             'Finished executing bypass {}.'.format(bypass_class.__name__))
+        self._final_stats_report()
         self.notifiers.notify_complete_dump(receivers=[CLIENTS, TEAM])
 
     def bypass(self):
