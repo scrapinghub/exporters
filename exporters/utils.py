@@ -112,7 +112,8 @@ def get_bucket_name(bucket):
 _AWS_ACCESS_KEY_ID_RE = re.compile(r'\w{16,32}')
 
 
-def get_boto_connection(aws_access_key_id, aws_secret_access_key, region=None, bucketname=None):
+def get_boto_connection(aws_access_key_id, aws_secret_access_key, region=None, bucketname=None,
+                        host=None):
     """
     Conection parameters must be different only if bucket name has a period
     """
@@ -128,6 +129,8 @@ def get_boto_connection(aws_access_key_id, aws_secret_access_key, region=None, b
     import boto
     from boto.s3.connection import OrdinaryCallingFormat
     extra_args = {}
+    if host is not None:
+        extra_args['host'] = host
     if bucketname is not None and '.' in bucketname:
         extra_args['calling_format'] = OrdinaryCallingFormat()
     if region is None:

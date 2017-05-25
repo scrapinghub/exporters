@@ -75,6 +75,7 @@ class S3Writer(FilebaseBaseWriter):
             'env_fallback': 'EXPORTERS_S3WRITER_AWS_SECRET'
         },
         'aws_region': {'type': six.string_types, 'default': None},
+        'host': {'type': six.string_types, 'default': None},
         'save_pointer': {'type': six.string_types, 'default': None},
         'save_metadata': {'type': bool, 'default': True, 'required': False}
     }
@@ -84,6 +85,7 @@ class S3Writer(FilebaseBaseWriter):
         access_key = self.read_option('aws_access_key_id')
         secret_key = self.read_option('aws_secret_access_key')
         self.aws_region = self.read_option('aws_region')
+        self.host = self.read_option('host')
         bucket_name = get_bucket_name(self.read_option('bucket'))
         self.logger.info('Starting S3Writer for bucket: %s' % bucket_name)
 
@@ -92,7 +94,7 @@ class S3Writer(FilebaseBaseWriter):
                                                         bucket_name)
 
         self.conn = get_boto_connection(access_key, secret_key, self.aws_region,
-                                        bucket_name)
+                                        bucket_name, self.host)
         self.bucket = self.conn.get_bucket(bucket_name, validate=False)
         self.save_metadata = self.read_option('save_metadata')
         self.set_metadata('files_counter', Counter())
@@ -100,7 +102,7 @@ class S3Writer(FilebaseBaseWriter):
 
     def _get_bucket_location(self, access_key, secret_key, bucket):
         try:
-            conn = get_boto_connection(access_key, secret_key, bucketname=bucket)
+            conn = get_boto_connection(access_key, secret_key, bucketname=bucket, host=self.host)
             return conn.get_bucket(bucket).get_location() or DEFAULT_BUCKET_REGION
         except:
             return DEFAULT_BUCKET_REGION
