@@ -1,12 +1,15 @@
-import json
-import io
 import csv
+import io
+import json
 import random
+import tempfile
 import unittest
+
 from exporters.exceptions import ConfigurationError
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
 from exporters.export_formatter.csv_export_formatter import CSVExportFormatter
 from exporters.export_formatter.json_export_formatter import JsonExportFormatter
+from exporters.export_formatter.avro_export_formatter import AvroExportFormatter
 from exporters.records.base_record import BaseRecord
 from tests.utils import meta
 
@@ -138,3 +141,54 @@ class CSVFormatterTest(unittest.TestCase):
             header = []
         lines = header + list(lines)
         return io.BytesIO('\n'.join(l for l in lines))
+
+
+class AvroFormatterTest(unittest.TestCase):
+
+    def setUp(self):
+        self.options = {
+            'options': {
+                'schema':
+                    {
+                         "type": "record",
+                         "namespace": "random.names",
+                         "name": "TestRecord",
+                         "fields": [
+                            {"name": "name", "type": "string"},
+                            {"name": "weight", "type": "float"},
+                            {"name": "age", "type": "int", "default": 12},
+                            {"name": "alive", "type": "boolean", "default": 0}
+                         ]
+                    }
+                }
+            }
+
+        self.export_formatter = AvroExportFormatter(self.options, meta())
+
+        self.batch = [
+                BaseRecord({'name': 'Yoda', 'weight': 13.0, 'age': 892, 'alive': False}),
+                BaseRecord({'name': 'Obi-Wan', 'weight': 81.0, 'age': 57}),
+        ]
+
+    def test_format_batch(self):
+        import fastavro as avro
+        data_buffer = io.BytesIO()
+        data_buffer.write(self.export_formatter.header_value)
+        for record in self.batch:
+            data_buffer.write(self.export_formatter.format(record))
+
+        temp = tempfile.NamedTemporaryFile(suffix=".avro")
+        fo = open(temp.name, "w")
+        fo.write(data_buffer.getvalue())
+        fo.close()
+
+        parsed_records = []
+        with open(temp.name) as fname:
+            reader = avro.iter_avro(fname)
+            for record in reader:
+                parsed_records.append(record)
+        temp.close()
+
+        self.assertEqual(len(self.batch), len(parsed_records))
+        self.assertIsInstance(parsed_records[0], dict)
+        self.assertEqual(parsed_records[1]['alive'], False)

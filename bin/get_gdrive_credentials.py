@@ -34,6 +34,7 @@ def parse_args():
         args.output = tempfile.mkdtemp()
     return args
 
+
 def run(args):
     gauth = GoogleAuth()
     gauth.LoadClientConfigFile(args.client_secret)
