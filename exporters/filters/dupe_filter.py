@@ -1,4 +1,6 @@
+from __future__ import absolute_import
 from exporters.filters.base_filter import BaseFilter
+import six
 
 
 class DupeFilter(BaseFilter):
@@ -10,7 +12,7 @@ class DupeFilter(BaseFilter):
     """
     # List of options
     supported_options = {
-        'key_field': {'type': basestring, 'default': '_key'}
+        'key_field': {'type': six.string_types, 'default': '_key'}
     }
 
     def __init__(self, *args, **kwargs):

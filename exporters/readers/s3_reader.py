@@ -1,5 +1,6 @@
+from __future__ import absolute_import
 import six
-import httplib
+import six.moves.http_client
 import re
 import datetime
 from six.moves.urllib.request import urlopen
@@ -9,6 +10,7 @@ from exporters.exceptions import ConfigurationError, InvalidDateRangeError
 import logging
 
 from exporters.utils import get_bucket_name, get_boto_connection
+from six.moves import filter
 
 S3_URL_EXPIRES_IN = 1800  # half an hour should be enough
 
@@ -17,11 +19,11 @@ def patch_http_response_read(func):
     def inner(*args):
         try:
             return func(*args)
-        except httplib.IncompleteRead, e:
+        except six.moves.http_client.IncompleteRead as e:
             return e.partial
 
     return inner
-httplib.HTTPResponse.read = patch_http_response_read(httplib.HTTPResponse.read)
+six.moves.http_client.HTTPResponse.read = patch_http_response_read(six.moves.http_client.HTTPResponse.read)
 
 
 def get_bucket(bucket, aws_access_key_id, aws_secret_access_key, **kwargs):
@@ -99,7 +101,7 @@ class S3BucketKeysFetcher(object):
         return self.source_bucket.get_key(prefix_pointer).get_contents_as_string()
 
     def _fetch_prefixes_from_pointer(self, prefix_pointer):
-        return filter(None, self._download_pointer(prefix_pointer).splitlines())
+        return [_f for _f in self._download_pointer(prefix_pointer).splitlines() if _f]
 
     def _get_keys_from_bucket(self):
         keys = []

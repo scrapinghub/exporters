@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 import hashlib
 import os
@@ -58,7 +59,7 @@ class Filebase(object):
         file_number = format_info.pop('file_number', 0)
         if prefix_name == self.prefix_template:
             prefix_name += '{:04d}'.format(file_number)
-        for key, value in format_info.iteritems():
+        for key, value in six.iteritems(format_info):
             if value and not self._has_key_info(key):
                 prefix_name = '{}-{}'.format(prefix_name, ''.join(value))
         return prefix_name
@@ -169,7 +170,7 @@ class FilebaseBaseWriter(BaseWriter):
         if self.generate_md5:
             try:
                 with open(MD5_FILE_NAME, 'a') as f:
-                    for file_name, write_info in self.written_files.iteritems():
+                    for file_name, write_info in six.iteritems(self.written_files):
                         write_info = self.written_files[file_name]
                         f.write('{} {}'.format(write_info['file_hash'], file_name)+'\n')
                 self.write_buffer.set_metadata_for_file(

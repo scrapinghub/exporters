@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import collections
 from importlib import import_module
 from inspect import isclass
@@ -11,6 +12,7 @@ from exporters.defaults import (
     DEFAULT_LOGGER_NAME, DEFAULT_TRANSFORM_CONFIG, DEFAULT_DECOMPRESSOR_CONFIG,
     DEFAULT_DESERIALIZER_CONFIG
 )
+import six
 
 
 class ExporterConfig(object):
@@ -146,7 +148,7 @@ def _get_section_errors(config_section):
         module_options = _get_module_supported_options(module_name)
         option_errors = {}
         config_options = config_section.get('options', {})
-        for name, spec in module_options.iteritems():
+        for name, spec in six.iteritems(module_options):
             error = _get_option_error(name, spec, config_options)
             if error:
                 option_errors[name] = error

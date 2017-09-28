@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from exporters.writers.base_writer import BaseWriter, ItemsLimitReached
 
 
@@ -18,7 +20,7 @@ class ConsoleWriter(BaseWriter):
 
     def write_batch(self, batch):
         for item in batch:
-            print(self.export_formatter.format(item))
+            print((self.export_formatter.format(item)))
             self.increment_written_items()
             if self.items_limit and self.items_limit == self.get_metadata('items_count'):
                 raise ItemsLimitReached('Finishing job after items_limit reached: {} items written.'

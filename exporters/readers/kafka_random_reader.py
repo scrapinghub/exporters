@@ -1,6 +1,7 @@
 """
 Kafka random reader
 """
+from __future__ import absolute_import
 from exporters.default_retries import retry_short
 import random
 import zlib
@@ -8,6 +9,7 @@ import six
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
 from exporters.utils import str_list
+from six.moves import map
 
 
 class KafkaRandomReader(BaseReader):
@@ -45,7 +47,7 @@ class KafkaRandomReader(BaseReader):
         group = self.read_option('group')
         topic = self.read_option('topic')
 
-        client = kafka.KafkaClient(map(bytes, brokers))
+        client = kafka.KafkaClient(list(map(bytes, brokers)))
 
         # TODO: Remove this comments when next steps are decided.
         # If resume is set to true, then child should not load initial offsets

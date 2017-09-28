@@ -3,10 +3,12 @@
 """
 Random items generator, just for testing purposes
 """
+from __future__ import absolute_import
 from exporters.readers.base_reader import BaseReader
 import random
 import six
 from exporters.records.base_record import BaseRecord
+from six.moves import range
 
 
 class RandomReader(BaseReader):

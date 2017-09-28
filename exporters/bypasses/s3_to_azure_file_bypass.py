@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 import os
 from exporters.default_retries import retry_long

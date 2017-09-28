@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import yaml
 
 from exporters.bypasses import default_bypass_classes

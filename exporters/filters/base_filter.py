@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from exporters.logger.base_logger import FilterLogger
 from exporters.pipeline.base_pipeline_item import BasePipelineItem
 

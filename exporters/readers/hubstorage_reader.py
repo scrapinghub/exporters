@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import six
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord

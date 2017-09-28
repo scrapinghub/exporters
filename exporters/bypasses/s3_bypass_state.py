@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from exporters.module_loader import ModuleLoader
 from exporters.readers.s3_reader import S3BucketKeysFetcher
 

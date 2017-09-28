@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import six
 from .base_writer import BaseWriter
 from exporters.exceptions import ConfigurationError

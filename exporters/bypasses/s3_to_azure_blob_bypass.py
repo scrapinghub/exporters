@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from exporters.default_retries import retry_long
 from .base_s3_bypass import BaseS3Bypass
 import re

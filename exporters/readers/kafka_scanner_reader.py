@@ -1,6 +1,7 @@
 """
 Kafka reader
 """
+from __future__ import absolute_import
 import six
 from exporters.readers.base_reader import BaseReader
 from exporters.records.base_record import BaseRecord
@@ -57,7 +58,7 @@ class KafkaScannerReader(BaseReader):
 
     @retry_short
     def get_from_kafka(self):
-        return self.batches.next()
+        return next(self.batches)
 
     def get_next_batch(self):
         """

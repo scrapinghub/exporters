@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import six
 import logging
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter
@@ -48,7 +49,7 @@ class XMLExportFormatter(BaseExportFormatter):
         dicttoxml.LOG.setLevel(logging.WARNING)
         fields_len = len(self.fields_order)
         ordered_item = collections.OrderedDict(
-            sorted(item.items(),
+            sorted(list(item.items()),
                    key=lambda kv: self.fields_order.get(kv[0], fields_len))
         )
         return '<{0}>{1}</{0}>'.format(

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from collections import Counter
 from exporters.default_retries import retry_long
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter

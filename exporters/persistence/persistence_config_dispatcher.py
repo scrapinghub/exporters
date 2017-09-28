@@ -1,5 +1,7 @@
+from __future__ import absolute_import
 import re
 from exporters.persistence import PERSISTENCE_LIST
+import six
 
 
 class PersistenceConfigDispatcher(object):
@@ -11,7 +13,7 @@ class PersistenceConfigDispatcher(object):
     def get_module_from_uri(self):
         persistence_regexes = {m.uri_regex: m for m in PERSISTENCE_LIST}
 
-        for regex, module in persistence_regexes.iteritems():
+        for regex, module in six.iteritems(persistence_regexes):
             if re.match(regex, self.uri):
                 return module
 

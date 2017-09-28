@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import six
 from exporters.export_formatter import DEFAULT_FORMATTER_CLASS
 from exporters.compression import FILE_COMPRESSION
@@ -60,7 +61,7 @@ class BaseWriter(BasePipelineItem):
         if compression not in FILE_COMPRESSION:
             raise ConfigurationError('The compression format can only be '
                                      'one of the following:  "{}"'
-                                     ''.format(FILE_COMPRESSION.keys()))
+                                     ''.format(list(FILE_COMPRESSION.keys())))
         return compression
 
     def _get_write_buffer(self):

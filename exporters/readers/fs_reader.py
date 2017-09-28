@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 import os
 import re
 
 from exporters.readers.base_stream_reader import StreamBasedReader
 from exporters.exceptions import ConfigurationError
 from exporters.bypasses.stream_bypass import Stream
+import six
 
 
 class FSReader(StreamBasedReader):
@@ -70,14 +72,14 @@ class FSReader(StreamBasedReader):
         filepath pattern
 
         """
-        if isinstance(input_specification, (basestring, dict)):
+        if isinstance(input_specification, (six.string_types, dict)):
             input_specification = [input_specification]
         elif not isinstance(input_specification, list):
             raise ConfigurationError("Input specification must be string, list or dict.")
 
         out = []
         for input_unit in input_specification:
-            if isinstance(input_unit, basestring):
+            if isinstance(input_unit, six.string_types):
                 out.append(input_unit)
             elif isinstance(input_unit, dict):
                 missing = object()

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import six
 import ast
 
@@ -46,8 +47,8 @@ class Interpreter(object):
     )
 
     allowed_objects = (
-        str, unicode,  # strings
-        int, float, long, complex,  # numbers
+        str, six.text_type,  # strings
+        int, float, int, complex,  # numbers
         list, dict, set, tuple,  # sequences
         type(None), bool  # others
     )

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import six
 from exporters.default_retries import retry_generator
 from exporters.readers.base_reader import BaseReader
@@ -66,7 +67,7 @@ class StreamBasedReader(BaseReader):
         When it has nothing else to read, it must set class variable "finished" to True.
         """
         if self.iterator is None:
-            self.iterator = self.iteritems()
+            self.iterator = six.iteritems(self)
 
         count = 0
         while count < self.batch_size:

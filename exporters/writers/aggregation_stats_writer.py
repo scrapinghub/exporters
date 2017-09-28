@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from collections import Counter
 from exporters.writers.base_writer import BaseWriter, ItemsLimitReached
 

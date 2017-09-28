@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import six
 from exporters.filters.base_filter import BaseFilter
 from exporters.python_interpreter import Interpreter, create_context

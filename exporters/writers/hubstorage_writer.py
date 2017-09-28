@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import six
 from exporters.writers.base_writer import BaseWriter
 

@@ -1,6 +1,8 @@
+from __future__ import absolute_import
 import json
 from collections import OrderedDict
 from exporters.stats_managers.basic_stats_manager import BasicStatsManager
+import six
 
 
 class LoggingStatsManager(BasicStatsManager):
@@ -13,7 +15,7 @@ class LoggingStatsManager(BasicStatsManager):
         prev = times['started']
         times.pop('started')
         data = OrderedDict()
-        for field, value in times.iteritems():
+        for field, value in six.iteritems(times):
             data[field] = (value - prev).total_seconds()
             prev = value
         self.logger.info(json.dumps(data))

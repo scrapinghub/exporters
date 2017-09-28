@@ -75,7 +75,7 @@ class IterIO(object):
         if self._unconsumed:
             data = self._unconsumed.pop()
         else:
-            data = self._iterator.next()  # Might raise StopIteration
+            data = next(self._iterator)  # Might raise StopIteration
         self._pos += len(data)
         return data
 

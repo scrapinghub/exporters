@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 
 from exporters.utils import remove_if_exists

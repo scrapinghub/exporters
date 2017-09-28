@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+import six
 class InvalidExpression(Exception):
     pass
 
@@ -27,11 +29,11 @@ class ConfigCheckError(ConfigurationError):
         if not self.errors:
             return self.message
         error_messages = []
-        for section, errors in self.errors.iteritems():
-            if isinstance(errors, basestring):
+        for section, errors in six.iteritems(self.errors):
+            if isinstance(errors, six.string_types):
                 error_messages.append('{}: {}'.format(section, errors))
             else:
                 section_errors = '\n'.join(
-                    '  {}: {}'.format(field, error) for field, error in errors.iteritems())
+                    '  {}: {}'.format(field, error) for field, error in six.iteritems(errors))
                 error_messages.append('{}:\n{}'.format(section, section_errors))
         return '{}\n{}'.format(self.message, '\n'.join(error_messages))

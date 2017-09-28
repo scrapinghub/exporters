@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import logging
 import time
 from contextlib import contextmanager
@@ -5,6 +6,7 @@ from decorator import decorator
 from retrying import Retrying
 from functools import wraps
 from types import GeneratorType
+from six.moves import range
 
 
 __all__ = ['retry_short', 'retry_long', 'set_retry_init', 'disable_retries', 'retry_generator']

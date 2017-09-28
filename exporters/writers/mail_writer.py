@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import email
 import os
 import datetime

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from exporters.groupers.base_grouper import BaseGrouper
 from exporters.python_interpreter import Interpreter, create_context
 from exporters.utils import str_list

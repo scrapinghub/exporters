@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 import logging
 from contextlib import closing, contextmanager
@@ -7,6 +8,7 @@ from exporters.progress_callback import BotoUploadProgress, BotoDownloadProgress
 from exporters.readers.s3_reader import get_bucket
 from exporters.utils import TmpFile, split_file, calculate_multipart_etag, CHUNK_SIZE
 from exporters.writers.s3_writer import should_use_multipart_upload, multipart_upload
+import six
 
 
 def _add_permissions(user_id, key):
@@ -111,7 +113,7 @@ class S3Bypass(BaseS3Bypass):
             user_id = dest_bucket.connection.get_canonical_user_id()
             with key_permissions(user_id, key):
                 dest_bucket.copy_key(dest_key_name, source_bucket.name, key_name)
-        except S3ResponseError, e:
+        except S3ResponseError as e:
             self.logger.warning('No direct copy supported for key {}.'.format(key_name))
             self.logger.warning("Message: %s, Error code: %s, Reason: %s, Status: %s, Body: %s",
                                 e.message,
@@ -156,7 +158,7 @@ class S3Bypass(BaseS3Bypass):
             match = re.match("\(\'(.*)\', u\'(.*)\', (.*)\)", str(md5_from_metadata))
             if match:
                 groups = match.groups()
-                md5 = (groups[0], unicode(groups[1]), int(groups[2]))
+                md5 = (groups[0], six.text_type(groups[1]), int(groups[2]))
         # If it's not in metadata, let's compute it
         if md5 is None:
             with open(tmp_filename) as f:

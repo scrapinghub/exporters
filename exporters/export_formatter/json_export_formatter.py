@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import json
 import datetime
 from exporters.export_formatter.base_export_formatter import BaseExportFormatter

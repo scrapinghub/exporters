@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from exporters.stats_managers.base_stats_manager import BaseStatsManager
 
 
