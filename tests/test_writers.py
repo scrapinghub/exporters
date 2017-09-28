@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import bz2
 import csv
 import datetime
@@ -25,6 +26,8 @@ from exporters.export_formatter.json_export_formatter import JsonExportFormatter
 from exporters.groupers import PythonExpGrouper
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
 from .utils import meta
+import six
+from six.moves import range
 
 RESERVOIR_SAMPLING_BUFFER_CLASS = \
     'exporters.write_buffers.reservoir_sampling_buffer.ReservoirSamplingWriteBuffer'
@@ -391,7 +394,7 @@ class FilebaseBaseWriterTest(unittest.TestCase):
             }
         }
         writer = FilebaseBaseWriter(writer_config, meta())
-        self.assertIsInstance(writer.get_file_suffix('', ''), basestring)
+        self.assertIsInstance(writer.get_file_suffix('', ''), six.string_types)
         path, file_name = writer.create_filebase_name([])
         self.assertEqual(path, '/tmp')
         writer.close()

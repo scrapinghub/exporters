@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import json
 import mock
 import unittest
@@ -5,6 +6,7 @@ import unittest
 from exporters.writers.cloudsearch_writer import (CLOUDSEARCH_MAX_BATCH_SIZE,
                                                   create_document_batches)
 from exporters.export_managers.basic_exporter import BasicExporter
+from six.moves import zip
 
 
 class CreateDocumentBatches(unittest.TestCase):

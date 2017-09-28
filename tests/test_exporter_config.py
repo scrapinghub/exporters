@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import unittest
 import six
 from exporters.exceptions import ConfigurationError
@@ -8,7 +9,7 @@ from exporters.writers import FSWriter
 
 class SampleSubclassWriter(FSWriter):
     supported_options = {
-        'someoption': dict(type=basestring)
+        'someoption': dict(type=six.string_types)
     }
 
 

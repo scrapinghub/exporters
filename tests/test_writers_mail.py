@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import unittest
 
 from exporters.writers import MailWriter
@@ -47,7 +49,7 @@ class MailWriterTest(unittest.TestCase):
 
     def test_file_name_none_compression(self):
         writer_config = self.get_writer_config(file_name='some_file_', compression='none')
-        print writer_config
+        print(writer_config)
         writer = FakeMailWriter(
             writer_config, meta())
         writer.set_metadata('items_count', 1)
@@ -57,7 +59,7 @@ class MailWriterTest(unittest.TestCase):
 
     def test_file_name_default_compression(self):
         writer_config = self.get_writer_config(file_name='some_file_')
-        print writer_config
+        print(writer_config)
         writer = FakeMailWriter(
             writer_config, meta())
         writer.set_metadata('items_count', 1)
@@ -67,7 +69,7 @@ class MailWriterTest(unittest.TestCase):
 
     def test_file_name_bz2_compression(self):
         writer_config = self.get_writer_config(file_name='some_file_', compression='bz2')
-        print writer_config
+        print(writer_config)
         writer = FakeMailWriter(
             writer_config, meta())
         writer.set_metadata('items_count', 1)

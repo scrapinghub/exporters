@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import gzip
 import json
 import unittest
@@ -14,6 +15,7 @@ from exporters.readers.s3_reader import S3Reader, S3BucketKeysFetcher, get_bucke
 from exporters.exceptions import ConfigurationError
 
 from .utils import meta
+from six.moves import zip
 
 NO_KEYS = ['test_list/test_key_1', 'test_list/test_key_2', 'test_list/test_key_3',
            'test_list/test_key_4', 'test_list/test_key_5', 'test_list/test_key_6',
@@ -304,8 +306,7 @@ class S3ReaderTest(unittest.TestCase):
             for stream_data, file_name in zip(streams, file_names):
                 name, size, _ = stream_data
                 assert name in file_names
-                file_names.remove(name)
-            assert file_names == set()
+            assert len(streams) == len(file_names)
 
     def test_invalid_date_range(self):
         self.assertRaisesRegexp(ConfigurationError,

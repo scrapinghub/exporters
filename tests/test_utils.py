@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import unittest
 
 from exporters.bypasses.base import BaseBypass
@@ -16,6 +17,7 @@ from exporters.utils import nested_dict_value, TmpFile, split_file, \
     calculate_multipart_etag, str_list, dict_list, int_list, maybe_cast_list
 from .utils import environment
 from .utils import valid_config_with_updates
+import six
 
 
 class BaseLoggerTest(unittest.TestCase):
@@ -45,7 +47,7 @@ class BasePipelineItemTest(unittest.TestCase):
 
     def test_pipeline_item_with_env_fallback(self):
         class MyPipelineItem(BasePipelineItem):
-            supported_options = {'opt1': {'type': basestring, 'env_fallback': 'ENV_TEST'}}
+            supported_options = {'opt1': {'type': six.string_types, 'env_fallback': 'ENV_TEST'}}
 
         with environment({'ENV_TEST': 'test'}):
             instance = MyPipelineItem({}, None)
@@ -58,7 +60,7 @@ class BasePipelineItemTest(unittest.TestCase):
         class MyPipelineItem(BasePipelineItem):
             supported_options = {
                 'opt1': {
-                    'type': basestring,
+                    'type': six.string_types,
                     'default': 'default_value',
                     'env_fallback': 'ENV_TEST'
                 },
@@ -81,7 +83,7 @@ class BasePipelineItemTest(unittest.TestCase):
 
     def test_pipeline_item_with_no_env_fallback_and_default_and_value(self):
         class MyPipelineItem(BasePipelineItem):
-            supported_options = {'opt1': {'type': basestring, 'default': 'default_value'}}
+            supported_options = {'opt1': {'type': six.string_types, 'default': 'default_value'}}
 
         instance = MyPipelineItem({'options': {'opt1': 'given_value'}}, None)
 
@@ -89,7 +91,7 @@ class BasePipelineItemTest(unittest.TestCase):
 
     def test_simple_supported_option(self):
         class MyPipelineItem(BasePipelineItem):
-            supported_options = {'opt1': {'type': basestring}}
+            supported_options = {'opt1': {'type': six.string_types}}
 
         instance = MyPipelineItem({'options': {'opt1': 'given_value'}}, None)
         self.assertIs(instance.read_option('opt1'), 'given_value')
@@ -101,7 +103,7 @@ class BasePipelineItemTest(unittest.TestCase):
 class ConfigModuleOptionsTest(unittest.TestCase):
     def test_module_options(self):
         options = module_options()
-        self.assertItemsEqual(MODULE_TYPES, options.keys())
+        self.assertItemsEqual(MODULE_TYPES, list(options.keys()))
         for modules in options.values():
             self.assertIsInstance(modules, list)
 

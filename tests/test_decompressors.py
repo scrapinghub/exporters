@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 import unittest
 import zlib
 from exporters.decompressors import ZLibDecompressor, NoDecompressor
 from exporters.iterio import IterIO
 from io import BytesIO
 import random
+from six.moves import range
 
 
 def randbytes(howmany):

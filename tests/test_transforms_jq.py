@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import unittest
 from exporters.records.base_record import BaseRecord
 from exporters.transform.jq_transform import JQTransform

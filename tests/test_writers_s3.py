@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import unittest
 
 import boto
@@ -11,6 +12,7 @@ from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.s3_writer import S3Writer
 
 from .utils import meta
+from six.moves import range
 
 RESERVOIR_SAMPLING_BUFFER_CLASS = \
     'exporters.write_buffers.reservoir_sampling_buffer.ReservoirSamplingWriteBuffer'

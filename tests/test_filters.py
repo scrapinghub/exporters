@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import random
 import unittest
 from exporters.filters.base_filter import BaseFilter
@@ -10,6 +11,7 @@ from exporters.filters.no_filter import NoFilter
 from exporters.records.base_record import BaseRecord
 
 from .utils import meta
+from six.moves import range
 
 
 class BaseFilterTest(unittest.TestCase):

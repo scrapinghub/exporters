@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 import json
 import shutil
@@ -15,6 +16,7 @@ from exporters.bypasses.s3_to_s3_bypass import S3Bypass
 from exporters.exporter_config import ExporterConfig
 from exporters.utils import remove_if_exists, TmpFile
 from .utils import meta
+from six.moves import range
 
 
 def create_fake_key():

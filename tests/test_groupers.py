@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 import random
 import unittest
 from exporters.groupers.base_grouper import BaseGrouper
 from exporters.groupers.file_key_grouper import FileKeyGrouper
 from exporters.groupers.python_exp_grouper import PythonExpGrouper
 from exporters.records.base_record import BaseRecord
+from six.moves import range
 
 country_codes = ['es', 'uk', 'us']
 states = ['valencia', 'madrid', 'barcelona']

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 import pickle
 import shutil
@@ -15,6 +16,7 @@ from exporters.transform.no_transform import NoTransform
 from exporters.utils import TmpFile, TemporaryDirectory
 from exporters.writers.console_writer import ConsoleWriter
 from .utils import valid_config_with_updates, ErrorWriter, CopyingMagicMock
+import six
 
 
 def get_filename(path, persistence_id):
@@ -87,7 +89,7 @@ class BaseExportManagerTest(unittest.TestCase):
         self.exporter = exporter = BaseExporter(config)
         exporter.export()
         used_paths = [value['path_safe_keys'][0]
-                      for key, value in exporter.writer.write_buffer.grouping_info.iteritems()]
+                      for key, value in six.iteritems(exporter.writer.write_buffer.grouping_info)]
         regex = '\d_ds_dump_({})'.format('|'.join(used_paths))
         written_files = [os.path.basename(f) for f in exporter.writer.written_files.keys()]
 

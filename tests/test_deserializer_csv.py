@@ -1,7 +1,9 @@
+from __future__ import absolute_import
 import unittest
 from exporters.deserializers import CSVDeserializer
 from exporters.iterio import IterIO
 import random
+from six.moves import range
 
 
 def randbytes(howmany):

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 import unittest
 from exporters.filters.pythonexp_filter import PythonexpFilter

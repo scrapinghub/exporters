@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import unittest
 from exporters.readers.base_reader import BaseReader
 from exporters.readers.random_reader import RandomReader

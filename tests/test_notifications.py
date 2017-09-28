@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 import json
 import unittest
@@ -10,6 +11,7 @@ from exporters.notifications.ses_mail_notifier import (InvalidMailProvided,
                                                        SESMailNotifier)
 from exporters.notifications.webhook_notifier import WebhookNotifier
 from tests.utils import environment
+import six
 
 
 _MAIL_FROM = 'tesmail@test.com'
@@ -44,7 +46,7 @@ class BaseNotifierTest(unittest.TestCase):
     def test_check_not_existing_required_supported_option(self):
         with self.assertRaises(Exception):
             test_notifier = self.notifier
-            test_notifier.supported_options.append({'name': 'test', 'type': basestring})
+            test_notifier.supported_options.append({'name': 'test', 'type': six.string_types})
             test_notifier.check_options()
 
     def test_check_not_required_supported_option(self):
@@ -74,7 +76,7 @@ class BaseNotifierTest(unittest.TestCase):
         }
         with self.assertRaises(Exception):
             test_notifier = BaseNotifier(options)
-            test_notifier.supported_options.append({'name': 'test', 'type': basestring})
+            test_notifier.supported_options.append({'name': 'test', 'type': six.string_types})
             test_notifier.check_options()
 
 
