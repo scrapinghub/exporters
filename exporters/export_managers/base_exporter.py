@@ -143,10 +143,10 @@ class BaseExporter(object):
         return False
 
     def _handle_export_exception(self, exception):
-        self.logger.error(traceback.format_exc(exception))
+        self.logger.error(traceback.format_exc())
         self.logger.error(str(exception))
         self.notifiers.notify_failed_job(
-            str(exception), str(traceback.format_exc(exception)), receivers=[TEAM])
+            str(exception), str(traceback.format_exc()), receivers=[TEAM])
 
     def _iteration_stats_report(self, times):
         try:

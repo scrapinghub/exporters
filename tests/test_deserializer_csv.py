@@ -13,7 +13,7 @@ def randbytes(howmany):
 class DecompressorsTest(unittest.TestCase):
     def test_deserializer(self):
         deserializer = CSVDeserializer({}, None)
-        with open('tests/data/dummy_data.csv', 'rb') as f:
+        with open('tests/data/dummy_data.csv', 'r') as f:
             items = list(deserializer.deserialize(IterIO(f)))
 
         expected_items = [

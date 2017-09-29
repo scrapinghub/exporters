@@ -8,7 +8,7 @@ interactions:
       Content-Length: ['48']
       User-Agent: [python-hubstorage/0.16.1]
     method: POST
-    uri: http://storage.scrapinghub.com/collections/10804/s/test_collection
+    uri: https://storage.scrapinghub.com/collections/10804/s/test_collection
   response:
     body: {string: !!python/unicode ''}
     headers:
@@ -24,7 +24,7 @@ interactions:
       Connection: [keep-alive]
       User-Agent: [python-hubstorage/0.16.1]
     method: GET
-    uri: http://storage.scrapinghub.com/collections/10804/s/test_collection/0004
+    uri: https://storage.scrapinghub.com/collections/10804/s/test_collection/0004
   response:
     body:
       string: !!binary |
@@ -44,7 +44,7 @@ interactions:
       Content-Length: ['47']
       User-Agent: [python-hubstorage/0.16.1]
     method: POST
-    uri: http://storage.scrapinghub.com/collections/10804/s/test_collection
+    uri: https://storage.scrapinghub.com/collections/10804/s/test_collection
   response:
     body: {string: !!python/unicode ''}
     headers:
@@ -60,7 +60,7 @@ interactions:
       Connection: [keep-alive]
       User-Agent: [python-hubstorage/0.16.1]
     method: GET
-    uri: http://storage.scrapinghub.com/collections/10804/s/test_collection/0004
+    uri: https://storage.scrapinghub.com/collections/10804/s/test_collection/0004
   response:
     body:
       string: !!binary |

@@ -30,7 +30,7 @@ def get_compress_file(compression_format):
 
 
 FILE_COMPRESSION = {
-    'gz': lambda path: gzip.open(path, 'a'),
+    'gz': lambda path: gzip.open(path, 'at'),
     'zip': StreamZipFile,
     'none': lambda path: open(path, 'a'),
 }

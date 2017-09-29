@@ -67,6 +67,8 @@ class IterIO(object):
                 raise StopIteration
             return line
 
+    __next__ = next  # Python 3.X compatibility
+
     def next_chunk(self):
         """
         Read a chunk of arbitrary size from the underlying iterator. To get a

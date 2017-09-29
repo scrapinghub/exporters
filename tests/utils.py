@@ -4,13 +4,17 @@ import gzip
 import json
 import mock
 import os
-import StringIO
 from contextlib import closing
 from copy import deepcopy
 from exporters.meta import ExportMeta
 from exporters.persistence.base_persistence import BasePersistence
 from exporters.readers.base_reader import BaseReader
 from exporters.writers.base_writer import BaseWriter
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 
 VALID_EXPORTER_CONFIG = {

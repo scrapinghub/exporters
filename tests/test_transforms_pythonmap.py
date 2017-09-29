@@ -55,7 +55,7 @@ class PythonMapTransformTest(unittest.TestCase):
     def test_transform_augmenting_item(self):
         # given:
         batch = self.sample_batch()
-        expr = 'dict(item.items() + dict(upper_name=item["name"].upper()).items())'
+        expr = 'dict(item, **dict(upper_name=item["name"].upper()))'
         transform = create_map_transform(expr)
         # when:
         result = list(transform.transform_batch(batch))

@@ -7,7 +7,7 @@ PyYAML==3.11
 psycopg2==2.6.1
 kafka-scanner==0.3.1
 
-mysql-python==1.2.5
+# mysql-python==1.2.5 # Python3 missing
 
 # retrying and its deps
 retrying==1.2.3

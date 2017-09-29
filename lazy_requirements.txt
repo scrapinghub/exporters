@@ -10,7 +10,7 @@ pysftp==0.2.8
 ecdsa==0.13
 paramiko==1.15.2
 pycrypto==2.6.1
-wsgiref==0.1.2
+# wsgiref==0.1.2 Python3 missing
 
 boltons==15.1.0
 
