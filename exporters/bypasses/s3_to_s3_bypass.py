@@ -4,7 +4,7 @@ from contextlib import closing, contextmanager
 from exporters.bypasses.base_s3_bypass import BaseS3Bypass
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoUploadProgress, BotoDownloadProgress
-from exporters.readers.s3_reader import get_bucket
+from exporters.utils import get_boto_connection
 from exporters.utils import TmpFile, split_file, calculate_multipart_etag, CHUNK_SIZE
 from exporters.writers.s3_writer import should_use_multipart_upload, multipart_upload
 
@@ -82,11 +82,15 @@ class S3Bypass(BaseS3Bypass):
         return dest_filebase
 
     def execute(self):
-        writer_aws_key = self.read_option('writer', 'aws_access_key_id')
-        writer_aws_secret = self.read_option('writer', 'aws_secret_access_key')
         writer_options = self.config.writer_options['options']
-        self.dest_bucket = get_bucket(
-            self.read_option('writer', 'bucket'), writer_aws_key, writer_aws_secret)
+        conn = get_boto_connection(
+            self.read_option('writer', 'aws_access_key_id'),
+            self.read_option('writer', 'aws_secret_access_key'),
+            self.read_option('writer', 'aws_region'),
+            self.read_option('writer', 'bucket'),
+            self.read_option('writer', 'host')
+        )
+        self.dest_bucket = conn.get_bucket(self.read_option('writer', 'bucket'), validate=False)
         self.dest_filebase = self._get_filebase(writer_options)
         super(S3Bypass, self).execute()
         if writer_options.get('save_pointer'):
