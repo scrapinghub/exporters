@@ -36,3 +36,5 @@ dicttoxml
 bz2file
 
 flatson
+
+fastavro==0.14.9
