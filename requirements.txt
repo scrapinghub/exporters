@@ -3,7 +3,7 @@
 
 sqlitedict==1.3.0
 SQLAlchemy==1.0.5
-PyYAML==3.11
+PyYAML==5.4
 psycopg2==2.6.1
 kafka-scanner==0.3.1
 
