@@ -17,4 +17,4 @@ six==1.9.0
 decorator
 
 
-boto3=1.9.105
+boto3==1.9.105
