@@ -1,4 +1,6 @@
 import logging
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 import six
 import json
@@ -173,6 +175,14 @@ class SESMailNotifier(BaseNotifier):
         if mails:
             import boto3
 
+            msg = MIMEMultipart()
+            msg['Subject'] = subject
+            msg['From'] = self.read_option('mail_from')
+            msg['To'] = ','.join(mails)
+            # msg['Reply-To'] = self.read_option('mail_from')
+
+            msg.attach(MIMEText(body))
+
             client = boto3.client(
                 service_name="ses",
                 region_name='us-east-1',
@@ -184,7 +194,7 @@ class SESMailNotifier(BaseNotifier):
             client.send_raw_email(
                 Source=self.read_option('mail_from'),
                 Destinations=mails,
-                RawMessage={"Data": subject.as_string()},
+                RawMessage={"Data": msg.as_string()},
             )
 
     def _get_mails(self, receivers):
