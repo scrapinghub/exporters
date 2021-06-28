@@ -168,7 +168,7 @@ class S3Writer(FilebaseBaseWriter):
             if self.save_metadata:
                 self._save_metadata_for_key(key, dump_path, md5)
             progress = BotoDownloadProgress(self.logger)
-            kwargs = {'ACL': self.acl} if self.acl else {}
+            kwargs = {'policy': self.acl} if self.acl else {}
             key.set_contents_from_file(f, cb=progress, md5=md5, **kwargs)
             self._ensure_proper_key_permissions(key)
 
