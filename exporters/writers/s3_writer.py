@@ -32,9 +32,11 @@ def should_use_multipart_upload(path, bucket):
     try:
         acl = bucket.get_acl()
         for grant in acl.acl.grants:
+            print('Permission %s' % grant.permission)
             if grant.permission == 'READ':
                 break
     except S3ResponseError:
+        print('S3ResponseError')
         return False
     return os.path.getsize(path) > CHUNK_SIZE
 
