@@ -93,7 +93,6 @@ class S3Writer(FilebaseBaseWriter):
 
         self.acl = self.read_option('aws_acl', None)
         
-        self.logger.info("Access key: ", access_key)
         # set acl for brightnetwork directly as we don't have this option available for configuration file.
         if 'AKIARLLOOMSVGLC433N7' == access_key or 'AKIATWUSUJ2VEO37CTMM' == access_key:
             self.acl = 'bucket-owner-full-control'
