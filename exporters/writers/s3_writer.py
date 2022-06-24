@@ -104,7 +104,8 @@ class S3Writer(FilebaseBaseWriter):
         if self.aws_region is None:
             self.aws_region = self._get_bucket_location(access_key, secret_key,
                                                         bucket_name)
-
+        
+        self.logger.info('AWS Region: {}'.format(self.aws_region))
         self.conn = get_boto_connection(access_key, secret_key, self.aws_region,
                                         bucket_name, self.host)
         self.bucket = self.conn.get_bucket(bucket_name, validate=False)
