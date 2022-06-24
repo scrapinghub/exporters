@@ -1,14 +1,15 @@
 import os
 from collections import Counter
 from contextlib import closing, contextmanager
+
 import six
+
 from exporters.default_retries import retry_long
 from exporters.progress_callback import BotoDownloadProgress
 from exporters.utils import CHUNK_SIZE, split_file, calculate_multipart_etag, get_bucket_name, \
-                            get_boto_connection
+    get_boto_connection
 from exporters.writers.base_writer import InconsistentWriteState
 from exporters.writers.filebase_base_writer import FilebaseBaseWriter
-
 
 DEFAULT_BUCKET_REGION = 'us-east-1'
 
@@ -31,9 +32,11 @@ def should_use_multipart_upload(path, bucket):
     try:
         acl = bucket.get_acl()
         for grant in acl.acl.grants:
+            print('Permission %s' % grant.permission)
             if grant.permission == 'READ':
                 break
     except S3ResponseError:
+        print('S3ResponseError')
         return False
     return os.path.getsize(path) > CHUNK_SIZE
 
@@ -75,6 +78,7 @@ class S3Writer(FilebaseBaseWriter):
             'env_fallback': 'EXPORTERS_S3WRITER_AWS_SECRET'
         },
         'aws_region': {'type': six.string_types, 'default': None},
+        'aws_acl': {'type': six.string_types, 'default': None},
         'host': {'type': six.string_types, 'default': None},
         'save_pointer': {'type': six.string_types, 'default': None},
         'save_metadata': {'type': bool, 'default': True, 'required': False}
@@ -86,13 +90,22 @@ class S3Writer(FilebaseBaseWriter):
         secret_key = self.read_option('aws_secret_access_key')
         self.aws_region = self.read_option('aws_region')
         self.host = self.read_option('host')
+
+        self.acl = self.read_option('aws_acl', None)
+        
+        # set acl for brightnetwork directly as we don't have this option available for configuration file.
+        if 'AKIARLLOOMSVGLC433N7' == access_key or 'AKIATWUSUJ2VEO37CTMM' == access_key:
+            self.acl = 'bucket-owner-full-control'
+            self.logger.info("ACL changed to bucket-owner-full-control")
+
         bucket_name = get_bucket_name(self.read_option('bucket'))
         self.logger.info('Starting S3Writer for bucket: %s' % bucket_name)
 
         if self.aws_region is None:
             self.aws_region = self._get_bucket_location(access_key, secret_key,
                                                         bucket_name)
-
+        
+        self.logger.info('AWS Region: {}'.format(self.aws_region))
         self.conn = get_boto_connection(access_key, secret_key, self.aws_region,
                                         bucket_name, self.host)
         self.bucket = self.conn.get_bucket(bucket_name, validate=False)
@@ -157,7 +170,8 @@ class S3Writer(FilebaseBaseWriter):
             if self.save_metadata:
                 self._save_metadata_for_key(key, dump_path, md5)
             progress = BotoDownloadProgress(self.logger)
-            key.set_contents_from_file(f, cb=progress, md5=md5)
+            kwargs = {'policy': self.acl} if self.acl else {}
+            key.set_contents_from_file(f, cb=progress, md5=md5, **kwargs)
             self._ensure_proper_key_permissions(key)
 
     @retry_long
@@ -180,8 +194,10 @@ class S3Writer(FilebaseBaseWriter):
         destination = 's3://{}/{}'.format(self.bucket.name, key_name)
         self.logger.info('Start uploading {} to {}'.format(dump_path, destination))
         if should_use_multipart_upload(dump_path, self.bucket):
+            self.logger.info('Started large file upload')
             self._upload_large_file(dump_path, key_name)
         else:
+            self.logger.info('Started small file upload')
             self._upload_small_file(dump_path, key_name)
         self.last_written_file = destination
         self.logger.info('Saved {}'.format(destination))

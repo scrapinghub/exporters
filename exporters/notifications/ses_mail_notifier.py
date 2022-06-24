@@ -1,13 +1,19 @@
+import logging
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 import six
 import json
 import os
 import re
+
 
 from exporters.default_retries import retry_short
 from exporters.notifications.base_notifier import BaseNotifier
 from exporters.notifications.receiver_groups import CLIENTS, TEAM
 from exporters.utils import str_list
 
+logger = logging.getLogger('SesEmail')
 
 def get_scrapy_cloud_link(jobkey):
     if not jobkey:
@@ -165,10 +171,31 @@ class SESMailNotifier(BaseNotifier):
 
     @retry_short
     def _send_email(self, mails, subject, body):
+
         if mails:
-            import boto
-            ses = boto.connect_ses(self.read_option('access_key'), self.read_option('secret_key'))
-            ses.send_email(self.read_option('mail_from'), subject, body, mails)
+            import boto3
+
+            msg = MIMEMultipart()
+            msg['Subject'] = subject
+            msg['From'] = self.read_option('mail_from')
+            msg['To'] = ','.join(mails)
+            # msg['Reply-To'] = self.read_option('mail_from')
+
+            msg.attach(MIMEText(body))
+
+            client = boto3.client(
+                service_name="ses",
+                region_name='us-east-1',
+                aws_access_key_id=self.read_option('access_key'),
+                aws_secret_access_key=self.read_option('secret_key'),
+            )
+
+            logger.info('Sending mail as %s to: %s', self.read_option('mail_from'), mails)
+            client.send_raw_email(
+                Source=self.read_option('mail_from'),
+                Destinations=mails,
+                RawMessage={"Data": msg.as_string()},
+            )
 
     def _get_mails(self, receivers):
         mails = []
